@@ -157,5 +157,38 @@
             </div>
         </div>
     </div>
+
+    {{-- Zone de danger --}}
+    <div class="card border border-red-200 p-6" x-data="{ confirmer: false }">
+        <h2 class="font-bold text-red-700 text-sm mb-1">Zone de danger</h2>
+        <p class="text-sm text-gray-500 mb-4">La suppression est <strong>irréversible</strong>. Elle efface l'établissement, tous ses utilisateurs, clients, ventes et abonnements.</p>
+
+        <div x-show="!confirmer">
+            <button @click="confirmer = true" type="button"
+                class="px-4 py-2 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition">
+                Supprimer définitivement cet établissement
+            </button>
+        </div>
+
+        <div x-show="confirmer" class="space-y-3">
+            <p class="text-sm font-semibold text-red-700">
+                Confirmez-vous la suppression de <em>{{ $institut->nom }}</em> et de <strong>toutes ses données</strong> ?
+            </p>
+            <div class="flex gap-3">
+                <form action="{{ route('admin.instituts.destroy', $institut) }}" method="POST">
+                    @csrf @method('DELETE')
+                    <button type="submit"
+                        class="px-4 py-2 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition">
+                        Oui, supprimer définitivement
+                    </button>
+                </form>
+                <button @click="confirmer = false" type="button"
+                    class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+                    Annuler
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>
 @endsection

@@ -8,6 +8,7 @@ use App\Models\Institut;
 use App\Models\PlanAbonnement;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AdminInstitutController extends Controller
 {
@@ -103,5 +104,26 @@ class AdminInstitutController extends Controller
         ]);
 
         return back()->with('success', "Accès offert pour {$request->jours} jours.");
+    }
+
+    public function destroy(Institut $institut)
+    {
+        $nom = $institut->nom;
+
+        DB::transaction(function () use ($institut) {
+            $userIds = $institut->users()->pluck('id');
+
+            // Supprimer les abonnements des utilisateurs liés
+            Abonnement::whereIn('user_id', $userIds)->delete();
+
+            // Supprimer les utilisateurs liés
+            User::whereIn('id', $userIds)->delete();
+
+            // Supprimer l'institut (les FK en cascade couvrent clients, ventes, dépenses, etc.)
+            $institut->delete();
+        });
+
+        return redirect()->route('admin.instituts.index')
+            ->with('success', "Établissement « {$nom} » supprimé définitivement.");
     }
 }

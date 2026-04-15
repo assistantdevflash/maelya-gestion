@@ -10,7 +10,7 @@
     <meta name="robots" content="noindex, nofollow">
     @endif
     <link rel="canonical" href="{{ url()->current() }}">
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
 
     {{-- Open Graph --}}
     <meta property="og:type" content="website">
@@ -75,7 +75,7 @@
         "@@type": "Organization",
         "name": "Maëlya Gestion",
         "url": "{{ url('/') }}",
-        "logo": "{{ asset('favicon.ico') }}",
+        "logo": "{{ asset('favicon.svg') }}",
         "description": "Logiciel de gestion tout-en-un pour instituts de beauté en Côte d'Ivoire.",
         "address": {
             "@@type": "PostalAddress",

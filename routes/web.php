@@ -123,6 +123,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::resource('instituts', AdminInstitutController::class)->only(['index', 'show', 'update']);
     Route::patch('instituts/{institut}/toggle', [AdminInstitutController::class, 'toggle'])->name('instituts.toggle');
     Route::post('instituts/{institut}/offrir-abonnement', [AdminInstitutController::class, 'offrirAbonnement'])->name('instituts.offrir');
+    Route::delete('instituts/{institut}', [AdminInstitutController::class, 'destroy'])->name('instituts.destroy');
     Route::resource('abonnements', AdminAbonnementController::class)->only(['index', 'show']);
     Route::patch('abonnements/{abonnement}/valider', [AdminAbonnementController::class, 'valider'])->name('abonnements.valider');
     Route::patch('abonnements/{abonnement}/rejeter', [AdminAbonnementController::class, 'rejeter'])->name('abonnements.rejeter');
