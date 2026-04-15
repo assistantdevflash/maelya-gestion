@@ -23,19 +23,17 @@ return new class extends Migration
         }
 
         // ── 2. Recréer abonnements avec nouveau schéma ─────────────────────
-        // SQLite ne supporte pas ALTER COLUMN / ADD ENUM, on recrée la table
-
-        // 2a. Renommer l'ancienne table (gérer l'état intermédiaire)
-        if (Schema::hasTable('abonnements') && !Schema::hasTable('abonnements_old')) {
-            Schema::rename('abonnements', 'abonnements_old');
+        // On supprime les FK de l'ancienne table avant de la dropper
+        // pour éviter les conflits de noms de contraintes sur MariaDB/MySQL
+        if (Schema::hasTable('abonnements')) {
+            // Supprimer les FK de l'ancienne table
+            try { Schema::table('abonnements', function (Blueprint $table) { $table->dropForeign(['plan_id']); }); } catch (\Throwable $e) {}
+            try { Schema::table('abonnements', function (Blueprint $table) { $table->dropForeign(['user_id']); }); } catch (\Throwable $e) {}
+            try { Schema::table('abonnements', function (Blueprint $table) { $table->dropForeign(['institut_id']); }); } catch (\Throwable $e) {}
+            Schema::drop('abonnements');
         }
 
-        // 2a-bis. Supprimer les index de l'ancienne table si elle existe (SQLite les garde après rename)
-        try { DB::statement('ALTER TABLE abonnements_old DROP INDEX abonnements_institut_id_statut_index'); } catch (\Throwable $e) {}
-        try { DB::statement('ALTER TABLE abonnements_old DROP INDEX abonnements_expire_le_index'); } catch (\Throwable $e) {}
-
-        // 2b. Créer la nouvelle table (seulement si elle n'existe pas)
-        if (!Schema::hasTable('abonnements')) {
+        // 2b. Créer la nouvelle table
         Schema::create('abonnements', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('user_id')->comment('Propriétaire de l\'abonnement');
@@ -58,39 +56,6 @@ return new class extends Migration
             $table->index(['user_id', 'statut']);
             $table->index('expire_le');
         });
-        } // end if !Schema::hasTable('abonnements')
-
-        // 2c. Migrer les données existantes
-        if (Schema::hasTable('abonnements_old')) {
-            $oldAbonnements = DB::table('abonnements_old')->get();
-        foreach ($oldAbonnements as $old) {
-            // Trouver le user admin de l'institut
-            $adminUser = DB::table('users')
-                ->where('institut_id', $old->institut_id)
-                ->where('role', 'admin')
-                ->first();
-
-            if ($adminUser) {
-                DB::table('abonnements')->insert([
-                    'id' => $old->id,
-                    'user_id' => $adminUser->id,
-                    'plan_id' => $old->plan_id,
-                    'montant' => $old->montant,
-                    'periode' => 'mensuel',
-                    'statut' => $old->statut,
-                    'debut_le' => $old->debut_le,
-                    'expire_le' => $old->expire_le,
-                    'reference_transfert' => $old->reference_cinetpay,
-                    'metadata' => $old->metadata,
-                    'created_at' => $old->created_at,
-                    'updated_at' => $old->updated_at,
-                ]);
-            }
-        }
-
-        // 2d. Supprimer l'ancienne table
-            Schema::dropIfExists('abonnements_old');
-        } // end if abonnements_old exists
     }
 
     public function down(): void
