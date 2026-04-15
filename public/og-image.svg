@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7e22ce"/>
+      <stop offset="100%" stop-color="#db2777"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.04"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fond dégradé -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Bulle déco haut-droite -->
+  <circle cx="1100" cy="-60" r="280" fill="#ffffff" fill-opacity="0.06"/>
+  <!-- Bulle déco bas-gauche -->
+  <circle cx="100" cy="700" r="240" fill="#ffffff" fill-opacity="0.05"/>
+
+  <!-- Carte centrale translucide -->
+  <rect x="80" y="80" width="1040" height="470" rx="32" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1.5"/>
+
+  <!-- Logo rond avec M -->
+  <rect x="130" y="140" width="110" height="110" rx="28" fill="#ffffff" fill-opacity="0.18"/>
+  <text x="185" y="218" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-weight="bold" fill="white" text-anchor="middle">M</text>
+
+  <!-- Nom du produit -->
+  <text x="270" y="185" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="52" font-weight="700" fill="white">Maëlya Gestion</text>
+
+  <!-- Sous-titre -->
+  <text x="270" y="238" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="26" fill="#f0abfc" font-weight="400">Logiciel de gestion pour instituts de beauté</text>
+
+  <!-- Ligne séparatrice -->
+  <rect x="130" y="285" width="940" height="1.5" fill="#ffffff" fill-opacity="0.2"/>
+
+  <!-- Points forts -->
+  <!-- Icône caisse -->
+  <rect x="130" y="320" width="42" height="42" rx="11" fill="#ffffff" fill-opacity="0.15"/>
+  <text x="151" y="349" font-family="sans-serif" font-size="22" fill="white" text-anchor="middle">💰</text>
+  <text x="186" y="350" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" fill="white" font-weight="600">Caisse &amp; ventes</text>
+
+  <!-- Icône clients -->
+  <rect x="130" y="380" width="42" height="42" rx="11" fill="#ffffff" fill-opacity="0.15"/>
+  <text x="151" y="409" font-family="sans-serif" font-size="22" fill="white" text-anchor="middle">👥</text>
+  <text x="186" y="410" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" fill="white" font-weight="600">Gestion clients &amp; fidélité</text>
+
+  <!-- Icône stock -->
+  <rect x="480" y="320" width="42" height="42" rx="11" fill="#ffffff" fill-opacity="0.15"/>
+  <text x="501" y="349" font-family="sans-serif" font-size="22" fill="white" text-anchor="middle">📦</text>
+  <text x="536" y="350" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" fill="white" font-weight="600">Stocks &amp; produits</text>
+
+  <!-- Icône finances -->
+  <rect x="480" y="380" width="42" height="42" rx="11" fill="#ffffff" fill-opacity="0.15"/>
+  <text x="501" y="409" font-family="sans-serif" font-size="22" fill="white" text-anchor="middle">📊</text>
+  <text x="536" y="410" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" fill="white" font-weight="600">Tableau de bord &amp; finances</text>
+
+  <!-- Icône prestations -->
+  <rect x="830" y="320" width="42" height="42" rx="11" fill="#ffffff" fill-opacity="0.15"/>
+  <text x="851" y="349" font-family="sans-serif" font-size="22" fill="white" text-anchor="middle">✨</text>
+  <text x="886" y="350" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" fill="white" font-weight="600">Prestations</text>
+
+  <!-- Icône abonnement -->
+  <rect x="830" y="380" width="42" height="42" rx="11" fill="#ffffff" fill-opacity="0.15"/>
+  <text x="851" y="409" font-family="sans-serif" font-size="22" fill="white" text-anchor="middle">🔒</text>
+  <text x="886" y="410" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" fill="white" font-weight="600">Multi-établissements</text>
+
+  <!-- URL en bas -->
+  <text x="600" y="502" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" fill="#f0abfc" text-anchor="middle" font-weight="500">maelyagestion.com</text>
+</svg>
