@@ -51,19 +51,21 @@
             {{-- Utilisateurs --}}
             <div class="card overflow-hidden">
                 <div class="px-5 py-3 border-b border-gray-100 font-medium text-sm">Utilisateurs ({{ $institut->users->count() }})</div>
-                <table class="table-auto">
-                    <thead><tr><th>Nom</th><th>Rôle</th><th>Email</th><th>Inscrit</th></tr></thead>
+                <div class="overflow-x-auto">
+                <table class="table-auto w-full">
+                    <thead><tr><th>Nom</th><th>Rôle</th><th class="hidden sm:table-cell">Email</th><th class="hidden md:table-cell">Inscrit</th></tr></thead>
                     <tbody>
                     @foreach($institut->users as $u)
                     <tr>
                         <td class="font-medium">{{ $u->prenom }} {{ $u->nom_famille }}</td>
                         <td><span class="badge bg-indigo-100 text-indigo-700 text-xs capitalize">{{ $u->role }}</span></td>
-                        <td class="text-sm text-gray-500">{{ $u->email }}</td>
-                        <td class="text-sm text-gray-400">{{ $u->created_at->format('d/m/Y') }}</td>
+                        <td class="text-sm text-gray-500 hidden sm:table-cell">{{ $u->email }}</td>
+                        <td class="text-sm text-gray-400 hidden md:table-cell">{{ $u->created_at->format('d/m/Y') }}</td>
                     </tr>
                     @endforeach
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
 

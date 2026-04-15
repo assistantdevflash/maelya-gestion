@@ -50,7 +50,7 @@
                            class="form-input" placeholder="SKU-001">
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="form-group">
                         <label class="form-label">Prix d'achat (FCFA)</label>
                         <input type="number" name="prix_achat" min="0" step="50"
@@ -67,7 +67,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="form-group">
                         <label class="form-label">Stock initial *</label>
                         <input type="number" name="stock" required min="0"

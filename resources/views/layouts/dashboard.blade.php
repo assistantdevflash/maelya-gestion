@@ -451,7 +451,7 @@
             <div class="flex items-center gap-2">
                 <div class="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-white text-xs shadow-sm"
                      style="background: linear-gradient(135deg, #9333ea, #ec4899);">M</div>
-                <span class="font-display font-bold text-gray-900 dark:text-white text-sm">Maëlya</span>
+                <span class="font-display font-bold text-gray-900 dark:text-white text-sm">Maëlya Gestion</span>
             </div>
             <a href="{{ route('dashboard.caisse') }}" class="btn-primary btn-sm">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

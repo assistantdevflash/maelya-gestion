@@ -16,8 +16,14 @@
         <div class="card p-4">
             <form method="GET" action="{{ route('dashboard.ventes.index') }}" class="flex flex-wrap gap-3"
                   x-data="{ debut: '{{ request('debut') }}' }">
-                <input type="date" name="debut" x-model="debut" value="{{ request('debut') }}" class="form-input w-auto" placeholder="Début">
-                <input type="date" name="fin" :min="debut" value="{{ request('fin') }}" class="form-input w-auto" placeholder="Fin">
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs text-gray-500 font-medium">Début</label>
+                    <input type="date" name="debut" x-model="debut" value="{{ request('debut') }}" class="form-input">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs text-gray-500 font-medium">Fin</label>
+                    <input type="date" name="fin" :min="debut" value="{{ request('fin') }}" class="form-input">
+                </div>
                 <select name="mode" class="form-select w-auto">
                     <option value="">Tous modes</option>
                     <option value="cash" {{ request('mode') === 'cash' ? 'selected' : '' }}>Espèces</option>
@@ -43,9 +49,10 @@
         </div>
 
         @if($ventes->count() > 0)
-        <div class="flex gap-5 items-start">
+        <div class="flex flex-col lg:flex-row gap-5 items-start">
+        {{-- Colonne de droite sur mobile : Point de caisse en premier sur sm, après sur lg --}}
         {{-- Colonne principale : table --}}
-        <div class="flex-1 min-w-0 space-y-4">
+        <div class="w-full lg:flex-1 lg:min-w-0 space-y-4 order-2 lg:order-1">
         <div class="card overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -127,7 +134,7 @@
 
         {{-- Colonne de droite : Point de caisse par vendeur (sticky) --}}
         @if(!Auth::user()->isEmploye() && $statsParEmploye->count() > 0)
-        <div class="w-72 flex-shrink-0 sticky top-6 self-start">
+        <div class="w-full lg:w-72 lg:flex-shrink-0 lg:sticky lg:top-6 lg:self-start order-1 lg:order-2">
         <div class="card overflow-hidden">
             <div class="px-4 py-3 border-b border-gray-100">
                 <h2 class="text-sm font-bold text-gray-900 flex items-center gap-2">

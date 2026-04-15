@@ -108,7 +108,7 @@
                             {{ number_format($client->total_depense ?? 0, 0, ',', ' ') }} FCFA
                         </td>
                         <td class="px-4 py-3">
-                            <div class="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div class="flex items-center justify-end gap-1.5">
                                 {{-- Voir --}}
                                 <a href="{{ route('dashboard.clients.show', $client) }}" class="btn-icon" title="Voir fiche">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
