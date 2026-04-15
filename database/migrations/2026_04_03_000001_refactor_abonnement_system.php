@@ -30,9 +30,9 @@ return new class extends Migration
             Schema::rename('abonnements', 'abonnements_old');
         }
 
-        // 2a-bis. Supprimer les index de l'ancienne table (SQLite les garde après rename)
-        DB::statement('DROP INDEX IF EXISTS abonnements_institut_id_statut_index');
-        DB::statement('DROP INDEX IF EXISTS abonnements_expire_le_index');
+        // 2a-bis. Supprimer les index de l'ancienne table si elle existe (SQLite les garde après rename)
+        try { DB::statement('ALTER TABLE abonnements_old DROP INDEX abonnements_institut_id_statut_index'); } catch (\Throwable $e) {}
+        try { DB::statement('ALTER TABLE abonnements_old DROP INDEX abonnements_expire_le_index'); } catch (\Throwable $e) {}
 
         // 2b. Créer la nouvelle table (seulement si elle n'existe pas)
         if (!Schema::hasTable('abonnements')) {
