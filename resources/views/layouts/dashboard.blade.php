@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ isset($title) ? $title . ' — ' : '' }}Maëlya Gestion</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <script>
+        (function() {
+            try {
+                var t = localStorage.getItem('maelya-theme');
+                var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (t === 'dark' || (t !== 'light' && prefersDark)) {
+                    document.documentElement.classList.add('dark');
+                }
+            } catch(e) {}
+        })();
+    </script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
+    {{ $styles ?? '' }}
+</head>
+<body class="dashboard h-full font-sans">
+
+<div class="flex h-full" x-data="{
+    sidebarOpen: false,
+    themeMenu: false,
+    theme: localStorage.getItem('maelya-theme') || 'system',
+    get isDark() { return this.theme==='dark' || (this.theme==='system' && matchMedia('(prefers-color-scheme: dark)').matches) },
+    setTheme(t) {
+        this.theme = t;
+        localStorage.setItem('maelya-theme', t);
+        if (t === 'dark') document.documentElement.classList.add('dark');
+        else if (t === 'light') document.documentElement.classList.remove('dark');
+        else document.documentElement.classList.toggle('dark', matchMedia('(prefers-color-scheme: dark)').matches);
+        this.themeMenu = false;
+    }}">
+
+    {{-- Overlay mobile --}}
+    <div x-show="sidebarOpen"
+         x-transition:enter="transition-opacity ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="sidebarOpen = false"
+         class="fixed inset-0 z-40 bg-gray-900/60 backdrop-blur-sm lg:hidden"
+         style="display:none">
+    </div>
+
+    {{-- ═══ SIDEBAR ═══ --}}
+    <aside class="fixed inset-y-0 left-0 z-50 w-[260px] flex flex-col lg:translate-x-0 transition-transform duration-300 ease-out"
+           :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
+        <div class="flex flex-col flex-1 min-h-0 bg-white dark:bg-slate-900 border-r border-gray-100 dark:border-slate-700/60">
+
+            {{-- Logo / Sélecteur d'institut (style TopResto) --}}
+            @php
+                $__sidebarUser = auth()->user();
+                $__sidebarInstituts = $__sidebarUser->isAdmin()
+                    ? $__sidebarUser->mesInstituts()->orderBy('nom')->get()
+                    : collect();
+                // Inclure l'institut principal s'il n'est pas dans mesInstituts()
+                if ($__sidebarUser->isAdmin() && $__sidebarUser->institut && !$__sidebarInstituts->contains('id', $__sidebarUser->institut_id)) {
+                    $__sidebarInstituts = $__sidebarInstituts->prepend($__sidebarUser->institut);
+                }
+                $__sidebarCurrentId = session('current_institut_id', $__sidebarUser->institut_id);
+                $__sidebarIsMulti   = $__sidebarInstituts->count() > 1;
+                $__sidebarCanSwitch = $__sidebarUser->isAdmin();
+                $__sidebarCurrentInst = $__sidebarInstituts->firstWhere('id', $__sidebarCurrentId) ?? $__sidebarUser->institut;
+                $__sidebarNbInstituts = $__sidebarInstituts->count();
+            @endphp
+            <div class="relative flex-shrink-0" x-data="{ institutMenu: false }">
+
+                {{-- Header cliquable --}}
+                @if($__sidebarCanSwitch)
+                <button @click="institutMenu = !institutMenu" @click.away="institutMenu = false"
+                        class="flex items-center gap-3 w-full px-4 h-16 border-b border-gray-100/80 dark:border-slate-700/60 hover:bg-gray-50/60 dark:hover:bg-slate-800/40 transition-colors text-left">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center shadow-glow-sm flex-shrink-0 text-white text-sm font-bold"
+                         style="background: linear-gradient(135deg, #9333ea, #ec4899);">
+                        {{ strtoupper(substr($__sidebarCurrentInst?->nom ?? 'M', 0, 1)) }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-display font-bold text-gray-900 dark:text-white text-sm leading-tight tracking-tight truncate">{{ $__sidebarCurrentInst?->nom ?? 'Mon Institut' }}</p>
+                        @if($__sidebarCurrentInst?->ville)
+                        <p class="text-[11px] text-gray-400 truncate">{{ $__sidebarCurrentInst->ville }}</p>
+                        @else
+                        <p class="text-[11px] text-gray-400">Maëlya Gestion</p>
+                        @endif
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200" :class="institutMenu ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                @else
+                <div class="flex items-center gap-3 px-5 h-16 border-b border-gray-100/80 dark:border-slate-700/60">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white text-base shadow-glow-sm flex-shrink-0"
+                         style="background: linear-gradient(135deg, #9333ea, #ec4899);">M</div>
+                    <div class="min-w-0 flex-1">
+                        <p class="font-display font-bold text-gray-900 dark:text-white text-sm leading-none tracking-tight">Maëlya Gestion</p>
+                        <p class="text-[11px] text-gray-400 mt-0.5 truncate max-w-[140px]">{{ $__sidebarUser->institut?->nom }}</p>
+                    </div>
+                </div>
+                @endif
+
+                {{-- Dropdown --}}
+                <div x-show="institutMenu" x-cloak
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-1"
+                     class="absolute left-0 right-0 top-full z-50 bg-white dark:bg-slate-900 border-x border-b border-gray-100 dark:border-slate-700 shadow-xl rounded-b-2xl overflow-hidden">
+
+                    {{-- Header du dropdown --}}
+                    <div class="px-4 pt-3 pb-1.5">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">Vos instituts ({{ $__sidebarNbInstituts }})</p>
+                    </div>
+
+                    {{-- Liste des instituts --}}
+                    @foreach($__sidebarInstituts as $__inst)
+                    @if($__inst->id !== $__sidebarCurrentId)
+                    <form method="POST" action="{{ route('dashboard.mes-instituts.switch', $__inst) }}">
+                        @csrf
+                        <button type="submit"
+                                class="flex items-center gap-2.5 w-full px-4 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
+                            <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
+                                 style="background: linear-gradient(135deg, #9333ea, #ec4899);">
+                                {{ strtoupper(substr($__inst->nom, 0, 1)) }}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs font-semibold text-gray-800 dark:text-white truncate">{{ $__inst->nom }}</p>
+                                @if($__inst->ville)<p class="text-[10px] text-gray-400 truncate">{{ $__inst->ville }}</p>@endif
+                            </div>
+                            <svg class="w-3.5 h-3.5 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                            </svg>
+                        </button>
+                    </form>
+                    @else
+                    <div class="flex items-center gap-2.5 w-full px-4 py-2.5 bg-primary-50 dark:bg-primary-900/20">
+                        <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
+                             style="background: linear-gradient(135deg, #9333ea, #ec4899);">
+                            {{ strtoupper(substr($__inst->nom, 0, 1)) }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-semibold text-primary-700 dark:text-primary-300 truncate">{{ $__inst->nom }}</p>
+                            @if($__inst->ville)<p class="text-[10px] text-primary-400 truncate">{{ $__inst->ville }}</p>@endif
+                        </div>
+                        <svg class="w-3.5 h-3.5 text-primary-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    @endif
+                    @endforeach
+
+                    {{-- Actions --}}
+                    <div class="border-t border-gray-100 dark:border-slate-700 mt-1">
+                        <a href="{{ route('dashboard.mes-instituts.index') }}"
+                           @click="institutMenu = false"
+                           class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            {{ $__sidebarNbInstituts > 1 ? 'Gérer mes instituts' : 'Gérer mon institut' }}
+                        </a>
+                        @if($__sidebarUser->aPlanEntreprise())
+                        <a href="{{ route('dashboard.mes-instituts.index') }}"
+                           @click="institutMenu = false"
+                           x-data @click="$dispatch('open-create-modal')"
+                           class="flex items-center gap-2.5 px-4 py-2.5 pb-3 text-xs font-semibold transition-colors"
+                           style="color: #9333ea;">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            Ajouter un institut
+                        </a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            {{-- Navigation --}}
+            <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+
+                {{-- ── VUE D'ENSEMBLE ──────────────────────────────────────── --}}
+                @if(auth()->user()->isAdmin())
+                <p class="px-3 mt-6 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">Vue d'ensemble</p>
+
+                <a href="{{ route('dashboard.index') }}"
+                   class="sidebar-link {{ request()->routeIs('dashboard.index') ? 'active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+                    </svg>
+                    Tableau de bord
+                </a>
+                @endif
+
+                {{-- ── MON INSTITUT (admin) ─────────────────────────────────── --}}
+                @if(auth()->user()->isAdmin())
+                <p class="px-3 mt-14 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">Mon institut</p>
+
+                <a href="{{ route('dashboard.mes-instituts.index') }}"
+                   class="sidebar-link {{ request()->routeIs('dashboard.mes-instituts.*') ? 'active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                    {{ isset($__sidebarNbInstituts) && $__sidebarNbInstituts > 1 ? 'Mes instituts' : 'Paramètres' }}
+                </a>
+
+                <a href="{{ route('dashboard.clients.index') }}"
+                   class="sidebar-link {{ request()->routeIs('dashboard.clients.*') ? 'active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    Clients
+                </a>
+
+                <a href="{{ route('dashboard.prestations.index') }}"
+                   class="sidebar-link {{ request()->routeIs('dashboard.prestations.*') || request()->routeIs('dashboard.categories-prestations.*') ? 'active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                    Prestations
+                </a>
+                @endif
+
+                {{-- ── COMMERCE ─────────────────────────────────────────────── --}}
+                <p class="px-3 mt-14 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">Commerce</p>
+
+                <a href="{{ route('dashboard.caisse') }}"
+                   class="sidebar-link {{ request()->routeIs('dashboard.caisse') ? 'active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                        <line x1="1" y1="10" x2="23" y2="10"/>
+                    </svg>
+                    Caisse
+                </a>
+
+                <a href="{{ route('dashboard.ventes.index') }}"
+                   class="sidebar-link {{ request()->routeIs('dashboard.ventes.*') ? 'active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                    Historique
+                </a>
+
+                @if(auth()->user()->isAdmin())
+                <a href="{{ route('dashboard.codes-reduction.index') }}"
+                   class="sidebar-link {{ request()->routeIs('dashboard.codes-reduction.*') ? 'active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                    </svg>
+                    Codes de réduction
+                </a>
+
+                <a href="{{ route('dashboard.finances.index') }}"
+                   class="sidebar-link {{ request()->routeIs('dashboard.finances.*') || request()->routeIs('dashboard.depenses.*') ? 'active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                    Point financier
+                </a>
+                @endif
+
+                @php $alertesStock = \App\Models\Produit::where('actif', true)->whereColumn('stock', '<=', 'seuil_alerte')->count(); @endphp
+                @php $stockOpen = request()->routeIs('dashboard.stock.*') || request()->routeIs('dashboard.produits.*') || request()->routeIs('dashboard.categories-produits.*'); @endphp
+
+                <div x-data="{ open: {{ $stockOpen ? 'true' : 'false' }} }">
+                    <button @click="open = !open"
+                            class="sidebar-link w-full {{ $stockOpen ? 'active' : '' }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+                        </svg>
+                        <span class="flex-1">Gestion stocks</span>
+                        @if($alertesStock > 0)
+                            <span class="flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold mr-1">{{ $alertesStock }}</span>
+                        @endif
+                        <svg class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200 flex-shrink-0" :class="open ? 'rotate-180' : ''" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+
+                    <div x-show="open"
+                         x-transition:enter="transition-all duration-200 ease-out"
+                         x-transition:enter-start="opacity-0 -translate-y-1"
+                         x-transition:enter-end="opacity-100 translate-y-0"
+                         x-transition:leave="transition-all duration-150 ease-in"
+                         x-transition:leave-start="opacity-100 translate-y-0"
+                         x-transition:leave-end="opacity-0 -translate-y-1"
+                         class="mt-0.5 ml-4 pl-3 border-l border-gray-100 dark:border-slate-700/60 space-y-0.5">
+                        @if(auth()->user()->isAdmin())
+                        <a href="{{ route('dashboard.produits.index') }}"
+                           class="sidebar-link text-sm {{ request()->routeIs('dashboard.produits.*') || request()->routeIs('dashboard.categories-produits.*') ? 'active' : '' }}">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                            </svg>
+                            <span class="flex-1">Produits</span>
+                        </a>
+                        @endif
+                        <a href="{{ route('dashboard.stock.index') }}"
+                           class="sidebar-link text-sm {{ request()->routeIs('dashboard.stock.*') ? 'active' : '' }}">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2M8 7V5a2 2 0 0 0-4 0v2"/>
+                            </svg>
+                            <span class="flex-1">Inventaire</span>
+                            @if($alertesStock > 0)
+                                <span class="flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold">{{ $alertesStock }}</span>
+                            @endif
+                        </a>
+                    </div>
+                </div>
+
+                {{-- ── COMPTE ───────────────────────────────────────────────── --}}
+                @if(auth()->user()->isAdmin())
+                <p class="px-3 mt-14 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">Compte</p>
+
+                <a href="{{ route('abonnement.plans') }}"
+                   class="sidebar-link {{ request()->routeIs('abonnement.plans') || request()->routeIs('abonnement.expire') ? 'active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                        <line x1="1" y1="10" x2="23" y2="10"/>
+                    </svg>
+                    Abonnement
+                </a>
+
+                <a href="{{ route('abonnement.historique') }}"
+                   class="sidebar-link {{ request()->routeIs('abonnement.historique') ? 'active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                    </svg>
+                    Mes transactions
+                </a>
+
+                <a href="{{ route('dashboard.employes.index') }}"
+                   class="sidebar-link {{ request()->routeIs('dashboard.employes.*') ? 'active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    Mon équipe
+                </a>
+                @endif
+            </nav>
+
+            {{-- Bas de sidebar --}}
+            <div class="border-t border-gray-100 dark:border-slate-700/60 p-3 flex-shrink-0 space-y-2">
+                @php
+                    $__user = auth()->user();
+                    if ($__user->isEmploye()) {
+                        $__owner = \App\Models\User::where('institut_id', $__user->institut_id)->where('role', 'admin')->first();
+                        $abonnement = $__owner?->abonnementActif;
+                    } else {
+                        $abonnement = $__user->abonnementActif;
+                    }
+                @endphp
+                @if($abonnement && $abonnement->plan?->duree_type === 'essai')
+                    <a href="{{ route('abonnement.plans') }}" class="block p-3 rounded-xl ring-1 transition-all hover:shadow-sm" style="background: linear-gradient(135deg, rgba(147,51,234,0.06), rgba(236,72,153,0.06)); border-color: rgba(147,51,234,0.2);">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xs font-bold" style="background: linear-gradient(135deg, #9333ea, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Essai gratuit</span>
+                            <span class="text-xs font-bold px-1.5 py-0.5 rounded-full text-white" style="background: linear-gradient(135deg, #9333ea, #ec4899);">{{ $abonnement->joursRestants() }}j</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <div class="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                <div class="h-full rounded-full transition-all" style="width: {{ max(0, min(100, round(($abonnement->joursRestants() / 14) * 100))) }}%; background: linear-gradient(90deg, #9333ea, #ec4899);"></div>
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-gray-500 mt-1.5">S'abonner pour continuer &rarr;</p>
+                    </a>
+                @elseif($abonnement && $abonnement->joursRestants() <= 8)
+                    <a href="{{ route('abonnement.plans') }}" class="flex items-center gap-2.5 p-2.5 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl text-xs text-amber-700 font-semibold hover:from-amber-100 hover:to-orange-100 transition-all ring-1 ring-amber-200/50">
+                        <div class="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                        </div>
+                        <span>Expire dans {{ $abonnement->joursRestants() }}j</span>
+                    </a>
+                @endif
+
+                <div class="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 shadow-sm"
+                         style="background: linear-gradient(135deg, #9333ea, #ec4899);">
+                        {{ strtoupper(substr(auth()->user()->prenom ?? 'U', 0, 1)) }}{{ strtoupper(substr(auth()->user()->nom_famille ?? '', 0, 1)) }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-semibold text-gray-900 dark:text-white truncate">{{ auth()->user()->prenom }}</p>
+                        <div class="flex items-center gap-1.5 mt-0.5">
+                            <p class="text-[11px] text-gray-400 capitalize">{{ auth()->user()->role }}</p>
+                            @if(auth()->user()->isAdmin() && auth()->user()->aPlanEntreprise())
+                            <span class="text-[9px] font-bold px-1.5 py-px rounded-full text-white leading-tight"
+                                  style="background: linear-gradient(135deg, #9333ea, #ec4899);">Entreprise</span>
+                            @endif
+                        </div>
+                    </div>
+                    <a href="{{ route('dashboard.profil.edit') }}" class="p-1.5 text-gray-400 hover:text-primary-600 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-all" title="Profil">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </a>
+                    {{-- Bouton thème --}}
+                    <div class="relative">
+                        <button @click="themeMenu = !themeMenu" @click.outside="themeMenu = false"
+                                class="p-1.5 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-all" title="Thème">
+                            <svg x-show="isDark" style="width:1rem;height:1rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                            <svg x-show="!isDark" style="width:1rem;height:1rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                        </button>
+                        <div x-show="themeMenu" x-cloak
+                             x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                             class="absolute bottom-full mb-1 right-0 w-36 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-white/10 p-1 z-50">
+                            @foreach([['system','Système'],['light','Clair'],['dark','Sombre']] as [$val,$lbl])
+                            <button @click="setTheme('{{ $val }}')" class="w-full text-left flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-colors"
+                                    :class="theme === '{{ $val }}' ? 'bg-primary-50 dark:bg-primary-950 text-primary-700 dark:text-primary-300 font-semibold' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'">
+                                {{ $lbl }}
+                                <svg x-show="theme === '{{ $val }}'" class="w-3 h-3 ml-auto text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </button>
+                            @endforeach
+                        </div>
+                    </div>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-all" title="Déconnexion">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    {{-- ═══ CONTENU PRINCIPAL ═══ --}}
+    <div class="flex-1 flex flex-col min-w-0 lg:pl-[260px]">
+
+        {{-- Topbar mobile --}}
+        <header class="lg:hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-100 dark:border-slate-700/60 px-4 h-14 flex items-center justify-between sticky top-0 z-30">
+            <button @click="sidebarOpen = true" class="p-2 rounded-xl text-gray-500 hover:bg-gray-100 transition-colors active:scale-95">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-white text-xs shadow-sm"
+                     style="background: linear-gradient(135deg, #9333ea, #ec4899);">M</div>
+                <span class="font-display font-bold text-gray-900 dark:text-white text-sm">Maëlya</span>
+            </div>
+            <a href="{{ route('dashboard.caisse') }}" class="btn-primary btn-sm">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Vente
+            </a>
+        </header>
+
+        {{-- Bannière sursis (abonnement expiré, période de grâce de 2 jours) --}}
+        @if(isset($enSursis) && $enSursis)
+        <div class="px-3 sm:px-6 lg:px-8 pt-4">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+                <div class="flex items-start gap-3 flex-1">
+                    <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                    <div>
+                        <p class="font-semibold">Mode lecture seule — Abonnement expiré</p>
+                        <p class="text-red-600 mt-0.5">
+                            Votre abonnement a expiré il y a {{ $sursisJours ?? 0 }} jour(s).
+                            Vous ne pouvez plus enregistrer de ventes, ajouter des clients ni modifier vos données.
+                        </p>
+                    </div>
+                </div>
+                <a href="{{ route('abonnement.plans') }}"
+                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white flex-shrink-0"
+                   style="background: linear-gradient(135deg, #9333ea, #ec4899);">
+                    Renouveler maintenant
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+        @endif
+
+        {{-- Flash messages --}}
+        <div class="px-6 lg:px-8 pt-4 space-y-2">
+            @if(session('success'))
+                <div class="alert-success animate-slide-down" x-data="{show: true}" x-show="show" x-init="setTimeout(() => show = false, 4000)"
+                     x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2">
+                    <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span class="flex-1">{{ session('success') }}</span>
+                    <button @click="show = false" class="text-emerald-600 hover:text-emerald-800 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            @endif
+            @if(session('error'))
+                <div class="alert-error animate-slide-down" x-data="{show: true}" x-show="show">
+                    <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span class="flex-1">{{ session('error') }}</span>
+                </div>
+            @endif
+        </div>
+
+        {{-- Page content --}}
+        <main class="flex-1 px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+            <div class="max-w-7xl mx-auto w-full">
+                {{ $slot }}
+            </div>
+        </main>
+    </div>
+</div>
+
+@livewireScripts
+<script>
+    window.csrfToken = '{{ csrf_token() }}';
+</script>
+
+{{-- Modal de confirmation de suppression global --}}
+<div x-data="{
+        show: false,
+        title: 'Confirmer la suppression',
+        message: 'Êtes-vous sûr de vouloir supprimer cet élément ?',
+        formId: null,
+        init() {
+            window.addEventListener('confirm-delete', (e) => {
+                this.title = e.detail.title || 'Confirmer la suppression';
+                this.message = e.detail.message || 'Êtes-vous sûr de vouloir supprimer cet élément ?';
+                this.formId = e.detail.formId;
+                this.show = true;
+            });
+        },
+        proceed() {
+            if (this.formId) document.getElementById(this.formId).submit();
+            this.show = false;
+        }
+     }"
+     x-show="show" x-cloak class="modal-backdrop z-[60]" @keydown.escape.window="show = false" @click.self="show = false">
+    <div class="modal max-w-sm" x-transition @click.stop>
+        <div class="p-6 text-center">
+                <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mx-auto mb-4">
+                <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+            </div>
+            <h3 class="text-lg font-display font-bold text-gray-900 mb-2" x-text="title"></h3>
+            <p class="text-sm text-gray-500 mb-6" x-text="message"></p>
+            <div class="flex gap-3">
+                <button @click="show = false" class="btn btn-outline flex-1 justify-center">Annuler</button>
+                <button @click="proceed()" class="btn-primary flex-1 justify-center !bg-red-600 hover:!bg-red-700">Supprimer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ $scripts ?? '' }}
+</body>
+</html>
