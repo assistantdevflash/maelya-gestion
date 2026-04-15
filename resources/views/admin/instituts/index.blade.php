@@ -68,14 +68,15 @@
     </div>
 
     <div class="card overflow-hidden">
-        <table class="table-auto">
+        <div class="overflow-x-auto">
+        <table class="table-auto w-full">
             <thead>
             <tr>
                 <th>Institut</th>
-                <th>Type</th>
-                <th>Ville</th>
+                <th class="hidden sm:table-cell">Type</th>
+                <th class="hidden sm:table-cell">Ville</th>
                 <th>Statut</th>
-                <th>Inscrit le</th>
+                <th class="hidden md:table-cell">Inscrit le</th>
                 <th></th>
             </tr>
             </thead>
@@ -86,14 +87,14 @@
                     <div class="font-medium text-gray-900">{{ $inst->nom }}</div>
                     <div class="text-xs text-gray-400">{{ $inst->users_count }} utilisateur(s)</div>
                 </td>
-                <td class="text-sm text-gray-600">{{ $typeLabels[$inst->type] ?? ($inst->type ?? '—') }}</td>
-                <td class="text-sm text-gray-600">{{ $inst->ville ?? '—' }}</td>
+                <td class="text-sm text-gray-600 hidden sm:table-cell">{{ $typeLabels[$inst->type] ?? ($inst->type ?? '—') }}</td>
+                <td class="text-sm text-gray-600 hidden sm:table-cell">{{ $inst->ville ?? '—' }}</td>
                 <td>
                     <span class="badge {{ $inst->actif ? 'badge-success' : 'bg-red-100 text-red-700' }} text-xs">
                         {{ $inst->actif ? 'Actif' : 'Suspendu' }}
                     </span>
                 </td>
-                <td class="text-sm text-gray-500">{{ $inst->created_at->format('d/m/Y') }}</td>
+                <td class="text-sm text-gray-500 hidden md:table-cell">{{ $inst->created_at->format('d/m/Y') }}</td>
                 <td>
                     <a href="{{ route('admin.instituts.show', $inst) }}" class="btn-outline btn-sm text-xs">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,6 +108,7 @@
             @endforeach
             </tbody>
         </table>
+        </div>
     </div>
     @empty
     <div class="card p-10 text-center text-gray-400">Aucun institut trouvé.</div>

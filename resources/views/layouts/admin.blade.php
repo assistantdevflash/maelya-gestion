@@ -20,7 +20,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
-<body class="admin text-gray-900 dark:text-white" x-data="{
+<body class="admin text-gray-900 dark:text-white overflow-x-hidden" x-data="{
     sidebarOpen: false,
     themeMenu: false,
     theme: localStorage.getItem('maelya-theme') || 'system',
