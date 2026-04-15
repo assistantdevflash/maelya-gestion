@@ -11,7 +11,7 @@
     <div class="grid lg:grid-cols-3 gap-6">
 
         {{-- Fiche institut --}}
-        <div class="lg:col-span-2 space-y-5">
+        <div class="lg:col-span-2 space-y-5 min-w-0">
             <div class="card p-6 space-y-4">
                 <div class="flex items-center justify-between">
                     <div>
@@ -34,10 +34,10 @@
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                    <div><span class="text-gray-400">Email</span><p class="font-medium">{{ $institut->email ?? '—' }}</p></div>
-                    <div><span class="text-gray-400">Téléphone</span><p class="font-medium">{{ $institut->telephone ?? '—' }}</p></div>
-                    <div><span class="text-gray-400">Ville</span><p class="font-medium">{{ $institut->ville ?? '—' }}</p></div>
-                    <div><span class="text-gray-400">Inscrit le</span><p class="font-medium">{{ $institut->created_at->format('d/m/Y') }}</p></div>
+                    <div class="min-w-0"><span class="text-gray-400">Email</span><p class="font-medium break-all">{{ $institut->email ?? '—' }}</p></div>
+                    <div class="min-w-0"><span class="text-gray-400">Téléphone</span><p class="font-medium">{{ $institut->telephone ?? '—' }}</p></div>
+                    <div class="min-w-0"><span class="text-gray-400">Ville</span><p class="font-medium break-words">{{ $institut->ville ?? '—' }}</p></div>
+                    <div class="min-w-0"><span class="text-gray-400">Inscrit le</span><p class="font-medium">{{ $institut->created_at->format('d/m/Y') }}</p></div>
                 </div>
 
                 <form action="{{ route('admin.instituts.toggle', $institut) }}" method="POST" class="pt-2 border-t border-gray-100">
@@ -70,7 +70,7 @@
         </div>
 
         {{-- Abonnements --}}
-        <div class="space-y-5">
+        <div class="space-y-5 min-w-0">
             <div class="card p-5">
                 <h2 class="font-bold text-sm text-gray-700 mb-3">Abonnement actuel</h2>
 

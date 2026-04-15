@@ -48,21 +48,21 @@
     @php $proprio = $instituts->first()->proprietaire; @endphp
 
     {{-- En-tête propriétaire --}}
-    <div class="flex items-center gap-3 pt-2">
+    <div class="flex items-center gap-3 pt-2 min-w-0">
         <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
              style="background: linear-gradient(135deg, #9333ea, #ec4899);">
             {{ strtoupper(substr($proprio?->prenom ?? '?', 0, 1)) }}{{ strtoupper(substr($proprio?->nom_famille ?? '', 0, 1)) }}
         </div>
-        <div>
-            <p class="font-semibold text-gray-900 text-sm">{{ $proprio?->nom_complet ?? 'Propriétaire inconnu' }}</p>
-            <p class="text-xs text-gray-400">{{ $proprio?->email }} — {{ $instituts->count() }} établissement(s)</p>
+        <div class="min-w-0 flex-1">
+            <p class="font-semibold text-gray-900 text-sm truncate">{{ $proprio?->nom_complet ?? 'Propriétaire inconnu' }}</p>
+            <p class="text-xs text-gray-400 truncate">{{ $proprio?->email }} — {{ $instituts->count() }} établissement(s)</p>
         </div>
         @if($proprio)
             @php $abo = $proprio->abonnementActif; @endphp
             @if($abo)
-                <span class="ml-auto badge badge-success text-xs">{{ $abo->plan->nom }} — expire {{ $abo->expire_le?->format('d/m/Y') }}</span>
+                <span class="ml-auto badge badge-success text-xs flex-shrink-0">{{ $abo->plan->nom }}</span>
             @else
-                <span class="ml-auto badge bg-gray-100 text-gray-500 text-xs">Aucun abonnement</span>
+                <span class="ml-auto badge bg-gray-100 text-gray-500 text-xs flex-shrink-0">Sans abo</span>
             @endif
         @endif
     </div>
