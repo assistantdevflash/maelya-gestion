@@ -64,19 +64,19 @@ class DatabaseSeeder extends Seeder
 
         // ── Super administrateur de la plateforme ──────────────────────────────────────────
         User::firstOrCreate(
-            ['email' => 'tiebasile@gmail.com'],
+            ['email' => 'admin@maelya-gestion.com'],
             [
-                'prenom'       => 'Basile',
-                'nom_famille'  => 'Tié',
-                'name'         => 'Basile Tié',
-                'email'        => 'tiebasile@gmail.com',
-                'password'     => Hash::make('Ssecret@123'),
+                'prenom'       => 'Admin',
+                'nom_famille'  => 'Maelya',
+                'name'         => 'Admin Maelya',
+                'email'        => 'admin@maelya-gestion.com',
+                'password'     => Hash::make('AdminSecure@2026!'),
                 'role'         => 'super_admin',
                 'actif'        => true,
             ]
         );
 
         $this->command->info('✓ Plans d\'abonnement créés (' . count($plans) . ').');
-        $this->command->info('✓ Super admin créé : tiebasile@gmail.com');
+        $this->command->info('✓ Super admin créé : admin@maelya-gestion.com');
     }
 }
