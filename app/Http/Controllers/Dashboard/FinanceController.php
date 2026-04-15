@@ -52,7 +52,7 @@ class FinanceController extends Controller
         $debut12 = now()->subMonths(11)->startOfMonth();
         $ventesParMois = Vente::where('statut', 'validee')
             ->where('created_at', '>=', $debut12)
-            ->selectRaw("strftime('%Y-%m', created_at) as mois_key, SUM(total) as ca")
+            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as mois_key, SUM(total) as ca")
             ->groupBy('mois_key')
             ->pluck('ca', 'mois_key');
 
