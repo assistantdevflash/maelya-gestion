@@ -108,7 +108,7 @@
          class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden" x-cloak x-transition.opacity></div>
 
     {{-- Main --}}
-    <div class="lg:pl-[260px] min-h-screen flex flex-col">
+    <div class="lg:pl-[260px] min-h-screen flex flex-col overflow-x-hidden">
         {{-- Topbar --}}
         <header class="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-200/60 dark:border-slate-700/60 px-4 sm:px-6 lg:px-8 h-14 flex items-center gap-3">
             <button @click="sidebarOpen = true" class="lg:hidden p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 active:scale-95 transition-all">
