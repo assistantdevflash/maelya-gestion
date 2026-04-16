@@ -32,7 +32,13 @@
                 </div>
                 <div>
                     <span class="text-gray-400">Montant</span>
-                    <p class="font-medium">{{ number_format($abonnement->montant, 0, ',', ' ') }} FCFA</p>
+                    <p class="font-medium">
+                        {{ number_format($abonnement->montant, 0, ',', ' ') }} FCFA
+                        @if($abonnement->plan && $abonnement->montant < $abonnement->plan->prix)
+                            <span class="inline-flex items-center gap-1 ml-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold uppercase">🔥 Offre lancement</span>
+                            <span class="block text-xs text-gray-400 mt-0.5">au lieu de {{ number_format($abonnement->plan->prix, 0, ',', ' ') }} FCFA</span>
+                        @endif
+                    </p>
                 </div>
                 <div>
                     <span class="text-gray-400">Période</span>

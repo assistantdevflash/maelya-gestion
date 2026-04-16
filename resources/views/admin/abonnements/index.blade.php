@@ -84,7 +84,14 @@
                 </td>
                 <td class="text-sm font-medium">{{ $ab->plan->nom ?? '—' }}</td>
                 <td class="text-sm text-gray-600 capitalize">{{ $ab->periode }}</td>
-                <td class="text-sm font-semibold">{{ number_format($ab->montant ?? 0, 0, ',', ' ') }} <span class="text-gray-400 font-normal">FCFA</span></td>
+                <td class="text-sm font-semibold">
+                    {{ number_format($ab->montant ?? 0, 0, ',', ' ') }} <span class="text-gray-400 font-normal">FCFA</span>
+                    @if($ab->plan && $ab->montant < $ab->plan->prix)
+                        <div class="mt-0.5">
+                            <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[9px] font-bold uppercase">🔥 Offre</span>
+                        </div>
+                    @endif
+                </td>
                 <td class="text-sm text-gray-600">
                     @if($ab->debut_le)
                         {{ $ab->debut_le->format('d/m/Y') }} → {{ $ab->expire_le?->format('d/m/Y') ?? '—' }}
