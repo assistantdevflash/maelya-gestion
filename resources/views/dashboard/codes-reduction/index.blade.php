@@ -118,29 +118,21 @@
                             </svg>
                         </button>
                         {{-- Imprimer --}}
-                        <button type="button" @click="$dispatch('print-code', {
-                            code: '{{ $code->code }}',
-                            type: '{{ $code->type }}',
-                            valeur: '{{ $code->type === "pourcentage" ? $code->valeur."%" : number_format($code->valeur, 0, ",", " ")." FCFA" }}',
-                            client: '{{ $code->client ? $code->client->prenom." ".$code->client->nom : "Tous les clients" }}',
-                            montant_minimum: '{{ $code->montant_minimum ? number_format($code->montant_minimum, 0, ",", " ")." FCFA" : "Aucun" }}',
-                            date_debut: '{{ $code->date_debut ? $code->date_debut->format("d/m/Y") : "-" }}',
-                            date_fin: '{{ $code->date_fin ? $code->date_fin->format("d/m/Y") : "Illimitée" }}',
-                            limite: '{{ $code->limite_utilisation ?? "Illimitée" }}',
-                            description: '{{ addslashes($code->description ?? "") }}'
-                        })" class="btn-icon text-gray-400 hover:text-primary-600" title="Imprimer">
+                        <a href="{{ route('dashboard.codes-reduction.print', $code) }}" target="_blank"
+                           class="btn-icon text-gray-400 hover:text-primary-600" title="Imprimer">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                             </svg>
-                        </button>
+                        </a>
                         {{-- Toggle actif --}}
                         <form method="POST" action="{{ route('dashboard.codes-reduction.toggle', $code) }}">
                             @csrf @method('PATCH')
-                            <button type="submit" class="btn-icon {{ $code->actif ? 'text-emerald-500' : 'text-gray-300' }}"
-                                    title="{{ $code->actif ? 'Désactiver' : 'Activer' }}">
+                            <button type="submit"
+                                    class="btn-icon {{ $code->actif ? 'text-emerald-500 hover:text-red-400' : 'text-gray-300 hover:text-emerald-500' }}"
+                                    title="{{ $code->actif ? 'Désactiver ce code' : 'Activer ce code' }}">
+                                {{-- Icône power : on/off --}}
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9"/>
                                 </svg>
                             </button>
                         </form>
@@ -317,73 +309,6 @@
                 </form>
             </div>
         </div>
-    </div>
-
-    {{-- ═══ Zone d'impression (cachée) ═══ --}}
-    <div x-data x-on:print-code.window="
-        const d = $event.detail;
-        const el = $refs.printArea;
-        el.querySelector('.print-code').textContent = d.code;
-        el.querySelector('.print-valeur').textContent = d.type === 'pourcentage' ? '-' + d.valeur : '-' + d.valeur;
-        el.querySelector('.print-client').textContent = d.client;
-        el.querySelector('.print-minimum').textContent = d.montant_minimum;
-        el.querySelector('.print-debut').textContent = d.date_debut;
-        el.querySelector('.print-fin').textContent = d.date_fin;
-        el.querySelector('.print-limite').textContent = d.limite;
-        el.querySelector('.print-description').textContent = d.description || '—';
-        const pw = window.open('', '_blank', 'width=320,height=500');
-        pw.document.write(el.innerHTML);
-        pw.document.close();
-        pw.focus();
-        pw.print();
-        pw.close();
-    ">
-        <template x-ref="printArea">
-            <html>
-            <head>
-                <style>
-                    * { margin: 0; padding: 0; box-sizing: border-box; }
-                    body { font-family: 'Courier New', monospace; width: 280px; padding: 15px; font-size: 12px; color: #111; }
-                    .header { text-align: center; border-bottom: 2px dashed #999; padding-bottom: 10px; margin-bottom: 10px; }
-                    .header h1 { font-size: 16px; margin-bottom: 2px; }
-                    .header p { font-size: 10px; color: #666; }
-                    .code-box { text-align: center; margin: 12px 0; padding: 10px; border: 2px dashed #9333ea; border-radius: 8px; }
-                    .code-box .print-code { font-size: 24px; font-weight: bold; letter-spacing: 3px; color: #9333ea; }
-                    .code-box .print-valeur { display: block; font-size: 18px; font-weight: bold; margin-top: 4px; color: #ec4899; }
-                    .details { margin: 10px 0; }
-                    .details .row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dotted #ddd; font-size: 11px; }
-                    .details .row .label { color: #666; }
-                    .details .row .value { font-weight: bold; text-align: right; max-width: 55%; }
-                    .desc { margin-top: 8px; padding: 6px; background: #f9f9f9; border-radius: 4px; font-size: 10px; color: #555; text-align: center; font-style: italic; }
-                    .footer { text-align: center; margin-top: 12px; padding-top: 8px; border-top: 2px dashed #999; font-size: 9px; color: #999; }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <h1>Maëlya Gestion</h1>
-                    <p>Code de réduction</p>
-                </div>
-                <div class="code-box">
-                    <span class="print-code"></span>
-                    <span class="print-valeur"></span>
-                </div>
-                <div class="details">
-                    <div class="row"><span class="label">Client</span><span class="value print-client"></span></div>
-                    <div class="row"><span class="label">Montant min.</span><span class="value print-minimum"></span></div>
-                    <div class="row"><span class="label">Valide du</span><span class="value print-debut"></span></div>
-                    <div class="row"><span class="label">Valide jusqu'au</span><span class="value print-fin"></span></div>
-                    <div class="row"><span class="label">Utilisations max.</span><span class="value print-limite"></span></div>
-                </div>
-                <div class="desc">
-                    <span class="print-description"></span>
-                </div>
-                <div class="footer">
-                    <p>Présentez ce coupon lors de votre passage en caisse.</p>
-                    <p style="margin-top: 3px;">Merci pour votre fidélité ❤</p>
-                </div>
-            </body>
-            </html>
-        </template>
     </div>
 
     @if($errors->any())

@@ -67,6 +67,7 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         // Codes de réduction
         Route::get('codes-reduction', [CodeReductionController::class, 'index'])->name('codes-reduction.index');
         Route::post('codes-reduction', [CodeReductionController::class, 'store'])->name('codes-reduction.store');
+        Route::get('codes-reduction/{codeReduction}/print', [CodeReductionController::class, 'print'])->name('codes-reduction.print');
         Route::patch('codes-reduction/{codeReduction}/toggle', [CodeReductionController::class, 'toggle'])->name('codes-reduction.toggle');
         Route::delete('codes-reduction/{codeReduction}', [CodeReductionController::class, 'destroy'])->name('codes-reduction.destroy');
 

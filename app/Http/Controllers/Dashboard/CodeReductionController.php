@@ -79,6 +79,15 @@ class CodeReductionController extends Controller
         return back()->with('success', 'Code de réduction créé.');
     }
 
+    public function print(CodeReduction $codeReduction)
+    {
+        abort_unless($codeReduction->institut_id === $this->institutId(), 403);
+
+        return view('dashboard.codes-reduction.print', [
+            'code' => $codeReduction->load('client', 'institut'),
+        ]);
+    }
+
     public function toggle(CodeReduction $codeReduction)
     {
         // S'assurer que le code appartient à l'institut
