@@ -49,9 +49,7 @@ class PlanAbonnement extends Model
      */
     public function prixEffectif(): int
     {
-        if ($this->prix_lancement
-            && $this->fin_offre_lancement
-            && $this->fin_offre_lancement->isFuture()) {
+        if ($this->offreLancementActive()) {
             return $this->prix_lancement;
         }
         return $this->prix;
@@ -61,7 +59,7 @@ class PlanAbonnement extends Model
     {
         return $this->prix_lancement
             && $this->fin_offre_lancement
-            && $this->fin_offre_lancement->isFuture();
+            && $this->fin_offre_lancement->gte(now()->startOfDay());
     }
 
     /**

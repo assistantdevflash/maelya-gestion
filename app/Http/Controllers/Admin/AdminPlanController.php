@@ -45,7 +45,7 @@ class AdminPlanController extends Controller
             'description' => ['nullable', 'string', 'max:500'],
             'ordre' => ['required', 'integer', 'min:0'],
             'prix_lancement' => ['nullable', 'integer', 'min:0'],
-            'fin_offre_lancement' => ['nullable', 'date', 'after:today'],
+            'fin_offre_lancement' => ['nullable', 'date', 'after_or_equal:today'],
         ]);
 
         $data['actif'] = $request->boolean('actif');

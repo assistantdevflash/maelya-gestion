@@ -165,7 +165,8 @@
                         </div>
                         <div>
                             <label class="form-label">Fin de l'offre</label>
-                            <input type="date" name="fin_offre_lancement" x-model="form.fin_offre_lancement" class="form-input">
+                            <input type="date" name="fin_offre_lancement" x-model="form.fin_offre_lancement" class="form-input"
+                                   min="{{ now()->format('Y-m-d') }}">
                         </div>
                     </div>
                 </div>
