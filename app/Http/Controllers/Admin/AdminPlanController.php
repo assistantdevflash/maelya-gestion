@@ -44,10 +44,18 @@ class AdminPlanController extends Controller
             'max_instituts' => ['nullable', 'integer', 'min:1'],
             'description' => ['nullable', 'string', 'max:500'],
             'ordre' => ['required', 'integer', 'min:0'],
+            'prix_lancement' => ['nullable', 'integer', 'min:0'],
+            'fin_offre_lancement' => ['nullable', 'date', 'after:today'],
         ]);
 
         $data['actif'] = $request->boolean('actif');
         $data['mis_en_avant'] = $request->boolean('mis_en_avant');
+
+        // Si prix_lancement est vide, on supprime l'offre
+        if (empty($data['prix_lancement'])) {
+            $data['prix_lancement'] = null;
+            $data['fin_offre_lancement'] = null;
+        }
 
         $plan->update($data);
 

@@ -14,6 +14,7 @@ use App\Http\Controllers\Dashboard\FinanceController;
 use App\Http\Controllers\Dashboard\AbonnementController;
 use App\Http\Controllers\Dashboard\EmployeController;
 use App\Http\Controllers\Dashboard\MesInstitutsController;
+use App\Http\Controllers\Dashboard\ParrainageController;
 use App\Http\Controllers\Dashboard\ProfilController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminInstitutController;
@@ -104,6 +105,9 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         Route::post('mes-instituts', [MesInstitutsController::class, 'store'])->name('mes-instituts.store');
         Route::put('mes-instituts/{institut}', [MesInstitutsController::class, 'update'])->name('mes-instituts.update');
         Route::post('mes-instituts/{institut}/switch', [MesInstitutsController::class, 'switch'])->name('mes-instituts.switch');
+
+        // Parrainage
+        Route::get('parrainage', [ParrainageController::class, 'index'])->name('parrainage.index');
     });
 });
 

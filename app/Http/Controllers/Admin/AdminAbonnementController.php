@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Abonnement;
+use App\Models\Parrainage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -55,7 +56,36 @@ class AdminAbonnementController extends Controller
             'valide_par' => Auth::id(),
         ]);
 
-        return back()->with('success', "Abonnement validé ! Actif jusqu'au " . now()->addDays($jours)->format('d/m/Y') . '.');
+        // ── Récompense de parrainage ──────────────────────────────────────────
+        $parrainage = Parrainage::where('filleul_id', $abonnement->user_id)
+            ->where('statut', 'en_attente')
+            ->first();
+
+        if ($parrainage) {
+            $parrainage->update(['statut' => 'valide']);
+
+            // Bonus parrain : prolonger son abonnement actif
+            $aboParrain = Abonnement::where('user_id', $parrainage->parrain_id)
+                ->where('statut', 'actif')
+                ->where('expire_le', '>=', now()->toDateString())
+                ->latest('expire_le')
+                ->first();
+
+            if ($aboParrain) {
+                $aboParrain->update([
+                    'expire_le' => $aboParrain->expire_le->addDays($parrainage->jours_offerts_parrain)->toDateString(),
+                    'notes_admin' => ($aboParrain->notes_admin ? $aboParrain->notes_admin . "\n" : '')
+                        . 'Parrainage : +' . $parrainage->jours_offerts_parrain . ' jours le ' . now()->format('d/m/Y'),
+                ]);
+            }
+
+            // Bonus filleul : prolonger l'abonnement qu'on vient de valider
+            $abonnement->update([
+                'expire_le' => $abonnement->fresh()->expire_le->addDays($parrainage->jours_offerts_filleul)->toDateString(),
+            ]);
+        }
+
+        return back()->with('success', "Abonnement validé ! Actif jusqu'au " . $abonnement->fresh()->expire_le->format('d/m/Y') . '.' . ($parrainage ? ' Bonus parrainage appliqué.' : ''));
     }
 
     public function rejeter(Request $request, Abonnement $abonnement)

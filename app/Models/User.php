@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -15,6 +16,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'prenom', 'nom_famille', 'email', 'password',
         'telephone', 'role', 'avatar', 'actif', 'institut_id',
+        'code_parrainage', 'parraine_par',
     ];
 
     protected $hidden = [
@@ -122,6 +124,40 @@ class User extends Authenticatable
     public function currentInstitutId(): string
     {
         return session('current_institut_id', $this->institut_id) ?? $this->institut_id;
+    }
+
+    // ── Parrainage ────────────────────────────────────────────────────────────
+
+    protected static function booted(): void
+    {
+        static::creating(function (User $user) {
+            if (empty($user->code_parrainage)) {
+                do {
+                    $code = strtoupper(Str::random(8));
+                } while (static::where('code_parrainage', $code)->exists());
+                $user->code_parrainage = $code;
+            }
+        });
+    }
+
+    public function parrain()
+    {
+        return $this->belongsTo(User::class, 'parraine_par');
+    }
+
+    public function filleuls()
+    {
+        return $this->hasMany(User::class, 'parraine_par');
+    }
+
+    public function parrainagesEffectues()
+    {
+        return $this->hasMany(Parrainage::class, 'parrain_id');
+    }
+
+    public function parrainageRecu()
+    {
+        return $this->hasOne(Parrainage::class, 'filleul_id');
     }
 }
 

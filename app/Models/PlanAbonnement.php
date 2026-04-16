@@ -13,6 +13,7 @@ class PlanAbonnement extends Model
 
     protected $fillable = [
         'nom', 'slug', 'duree_type', 'duree_jours', 'prix',
+        'prix_lancement', 'fin_offre_lancement',
         'max_employes', 'max_instituts',
         'economie_pct', 'description', 'actif', 'mis_en_avant', 'ordre',
     ];
@@ -21,6 +22,8 @@ class PlanAbonnement extends Model
         'actif' => 'boolean',
         'mis_en_avant' => 'boolean',
         'prix' => 'integer',
+        'prix_lancement' => 'integer',
+        'fin_offre_lancement' => 'date',
         'duree_jours' => 'integer',
         'economie_pct' => 'integer',
         'max_employes' => 'integer',
@@ -33,11 +36,32 @@ class PlanAbonnement extends Model
      */
     public function prixPourPeriode(string $periode): int
     {
+        $base = $this->prixEffectif();
         return match ($periode) {
-            'annuel'   => (int) round($this->prix * 12 * 0.90),
-            'triennal' => (int) round($this->prix * 36 * 0.80),
-            default    => $this->prix, // mensuel
+            'annuel'   => (int) round($base * 12 * 0.90),
+            'triennal' => (int) round($base * 36 * 0.80),
+            default    => $base,
         };
+    }
+
+    /**
+     * Prix effectif = prix_lancement si l'offre est active, sinon prix normal.
+     */
+    public function prixEffectif(): int
+    {
+        if ($this->prix_lancement
+            && $this->fin_offre_lancement
+            && $this->fin_offre_lancement->isFuture()) {
+            return $this->prix_lancement;
+        }
+        return $this->prix;
+    }
+
+    public function offreLancementActive(): bool
+    {
+        return $this->prix_lancement
+            && $this->fin_offre_lancement
+            && $this->fin_offre_lancement->isFuture();
     }
 
     /**

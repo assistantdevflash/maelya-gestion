@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Abonnement;
 use App\Models\Institut;
+use App\Models\Parrainage;
 use App\Models\User;
 use App\Models\PlanAbonnement;
 use Illuminate\Http\Request;
@@ -34,6 +35,7 @@ class InscriptionController extends Controller
             'telephone' => ['nullable', 'string', 'max:30'],
             'password' => ['required', 'confirmed', Rules\Password::min(8)],
             'cgu' => ['required', 'accepted'],
+            'code_parrainage' => ['nullable', 'string', 'max:10'],
         ], [
             'nom_institut.required' => "Le nom de l'institut est requis.",
             'type_institut.required' => "Le type d'institut est requis.",
@@ -48,6 +50,14 @@ class InscriptionController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
+            // Vérifier le code de parrainage
+            $parrain = null;
+            if ($request->filled('code_parrainage')) {
+                $parrain = User::where('code_parrainage', strtoupper($request->code_parrainage))
+                    ->where('role', 'admin')
+                    ->first();
+            }
+
             $institut = Institut::create([
                 'nom' => $request->nom_institut,
                 'email' => $request->email,
@@ -67,6 +77,7 @@ class InscriptionController extends Controller
                 'password' => Hash::make($request->password),
                 'role' => 'admin',
                 'actif' => true,
+                'parraine_par' => $parrain?->id,
             ]);
 
             // Lier le propriétaire à l'institut
@@ -88,7 +99,16 @@ class InscriptionController extends Controller
                     'expire_le' => now()->addDays(14)->toDateString(),
                 ]);
             }
-        });
+            // ── Créer le parrainage (en attente de validation d'abonnement payant) ──
+            if ($parrain) {
+                Parrainage::create([
+                    'parrain_id' => $parrain->id,
+                    'filleul_id' => $user->id,
+                    'jours_offerts_parrain' => 15,
+                    'jours_offerts_filleul' => 7,
+                    'statut' => 'en_attente',
+                ]);
+            }        });
 
         return redirect()->route('dashboard.index')
             ->with('success', "Bienvenue ! Votre essai gratuit de 14 jours est activé. 🎉");

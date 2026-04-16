@@ -108,16 +108,32 @@
                         </div>
 
                         <div class="mb-6">
+                            @if($plan->offreLancementActive())
+                            <div class="flex items-center gap-1.5 mb-2">
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold uppercase tracking-wide animate-pulse">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>
+                                    Offre de lancement
+                                </span>
+                                @if($plan->fin_offre_lancement)
+                                <span class="text-[10px] text-gray-400">jusqu'au {{ $plan->fin_offre_lancement->format('d/m/Y') }}</span>
+                                @endif
+                            </div>
+                            @endif
                             <div class="flex items-baseline gap-1">
                                 <span class="text-4xl font-bold {{ $plan->mis_en_avant ? 'gradient-text' : 'text-gray-900' }}"
-                                      x-text="formatPrice({{ $plan->prix }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }})">
-                                    {{ number_format($plan->prix, 0, ',', ' ') }}
+                                      x-text="formatPrice({{ $plan->prixEffectif() }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }})">
+                                    {{ number_format($plan->prixEffectif(), 0, ',', ' ') }}
                                 </span>
                                 <span class="text-gray-400 text-sm" x-text="periodeLabel()">FCFA / mois</span>
                             </div>
+                            @if($plan->offreLancementActive())
+                            <p class="text-xs text-gray-400 mt-0.5">
+                                au lieu de <span class="line-through">{{ number_format($plan->prix, 0, ',', ' ') }} FCFA</span>
+                            </p>
+                            @endif
                             <template x-if="periode !== 'mensuel'">
                                 <p class="text-xs text-emerald-600 font-medium mt-1">
-                                    <span x-text="'Soit ' + formatTotal({{ $plan->prix }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }}) + ' FCFA au total'"></span>
+                                    <span x-text="'Soit ' + formatTotal({{ $plan->prixEffectif() }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }}) + ' FCFA au total'"></span>
                                     <span class="line-through text-gray-400 ml-1" x-text="formatSans({{ $plan->prix }})"></span>
                                 </p>
                             </template>
@@ -162,7 +178,7 @@
                                 Votre plan actuel
                             </button>
                         @elseif($estMiseANiveau)
-                            <button @click="openModal('{{ $plan->id }}', '{{ $plan->nom }}', {{ $plan->prix }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }})"
+                            <button @click="openModal('{{ $plan->id }}', '{{ $plan->nom }}', {{ $plan->prixEffectif() }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }})"
                                     class="btn-primary w-full justify-center">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
                                 Mise à niveau
@@ -173,7 +189,7 @@
                                 Rétrogradation non disponible
                             </button>
                         @else
-                            <button @click="openModal('{{ $plan->id }}', '{{ $plan->nom }}', {{ $plan->prix }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }})"
+                            <button @click="openModal('{{ $plan->id }}', '{{ $plan->nom }}', {{ $plan->prixEffectif() }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }})"
                                     class="{{ $plan->slug === 'entreprise' ? 'btn-primary' : 'btn-outline' }} w-full justify-center">
                                 S'abonner
                             </button>
