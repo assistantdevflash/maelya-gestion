@@ -2,6 +2,12 @@
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
+        {{-- Honeypot anti-bot : champ invisible, rejeté si rempli --}}
+        <div aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;height:0;width:0;overflow:hidden;">
+            <label for="website">Ne pas remplir</label>
+            <input type="text" name="website" id="website" tabindex="-1" autocomplete="off" value="">
+        </div>
+
         <!-- Name -->
         <div>
             <x-input-label for="name" :value="__('Name')" />

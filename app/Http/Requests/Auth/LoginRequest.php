@@ -30,6 +30,14 @@ class LoginRequest extends FormRequest
         return [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
+            'website' => ['max:0'], // Honeypot : doit rester vide
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'website.max' => 'Une erreur est survenue. Veuillez réessayer.',
         ];
     }
 

@@ -69,6 +69,12 @@
                     <form method="POST" action="{{ route('login') }}" class="space-y-4">
                         @csrf
 
+                        {{-- Honeypot anti-bot : champ invisible, rejeté si rempli --}}
+                        <div aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;height:0;width:0;overflow:hidden;">
+                            <label for="website">Ne pas remplir</label>
+                            <input type="text" name="website" id="website" tabindex="-1" autocomplete="off" value="">
+                        </div>
+
                         <div>
                             <input type="email" id="email" name="email" required autofocus autocomplete="username"
                                    value="{{ old('email') }}"
