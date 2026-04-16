@@ -31,7 +31,13 @@ class AdminAbonnementController extends Controller
     public function show(Abonnement $abonnement)
     {
         $abonnement->load('user.institut', 'user.mesInstituts', 'plan', 'validePar');
-        return view('admin.abonnements.show', compact('abonnement'));
+
+        // Charger le parrainage lié à cet utilisateur (filleul)
+        $parrainage = Parrainage::where('filleul_id', $abonnement->user_id)
+            ->with('parrain.institut')
+            ->first();
+
+        return view('admin.abonnements.show', compact('abonnement', 'parrainage'));
     }
 
     public function valider(Abonnement $abonnement)

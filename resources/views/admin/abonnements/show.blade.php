@@ -130,6 +130,55 @@
         </div>
     </div>
 
+    {{-- Parrainage --}}
+    @if(isset($parrainage) && $parrainage)
+    <div class="card p-6 space-y-4">
+        <h2 class="font-bold text-lg text-gray-900 flex items-center gap-2">
+            <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            Parrainage
+        </h2>
+
+        <div class="bg-purple-50 rounded-xl p-4 space-y-3">
+            <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold uppercase
+                    {{ $parrainage->statut === 'valide' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">
+                    {{ $parrainage->statut === 'valide' ? '✅ Validé' : '⏳ En attente' }}
+                </span>
+            </div>
+
+            <div class="grid sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                    <span class="text-gray-500">Parrainé par</span>
+                    <p class="font-medium text-gray-900">{{ $parrainage->parrain->nom_complet ?? $parrainage->parrain->name ?? '—' }}</p>
+                    <p class="text-xs text-gray-400">{{ $parrainage->parrain->email ?? '' }}</p>
+                    @if($parrainage->parrain->institut)
+                    <p class="text-xs text-gray-400">{{ $parrainage->parrain->institut->nom }}</p>
+                    @endif
+                </div>
+                <div>
+                    <span class="text-gray-500">Bonus à appliquer</span>
+                    <div class="mt-1 space-y-1">
+                        <p class="text-sm">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-xs font-bold">🎁 Filleul</span>
+                            <strong>+{{ $parrainage->jours_offerts_filleul }} jours</strong> pour {{ $abonnement->user->nom_complet ?? $abonnement->user->name }}
+                        </p>
+                        <p class="text-sm">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">👑 Parrain</span>
+                            <strong>+{{ $parrainage->jours_offerts_parrain }} jours</strong> pour {{ $parrainage->parrain->nom_complet ?? $parrainage->parrain->name }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            @if($parrainage->statut === 'en_attente')
+            <p class="text-xs text-purple-700 bg-purple-100 rounded-lg p-2">
+                <strong>ℹ️ Note :</strong> En validant cet abonnement, le bonus sera automatiquement appliqué aux deux parties.
+            </p>
+            @endif
+        </div>
+    </div>
+    @endif
+
     {{-- Actions --}}
     @if($abonnement->statut === 'en_attente')
     <div class="card p-6">

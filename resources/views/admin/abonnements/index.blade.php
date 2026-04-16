@@ -80,7 +80,12 @@
             <tr class="hover:bg-gray-50">
                 <td>
                     <div class="font-medium text-gray-900">{{ $ab->user->nom_complet ?? $ab->user->name ?? '—' }}</div>
-                    <div class="text-xs text-gray-400">{{ $ab->user->email ?? '' }} · {{ $ab->user->institut->nom ?? '' }}</div>
+                    <div class="text-xs text-gray-400">
+                        {{ $ab->user->email ?? '' }} · {{ $ab->user->institut->nom ?? '' }}
+                        @if($ab->user->parraine_par)
+                            <span class="inline-flex items-center gap-0.5 ml-1 px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[9px] font-bold">🤝 Parrainé</span>
+                        @endif
+                    </div>
                 </td>
                 <td class="text-sm font-medium">{{ $ab->plan->nom ?? '—' }}</td>
                 <td class="text-sm text-gray-600 capitalize">{{ $ab->periode }}</td>

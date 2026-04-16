@@ -49,6 +49,26 @@
             </div>
         </div>
 
+        {{-- Notification bonus récent --}}
+        @php
+            $recentValides = $parrainages->where('statut', 'valide')->filter(fn($p) => $p->updated_at->gte(now()->subDays(7)));
+        @endphp
+        @if($recentValides->isNotEmpty())
+        <div class="card p-4 bg-emerald-50 border-emerald-200 flex items-start gap-3">
+            <div class="w-9 h-9 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 flex-shrink-0 mt-0.5">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
+            </div>
+            <div>
+                <p class="font-semibold text-emerald-900">🎉 Bonus parrainage crédité !</p>
+                <p class="text-sm text-emerald-700 mt-0.5">
+                    @foreach($recentValides as $rv)
+                        <strong>{{ $rv->filleul->nom_complet ?? $rv->filleul->name }}</strong> a souscrit un abonnement — vous avez reçu <strong>+{{ $rv->jours_offerts_parrain }} jours</strong> gratuits.@if(!$loop->last)<br>@endif
+                    @endforeach
+                </p>
+            </div>
+        </div>
+        @endif
+
         {{-- Stats --}}
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div class="card p-4 text-center">
