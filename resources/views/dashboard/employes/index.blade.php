@@ -2,7 +2,7 @@
     <div class="space-y-5">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <h1 class="text-2xl font-display font-bold text-gray-900 tracking-tight">Employées</h1>
+                <h1 class="text-2xl font-display font-bold text-gray-900 tracking-tight">Employés</h1>
                 <p class="text-sm text-gray-500 mt-1">Gérez l'accès de votre équipe.
                     @if($maxEmployes !== null)
                         <span class="ml-2 inline-flex items-center gap-1 text-xs font-medium {{ $limitAtteinte ? 'text-red-500' : 'text-gray-400' }}">
@@ -24,7 +24,7 @@
                     <svg class="w-4 h-4 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                     </svg>
-                    Ajouter une employée
+                    Ajouter un employé
                 </button>
             @endif
         </div>
@@ -42,7 +42,7 @@
                 <table class="w-full text-sm">
                     <thead class="bg-gray-50 border-b border-gray-100">
                         <tr>
-                            <th class="px-4 py-3 text-left font-semibold text-gray-600">Employée</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-600">Employé</th>
                             <th class="px-4 py-3 text-left font-semibold text-gray-600 hidden sm:table-cell">Email</th>
                             <th class="px-4 py-3 text-left font-semibold text-gray-600 hidden md:table-cell">Rôle</th>
                             <th class="px-4 py-3 text-center font-semibold text-gray-600">Statut</th>
@@ -68,7 +68,7 @@
                             <td class="px-4 py-3 text-gray-500 hidden sm:table-cell">{{ $employe->email }}</td>
                             <td class="px-4 py-3 hidden md:table-cell">
                                 <span class="badge {{ $employe->role === 'admin' ? 'badge-primary' : 'badge-secondary' }} text-xs">
-                                    {{ $employe->role === 'admin' ? 'Admin' : 'Employée' }}
+                                    {{ $employe->role === 'admin' ? 'Admin' : 'Employé' }}
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-center">
@@ -102,7 +102,7 @@
                                     <form id="delete-employe-{{ $employe->id }}" method="POST" action="{{ route('dashboard.employes.destroy', $employe) }}">
                                         @csrf @method('DELETE')
                                     </form>
-                                    <button x-data @click="$dispatch('confirm-delete', { formId: 'delete-employe-{{ $employe->id }}', title: 'Supprimer cette employée ?', message: '{{ addslashes($employe->nom_complet) }} sera définitivement supprimé(e).' })" class="btn-icon text-red-400 hover:text-red-600" title="Supprimer">
+                                    <button x-data @click="$dispatch('confirm-delete', { formId: 'delete-employe-{{ $employe->id }}', title: 'Supprimer cet employé ?', message: '{{ addslashes($employe->nom_complet) }} sera définitivement supprimé(e).' })" class="btn-icon text-red-400 hover:text-red-600" title="Supprimer">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                         </svg>
@@ -118,16 +118,16 @@
         @else
         <div class="card p-12 text-center">
             <div class="text-4xl mb-3">👩‍💼</div>
-            <p class="font-semibold text-gray-900 mb-1">Aucune employée</p>
+            <p class="font-semibold text-gray-900 mb-1">Aucun employé</p>
             <p class="text-sm text-gray-500 mb-4">Ajoutez des membres à votre équipe.</p>
             @if(!$limitAtteinte)
-                <button x-data @click="$dispatch('open-employe')" class="btn-primary">Ajouter une employée</button>
+                <button x-data @click="$dispatch('open-employe')" class="btn-primary">Ajouter un employé</button>
             @endif
         </div>
         @endif
     </div>
 
-    {{-- Modal Employée (création / édition) --}}
+    {{-- Modal Employé (création / édition) --}}
     <div x-data="{
             show: false,
             isEdit: false,
@@ -162,7 +162,7 @@
          @keydown.escape.window="show = false">
         <div class="modal max-w-lg" x-transition @click.stop>
             <div class="modal-header">
-                <h3 class="modal-title" x-text="isEdit ? 'Modifier l\'employée' : 'Nouvelle employée'"></h3>
+                <h3 class="modal-title" x-text="isEdit ? 'Modifier l\'employé' : 'Nouvel employé'"></h3>
                 <button @click="show = false" class="btn-icon">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -207,10 +207,10 @@
                     <div class="form-group">
                         <label class="form-label">Rôle *</label>
                         <select name="role" required x-model="form.role" class="form-select">
-                            <option value="employe">Employée (accès limité)</option>
+                            <option value="employe">Employé (accès limité)</option>
                             <option value="admin">Admin (accès complet)</option>
                         </select>
-                        <p class="text-xs text-gray-400 mt-1">Les employées peuvent vendre et voir les stocks. Les admins gèrent tout.</p>
+                        <p class="text-xs text-gray-400 mt-1">Les employés peuvent vendre et voir les stocks. Les admins gèrent tout.</p>
                     </div>
 
                     <template x-if="!isEdit">

@@ -42,7 +42,7 @@
             {{-- Explication --}}
             <div class="mt-4 p-3 rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800">
                 <p class="text-xs text-primary-800 dark:text-primary-300 leading-relaxed">
-                    <strong>Comment ça marche ?</strong> Partagez votre code ou lien avec d'autres propriétaires de salon.
+                    <strong>Comment ça marche ?</strong> Partagez votre code ou lien avec d’autres professionnels de la beauté.
                     Quand ils s'inscrivent avec votre code et souscrivent un abonnement payant,
                     vous recevez <strong>15 jours gratuits</strong> et votre filleul reçoit <strong>7 jours gratuits</strong> en bonus.
                 </p>

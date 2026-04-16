@@ -136,7 +136,7 @@
                 <input
                     type="text"
                     wire:model.live.debounce.300ms="clientSearch"
-                    placeholder="Chercher une cliente..."
+                    placeholder="Chercher un client..."
                     class="form-input text-sm">
                 @if($this->clients->count() > 0)
                 <div class="border border-gray-200 rounded-xl overflow-hidden mt-2 shadow-sm">

@@ -159,7 +159,7 @@
                 </svg>
             </div>
             <p class="font-semibold text-gray-900 mb-1">Aucun code de réduction</p>
-            <p class="text-sm text-gray-500 mb-4">Créez des codes promo pour fidéliser vos clientes.</p>
+            <p class="text-sm text-gray-500 mb-4">Créez des codes promo pour fidéliser vos clients.</p>
             <button x-data @click="$dispatch('open-code-modal')" class="btn-primary">Créer un code</button>
         </div>
         @endif
@@ -299,7 +299,7 @@
                     <div class="form-group mb-0">
                         <label class="form-label">Description <span class="text-gray-400 font-normal text-xs">(optionnel)</span></label>
                         <input type="text" name="description" maxlength="255" class="form-input"
-                               placeholder="Ex: Réduction de bienvenue pour nouvelles clientes" value="{{ old('description') }}">
+                               placeholder="Ex: Réduction de bienvenue pour nouveaux clients" value="{{ old('description') }}">
                     </div>
 
                     <div class="flex gap-3 pt-1">

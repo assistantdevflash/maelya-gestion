@@ -1,7 +1,7 @@
 <x-dashboard-layout>
     <div class="max-w-xl space-y-5">
         <div>
-            <h1 class="text-2xl font-display font-bold text-gray-900 tracking-tight">{{ isset($employe) ? 'Modifier '.$employe->nom_complet : 'Ajouter une employée' }}</h1>
+            <h1 class="text-2xl font-display font-bold text-gray-900 tracking-tight">{{ isset($employe) ? 'Modifier '.$employe->nom_complet : 'Ajouter un employé' }}</h1>
         </div>
 
         <div class="card p-6">
@@ -55,10 +55,10 @@
                 <div class="form-group">
                     <label class="form-label">Rôle *</label>
                     <select name="role" required class="form-select">
-                        <option value="employe" {{ old('role', $employe->role ?? 'employe') === 'employe' ? 'selected' : '' }}>Employée (accès limité)</option>
+                        <option value="employe" {{ old('role', $employe->role ?? 'employe') === 'employe' ? 'selected' : '' }}>Employé (accès limité)</option>
                         <option value="admin" {{ old('role', $employe->role ?? '') === 'admin' ? 'selected' : '' }}>Admin (accès complet)</option>
                     </select>
-                    <p class="text-xs text-gray-400 mt-1">Les employées peuvent vendre et voir les stocks. Les admins gèrent tout.</p>
+                    <p class="text-xs text-gray-400 mt-1">Les employés peuvent vendre et voir les stocks. Les admins gèrent tout.</p>
                 </div>
 
                 @if(!isset($employe))

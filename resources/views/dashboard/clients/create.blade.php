@@ -2,7 +2,7 @@
     <div class="max-w-xl space-y-5">
         <div>
             <h1 class="text-2xl font-display font-bold text-gray-900 tracking-tight">Nouveau client</h1>
-            <p class="text-sm text-gray-500 mt-1">Enregistrez une nouvelle cliente dans votre base.</p>
+            <p class="text-sm text-gray-500 mt-1">Enregistrez un nouveau client dans votre base.</p>
         </div>
 
         <div class="card p-6">

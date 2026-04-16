@@ -33,7 +33,7 @@
                         <span class="text-sm text-gray-500">{{ auth()->user()->email }}</span>
                         <span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
                               style="background: linear-gradient(135deg, #9333ea20, #ec489920); color: #9333ea;">
-                            {{ match(auth()->user()->role) { 'super_admin' => 'Super Admin', 'admin' => 'Admin', 'employe' => 'Employée', default => auth()->user()->role } }}
+                            {{ match(auth()->user()->role) { 'super_admin' => 'Super Admin', 'admin' => 'Admin', 'employe' => 'Employé', default => auth()->user()->role } }}
                         </span>
                     </div>
                 </div>

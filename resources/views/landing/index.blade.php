@@ -107,7 +107,7 @@
                             <svg class="w-4 h-4 text-secondary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                         </div>
                         <div>
-                            <p class="text-gray-900">+3 clientes</p>
+                            <p class="text-gray-900">+3 clients</p>
                             <p class="text-gray-400 font-normal">aujourd'hui</p>
                         </div>
                     </div>
@@ -156,7 +156,7 @@
                 ['from-secondary-500 to-pink-600', 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z', 'Gestion clients', 'Base clients complète avec historique des visites, préférences et statistiques d\'achat.'],
                 ['from-emerald-500 to-teal-600', 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4', 'Stock & Alertes', 'Suivez vos produits en temps réel. Alertes automatiques quand vous manquez de stock.'],
                 ['from-amber-500 to-orange-600', 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', 'Rapports financiers', 'Visualisez vos revenus, dépenses et bénéfices par jour, semaine ou mois.'],
-                ['from-blue-500 to-indigo-600', 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'Multi-employées', 'Ajoutez vos employées avec des accès limités. Chacune se connecte avec ses identifiants.'],
+                ['from-blue-500 to-indigo-600', 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'Multi-employés', 'Ajoutez vos employés avec des accès limités. Chaque membre se connecte avec ses identifiants.'],
                 ['from-rose-500 to-red-500', 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z', 'Accessible partout', 'Interface pensée mobile-first. Gérez votre institut depuis n\'importe où.'],
             ] as [$gradient, $icon, $title, $desc])
                 <div class="group relative bg-white/70 dark:bg-gray-800 rounded-2xl p-5 sm:p-7 shadow-sm border border-primary-100/60 dark:border-gray-700 hover:shadow-xl hover:shadow-primary-200/30 hover:-translate-y-1 transition-all duration-500">
@@ -182,7 +182,7 @@
         <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
             @foreach([
                 ['1', 'from-primary-500 to-primary-600', 'Créez votre compte', 'Inscrivez-vous gratuitement avec votre nom, email et les infos de votre institut.'],
-                ['2', 'from-secondary-500 to-secondary-600', 'Configurez votre institut', 'Ajoutez vos prestations, vos produits et invitez vos employées.'],
+                ['2', 'from-secondary-500 to-secondary-600', 'Configurez votre institut', 'Ajoutez vos prestations, vos produits et invitez votre équipe.'],
                 ['3', 'from-emerald-500 to-emerald-600', 'Gérez au quotidien', 'Encaissez, suivez vos clients, consultez vos rapports. Tout est fluide.'],
             ] as [$num, $gradient, $title, $desc])
                 <div class="relative text-center group">
@@ -294,13 +294,13 @@
     <div class="max-w-5xl mx-auto px-4 sm:px-6">
         <div class="text-center mb-16">
             <div class="inline-flex items-center gap-2 bg-secondary-50 text-secondary-700 text-xs font-bold px-4 py-1.5 rounded-full mb-4 uppercase tracking-wider">Témoignages</div>
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">Ce que disent nos clientes</h2>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">Ce que disent nos utilisateurs</h2>
         </div>
         <div class="grid md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             @foreach([
                 ['Aicha Koné', 'Institut Beauté Prestige', 'Abidjan', 'Depuis que j\'utilise Maëlya Gestion, je sais exactement combien je gagne chaque jour. Mon comptable est content !', 'from-primary-400 to-violet-500'],
-                ['Fatou Traoré', 'Onglerie Dorée', 'Bouaké', 'La caisse est tellement rapide. Mes clientes sont impressionnées par les tickets que j\'imprime. Très pro !', 'from-secondary-400 to-pink-500'],
-                ['Marie-Claire Bah', 'Spa Zen', 'Yopougon', 'J\'ai enfin arrêté les cahiers. Je gère mes 3 employées depuis mon téléphone. C\'est magique !', 'from-emerald-400 to-teal-500'],
+                ['Fatou Traoré', 'Onglerie Dorée', 'Bouaké', 'La caisse est tellement rapide. Mes clients sont impressionnés par les tickets que j\'imprime. Très pro !', 'from-secondary-400 to-pink-500'],
+                ['Marie-Claire Bah', 'Spa Zen', 'Yopougon', 'J\'ai enfin arrêté les cahiers. Je gère mes 3 employés depuis mon téléphone. C\'est magique !', 'from-emerald-400 to-teal-500'],
             ] as [$name, $institut, $ville, $quote, $gradient])
                 <div class="group bg-white/70 dark:bg-gray-800 rounded-2xl p-7 border border-primary-100/60 dark:border-gray-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-500">
                     <div class="flex items-center gap-0.5 mb-4">
@@ -333,7 +333,7 @@
             Prêt(e) à transformer la gestion de votre institut ?
         </h2>
         <p class="text-white/70 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
-            Rejoignez plus de 500 gérantes qui font confiance à Maëlya Gestion. Essai gratuit de 14 jours, sans engagement.
+            Rejoignez plus de 500 professionnels qui font confiance à Maëlya Gestion. Essai gratuit de 14 jours, sans engagement.
         </p>
         <a href="{{ route('inscription') }}" class="group inline-flex items-center gap-3 bg-white text-gray-900 hover:bg-gray-50 px-8 py-4 rounded-2xl font-bold text-base shadow-2xl transition-all duration-300 hover:-translate-y-1">
             Créer mon compte gratuitement

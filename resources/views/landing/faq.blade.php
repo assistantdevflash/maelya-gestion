@@ -24,7 +24,7 @@
             ['Démarrage & Inscription', 'from-primary-500 to-violet-600', 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', [
                 ['Est-ce que je peux essayer gratuitement ?', 'Oui ! À l\'inscription, vous bénéficiez de <strong>14 jours d\'essai gratuit</strong> avec accès à toutes les fonctionnalités de base. Pendant cet essai, la limite est de <strong>1 employé(e)</strong>. Après cette période, choisissez un plan payant pour continuer.'],
                 ['Comment créer mon compte ?', 'Cliquez sur « Créer mon compte », renseignez votre nom, email, mot de passe et les informations de votre institut (nom, ville). Votre compte sera actif immédiatement avec la période d\'essai gratuit de 14 jours.'],
-                ['Combien de temps prend la configuration ?', 'Moins de 2 minutes ! Après l\'inscription, ajoutez vos prestations, vos produits et invitez vos employées. L\'interface est intuitive, aucune formation n\'est nécessaire.'],
+                ['Combien de temps prend la configuration ?', 'Moins de 2 minutes ! Après l\'inscription, ajoutez vos prestations, vos produits et invitez votre équipe. L\'interface est intuitive, aucune formation n\'est nécessaire.'],
             ]],
             ['Abonnements & Paiement', 'from-secondary-500 to-pink-600', 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', [
                 ['Quels sont les plans disponibles ?', 'Nous proposons deux plans principaux :<br>• <strong>Premium</strong> — 4 900 FCFA/mois (jusqu\'à 3 employés, 1 institut)<br>• <strong>Entreprise</strong> — 9 900 FCFA/mois (employés et instituts illimités)<br>Des réductions sont disponibles : <strong>−10% en annuel</strong> et <strong>−20% en triennal</strong>.'],
@@ -33,15 +33,15 @@
                 ['Puis-je changer de plan ?', 'Oui ! Vous pouvez <strong>passer à un plan supérieur</strong> (mise à niveau) à tout moment depuis la page « Plans ». La rétrogradation vers un plan inférieur n\'est pas disponible.'],
             ]],
             ['Fonctionnalités', 'from-emerald-500 to-teal-600', 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z', [
-                ['Combien d\'employées puis-je ajouter ?', 'Cela dépend de votre plan :<br>• <strong>Essai gratuit</strong> : 1 employée<br>• <strong>Premium</strong> : jusqu\'à 3 employées<br>• <strong>Entreprise</strong> : employées illimitées<br>Chaque employée a ses propres identifiants et un accès limité selon votre configuration.'],
+                ['Combien d\'employés puis-je ajouter ?', 'Cela dépend de votre plan :<br>• <strong>Essai gratuit</strong> : 1 employé<br>• <strong>Premium</strong> : jusqu\'\u00e0 3 employés<br>• <strong>Entreprise</strong> : employés illimités<br>Chaque membre de l\'\u00e9quipe a ses propres identifiants et un accès limité selon votre configuration.'],
                 ['L\'application fonctionne-t-elle sur mobile ?', 'Oui ! Maëlya Gestion est conçue <strong>mobile-first</strong>. L\'interface est entièrement responsive et optimisée pour une utilisation confortable sur smartphone Android ou iPhone, même avec un petit écran.'],
                 ['Comment imprimer les tickets de caisse ?', 'Connectez une imprimante thermique Bluetooth ou WiFi à votre appareil. Maëlya Gestion génère des <strong>tickets en PDF</strong> que vous pouvez imprimer en un clic. Compatible avec la plupart des imprimantes de caisse.'],
-                ['Puis-je gérer plusieurs instituts ?', 'Oui, avec le plan <strong>Entreprise</strong> ! Vous pouvez créer et gérer plusieurs instituts depuis le même compte, chacun avec ses propres employées, produits et statistiques.'],
+                ['Puis-je gérer plusieurs instituts ?', 'Oui, avec le plan <strong>Entreprise</strong> ! Vous pouvez créer et gérer plusieurs instituts depuis le même compte, chacun avec ses propres employés, produits et statistiques.'],
             ]],
             ['Technique & Sécurité', 'from-amber-500 to-orange-600', 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z', [
                 ['Mes données sont-elles en sécurité ?', 'Absolument. Toutes les communications sont <strong>chiffrées en HTTPS</strong>. Vos données sont hébergées sur des serveurs sécurisés et ne sont <strong>jamais partagées avec des tiers</strong>. Des sauvegardes automatiques protègent vos informations.'],
                 ['L\'application fonctionne-t-elle sans internet ?', 'Une connexion internet est nécessaire pour utiliser Maëlya Gestion. Cependant, l\'application est <strong>optimisée pour les connexions modestes</strong> courantes en Côte d\'Ivoire. Les pages sont légères et rapides à charger.'],
-                ['Dans quelle langue est l\'application ?', 'L\'application est <strong>100% en français</strong>. Tous les menus, messages, rapports et documents sont en français pour faciliter l\'utilisation par les gérantes ivoiriennes.'],
+                ['Dans quelle langue est l\'application ?', 'L\'application est <strong>100% en français</strong>. Tous les menus, messages, rapports et documents sont en français pour faciliter l\'utilisation par les professionnels de la beauté en Côte d\'Ivoire.'],
             ]],
         ];
         @endphp

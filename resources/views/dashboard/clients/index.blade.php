@@ -173,7 +173,7 @@
         </div>
         <p class="font-semibold text-gray-900 mb-1">Aucun client</p>
         <p class="text-sm text-gray-500 mb-4">
-            {{ request('q') ? 'Aucun résultat pour "'.request('q').'"' : 'Commencez par ajouter votre première cliente.' }}
+            {{ request('q') ? 'Aucun résultat pour "'.request('q').'"' : 'Commencez par ajouter votre premier client.' }}
         </p>
         <button @click="createOpen = true" class="btn-primary">Ajouter un client</button>
     </div>

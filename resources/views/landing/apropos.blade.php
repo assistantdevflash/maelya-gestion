@@ -21,16 +21,16 @@
         <div class="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div class="space-y-6 animate-fade-in-up">
                 <div class="inline-flex items-center gap-2 bg-primary-50 text-primary-700 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">Notre mission</div>
-                <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight leading-tight">Donner aux gérantes le temps de se concentrer sur l'essentiel</h2>
+                <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight leading-tight">Donner aux professionnels le temps de se concentrer sur l’essentiel</h2>
                 <div class="space-y-4 text-gray-600 dark:text-gray-300 leading-relaxed">
                     <p>
-                        <strong class="text-gray-900 dark:text-white">Maëlya Gestion</strong> est né d'un constat simple : les gérantes d'instituts de beauté en Côte d'Ivoire passent trop de temps à gérer leurs cahiers, leurs stocks et leurs finances à la main.
+                        <strong class="text-gray-900 dark:text-white">Maëlya Gestion</strong> est né d’un constat simple : les gérants d’instituts de beauté en Côte d’Ivoire passent trop de temps à gérer leurs cahiers, leurs stocks et leurs finances à la main.
                     </p>
                     <p>
                         Nous avons créé une application simple, rapide et pensée pour le contexte local. Paiements Mobile Money, interface 100% en français, conçue pour fonctionner même avec une connexion internet modeste.
                     </p>
                     <p>
-                        Notre promesse : <strong class="text-primary-700">vous donner plus de temps pour prendre soin de vos clientes</strong>.
+                        Notre promesse : <strong class="text-primary-700">vous donner plus de temps pour prendre soin de vos clients</strong>.
                     </p>
                 </div>
             </div>
@@ -41,7 +41,7 @@
                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                     </div>
                     <blockquote class="text-gray-700 dark:text-gray-300 italic text-base leading-relaxed">
-                        "Nous croyons que chaque gérante mérite des outils professionnels, peu importe la taille de son salon."
+                        "Nous croyons que chaque professionnel mérite des outils adaptés, peu importe la taille de son salon."
                     </blockquote>
                     <p class="mt-5 text-sm font-bold text-primary-600">— L'équipe Maëlya Gestion</p>
                 </div>
