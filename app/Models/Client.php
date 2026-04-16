@@ -13,17 +13,23 @@ class Client extends Model
 
     protected $fillable = [
         'institut_id', 'prenom', 'nom', 'telephone', 'email',
-        'date_naissance', 'notes', 'actif',
+        'date_naissance', 'notes', 'points_fidelite', 'actif',
     ];
 
     protected $casts = [
         'actif' => 'boolean',
         'date_naissance' => 'date',
+        'points_fidelite' => 'integer',
     ];
 
     public function ventes()
     {
         return $this->hasMany(Vente::class, 'client_id');
+    }
+
+    public function historiquePoints()
+    {
+        return $this->hasMany(HistoriquePoints::class, 'client_id');
     }
 
     public function getNomCompletAttribute(): string
@@ -49,5 +55,11 @@ class Client extends Model
     public function scopeActif($query)
     {
         return $query->where('actif', true);
+    }
+
+    public function codesReductionFidelite()
+    {
+        return $this->hasMany(CodeReduction::class, 'client_id')
+            ->where('code', 'like', 'FID-%');
     }
 }

@@ -15,6 +15,7 @@ use App\Http\Controllers\Dashboard\AbonnementController;
 use App\Http\Controllers\Dashboard\EmployeController;
 use App\Http\Controllers\Dashboard\MesInstitutsController;
 use App\Http\Controllers\Dashboard\ParrainageController;
+use App\Http\Controllers\Dashboard\FideliteController;
 use App\Http\Controllers\Dashboard\ProfilController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminInstitutController;
@@ -109,6 +110,13 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
 
         // Parrainage
         Route::get('parrainage', [ParrainageController::class, 'index'])->name('parrainage.index');
+
+        // Fidélité
+        Route::get('fidelite', [FideliteController::class, 'index'])->name('fidelite.index');
+        Route::post('fidelite/configurer', [FideliteController::class, 'configurer'])->name('fidelite.configurer');
+        Route::post('fidelite/{client}/recompenser', [FideliteController::class, 'recompenser'])->name('fidelite.recompenser');
+        Route::post('fidelite/{client}/ajuster', [FideliteController::class, 'ajuster'])->name('fidelite.ajuster');
+        Route::get('fidelite/imprimer-code/{codeReduction}', [FideliteController::class, 'imprimerCode'])->name('fidelite.imprimer-code');
     });
 });
 

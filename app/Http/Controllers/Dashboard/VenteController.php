@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\CodeReduction;
 use App\Models\MouvementStock;
+use App\Models\HistoriquePoints;
+use App\Models\ProgrammeFidelite;
 use App\Models\Prestation;
 use App\Models\Produit;
 use App\Models\Vente;
@@ -132,6 +134,29 @@ class VenteController extends Controller
                             'quantite' => $item['quantite'],
                             'stock_avant' => $stockAvant,
                             'stock_apres' => max(0, $stockAvant - $item['quantite']),
+                        ]);
+                    }
+                }
+            }
+
+            // ── Attribuer les points de fidélité ──
+            if ($vente->client_id) {
+                $programme = ProgrammeFidelite::where('institut_id', $this->institutId())
+                    ->where('actif', true)
+                    ->first();
+
+                if ($programme) {
+                    $points = $programme->calculerPoints($total);
+                    if ($points > 0) {
+                        $vente->client->increment('points_fidelite', $points);
+
+                        HistoriquePoints::create([
+                            'institut_id' => $this->institutId(),
+                            'client_id' => $vente->client_id,
+                            'vente_id' => $vente->id,
+                            'points' => $points,
+                            'type' => 'gain',
+                            'description' => "+{$points} pts (vente #{$vente->numero})",
                         ]);
                     }
                 }
