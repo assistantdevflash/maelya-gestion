@@ -230,8 +230,26 @@
                         <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">{{ $plan->description }}</p>
                         @endif
                         <div class="mb-8">
-                            <span class="text-4xl sm:text-5xl font-extrabold {{ $plan->mis_en_avant ? 'gradient-text' : 'text-gray-900' }}">{{ number_format($plan->prix, 0, ',', ' ') }}</span>
+                            @if($plan->offreLancementActive())
+                            <div class="mb-2">
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold uppercase tracking-wide">
+                                    🔥 Offre de lancement
+                                </span>
+                            </div>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-4xl sm:text-5xl font-extrabold {{ $plan->mis_en_avant ? 'gradient-text' : 'text-gray-900 dark:text-white' }}">{{ number_format($plan->prixEffectif(), 0, ',', ' ') }}</span>
+                                <span class="text-gray-400 text-sm font-medium">FCFA / mois</span>
+                            </div>
+                            <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                                au lieu de <span class="line-through">{{ number_format($plan->prix, 0, ',', ' ') }} FCFA</span>
+                                @if($plan->fin_offre_lancement)
+                                · <span class="text-orange-500 font-medium">jusqu'au {{ $plan->fin_offre_lancement->format('d/m/Y') }}</span>
+                                @endif
+                            </p>
+                            @else
+                            <span class="text-4xl sm:text-5xl font-extrabold {{ $plan->mis_en_avant ? 'gradient-text' : 'text-gray-900 dark:text-white' }}">{{ number_format($plan->prix, 0, ',', ' ') }}</span>
                             <span class="text-gray-400 text-sm font-medium ml-1">FCFA / mois</span>
+                            @endif
                         </div>
                         <ul class="space-y-3 text-sm text-gray-600 dark:text-gray-300">
                             @php
