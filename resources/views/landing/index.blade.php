@@ -237,7 +237,7 @@
                                 </span>
                             </div>
                             <div class="flex items-baseline gap-2">
-                                <span class="text-4xl sm:text-5xl font-extrabold {{ $plan->mis_en_avant ? 'gradient-text' : 'text-gray-900 dark:text-white' }}">{{ number_format($plan->prixEffectif(), 0, ',', ' ') }}</span>
+                                <span class="text-3xl sm:text-4xl font-extrabold whitespace-nowrap {{ $plan->mis_en_avant ? 'gradient-text' : 'text-gray-900 dark:text-white' }}">{{ number_format($plan->prixEffectif(), 0, ',', "\u{00A0}") }}</span>
                                 <span class="text-gray-400 text-sm font-medium">FCFA / mois</span>
                             </div>
                             <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">
@@ -247,7 +247,7 @@
                                 @endif
                             </p>
                             @else
-                            <span class="text-4xl sm:text-5xl font-extrabold {{ $plan->mis_en_avant ? 'gradient-text' : 'text-gray-900 dark:text-white' }}">{{ number_format($plan->prix, 0, ',', ' ') }}</span>
+                            <span class="text-3xl sm:text-4xl font-extrabold whitespace-nowrap {{ $plan->mis_en_avant ? 'gradient-text' : 'text-gray-900 dark:text-white' }}">{{ number_format($plan->prix, 0, ',', "\u{00A0}") }}</span>
                             <span class="text-gray-400 text-sm font-medium ml-1">FCFA / mois</span>
                             @endif
                         </div>

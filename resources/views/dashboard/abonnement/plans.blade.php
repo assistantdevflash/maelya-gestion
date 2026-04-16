@@ -120,9 +120,9 @@
                             </div>
                             @endif
                             <div class="flex items-baseline gap-1">
-                                <span class="text-4xl font-bold {{ $plan->mis_en_avant ? 'gradient-text' : 'text-gray-900' }}"
+                                <span class="text-3xl sm:text-4xl font-bold whitespace-nowrap {{ $plan->mis_en_avant ? 'gradient-text' : 'text-gray-900' }}"
                                       x-text="formatPrice({{ $plan->prixEffectif() }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }})">
-                                    {{ number_format($plan->prixEffectif(), 0, ',', ' ') }}
+                                    {{ number_format($plan->prixEffectif(), 0, ',', "\u{00A0}") }}
                                 </span>
                                 <span class="text-gray-400 text-sm" x-text="periodeLabel()">FCFA / mois</span>
                             </div>
