@@ -54,11 +54,15 @@
             $recentValides = $parrainages->where('statut', 'valide')->filter(fn($p) => $p->updated_at->gte(now()->subDays(7)));
         @endphp
         @if($recentValides->isNotEmpty())
-        <div class="card p-4 bg-emerald-50 border-emerald-200 flex items-start gap-3">
+        @php $lastParrainageKey = $recentValides->max('updated_at')->timestamp; @endphp
+        <div x-data="{ show: localStorage.getItem('parrainage_dismissed') !== '{{ $lastParrainageKey }}' }" x-show="show" x-transition class="relative card p-4 bg-emerald-50 border-emerald-200 flex items-start gap-3">
+            <button @click="show = false; localStorage.setItem('parrainage_dismissed', '{{ $lastParrainageKey }}')" class="absolute top-2 right-2 p-1 text-emerald-400 hover:text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
             <div class="w-9 h-9 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 flex-shrink-0 mt-0.5">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
             </div>
-            <div>
+            <div class="flex-1 pr-6">
                 <p class="font-semibold text-emerald-900">🎉 Bonus parrainage crédité !</p>
                 <p class="text-sm text-emerald-700 mt-0.5">
                     @foreach($recentValides as $rv)
