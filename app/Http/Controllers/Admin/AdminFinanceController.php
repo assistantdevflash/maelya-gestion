@@ -81,11 +81,14 @@ class AdminFinanceController extends Controller
         // ── CA des instituts ─────────────────────────────────────────────
         $instituts = Institut::where('actif', true)
             ->with('proprietaire')
-            ->withCount(['ventes as ca_total' => function ($q) use ($annee) {
-                $q->where('statut', 'validee')->whereYear('created_at', $annee)->select(DB::raw('COALESCE(SUM(total), 0)'));
-            }])
-            ->withCount(['ventes as nb_ventes' => function ($q) use ($annee) {
+            ->withCount(['ventes as ca_total' => function ($q) use ($annee, $moisFiltre) {
                 $q->where('statut', 'validee')->whereYear('created_at', $annee);
+                if ($moisFiltre) $q->whereMonth('created_at', $moisFiltre);
+                $q->select(DB::raw('COALESCE(SUM(total), 0)'));
+            }])
+            ->withCount(['ventes as nb_ventes' => function ($q) use ($annee, $moisFiltre) {
+                $q->where('statut', 'validee')->whereYear('created_at', $annee);
+                if ($moisFiltre) $q->whereMonth('created_at', $moisFiltre);
             }])
             ->withCount(['ventes as ca_mois_courant' => function ($q) {
                 $q->where('statut', 'validee')
@@ -97,7 +100,9 @@ class AdminFinanceController extends Controller
             ->sortByDesc('ca_total');
 
         // Calculer les dépenses par institut
-        $depensesParInstitut = Depense::whereYear('date', $annee)
+        $depensesQuery = Depense::whereYear('date', $annee);
+        if ($moisFiltre) $depensesQuery->whereMonth('date', $moisFiltre);
+        $depensesParInstitut = $depensesQuery
             ->selectRaw('institut_id, SUM(montant) as total')
             ->groupBy('institut_id')
             ->pluck('total', 'institut_id');
@@ -111,8 +116,10 @@ class AdminFinanceController extends Controller
             ->pluck('total', 'institut_id');
 
         // ── Top 5 instituts les + constants (nb de mois actifs) ──────────
-        $constantsRaw = Vente::where('statut', 'validee')
-            ->whereYear('created_at', $annee)
+        $constantsQuery = Vente::where('statut', 'validee')
+            ->whereYear('created_at', $annee);
+        if ($moisFiltre) $constantsQuery->whereMonth('created_at', $moisFiltre);
+        $constantsRaw = $constantsQuery
             ->selectRaw('institut_id, COUNT(DISTINCT ' . $monthExpr('created_at') . ') as mois_actifs, SUM(total) as ca')
             ->groupBy('institut_id')
             ->orderByDesc('mois_actifs')
@@ -125,7 +132,9 @@ class AdminFinanceController extends Controller
         })->filter();
 
         // ── Top dépensiers ───────────────────────────────────────────────
-        $topDepensiers = Depense::whereYear('date', $annee)
+        $topDepQuery = Depense::whereYear('date', $annee);
+        if ($moisFiltre) $topDepQuery->whereMonth('date', $moisFiltre);
+        $topDepensiers = $topDepQuery
             ->selectRaw('institut_id, SUM(montant) as total')
             ->groupBy('institut_id')
             ->orderByDesc('total')

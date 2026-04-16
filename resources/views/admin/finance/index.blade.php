@@ -2,7 +2,7 @@
 @section('page-title', 'Point financier')
 
 @section('content')
-<div class="space-y-6" x-data="{ tab: 'overview' }">
+<div class="space-y-6" x-data="{ tab: new URLSearchParams(window.location.search).get('tab') || 'overview' }">
 
     {{-- En-tête + Filtres --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -11,12 +11,13 @@
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Vue d'ensemble des revenus et performances des instituts</p>
         </div>
         <form method="GET" class="flex items-center gap-2">
-            <select name="annee" onchange="this.form.submit()" class="form-input text-sm py-1.5 w-auto">
+            <input type="hidden" name="tab" :value="tab">
+            <select name="annee" onchange="this.form.submit()" class="form-input text-sm py-1.5 pr-8 w-auto appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236b7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-[right_0.25rem_center] bg-no-repeat">
                 @foreach($anneesDisponibles as $a)
                     <option value="{{ $a }}" {{ $annee == $a ? 'selected' : '' }}>{{ $a }}</option>
                 @endforeach
             </select>
-            <select name="mois" onchange="this.form.submit()" class="form-input text-sm py-1.5 w-auto">
+            <select name="mois" onchange="this.form.submit()" class="form-input text-sm py-1.5 pr-8 w-auto appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236b7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-[right_0.25rem_center] bg-no-repeat">
                 <option value="">Tous les mois</option>
                 @foreach($moisLabels as $i => $label)
                     <option value="{{ $i + 1 }}" {{ $moisFiltre == $i + 1 ? 'selected' : '' }}>{{ $label }}</option>
@@ -192,7 +193,7 @@
     <div x-show="tab === 'instituts'" x-cloak x-transition>
         <div class="card overflow-hidden">
             <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
-                <h2 class="font-bold text-gray-900 dark:text-white">Performance des instituts — {{ $annee }}</h2>
+                <h2 class="font-bold text-gray-900 dark:text-white">Performance des instituts — {{ $moisFiltre ? $moisLabels[$moisFiltre - 1] . ' ' : '' }}{{ $annee }}</h2>
                 <span class="text-xs text-gray-400">{{ $instituts->count() }} instituts</span>
             </div>
 
@@ -206,7 +207,7 @@
                     <thead>
                         <tr>
                             <th class="text-left">Institut</th>
-                            <th class="text-right">CA {{ $annee }}</th>
+                            <th class="text-right">CA {{ $moisFiltre ? $moisLabels[$moisFiltre - 1] : $annee }}</th>
                             <th class="text-right">CA ce mois</th>
                             <th class="text-right">Progression</th>
                             <th class="text-right">Ventes</th>
@@ -258,15 +259,28 @@
                         </tr>
                         @endforeach
                     </tbody>
-                    <tfoot class="border-t-2 border-gray-200 dark:border-slate-600">
-                        <tr class="font-bold">
-                            <td class="text-sm text-gray-900 dark:text-white">Total</td>
-                            <td class="text-right text-sm text-gray-900 dark:text-white">{{ number_format($instituts->sum('ca_total'), 0, ',', ' ') }}</td>
-                            <td class="text-right text-sm text-gray-700 dark:text-gray-300">{{ number_format($instituts->sum('ca_mois_courant'), 0, ',', ' ') }}</td>
-                            <td></td>
-                            <td class="text-right text-sm text-gray-600 dark:text-gray-400">{{ $instituts->sum('nb_ventes') }}</td>
-                            <td class="text-right text-sm text-red-500">{{ number_format($depensesParInstitut->sum(), 0, ',', ' ') }}</td>
-                            <td class="text-right text-sm text-emerald-600">{{ number_format($instituts->sum('ca_total') - $depensesParInstitut->sum(), 0, ',', ' ') }}</td>
+                    <tfoot>
+                        <tr class="bg-gray-50 dark:bg-slate-800 border-t-2 border-gray-300 dark:border-slate-500">
+                            <td class="!py-4">
+                                <span class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">Total</span>
+                            </td>
+                            <td class="text-right !py-4">
+                                <span class="text-sm font-bold text-gray-900 dark:text-white">{{ number_format($instituts->sum('ca_total'), 0, ',', "\u{202F}") }}</span>
+                            </td>
+                            <td class="text-right !py-4">
+                                <span class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ number_format($instituts->sum('ca_mois_courant'), 0, ',', "\u{202F}") }}</span>
+                            </td>
+                            <td class="!py-4"></td>
+                            <td class="text-right !py-4">
+                                <span class="text-sm font-bold text-gray-600 dark:text-gray-400">{{ $instituts->sum('nb_ventes') }}</span>
+                            </td>
+                            <td class="text-right !py-4">
+                                <span class="text-sm font-bold text-red-500">{{ number_format($depensesParInstitut->sum(), 0, ',', "\u{202F}") }}</span>
+                            </td>
+                            <td class="text-right !py-4">
+                                @php $beneficeTotal = $instituts->sum('ca_total') - $depensesParInstitut->sum(); @endphp
+                                <span class="text-sm font-bold {{ $beneficeTotal >= 0 ? 'text-emerald-600' : 'text-red-500' }}">{{ number_format($beneficeTotal, 0, ',', "\u{202F}") }}</span>
+                            </td>
                         </tr>
                     </tfoot>
                 </table>
