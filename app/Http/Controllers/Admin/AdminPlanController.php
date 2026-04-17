@@ -38,12 +38,13 @@ class AdminPlanController extends Controller
     public function update(Request $request, PlanAbonnement $plan)
     {
         $data = $request->validate([
-            'nom' => ['required', 'string', 'max:50'],
-            'prix' => ['required', 'integer', 'min:0'],
-            'max_employes' => ['nullable', 'integer', 'min:1'],
+            'nom'           => ['required', 'string', 'max:50'],
+            'slug'          => ['required', 'string', 'max:30', 'unique:plans_abonnement,slug,' . $plan->id],
+            'prix'          => ['required', 'integer', 'min:0'],
+            'max_employes'  => ['nullable', 'integer', 'min:1'],
             'max_instituts' => ['nullable', 'integer', 'min:1'],
-            'description' => ['nullable', 'string', 'max:500'],
-            'ordre' => ['required', 'integer', 'min:0'],
+            'description'   => ['nullable', 'string', 'max:500'],
+            'ordre'         => ['required', 'integer', 'min:0'],
         ]);
 
         $data['actif'] = $request->boolean('actif');

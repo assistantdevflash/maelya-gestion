@@ -115,7 +115,7 @@ class User extends Authenticatable
     public function aPlanEntreprise(): bool
     {
         $abo = $this->abonnementActif;
-        return $abo && $abo->plan?->slug === 'premium-plus';
+        return $abo && in_array($abo->plan?->slug, ['premium-plus', 'entreprise']);
     }
 
     /**

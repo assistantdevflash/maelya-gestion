@@ -125,7 +125,7 @@
                     </div>
                     <div>
                         <label class="form-label">Slug <span class="text-red-500">*</span></label>
-                        <input type="text" name="slug" x-model="form.slug" class="form-input" :readonly="editing" required>
+                        <input type="text" name="slug" x-model="form.slug" class="form-input" required>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
