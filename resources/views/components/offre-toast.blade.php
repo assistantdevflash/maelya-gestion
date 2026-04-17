@@ -71,7 +71,7 @@
         <p class="text-[10px] text-gray-400 mb-3">Jusqu'au {{ $offre->date_fin->format('d/m/Y') }}</p>
 
         {{-- CTA --}}
-        <a href="{{ route('inscription') }}" class="flex items-center justify-center gap-1.5 w-full px-4 py-2 rounded-xl text-xs font-bold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
+        <a href="{{ auth()->check() ? route('abonnement.plans') : route('inscription') }}" class="flex items-center justify-center gap-1.5 w-full px-4 py-2 rounded-xl text-xs font-bold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
            style="background: linear-gradient(135deg, #9333ea, #ec4899);">
             Profiter de l'offre
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
