@@ -171,7 +171,7 @@
                                 <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                                 Rapports financiers
                             </li>
-                            @if($plan->slug === 'entreprise')
+                            @if($plan->slug === 'premium-plus')
                             <li class="flex items-center gap-2.5">
                                 <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                                 <span class="font-medium text-gray-900">Support prioritaire</span>
@@ -201,7 +201,7 @@
                             </button>
                         @else
                             <button @click="openModal('{{ $plan->id }}', '{{ $plan->nom }}', {{ $plan->prixEffectif() }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }})"
-                                    class="{{ $plan->slug === 'entreprise' ? 'btn-primary' : 'btn-outline' }} w-full justify-center">
+                                    class="{{ $plan->slug === 'premium-plus' ? 'btn-primary' : 'btn-outline' }} w-full justify-center">
                                 S'abonner
                             </button>
                         @endif

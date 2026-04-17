@@ -44,8 +44,8 @@ class DatabaseSeeder extends Seeder
                 'ordre'         => 1,
             ],
             [
-                'nom'           => 'Entreprise',
-                'slug'          => 'entreprise',
+                'nom'           => 'Premium+',
+                'slug'          => 'premium-plus',
                 'prix'          => 9900,
                 'duree_type'    => 'mensuel',
                 'duree_jours'   => 30,

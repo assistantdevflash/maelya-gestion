@@ -7,7 +7,7 @@
                 <h1 class="text-2xl font-display font-bold text-gray-900 tracking-tight">Mes instituts</h1>
                 <p class="text-sm text-gray-500 mt-1">
                     @if($maxInstituts === null)
-                        Plan Entreprise — instituts illimités
+                        Plan Premium+ — instituts illimités
                     @else
                         {{ $instituts->count() }} / {{ $maxInstituts }} institut{{ $maxInstituts > 1 ? 's' : '' }}
                     @endif
@@ -43,8 +43,8 @@
                 </svg>
             </div>
             <div class="flex-1">
-                <p class="text-sm font-semibold text-gray-900">Passez au plan Entreprise pour plusieurs instituts</p>
-                <p class="text-xs text-gray-500 mt-0.5">Votre plan actuel autorise {{ $maxInstituts }} institut. Le plan Entreprise permet des instituts illimités avec employés illimités.</p>
+                <p class="text-sm font-semibold text-gray-900">Passez au plan Premium+ pour plusieurs instituts</p>
+                <p class="text-xs text-gray-500 mt-0.5">Votre plan actuel autorise {{ $maxInstituts }} institut. Le plan Premium+ permet des instituts illimités avec employés illimités.</p>
             </div>
             <a href="{{ route('abonnement.plans') }}" class="btn-primary text-sm flex-shrink-0">Voir les plans</a>
         </div>
@@ -64,10 +64,10 @@
                     <div class="flex items-center gap-2 mb-1">
                         <p class="font-bold text-gray-900">Gérez plusieurs instituts depuis un seul compte</p>
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white flex-shrink-0"
-                              style="background: linear-gradient(135deg, #9333ea, #ec4899);">Entreprise</span>
+                              style="background: linear-gradient(135deg, #9333ea, #ec4899);">Premium+</span>
                     </div>
                     <p class="text-sm text-gray-500 mb-3">
-                        Votre plan Entreprise vous permet de créer autant d'instituts que vous souhaitez. Chaque institut a ses propres clients, stock, ventes et employés indépendants.
+                        Votre plan Premium+ vous permet de créer autant d'instituts que vous souhaitez. Chaque institut a ses propres clients, stock, ventes et employés indépendants.
                     </p>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div class="flex items-center gap-2">
