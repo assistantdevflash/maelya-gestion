@@ -518,6 +518,11 @@
         </div>
         @endif
 
+        {{-- Bannière nouvelles offres promotionnelles --}}
+        <div class="px-3 sm:px-6 lg:px-8 pt-2">
+            <x-offre-banner class="space-y-2" :cta-route="route('abonnement.plans')" cta-label="Voir les plans" />
+        </div>
+
         {{-- Flash messages --}}
         <div class="px-6 lg:px-8 pt-4 space-y-2">
             @if(session('success'))

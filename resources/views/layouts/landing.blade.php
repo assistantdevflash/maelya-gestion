@@ -264,6 +264,9 @@
         {{ $slot }}
     </main>
 
+    {{-- Toast offre promotionnelle (sticky bottom-right) --}}
+    <x-offre-toast />
+
     {{-- ═══ FOOTER ═══ --}}
     <footer class="relative bg-gray-950 text-gray-400 overflow-hidden" role="contentinfo">
         <div class="absolute inset-0 pointer-events-none">

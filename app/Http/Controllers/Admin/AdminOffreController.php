@@ -48,6 +48,11 @@ class AdminOffreController extends Controller
             $data['periodes_concernees'] = null;
         }
 
+        // Si l'offre est active immédiatement, notifier pendant 7 jours
+        if ($data['actif'] && isset($data['date_debut']) && \Carbon\Carbon::parse($data['date_debut'])->lte(now()->startOfDay())) {
+            $data['notifier_jusqu_au'] = now()->addDays(7)->toDateString();
+        }
+
         OffrePromotionnelle::create($data);
 
         return redirect()->route('admin.offres.index')

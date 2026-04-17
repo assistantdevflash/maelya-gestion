@@ -17,6 +17,7 @@ class OffrePromotionnelle extends Model
         'date_debut', 'date_fin', 'actif',
         'plans_concernes', 'periodes_concernees',
         'badge_texte', 'badge_couleur', 'priorite',
+        'notifier_jusqu_au',
     ];
 
     protected $casts = [
@@ -27,6 +28,7 @@ class OffrePromotionnelle extends Model
         'plans_concernes' => 'array',
         'periodes_concernees' => 'array',
         'priorite' => 'integer',
+        'notifier_jusqu_au' => 'date',
     ];
 
     /**
@@ -93,6 +95,15 @@ class OffrePromotionnelle extends Model
         return $query->where('actif', true)
             ->whereDate('date_debut', '<=', now()->toDateString())
             ->whereDate('date_fin', '>=', now()->toDateString());
+    }
+
+    /**
+     * Scope : offres à notifier (actives + notifier_jusqu_au >= aujourd'hui).
+     */
+    public function scopeANotifier($query)
+    {
+        return $query->actives()
+            ->whereDate('notifier_jusqu_au', '>=', now()->toDateString());
     }
 
     /**
