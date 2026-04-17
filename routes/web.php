@@ -156,6 +156,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::get('finance', [AdminFinanceController::class, 'index'])->name('finance.index');
     Route::get('offres', [AdminOffreController::class, 'index'])->name('offres.index');
     Route::post('offres', [AdminOffreController::class, 'store'])->name('offres.store');
+    Route::get('offres/{offre}', fn () => redirect()->route('admin.offres.index'));
     Route::put('offres/{offre}', [AdminOffreController::class, 'update'])->name('offres.update');
     Route::patch('offres/{offre}/toggle', [AdminOffreController::class, 'toggleActif'])->name('offres.toggle');
     Route::delete('offres/{offre}', [AdminOffreController::class, 'destroy'])->name('offres.destroy');

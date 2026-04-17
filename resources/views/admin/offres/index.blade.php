@@ -15,10 +15,6 @@
         </button>
     </div>
 
-    @if(session('success'))
-        <div class="alert-success">{{ session('success') }}</div>
-    @endif
-
     {{-- Statistiques --}}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="card p-4">
@@ -49,7 +45,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
                 <div>
-                    <p class="text-2xl font-bold text-gray-900">{{ $offres->filter(fn($o) => $o->date_fin->isPast())->count() }}</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $offres->filter(fn($o) => $o->date_fin->lt(today()))->count() }}</p>
                     <p class="text-xs text-gray-500">Expirées</p>
                 </div>
             </div>
@@ -73,7 +69,7 @@
                 </thead>
                 <tbody>
                 @forelse($offres as $offre)
-                <tr class="{{ $offre->date_fin->isPast() ? 'opacity-50' : '' }}">
+                <tr class="{{ $offre->date_fin->lt(today()) ? 'opacity-50' : '' }}">
                     <td>
                         <div class="flex items-center gap-2 flex-wrap">
                             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r {{ $offre->badge_class }} text-white text-[10px] font-bold">
@@ -93,7 +89,7 @@
                         <div class="text-gray-600">{{ $offre->date_debut->format('d/m/Y') }}</div>
                         <div class="text-gray-400 text-xs">au {{ $offre->date_fin->format('d/m/Y') }}</div>
                         @if($offre->estActive())
-                            <span class="text-[10px] text-emerald-600 font-medium">J-{{ now()->diffInDays($offre->date_fin) }}</span>
+                            <span class="text-[10px] text-emerald-600 font-medium">J-{{ (int) today()->diffInDays($offre->date_fin) }}</span>
                         @endif
                     </td>
                     <td class="text-sm">
@@ -123,8 +119,10 @@
                             <span class="badge bg-gray-100 text-gray-500 text-xs">Désactivée</span>
                         @elseif($offre->date_debut->isFuture())
                             <span class="badge bg-amber-100 text-amber-700 text-xs">Programmée</span>
-                        @else
+                        @elseif($offre->date_fin->lt(today()))
                             <span class="badge bg-red-100 text-red-600 text-xs">Expirée</span>
+                        @else
+                            <span class="badge bg-gray-100 text-gray-500 text-xs">Inactive</span>
                         @endif
                     </td>
                     <td class="text-center">
@@ -132,7 +130,7 @@
                     </td>
                     <td>
                         <div class="flex items-center gap-2">
-                            <button @click='openEdit(@json($offre))'
+                            <button type="button" @click='openEdit(@json($offre))'
                                 class="btn-outline btn-sm inline-flex items-center gap-1.5">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                 Modifier
@@ -181,9 +179,11 @@
                 </button>
             </div>
 
-            <form :action="editing ? '{{ route('admin.offres.index') }}/' + form.id : '{{ route('admin.offres.store') }}'" method="POST" class="px-6 py-5 space-y-4">
+            <form :action="editing ? '{{ url('admin/offres') }}/' + form.id : '{{ route('admin.offres.store') }}'" method="POST" class="px-6 py-5 space-y-4">
                 @csrf
-                <input x-show="editing" type="hidden" name="_method" value="PUT">
+                <template x-if="editing">
+                    <input type="hidden" name="_method" value="PUT">
+                </template>
 
                 {{-- Nom + Badge --}}
                 <div>

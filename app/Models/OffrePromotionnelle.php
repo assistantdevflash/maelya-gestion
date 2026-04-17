@@ -91,8 +91,8 @@ class OffrePromotionnelle extends Model
     public function scopeActives($query)
     {
         return $query->where('actif', true)
-            ->where('date_debut', '<=', now()->toDateString())
-            ->where('date_fin', '>=', now()->toDateString());
+            ->whereDate('date_debut', '<=', now()->toDateString())
+            ->whereDate('date_fin', '>=', now()->toDateString());
     }
 
     /**
