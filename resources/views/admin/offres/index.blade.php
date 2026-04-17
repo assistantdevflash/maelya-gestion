@@ -171,7 +171,7 @@
     {{-- Modal créer / modifier --}}
     <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
          @keydown.escape.window="open = false">
-        <div @click.outside="open = false" class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div @click.outside="open = false" class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             <div class="px-6 pt-6 pb-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
                 <h2 class="font-bold text-gray-900 dark:text-white text-lg" x-text="editing ? 'Modifier l\'offre' : 'Nouvelle offre promotionnelle'"></h2>
                 <button @click="open = false" class="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
@@ -185,19 +185,20 @@
                     <input type="hidden" name="_method" value="PUT">
                 </template>
 
-                {{-- Nom + Badge --}}
-                <div>
-                    <label class="form-label">Nom de l'offre <span class="text-red-500">*</span></label>
-                    <input type="text" name="nom" x-model="form.nom" class="form-input" placeholder="Ex: Offre de Pâques, Offre fin d'année..." required>
-                </div>
-
-                <div>
-                    <label class="form-label">Description <span class="text-xs text-gray-400">(facultatif)</span></label>
-                    <textarea name="description" x-model="form.description" rows="2" class="form-input resize-none" placeholder="Détails de l'offre..."></textarea>
-                </div>
-
-                {{-- Badge --}}
+                {{-- Ligne 1 : Nom + Description --}}
                 <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Nom de l'offre <span class="text-red-500">*</span></label>
+                        <input type="text" name="nom" x-model="form.nom" class="form-input" placeholder="Ex: Offre de Pâques..." required>
+                    </div>
+                    <div>
+                        <label class="form-label">Description <span class="text-xs text-gray-400">(facultatif)</span></label>
+                        <input type="text" name="description" x-model="form.description" class="form-input" placeholder="Détails de l'offre...">
+                    </div>
+                </div>
+
+                {{-- Ligne 2 : Badge texte + couleur + aperçu --}}
+                <div class="grid grid-cols-3 gap-4 items-end">
                     <div>
                         <label class="form-label">Texte du badge <span class="text-red-500">*</span></label>
                         <input type="text" name="badge_texte" x-model="form.badge_texte" class="form-input" placeholder="🔥 Offre spéciale" required>
@@ -210,30 +211,28 @@
                             @endforeach
                         </select>
                     </div>
+                    <div class="flex items-center gap-2 pb-1">
+                        <span class="text-xs text-gray-400">Aperçu :</span>
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-white text-[10px] font-bold bg-gradient-to-r"
+                              :class="{
+                                  'from-amber-400 to-orange-500': form.badge_couleur === 'amber',
+                                  'from-emerald-400 to-green-500': form.badge_couleur === 'emerald',
+                                  'from-rose-400 to-pink-500': form.badge_couleur === 'rose',
+                                  'from-blue-400 to-indigo-500': form.badge_couleur === 'blue',
+                                  'from-purple-400 to-violet-500': form.badge_couleur === 'purple',
+                                  'from-red-400 to-orange-500': form.badge_couleur === 'red',
+                                  'from-indigo-400 to-blue-500': form.badge_couleur === 'indigo',
+                                  'from-cyan-400 to-teal-500': form.badge_couleur === 'cyan',
+                              }"
+                              x-text="form.badge_texte || 'Offre spéciale'"></span>
+                    </div>
                 </div>
 
-                {{-- Aperçu du badge --}}
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-gray-400">Aperçu :</span>
-                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-white text-[10px] font-bold bg-gradient-to-r"
-                          :class="{
-                              'from-amber-400 to-orange-500': form.badge_couleur === 'amber',
-                              'from-emerald-400 to-green-500': form.badge_couleur === 'emerald',
-                              'from-rose-400 to-pink-500': form.badge_couleur === 'rose',
-                              'from-blue-400 to-indigo-500': form.badge_couleur === 'blue',
-                              'from-purple-400 to-violet-500': form.badge_couleur === 'purple',
-                              'from-red-400 to-orange-500': form.badge_couleur === 'red',
-                              'from-indigo-400 to-blue-500': form.badge_couleur === 'indigo',
-                              'from-cyan-400 to-teal-500': form.badge_couleur === 'cyan',
-                          }"
-                          x-text="form.badge_texte || 'Offre spéciale'"></span>
-                </div>
-
-                {{-- Réduction --}}
+                {{-- Ligne 3 : Réduction + Dates (4 colonnes) --}}
                 <div class="border-t border-gray-100 dark:border-slate-700 pt-4">
                     <p class="text-xs font-bold text-emerald-600 uppercase tracking-wide mb-3 flex items-center gap-1">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        Réduction
+                        Réduction & Dates
                     </p>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
@@ -251,33 +250,30 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                {{-- Dates --}}
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="form-label">Date de début <span class="text-red-500">*</span></label>
-                        <input type="date" name="date_debut" x-model="form.date_debut" class="form-input" required>
-                    </div>
-                    <div>
-                        <label class="form-label">Date de fin <span class="text-red-500">*</span></label>
-                        <input type="date" name="date_fin" x-model="form.date_fin" class="form-input" required>
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <label class="form-label">Date de début <span class="text-red-500">*</span></label>
+                            <input type="date" name="date_debut" x-model="form.date_debut" class="form-input" required>
+                        </div>
+                        <div>
+                            <label class="form-label">Date de fin <span class="text-red-500">*</span></label>
+                            <input type="date" name="date_fin" x-model="form.date_fin" class="form-input" required>
+                        </div>
                     </div>
                 </div>
 
-                {{-- Conditions --}}
+                {{-- Ligne 4 : Conditions (plans + périodes côte à côte) --}}
                 <div class="border-t border-gray-100 dark:border-slate-700 pt-4">
                     <p class="text-xs font-bold text-blue-600 uppercase tracking-wide mb-3 flex items-center gap-1">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
                         Conditions d'application
                     </p>
-
-                    <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-6">
                         <div>
                             <label class="form-label">Plans concernés <span class="text-xs text-gray-400">(vide = tous)</span></label>
                             <div class="flex flex-wrap gap-2 mt-1">
                                 @foreach($plans as $plan)
-                                <label class="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:border-primary-300 cursor-pointer transition-colors text-sm">
+                                <label class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 hover:border-primary-300 cursor-pointer transition-colors text-sm">
                                     <input type="checkbox" name="plans_concernes[]" value="{{ $plan->id }}"
                                            :checked="form.plans_concernes && form.plans_concernes.includes('{{ $plan->id }}')"
                                            class="rounded text-primary-600">
@@ -286,12 +282,11 @@
                                 @endforeach
                             </div>
                         </div>
-
                         <div>
                             <label class="form-label">Périodes concernées <span class="text-xs text-gray-400">(vide = toutes)</span></label>
                             <div class="flex flex-wrap gap-2 mt-1">
                                 @foreach(['mensuel' => 'Mensuel', 'annuel' => 'Annuel (1 an)', 'triennal' => 'Triennal (3 ans)'] as $key => $label)
-                                <label class="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:border-primary-300 cursor-pointer transition-colors text-sm">
+                                <label class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 hover:border-primary-300 cursor-pointer transition-colors text-sm">
                                     <input type="checkbox" name="periodes_concernees[]" value="{{ $key }}"
                                            :checked="form.periodes_concernees && form.periodes_concernees.includes('{{ $key }}')"
                                            class="rounded text-primary-600">
@@ -303,23 +298,22 @@
                     </div>
                 </div>
 
-                {{-- Priorité + Actif --}}
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="form-label">Priorité <span class="text-xs text-gray-400">(plus élevé = prioritaire)</span></label>
-                        <input type="number" name="priorite" x-model="form.priorite" min="0" max="100" class="form-input" required>
-                    </div>
-                    <div class="flex items-end pb-1">
-                        <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                {{-- Ligne 5 : Priorité + Actif + Boutons --}}
+                <div class="flex items-end justify-between gap-4 pt-3 border-t border-gray-100 dark:border-slate-700">
+                    <div class="flex items-end gap-6">
+                        <div>
+                            <label class="form-label">Priorité <span class="text-xs text-gray-400">(plus élevé = prioritaire)</span></label>
+                            <input type="number" name="priorite" x-model="form.priorite" min="0" max="100" class="form-input w-24" required>
+                        </div>
+                        <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer pb-2">
                             <input type="checkbox" name="actif" value="1" :checked="form.actif" class="rounded text-primary-600">
                             Offre active
                         </label>
                     </div>
-                </div>
-
-                <div class="flex justify-end gap-3 pt-3 border-t border-gray-100 dark:border-slate-700">
-                    <button type="button" @click="open = false" class="btn-secondary">Annuler</button>
-                    <button class="btn-primary" type="submit" x-text="editing ? 'Enregistrer' : 'Créer l\'offre'"></button>
+                    <div class="flex gap-3">
+                        <button type="button" @click="open = false" class="btn-secondary">Annuler</button>
+                        <button class="btn-primary" type="submit" x-text="editing ? 'Enregistrer' : 'Créer l\'offre'"></button>
+                    </div>
                 </div>
             </form>
         </div>
