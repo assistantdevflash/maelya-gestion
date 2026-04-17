@@ -76,9 +76,10 @@
                         </div>
 
                         <div>
-                            <input type="email" id="email" name="email" required autofocus autocomplete="username"
-                                   value="{{ old('email') }}"
-                                   class="w-full px-4 py-3.5 rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white text-base placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900 transition-all @error('email') border-red-400 @enderror"
+                            <input type="text" id="login" name="login" required autofocus autocomplete="username"
+                                   value="{{ old('login') }}"
+                                   inputmode="email"
+                                   class="w-full px-4 py-3.5 rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white text-base placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900 transition-all @error('login') border-red-400 @enderror"
                                    placeholder="E-mail ou numéro de mobile">
                         </div>
 
