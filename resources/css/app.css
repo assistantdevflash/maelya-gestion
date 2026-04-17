@@ -5,6 +5,9 @@
 @tailwind utilities;
 
 @layer base {
+    [x-cloak] {
+        display: none !important;
+    }
     html {
         @apply antialiased scroll-smooth;
     }
