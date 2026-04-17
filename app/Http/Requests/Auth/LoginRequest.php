@@ -57,7 +57,7 @@ class LoginRequest extends FormRequest
         // Détecter si c'est un e-mail ou un numéro de téléphone
         $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'telephone';
 
-        if (! Auth::attempt([$field => $login, 'password' => $password], $this->boolean('remember'))) {
+        if (! Auth::attempt([$field => $login, 'password' => $password], true)) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
