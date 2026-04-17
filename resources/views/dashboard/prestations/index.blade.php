@@ -65,6 +65,11 @@
                     </template>
                 </div>
                 <div class="flex items-center gap-1">
+                    <button x-show="!editing" @click="$dispatch('open-prestation-with-cat', { categorieId: '{{ $categorie->id }}' })" class="btn-icon text-gray-400 hover:text-emerald-600" title="Ajouter une prestation">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                    </button>
                     <button @click="editing = true" x-show="!editing" class="btn-icon text-gray-400 hover:text-primary-600" title="Modifier la catégorie">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -168,15 +173,18 @@
     <div x-data="{
             show: false,
             isEdit: false,
+            catFixe: false,
             formAction: '{{ route('dashboard.prestations.store') }}',
             form: { categorie_prestation_id: '', nom: '', prix: '', duree: '', description: '', actif: true },
             resetForm() {
                 this.isEdit = false;
+                this.catFixe = false;
                 this.formAction = '{{ route('dashboard.prestations.store') }}';
                 this.form = { categorie_prestation_id: '', nom: '', prix: '', duree: '', description: '', actif: true };
             },
             editPrestation(detail) {
                 this.isEdit = true;
+                this.catFixe = false;
                 this.formAction = '{{ url('dashboard/prestations') }}/' + detail.id;
                 this.form = {
                     categorie_prestation_id: detail.categorie_prestation_id,
@@ -193,6 +201,7 @@
          x-cloak
          class="modal-backdrop"
          @open-prestation.window="resetForm(); show = true"
+         @open-prestation-with-cat.window="resetForm(); form.categorie_prestation_id = $event.detail.categorieId; catFixe = true; show = true"
          @edit-prestation.window="editPrestation($event.detail)"
          @keydown.escape.window="show = false">
         <div class="modal max-w-lg" x-transition @click.stop>
@@ -213,7 +222,10 @@
 
                     <div class="form-group">
                         <label class="form-label">Catégorie *</label>
-                        <select name="categorie_prestation_id" required x-model="form.categorie_prestation_id" class="form-select">
+                        <template x-if="catFixe">
+                            <input type="hidden" name="categorie_prestation_id" :value="form.categorie_prestation_id">
+                        </template>
+                        <select name="categorie_prestation_id" required x-model="form.categorie_prestation_id" :disabled="catFixe" class="form-select" :class="catFixe ? 'opacity-60 cursor-not-allowed bg-gray-50' : ''">
                             <option value="">Choisir une catégorie...</option>
                             @foreach($categories as $cat)
                                 <option value="{{ $cat->id }}">{{ $cat->nom }}</option>
