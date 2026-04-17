@@ -37,9 +37,10 @@
                                 Recommandé
                             </span>
                         @endif
-                        @if($plan->offreLancementActive())
-                            <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">
-                                🔥 Offre lancement
+                        @php $offrePlan = $plan->meilleureOffre(); @endphp
+                        @if($offrePlan)
+                            <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r {{ $offrePlan->badge_class }} text-white">
+                                {{ $offrePlan->badge_texte }}
                             </span>
                         @endif
                     </div>
@@ -50,14 +51,14 @@
                 <td class="text-sm text-gray-500 font-mono">{{ $plan->slug }}</td>
                 <td class="font-semibold">
                     {{ number_format($plan->prix, 0, ',', ' ') }} <span class="text-gray-400 font-normal text-xs">FCFA</span>
-                    @if($plan->offreLancementActive())
+                    @if($offrePlan)
                         <div class="flex items-center gap-1 mt-0.5">
-                            <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[9px] font-bold">
-                                🔥 Lancement
+                            <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-gradient-to-r {{ $offrePlan->badge_class }} text-white text-[9px] font-bold">
+                                {{ $offrePlan->reduction_texte }}
                             </span>
-                            <span class="text-xs text-emerald-600 font-semibold">{{ number_format($plan->prix_lancement, 0, ',', ' ') }}</span>
+                            <span class="text-xs text-emerald-600 font-semibold">{{ number_format($plan->prixEffectif(), 0, ',', ' ') }}</span>
                         </div>
-                        <div class="text-[10px] text-gray-400">jusqu'au {{ $plan->fin_offre_lancement->format('d/m/Y') }}</div>
+                        <div class="text-[10px] text-gray-400">jusqu'au {{ $offrePlan->date_fin->format('d/m/Y') }}</div>
                     @endif
                 </td>
                 <td class="text-sm text-gray-600">
@@ -152,23 +153,13 @@
                     <textarea name="description" x-model="form.description" rows="2" class="form-input resize-none"></textarea>
                 </div>
 
-                {{-- Offre de lancement --}}
+                {{-- Note : les offres promotionnelles sont gérées via la page dédiée --}}
                 <div class="border-t border-gray-100 pt-4 mt-2">
-                    <p class="text-xs font-bold text-amber-600 uppercase tracking-wide mb-3 flex items-center gap-1">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>
-                        Offre de lancement
+                    <p class="text-xs text-gray-400 flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
+                        Les offres promotionnelles se gèrent depuis la page
+                        <a href="{{ route('admin.offres.index') }}" class="text-primary-600 hover:underline font-medium">Offres promo</a>.
                     </p>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="form-label">Prix lancement <span class="text-xs text-gray-400">(FCFA)</span></label>
-                            <input type="number" name="prix_lancement" x-model="form.prix_lancement" min="0" class="form-input" placeholder="Vide = pas d'offre">
-                        </div>
-                        <div>
-                            <label class="form-label">Fin de l'offre</label>
-                            <input type="date" name="fin_offre_lancement" x-model="form.fin_offre_lancement" class="form-input"
-                                   min="{{ now()->format('Y-m-d') }}">
-                        </div>
-                    </div>
                 </div>
 
                 <div class="flex items-center gap-6">
@@ -195,9 +186,9 @@ function plansManager() {
     return {
         open: false,
         editing: false,
-        form: { id: null, nom: '', slug: '', prix: '', max_employes: '', max_instituts: '', description: '', mis_en_avant: false, actif: true, ordre: 0, prix_lancement: '', fin_offre_lancement: '' },
-        openCreate() { this.editing = false; this.form = { id: null, nom: '', slug: '', prix: '', max_employes: '', max_instituts: '', description: '', mis_en_avant: false, actif: true, ordre: 0, prix_lancement: '', fin_offre_lancement: '' }; this.open = true; },
-        openEdit(plan) { this.editing = true; this.form = { ...plan, mis_en_avant: !!plan.mis_en_avant, actif: !!plan.actif, prix_lancement: plan.prix_lancement || '', fin_offre_lancement: plan.fin_offre_lancement ? plan.fin_offre_lancement.split('T')[0] : '' }; this.open = true; }
+        form: { id: null, nom: '', slug: '', prix: '', max_employes: '', max_instituts: '', description: '', mis_en_avant: false, actif: true, ordre: 0 },
+        openCreate() { this.editing = false; this.form = { id: null, nom: '', slug: '', prix: '', max_employes: '', max_instituts: '', description: '', mis_en_avant: false, actif: true, ordre: 0 }; this.open = true; },
+        openEdit(plan) { this.editing = true; this.form = { ...plan, mis_en_avant: !!plan.mis_en_avant, actif: !!plan.actif }; this.open = true; }
     }
 }
 </script>

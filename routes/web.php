@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\AdminConfigController;
 use App\Http\Controllers\Admin\AdminMessageController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminFinanceController;
+use App\Http\Controllers\Admin\AdminOffreController;
 use App\Http\Controllers\Auth\InscriptionController;
 use Illuminate\Support\Facades\Route;
 
@@ -153,6 +154,11 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::patch('messages/{message}/lire', [AdminMessageController::class, 'marquerLu'])->name('messages.lire');
     Route::delete('messages/{message}', [AdminMessageController::class, 'destroy'])->name('messages.destroy');
     Route::get('finance', [AdminFinanceController::class, 'index'])->name('finance.index');
+    Route::get('offres', [AdminOffreController::class, 'index'])->name('offres.index');
+    Route::post('offres', [AdminOffreController::class, 'store'])->name('offres.store');
+    Route::put('offres/{offre}', [AdminOffreController::class, 'update'])->name('offres.update');
+    Route::patch('offres/{offre}/toggle', [AdminOffreController::class, 'toggleActif'])->name('offres.toggle');
+    Route::delete('offres/{offre}', [AdminOffreController::class, 'destroy'])->name('offres.destroy');
 });
 
 require __DIR__.'/auth.php';

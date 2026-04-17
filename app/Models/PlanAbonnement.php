@@ -32,11 +32,49 @@ class PlanAbonnement extends Model
     ];
 
     /**
+     * Retourne la meilleure offre promotionnelle active pour ce plan et cette période.
+     */
+    public function meilleureOffre(?string $periode = null): ?OffrePromotionnelle
+    {
+        $offres = OffrePromotionnelle::actives()
+            ->orderByDesc('priorite')
+            ->get();
+
+        $meilleureOffre = null;
+        $meilleurPrix = $this->prix;
+
+        foreach ($offres as $offre) {
+            if (!$offre->appliquableAuPlan($this)) {
+                continue;
+            }
+            if ($periode && !$offre->appliquableAPeriode($periode)) {
+                continue;
+            }
+
+            $prixReduit = $offre->calculerPrix($this->prix);
+            if ($prixReduit < $meilleurPrix) {
+                $meilleurPrix = $prixReduit;
+                $meilleureOffre = $offre;
+            }
+        }
+
+        return $meilleureOffre;
+    }
+
+    /**
+     * Vérifie si une offre promotionnelle est active pour ce plan.
+     */
+    public function aUneOffreActive(?string $periode = null): bool
+    {
+        return $this->meilleureOffre($periode) !== null;
+    }
+
+    /**
      * Calcule le prix total pour une période donnée avec réduction dégressive.
      */
     public function prixPourPeriode(string $periode): int
     {
-        $base = $this->prixEffectif();
+        $base = $this->prixEffectif($periode);
         return match ($periode) {
             'annuel'   => (int) round($base * 12 * 0.90),
             'triennal' => (int) round($base * 36 * 0.80),
@@ -45,13 +83,22 @@ class PlanAbonnement extends Model
     }
 
     /**
-     * Prix effectif = prix_lancement si l'offre est active, sinon prix normal.
+     * Prix effectif = prix avec meilleure offre active, sinon prix normal.
+     * Garde la rétrocompatibilité avec l'ancien système prix_lancement.
      */
-    public function prixEffectif(): int
+    public function prixEffectif(?string $periode = null): int
     {
+        // Nouveau système : offres promotionnelles
+        $offre = $this->meilleureOffre($periode);
+        if ($offre) {
+            return $offre->calculerPrix($this->prix);
+        }
+
+        // Rétrocompatibilité : ancien système prix_lancement
         if ($this->offreLancementActive()) {
             return $this->prix_lancement;
         }
+
         return $this->prix;
     }
 
