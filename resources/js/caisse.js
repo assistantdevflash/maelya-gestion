@@ -33,6 +33,7 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         codePromo: null,
         codePromoInput: '',
         codePromoErreur: '',
+        codePromoLoading: false,
 
         // ── UI ──
         showConfirmation: false,
@@ -181,12 +182,17 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         async appliquerCode() {
             this.codePromoErreur = '';
             if (!this.codePromoInput.trim()) return;
-            const result = await this.$wire.appliquerCode(
-                this.codePromoInput.trim(),
-                this.totalBrut,
-            );
-            this.codePromo = result.promo;
-            this.codePromoErreur = result.erreur;
+            this.codePromoLoading = true;
+            try {
+                const result = await this.$wire.appliquerCode(
+                    this.codePromoInput.trim(),
+                    this.totalBrut,
+                );
+                this.codePromo = result.promo;
+                this.codePromoErreur = result.erreur;
+            } finally {
+                this.codePromoLoading = false;
+            }
         },
 
         retirerCode() {

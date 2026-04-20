@@ -138,6 +138,9 @@
                     wire:model.live.debounce.300ms="clientSearch"
                     placeholder="Chercher un client..."
                     class="form-input text-sm">
+                <div wire:loading wire:target="clientSearch" class="flex items-center gap-2 mt-2 text-xs text-gray-400">
+                    <span class="spinner spinner-sm text-primary-500"></span> Recherche...
+                </div>
                 @if($this->clients->count() > 0)
                 <div class="border border-gray-200 rounded-xl overflow-hidden mt-2 shadow-sm">
                     @foreach($this->clients as $c)
@@ -246,7 +249,10 @@
                                    class="form-input flex-1 text-sm font-mono uppercase tracking-widest"
                                    @input="$el.value = $el.value.toUpperCase()"
                                    @keydown.enter="appliquerCode">
-                            <button @click="appliquerCode" class="btn btn-outline text-sm px-3 flex-shrink-0">Appliquer</button>
+                            <button @click="appliquerCode" :disabled="codePromoLoading" class="btn btn-outline text-sm px-3 flex-shrink-0">
+                                <span x-show="codePromoLoading" class="spinner spinner-sm" aria-hidden="true"></span>
+                                <span x-show="!codePromoLoading">Appliquer</span>
+                            </button>
                         </div>
                         <p x-show="codePromoErreur" x-text="codePromoErreur" class="text-xs text-red-500 mt-1"></p>
                     </div>
@@ -356,14 +362,15 @@
 
                 {{-- Bouton Encaisser --}}
                 <button @click="ouvrirConfirmation"
-                        :disabled="!mixtePret"
-                        :class="!mixtePret ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl active:scale-[0.98]'"
+                        :disabled="!mixtePret || loading"
+                        :class="(!mixtePret || loading) ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl active:scale-[0.98]'"
                         class="w-full justify-center py-3.5 text-base font-bold rounded-xl text-white shadow-lg transition-all duration-200 flex items-center gap-2"
                         style="background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <span x-show="loading" class="spinner" aria-hidden="true"></span>
+                    <svg x-show="!loading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
-                    <span x-text="'Encaisser ' + formatNumber(total) + ' F'"></span>
+                    <span x-text="loading ? 'Traitement...' : 'Encaisser ' + formatNumber(total) + ' F'"></span>
                 </button>
             </div>
         </div>
@@ -534,8 +541,10 @@
                     </button>
                     <button @click="valider(false)"
                             :disabled="loading"
+                            :class="loading ? 'opacity-70 cursor-not-allowed' : ''"
                             class="btn-primary justify-center py-3">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <span x-show="loading" class="spinner spinner-sm" aria-hidden="true"></span>
+                        <svg x-show="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                         </svg>
                         Encaisser
@@ -543,10 +552,13 @@
                 </div>
                 <button @click="valider(true)"
                         :disabled="loading"
-                        class="w-full justify-center py-3 text-sm font-bold rounded-xl text-white flex items-center gap-2 transition-all duration-200 hover:shadow-lg active:scale-[0.98]"
+                        :class="loading ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-lg active:scale-[0.98]'"
+                        class="w-full justify-center py-3 text-sm font-bold rounded-xl text-white flex items-center gap-2 transition-all duration-200"
                         style="background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <span x-show="loading" class="spinner spinner-sm" aria-hidden="true"></span>
+                    <svg x-show="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                    </svg>
                     </svg>
                     Encaisser & Imprimer
                 </button>

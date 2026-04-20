@@ -577,6 +577,7 @@
         confirmClass: '!bg-red-600 hover:!bg-red-700',
         danger: true,
         formId: null,
+        processing: false,
         init() {
             window.addEventListener('confirm-action', (e) => {
                 this.title        = e.detail.title        || 'Confirmer';
@@ -585,12 +586,14 @@
                 this.confirmClass = e.detail.confirmClass || '!bg-red-600 hover:!bg-red-700';
                 this.danger       = e.detail.danger !== false;
                 this.formId       = e.detail.formId;
+                this.processing   = false;
                 this.show = true;
             });
         },
         proceed() {
+            if (this.processing) return;
+            this.processing = true;
             if (this.formId) document.getElementById(this.formId).submit();
-            this.show = false;
         }
      }"
      x-show="show" x-cloak class="modal-backdrop z-[60]" @keydown.escape.window="show = false" @click.self="show = false">
@@ -605,8 +608,11 @@
             <h3 class="text-lg font-display font-bold text-gray-900 mb-2" x-text="title"></h3>
             <p class="text-sm text-gray-500 mb-6" x-text="message"></p>
             <div class="flex gap-3">
-                <button @click="show = false" class="btn btn-outline flex-1 justify-center">Annuler</button>
-                <button @click="proceed()" class="btn-primary flex-1 justify-center" :class="confirmClass" x-text="confirmLabel"></button>
+                <button @click="show = false" :disabled="processing" class="btn btn-outline flex-1 justify-center">Annuler</button>
+                <button @click="proceed()" class="btn-primary flex-1 justify-center" :class="confirmClass" :disabled="processing">
+                    <span x-show="processing" class="spinner spinner-sm" aria-hidden="true"></span>
+                    <span x-text="confirmLabel"></span>
+                </button>
             </div>
         </div>
     </div>

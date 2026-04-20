@@ -177,6 +177,7 @@
             confirmClass: '!bg-red-600 hover:!bg-red-700',
             danger: true,
             formId: null,
+            processing: false,
             init() {
                 window.addEventListener('confirm-action', (e) => {
                     this.title        = e.detail.title        || 'Confirmer';
@@ -185,12 +186,14 @@
                     this.confirmClass = e.detail.confirmClass || '!bg-red-600 hover:!bg-red-700';
                     this.danger       = e.detail.danger !== false;
                     this.formId       = e.detail.formId;
+                    this.processing   = false;
                     this.show = true;
                 });
             },
             proceed() {
+                if (this.processing) return;
+                this.processing = true;
                 if (this.formId) document.getElementById(this.formId).submit();
-                this.show = false;
             }
          }"
          x-show="show" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm"
@@ -205,8 +208,11 @@
             <h3 class="text-lg font-bold text-gray-900 mb-2" x-text="title"></h3>
             <p class="text-sm text-gray-500 mb-6" x-text="message"></p>
             <div class="flex gap-3">
-                <button @click="show = false" class="flex-1 px-4 py-2 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 font-medium text-sm transition">Annuler</button>
-                <button @click="proceed()" class="flex-1 px-4 py-2 rounded-xl text-white font-medium text-sm transition btn-primary" :class="confirmClass" x-text="confirmLabel"></button>
+                <button @click="show = false" :disabled="processing" class="flex-1 px-4 py-2 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 font-medium text-sm transition">Annuler</button>
+                <button @click="proceed()" class="flex-1 px-4 py-2 rounded-xl text-white font-medium text-sm transition btn-primary" :class="confirmClass" :disabled="processing">
+                    <span x-show="processing" class="spinner spinner-sm" aria-hidden="true"></span>
+                    <span x-text="confirmLabel"></span>
+                </button>
             </div>
         </div>
     </div>
