@@ -19,7 +19,7 @@ class DashboardController extends Controller
         }
 
         $user = Auth::user();
-        $institutId = $user->institut_id;
+        $institutId = session('current_institut_id', $user->institut_id);
 
         $today = now()->toDateString();
         $startOfMonth = now()->startOfMonth()->toDateString();
