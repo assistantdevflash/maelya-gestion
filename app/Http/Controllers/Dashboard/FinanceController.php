@@ -50,9 +50,13 @@ class FinanceController extends Controller
 
         // Évolution mensuelle 12 mois (une seule requête)
         $debut12 = now()->subMonths(11)->startOfMonth();
+        $driver = \DB::getDriverName();
+        $moisExpr = $driver === 'sqlite'
+            ? "strftime('%Y-%m', created_at) as mois_key"
+            : "DATE_FORMAT(created_at, '%Y-%m') as mois_key";
         $ventesParMois = Vente::where('statut', 'validee')
             ->where('created_at', '>=', $debut12)
-            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as mois_key, SUM(total) as ca")
+            ->selectRaw("$moisExpr, SUM(total) as ca")
             ->groupBy('mois_key')
             ->pluck('ca', 'mois_key');
 
