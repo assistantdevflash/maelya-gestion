@@ -35,12 +35,14 @@ class VenteController extends Controller
         $request->validate([
             'panier_json' => ['required', 'string'],
             'client_id' => ['nullable', 'string'],
-            'mode_paiement' => ['required', 'in:cash,carte,mobile_money'],
+            'mode_paiement' => ['required', 'in:cash,carte,mobile_money,mixte'],
             'reference_paiement' => ['nullable', 'string', 'max:100'],
             'total' => ['required', 'numeric', 'min:0'],
             'remise' => ['nullable', 'integer', 'min:0'],
             'code_reduction_id' => ['nullable', 'string'],
             'imprimer' => ['nullable', 'string'],
+            'montant_cash' => ['nullable', 'integer', 'min:0'],
+            'montant_mobile' => ['nullable', 'integer', 'min:0'],
         ]);
 
         $items = json_decode($request->panier_json, true);
@@ -108,8 +110,16 @@ class VenteController extends Controller
                 'code_reduction_id' => $codeReductionId,
                 'mode_paiement' => $request->mode_paiement,
                 'reference_paiement' => $request->reference_paiement,
-                'montant_cash' => $request->mode_paiement === 'cash' ? $total : 0,
-                'montant_mobile' => $request->mode_paiement === 'mobile_money' ? $total : 0,
+                'montant_cash' => match($request->mode_paiement) {
+                    'cash'  => $total,
+                    'mixte' => (int) $request->montant_cash,
+                    default => 0,
+                },
+                'montant_mobile' => match($request->mode_paiement) {
+                    'mobile_money' => $total,
+                    'mixte'        => (int) $request->montant_mobile,
+                    default        => 0,
+                },
                 'statut' => 'validee',
                 'ip_address' => request()->ip(),
             ]);

@@ -42,6 +42,8 @@
                 document.getElementById('remise').value = data.remise ?? 0;
                 document.getElementById('code-reduction-id').value = data.code_reduction_id ?? '';
                 document.getElementById('imprimer').value = data.imprimer ? '1' : '';
+                document.getElementById('montant-cash').value = data.montant_cash ?? '';
+                document.getElementById('montant-mobile').value = data.montant_mobile ?? '';
                 if (data.imprimer) {
                     form.target = '_blank';
                     form.submit();
@@ -66,6 +68,8 @@
             <input type="hidden" id="remise" name="remise" value="0">
             <input type="hidden" id="code-reduction-id" name="code_reduction_id">
             <input type="hidden" id="imprimer" name="imprimer">
+            <input type="hidden" id="montant-cash" name="montant_cash">
+            <input type="hidden" id="montant-mobile" name="montant_mobile">
         </form>
     </div>
 </x-dashboard-layout>

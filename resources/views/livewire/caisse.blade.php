@@ -252,8 +252,8 @@
                     </div>
                 </template>
 
-                {{-- 3 modes de paiement --}}
-                <div class="grid grid-cols-3 gap-2">
+                {{-- 4 modes de paiement (2×2) --}}
+                <div class="grid grid-cols-2 gap-2">
                     <button @click="modePaiement = 'cash'"
                             :class="modePaiement === 'cash' ? 'border-primary-500 bg-primary-50 text-primary-700 shadow-sm' : 'border-gray-200 text-gray-500 hover:border-gray-300'"
                             class="py-2 px-2 rounded-xl text-xs font-semibold border-2 transition-all duration-200 text-center">
@@ -278,6 +278,14 @@
                         </svg>
                         Mobile
                     </button>
+                    <button @click="modePaiement = 'mixte'"
+                            :class="modePaiement === 'mixte' ? 'border-violet-500 bg-violet-50 text-violet-700 shadow-sm' : 'border-gray-200 text-gray-500 hover:border-gray-300'"
+                            class="py-2 px-2 rounded-xl text-xs font-semibold border-2 transition-all duration-200 text-center">
+                        <svg class="w-4 h-4 mx-auto mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                        </svg>
+                        Mixte
+                    </button>
                 </div>
 
                 {{-- Référence Mobile Money --}}
@@ -285,6 +293,66 @@
                     <input type="text" x-model="referencePaiement"
                            placeholder="Référence transaction (optionnel)"
                            class="form-input text-sm">
+                </template>
+
+                {{-- Paiement Mixte --}}
+                <template x-if="modePaiement === 'mixte'">
+                    <div class="space-y-2">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">💵 Espèces</label>
+                                <input type="number" x-model.number="montantMixteCash"
+                                       class="form-input text-sm mt-1" placeholder="0" min="0" :max="total">
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">📱 Mobile</label>
+                                <input type="number" x-model.number="montantMixteMobile"
+                                       class="form-input text-sm mt-1" placeholder="0" min="0" :max="total">
+                            </div>
+                        </div>
+                        <div :class="resteMixte === 0 ? 'bg-green-50' : (resteMixte < 0 ? 'bg-red-50' : 'bg-amber-50')"
+                             class="flex justify-between items-center p-2.5 rounded-xl">
+                            <span class="text-xs font-semibold"
+                                  :class="resteMixte === 0 ? 'text-green-700' : (resteMixte < 0 ? 'text-red-700' : 'text-amber-700')"
+                                  x-text="resteMixte === 0 ? '✓ Montants OK' : (resteMixte < 0 ? 'Dépassement' : 'Reste à ventiler')"></span>
+                            <span class="text-sm font-bold"
+                                  :class="resteMixte === 0 ? 'text-green-700' : (resteMixte < 0 ? 'text-red-700' : 'text-amber-700')"
+                                  x-text="resteMixte !== 0 ? formatNumber(Math.abs(resteMixte)) + ' F' : ''"></span>
+                        </div>
+                        <input type="text" x-model="referencePaiement"
+                               placeholder="Référence mobile (optionnel)"
+                               class="form-input text-sm">
+                    </div>
+                </template>
+
+                {{-- Paiement Mixte --}}
+                <template x-if="modePaiement === 'mixte'">
+                    <div class="space-y-2">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">💵 Espèces</label>
+                                <input type="number" x-model.number="montantMixteCash"
+                                       class="form-input text-sm mt-1" placeholder="0" min="0" :max="total">
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">📱 Mobile</label>
+                                <input type="number" x-model.number="montantMixteMobile"
+                                       class="form-input text-sm mt-1" placeholder="0" min="0" :max="total">
+                            </div>
+                        </div>
+                        <div :class="resteMixte === 0 ? 'bg-green-50' : (resteMixte < 0 ? 'bg-red-50' : 'bg-amber-50')"
+                             class="flex justify-between items-center p-2.5 rounded-xl">
+                            <span class="text-xs font-semibold"
+                                  :class="resteMixte === 0 ? 'text-green-700' : (resteMixte < 0 ? 'text-red-700' : 'text-amber-700')"
+                                  x-text="resteMixte === 0 ? '✓ Montants OK' : (resteMixte < 0 ? 'Dépassement' : 'Reste à ventiler')"></span>
+                            <span class="text-sm font-bold"
+                                  :class="resteMixte === 0 ? 'text-green-700' : (resteMixte < 0 ? 'text-red-700' : 'text-amber-700')"
+                                  x-text="resteMixte !== 0 ? formatNumber(Math.abs(resteMixte)) + ' F' : ''"></span>
+                        </div>
+                        <input type="text" x-model="referencePaiement"
+                               placeholder="Référence mobile (optionnel)"
+                               class="form-input text-sm">
+                    </div>
                 </template>
 
                 {{-- Montant remis (Espèces) --}}
@@ -313,7 +381,9 @@
 
                 {{-- Bouton Encaisser --}}
                 <button @click="ouvrirConfirmation"
-                        class="w-full justify-center py-3.5 text-base font-bold rounded-xl text-white shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98] flex items-center gap-2"
+                        :disabled="!mixtePret"
+                        :class="!mixtePret ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl active:scale-[0.98]'"
+                        class="w-full justify-center py-3.5 text-base font-bold rounded-xl text-white shadow-lg transition-all duration-200 flex items-center gap-2"
                         style="background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -421,6 +491,14 @@
                             Mobile Money
                         </span>
                     </template>
+                    <template x-if="modePaiement === 'mixte'">
+                        <span class="inline-flex items-center gap-1 text-xs font-bold text-violet-700 bg-violet-50 px-2.5 py-1 rounded-lg">
+                            💵+📱 Mixte
+                            <template x-if="montantMixteCash > 0">
+                                <span class="text-violet-500" x-text="formatNumber(montantMixteCash) + ' F espèces'"></span>
+                            </template>
+                        </span>
+                    </template>
                 </div>
 
                 {{-- Montant remis dans modal (cash) --}}
@@ -443,6 +521,36 @@
                         <div x-show="montantRemis && monnaie > 0" class="flex justify-between items-center p-2.5 bg-green-50 rounded-xl">
                             <span class="text-xs font-semibold text-green-700">Monnaie à rendre</span>
                             <span class="text-sm font-bold text-green-700" x-text="formatNumber(monnaie) + ' F'"></span>
+                        </div>
+                    </div>
+                </template>
+
+                {{-- Détail paiement mixte dans modal --}}
+                <template x-if="modePaiement === 'mixte'">
+                    <div class="bg-violet-50 rounded-xl p-3 space-y-2">
+                        <p class="text-xs font-bold text-violet-700 uppercase tracking-wider">Paiement Mixte</p>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">💵 Espèces</span>
+                            <span class="font-bold text-gray-900" x-text="formatNumber(montantMixteCash || 0) + ' F'"></span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">📱 Mobile</span>
+                            <span class="font-bold text-gray-900" x-text="formatNumber(montantMixteMobile || 0) + ' F'"></span>
+                        </div>
+                    </div>
+                </template>
+
+                {{-- Détail paiement mixte dans modal --}}
+                <template x-if="modePaiement === 'mixte'">
+                    <div class="bg-violet-50 rounded-xl p-3 space-y-2">
+                        <p class="text-xs font-bold text-violet-700 uppercase tracking-wider">Paiement Mixte</p>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">💵 Espèces</span>
+                            <span class="font-bold text-gray-900" x-text="formatNumber(montantMixteCash || 0) + ' F'"></span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">📱 Mobile</span>
+                            <span class="font-bold text-gray-900" x-text="formatNumber(montantMixteMobile || 0) + ' F'"></span>
                         </div>
                     </div>
                 </template>

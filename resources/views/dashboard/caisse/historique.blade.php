@@ -29,6 +29,7 @@
                     <option value="cash" {{ request('mode') === 'cash' ? 'selected' : '' }}>Espèces</option>
                     <option value="carte" {{ request('mode') === 'carte' ? 'selected' : '' }}>Carte</option>
                     <option value="mobile_money" {{ request('mode') === 'mobile_money' ? 'selected' : '' }}>Mobile Money</option>
+                    <option value="mixte" {{ request('mode') === 'mixte' ? 'selected' : '' }}>Mixte</option>
                 </select>
                 @if(!Auth::user()->isEmploye() && $membres->count() > 1)
                 <select name="employe_id" class="form-select w-auto">
@@ -101,6 +102,8 @@
                                     <span class="badge badge-warning text-xs">📱 Mobile</span>
                                 @elseif($vente->mode_paiement === 'carte')
                                     <span class="badge badge-info text-xs">💳 Carte</span>
+                                @elseif($vente->mode_paiement === 'mixte')
+                                    <span class="badge badge-secondary text-xs">💵+📱 Mixte</span>
                                 @else
                                     <span class="badge badge-secondary text-xs">💵 Espèces</span>
                                 @endif
@@ -261,6 +264,13 @@
                             @elseif($vente->mode_paiement === 'mobile_money')
                                 <span class="inline-flex items-center gap-1 text-xs font-bold text-orange-700 bg-orange-50 px-2.5 py-1 rounded-lg">
                                     📱 Mobile Money
+                                </span>
+                            @elseif($vente->mode_paiement === 'mixte')
+                                <span class="inline-flex items-center gap-1 text-xs font-bold text-violet-700 bg-violet-50 px-2.5 py-1 rounded-lg">
+                                    💵+📱 Mixte
+                                    @if($vente->montant_cash > 0 && $vente->montant_mobile > 0)
+                                        &mdash; {{ number_format($vente->montant_cash) }} F esp. / {{ number_format($vente->montant_mobile) }} F mob.
+                                    @endif
                                 </span>
                             @else
                                 <span class="inline-flex items-center gap-1 text-xs font-bold text-primary-700 bg-primary-50 px-2.5 py-1 rounded-lg">

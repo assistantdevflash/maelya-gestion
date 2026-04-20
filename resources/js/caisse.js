@@ -25,6 +25,8 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         modePaiement: 'cash',
         referencePaiement: '',
         montantRemis: null,
+        montantMixteCash: 0,
+        montantMixteMobile: 0,
 
         // ── Code promo ──
         codePromo: null,
@@ -96,6 +98,16 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
             return Math.max(0, this.montantRemis - this.total);
         },
 
+        get resteMixte() {
+            if (this.modePaiement !== 'mixte') return 0;
+            const alloue = (parseInt(this.montantMixteCash) || 0) + (parseInt(this.montantMixteMobile) || 0);
+            return this.total - alloue;
+        },
+
+        get mixtePret() {
+            return this.modePaiement !== 'mixte' || this.resteMixte === 0;
+        },
+
         // ═══════════════════════════════════════
         //  Actions catalogue
         // ═══════════════════════════════════════
@@ -152,6 +164,8 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
             this.modePaiement = 'cash';
             this.referencePaiement = '';
             this.montantRemis = null;
+            this.montantMixteCash = 0;
+            this.montantMixteMobile = 0;
             this.showConfirmation = false;
             this.codePromo = null;
             this.codePromoInput = '';
@@ -188,6 +202,9 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
             if (!this.montantRemis && this.modePaiement === 'cash') {
                 this.montantRemis = this.total;
             }
+            if (this.modePaiement === 'mixte' && !this.montantMixteCash && !this.montantMixteMobile) {
+                this.montantMixteMobile = this.total;
+            }
             this.showConfirmation = true;
         },
 
@@ -207,6 +224,8 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
                     this.referencePaiement,
                     this.codePromo?.id ?? null,
                     imprimer,
+                    this.modePaiement === 'mixte' ? (parseInt(this.montantMixteCash) || 0) : null,
+                    this.modePaiement === 'mixte' ? (parseInt(this.montantMixteMobile) || 0) : null,
                 );
             } finally {
                 this.loading = false;
