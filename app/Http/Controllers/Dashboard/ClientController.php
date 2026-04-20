@@ -82,7 +82,7 @@ class ClientController extends Controller
 
         $client->update($data);
 
-        return redirect()->route('dashboard.clients.index')
+        return redirect()->back()
             ->with('success', 'Client mis à jour.');
     }
 
