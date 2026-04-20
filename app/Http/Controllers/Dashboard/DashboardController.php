@@ -73,6 +73,18 @@ class DashboardController extends Controller
             ->whereDate('created_at', '<=', $endOfMonth)
             ->sum('total');
 
+        $paiementsCarte = Vente::where('statut', 'validee')
+            ->where('mode_paiement', 'carte')
+            ->whereDate('created_at', '>=', $startOfMonth)
+            ->whereDate('created_at', '<=', $endOfMonth)
+            ->sum('total');
+
+        $paiementsMixte = Vente::where('statut', 'validee')
+            ->where('mode_paiement', 'mixte')
+            ->whereDate('created_at', '>=', $startOfMonth)
+            ->whereDate('created_at', '<=', $endOfMonth)
+            ->sum('total');
+
         // Graphique 30 derniers jours
         $ventesParJour = Vente::where('statut', 'validee')
             ->whereDate('created_at', '>=', now()->subDays(29)->toDateString())
@@ -112,7 +124,7 @@ class DashboardController extends Controller
         return view('dashboard.index', compact(
             'caJour', 'caMois', 'nbClients', 'totalClients', 'ventesJour', 'ventesMois',
             'nouveauxClientsJour', 'produitsEnAlerte', 'depensesMois', 'beneficeEstime', 'beneficeMois',
-            'paiementsCash', 'paiementsMobile',
+            'paiementsCash', 'paiementsMobile', 'paiementsCarte', 'paiementsMixte',
             'labels', 'data', 'chartData', 'dernieresVentes', 'alertesStock',
             'abonnement', 'joursRestants'
         ));

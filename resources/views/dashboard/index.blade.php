@@ -262,29 +262,60 @@
                     <h3 class="font-semibold text-gray-900 text-sm">Paiements ce mois</h3>
                 </div>
                 @php
-                    $totalPaiements = ($paiementsCash ?? 0) + ($paiementsMobile ?? 0);
-                    $pctCash = $totalPaiements > 0 ? round(($paiementsCash ?? 0) / $totalPaiements * 100) : 0;
-                    $pctMobile = 100 - $pctCash;
+                    $totalPaiements = ($paiementsCash ?? 0) + ($paiementsMobile ?? 0) + ($paiementsCarte ?? 0) + ($paiementsMixte ?? 0);
+                    $pctCash   = $totalPaiements > 0 ? round(($paiementsCash   ?? 0) / $totalPaiements * 100) : 0;
+                    $pctMobile = $totalPaiements > 0 ? round(($paiementsMobile ?? 0) / $totalPaiements * 100) : 0;
+                    $pctCarte  = $totalPaiements > 0 ? round(($paiementsCarte  ?? 0) / $totalPaiements * 100) : 0;
+                    $pctMixte  = $totalPaiements > 0 ? (100 - $pctCash - $pctMobile - $pctCarte) : 0;
                 @endphp
                 <div class="space-y-3">
+                    @if($pctCash > 0)
                     <div>
                         <div class="flex justify-between text-xs mb-1.5">
-                            <span class="text-gray-600 font-medium">Cash</span>
+                            <span class="text-gray-600 font-medium">💵 Espèces</span>
                             <span class="font-bold text-gray-900">{{ $pctCash }}%</span>
                         </div>
                         <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
                             <div class="h-full rounded-full transition-all duration-700" style="width: {{ $pctCash }}%; background: linear-gradient(90deg, #9333ea, #a855f7);"></div>
                         </div>
                     </div>
+                    @endif
+                    @if($pctCarte > 0)
                     <div>
                         <div class="flex justify-between text-xs mb-1.5">
-                            <span class="text-gray-600 font-medium">Mobile Money</span>
+                            <span class="text-gray-600 font-medium">💳 Carte</span>
+                            <span class="font-bold text-gray-900">{{ $pctCarte }}%</span>
+                        </div>
+                        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-700" style="width: {{ $pctCarte }}%; background: linear-gradient(90deg, #2563eb, #3b82f6);"></div>
+                        </div>
+                    </div>
+                    @endif
+                    @if($pctMobile > 0)
+                    <div>
+                        <div class="flex justify-between text-xs mb-1.5">
+                            <span class="text-gray-600 font-medium">📱 Mobile Money</span>
                             <span class="font-bold text-gray-900">{{ $pctMobile }}%</span>
                         </div>
                         <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
                             <div class="h-full rounded-full transition-all duration-700" style="width: {{ $pctMobile }}%; background: linear-gradient(90deg, #db2777, #ec4899);"></div>
                         </div>
                     </div>
+                    @endif
+                    @if($pctMixte > 0)
+                    <div>
+                        <div class="flex justify-between text-xs mb-1.5">
+                            <span class="text-gray-600 font-medium">💵+📱 Mixte</span>
+                            <span class="font-bold text-gray-900">{{ $pctMixte }}%</span>
+                        </div>
+                        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-700" style="width: {{ $pctMixte }}%; background: linear-gradient(90deg, #7c3aed, #ec4899);"></div>
+                        </div>
+                    </div>
+                    @endif
+                    @if($totalPaiements === 0)
+                        <p class="text-xs text-gray-400 text-center py-2">Aucune vente ce mois</p>
+                    @endif
                 </div>
             </div>
 
