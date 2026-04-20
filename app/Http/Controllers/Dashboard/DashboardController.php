@@ -119,12 +119,16 @@ class DashboardController extends Controller
         $joursRestants = $abonnement?->expire_le ? (int) now()->diffInDays($abonnement->expire_le, false) : null;
 
         // Clients fêtant leur anniversaire aujourd'hui sans cadeau déjà créé
+        $cadeauClientIds = \App\Models\CodeReduction::withoutGlobalScopes()
+            ->where('institut_id', $institutId)
+            ->where('code', 'like', 'ANNIV-%')
+            ->where('date_debut', now()->toDateString())
+            ->pluck('client_id')
+            ->toArray();
+
         $anniversairesAujourdhui = \App\Models\Client::where('actif', true)
             ->where('date_naissance', now()->format('m-d'))
-            ->whereDoesntHave('codesReduction', function ($q) {
-                $q->where('code', 'like', 'ANNIV-%')
-                  ->where('date_debut', now()->toDateString());
-            })
+            ->whereNotIn('id', $cadeauClientIds)
             ->get();
 
         // Données graphique

@@ -34,12 +34,16 @@ class ClientController extends Controller
             ->withQueryString();
 
         // Clients fêtant leur anniversaire aujourd'hui sans cadeau déjà créé
+        $cadeauClientIds = CodeReduction::withoutGlobalScopes()
+            ->where('institut_id', $this->institutId())
+            ->where('code', 'like', 'ANNIV-%')
+            ->where('date_debut', now()->toDateString())
+            ->pluck('client_id')
+            ->toArray();
+
         $anniversairesAujourdhui = Client::where('actif', true)
             ->where('date_naissance', now()->format('m-d'))
-            ->whereDoesntHave('codesReduction', function ($q) {
-                $q->where('code', 'like', 'ANNIV-%')
-                  ->where('date_debut', now()->toDateString());
-            })
+            ->whereNotIn('id', $cadeauClientIds)
             ->get();
 
         return view('dashboard.clients.index', compact('clients', 'search', 'anniversairesAujourdhui'));
