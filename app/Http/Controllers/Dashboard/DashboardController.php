@@ -118,9 +118,13 @@ class DashboardController extends Controller
         $abonnement = $user->abonnementActif;
         $joursRestants = $abonnement?->expire_le ? (int) now()->diffInDays($abonnement->expire_le, false) : null;
 
-        // Clients fêtant leur anniversaire aujourd'hui
+        // Clients fêtant leur anniversaire aujourd'hui sans cadeau déjà créé
         $anniversairesAujourdhui = \App\Models\Client::where('actif', true)
             ->where('date_naissance', now()->format('m-d'))
+            ->whereDoesntHave('codesReduction', function ($q) {
+                $q->where('code', 'like', 'ANNIV-%')
+                  ->where('date_debut', now()->toDateString());
+            })
             ->get();
 
         // Données graphique

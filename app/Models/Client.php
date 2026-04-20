@@ -72,6 +72,11 @@ class Client extends Model
         return $query->where('actif', true);
     }
 
+    public function codesReduction()
+    {
+        return $this->hasMany(CodeReduction::class, 'client_id');
+    }
+
     public function codesReductionFidelite()
     {
         return $this->hasMany(CodeReduction::class, 'client_id')
