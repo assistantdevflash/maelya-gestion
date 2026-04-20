@@ -14,7 +14,7 @@ class Vente extends Model
     protected $fillable = [
         'institut_id', 'client_id', 'user_id', 'numero', 'total',
         'remise', 'code_reduction_id',
-        'mode_paiement', 'reference_paiement', 'montant_cash', 'montant_mobile',
+        'mode_paiement', 'reference_paiement', 'montant_cash', 'montant_mobile', 'montant_carte',
         'statut', 'notes', 'ip_address',
     ];
 
@@ -23,6 +23,7 @@ class Vente extends Model
         'remise'         => 'integer',
         'montant_cash'   => 'integer',
         'montant_mobile' => 'integer',
+        'montant_carte'  => 'integer',
     ];
 
     protected static function boot(): void

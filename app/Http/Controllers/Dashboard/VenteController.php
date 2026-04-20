@@ -43,6 +43,7 @@ class VenteController extends Controller
             'imprimer' => ['nullable', 'string'],
             'montant_cash' => ['nullable', 'integer', 'min:0'],
             'montant_mobile' => ['nullable', 'integer', 'min:0'],
+            'montant_carte' => ['nullable', 'integer', 'min:0'],
         ]);
 
         $items = json_decode($request->panier_json, true);
@@ -119,6 +120,11 @@ class VenteController extends Controller
                     'mobile_money' => $total,
                     'mixte'        => (int) $request->montant_mobile,
                     default        => 0,
+                },
+                'montant_carte' => match($request->mode_paiement) {
+                    'carte' => $total,
+                    'mixte' => (int) $request->montant_carte,
+                    default => 0,
                 },
                 'statut' => 'validee',
                 'ip_address' => request()->ip(),

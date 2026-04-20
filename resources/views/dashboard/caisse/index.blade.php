@@ -44,6 +44,7 @@
                 document.getElementById('imprimer').value = data.imprimer ? '1' : '';
                 document.getElementById('montant-cash').value = data.montant_cash ?? '';
                 document.getElementById('montant-mobile').value = data.montant_mobile ?? '';
+                document.getElementById('montant-carte').value = data.montant_carte ?? '';
                 if (data.imprimer) {
                     form.target = '_blank';
                     form.submit();
@@ -70,6 +71,7 @@
             <input type="hidden" id="imprimer" name="imprimer">
             <input type="hidden" id="montant-cash" name="montant_cash">
             <input type="hidden" id="montant-mobile" name="montant_mobile">
+            <input type="hidden" id="montant-carte" name="montant_carte">
         </form>
     </div>
 </x-dashboard-layout>

@@ -94,7 +94,7 @@ class Caisse extends Component
 
     // ── Validation vente (reçoit le panier depuis Alpine) ──
 
-    public function valider(array $panier, string $modePaiement, ?int $montantRemis, string $referencePaiement, ?string $codeReductionId, bool $imprimer = false, ?int $montantCash = null, ?int $montantMobile = null)
+    public function valider(array $panier, string $modePaiement, ?int $montantRemis, string $referencePaiement, ?string $codeReductionId, bool $imprimer = false, ?int $montantCash = null, ?int $montantMobile = null, ?int $montantCarte = null)
     {
         if (empty($panier)) {
             return;
@@ -137,6 +137,7 @@ class Caisse extends Component
             'imprimer'            => $imprimer,
             'montant_cash'        => $montantCash,
             'montant_mobile'      => $montantMobile,
+            'montant_carte'       => $montantCarte,
         ]);
     }
 

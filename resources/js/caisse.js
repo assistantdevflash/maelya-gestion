@@ -27,6 +27,7 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         montantRemis: null,
         montantMixteCash: 0,
         montantMixteMobile: 0,
+        montantMixteCartes: 0,
 
         // ── Code promo ──
         codePromo: null,
@@ -100,7 +101,7 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
 
         get resteMixte() {
             if (this.modePaiement !== 'mixte') return 0;
-            const alloue = (parseInt(this.montantMixteCash) || 0) + (parseInt(this.montantMixteMobile) || 0);
+            const alloue = (parseInt(this.montantMixteCash) || 0) + (parseInt(this.montantMixteMobile) || 0) + (parseInt(this.montantMixteCartes) || 0);
             return this.total - alloue;
         },
 
@@ -166,6 +167,7 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
             this.montantRemis = null;
             this.montantMixteCash = 0;
             this.montantMixteMobile = 0;
+            this.montantMixteCartes = 0;
             this.showConfirmation = false;
             this.codePromo = null;
             this.codePromoInput = '';
@@ -202,7 +204,7 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
             if (!this.montantRemis && this.modePaiement === 'cash') {
                 this.montantRemis = this.total;
             }
-            if (this.modePaiement === 'mixte' && !this.montantMixteCash && !this.montantMixteMobile) {
+            if (this.modePaiement === 'mixte' && !this.montantMixteCash && !this.montantMixteMobile && !this.montantMixteCartes) {
                 this.montantMixteMobile = this.total;
             }
             this.showConfirmation = true;
@@ -226,6 +228,7 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
                     imprimer,
                     this.modePaiement === 'mixte' ? (parseInt(this.montantMixteCash) || 0) : null,
                     this.modePaiement === 'mixte' ? (parseInt(this.montantMixteMobile) || 0) : null,
+                    this.modePaiement === 'mixte' ? (parseInt(this.montantMixteCartes) || 0) : null,
                 );
             } finally {
                 this.loading = false;

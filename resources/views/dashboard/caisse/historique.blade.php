@@ -268,9 +268,13 @@
                             @elseif($vente->mode_paiement === 'mixte')
                                 <span class="inline-flex items-center gap-1 text-xs font-bold text-violet-700 bg-violet-50 px-2.5 py-1 rounded-lg">
                                     💵+📱 Mixte
-                                    @if($vente->montant_cash > 0 && $vente->montant_mobile > 0)
-                                        &mdash; {{ number_format($vente->montant_cash) }} F esp. / {{ number_format($vente->montant_mobile) }} F mob.
-                                    @endif
+                                    @php
+                                        $parts = [];
+                                        if ($vente->montant_cash > 0)   $parts[] = number_format($vente->montant_cash) . ' F esp.';
+                                        if ($vente->montant_carte > 0)  $parts[] = number_format($vente->montant_carte) . ' F carte';
+                                        if ($vente->montant_mobile > 0) $parts[] = number_format($vente->montant_mobile) . ' F mob.';
+                                    @endphp
+                                    @if($parts) &mdash; {{ implode(' / ', $parts) }} @endif
                                 </span>
                             @else
                                 <span class="inline-flex items-center gap-1 text-xs font-bold text-primary-700 bg-primary-50 px-2.5 py-1 rounded-lg">
