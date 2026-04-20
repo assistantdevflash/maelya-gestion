@@ -1,17 +1,5 @@
 <x-dashboard-layout>
-    <div class="space-y-5" x-data="{
-        editOpen: false,
-        edit: {
-            id: @js($client->id),
-            action: @js(route('dashboard.clients.update', $client)),
-            prenom: @js($client->prenom),
-            nom: @js($client->nom),
-            telephone: @js($client->telephone ?? ''),
-            email: @js($client->email ?? ''),
-            date_naissance: @js($client->date_naissance ?? ''),
-            notes: @js($client->notes ?? '')
-        }
-    }">
+    <div class="space-y-5">
         {{-- Bannière anniversaire --}}
         @if($client->isAnniversaire())
         <x-banniere-anniversaire :clients="collect([$client])" />
@@ -44,7 +32,7 @@
                     </svg>
                     Nouvelle vente
                 </a>
-                <button type="button" @click="editOpen = true" class="btn-outline">Modifier</button>
+                <button type="button" x-data @click="$dispatch('open-edit-show')" class="btn-outline">Modifier</button>
             </div>
         </div>
 
@@ -125,7 +113,13 @@
         </div>
 
         {{-- ═══ MODAL ÉDITION ═══ --}}
-        <div x-show="editOpen" x-cloak class="modal-backdrop" @keydown.escape.window="editOpen = false" @click.self="editOpen = false">
+        <div x-data="{ show: false }"
+             @open-edit-show.window="show = true"
+             x-init="{{ $errors->any() ? 'show = true' : '' }}"
+             x-show="show" x-cloak
+             class="modal-backdrop"
+             @keydown.escape.window="show = false"
+             @click.self="show = false">
             <div class="modal max-w-lg" x-transition @click.stop>
                 <div class="modal-header">
                     <div class="flex items-center gap-2.5">
@@ -136,7 +130,7 @@
                         </div>
                         <h3 class="modal-title">Modifier le client</h3>
                     </div>
-                    <button @click="editOpen = false" class="btn-icon">
+                    <button @click="show = false" class="btn-icon">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -154,49 +148,72 @@
                         <div class="grid grid-cols-2 gap-3">
                             <div class="form-group mb-0">
                                 <label class="form-label">Prénom *</label>
-                                <input type="text" name="prenom" required maxlength="50" class="form-input" x-model="edit.prenom">
+                                <input type="text" name="prenom" required maxlength="50" class="form-input"
+                                       value="{{ old('prenom', $client->prenom) }}">
                             </div>
                             <div class="form-group mb-0">
                                 <label class="form-label">Nom *</label>
-                                <input type="text" name="nom" required maxlength="50" class="form-input" x-model="edit.nom">
+                                <input type="text" name="nom" required maxlength="50" class="form-input"
+                                       value="{{ old('nom', $client->nom) }}">
                             </div>
                             <div class="form-group mb-0">
                                 <label class="form-label">Téléphone *</label>
-                                <input type="text" name="telephone" required maxlength="30" class="form-input" x-model="edit.telephone">
+                                <input type="text" name="telephone" required maxlength="30" class="form-input"
+                                       value="{{ old('telephone', $client->telephone) }}">
                             </div>
                             <div class="form-group mb-0">
                                 <label class="form-label">Email</label>
-                                <input type="email" name="email" maxlength="255" class="form-input" x-model="edit.email">
+                                <input type="email" name="email" maxlength="255" class="form-input"
+                                       value="{{ old('email', $client->email) }}">
                             </div>
                             <div class="col-span-2 form-group mb-0">
                                 <label class="form-label">Anniversaire (jour et mois)</label>
                                 <div class="grid grid-cols-2 gap-2">
-                                    <select name="date_naissance_mois" class="form-input"
-                                            @change="edit.date_naissance = $el.value ? $el.value + '-' + ($refs.jourshow?.value||'01') : ''">
+                                    @php
+                                        $dn = old('date_naissance', $client->date_naissance ?? '');
+                                        $dnMois = $dn ? substr($dn, 0, 2) : '';
+                                        $dnJour = $dn ? substr($dn, 3, 2) : '';
+                                        $mois = ['01'=>'Janvier','02'=>'Février','03'=>'Mars','04'=>'Avril','05'=>'Mai','06'=>'Juin','07'=>'Juillet','08'=>'Août','09'=>'Septembre','10'=>'Octobre','11'=>'Novembre','12'=>'Décembre'];
+                                    @endphp
+                                    <select name="date_naissance_mois" class="form-input">
                                         <option value="">Mois</option>
-                                        @foreach(['01'=>'Janvier','02'=>'Février','03'=>'Mars','04'=>'Avril','05'=>'Mai','06'=>'Juin','07'=>'Juillet','08'=>'Août','09'=>'Septembre','10'=>'Octobre','11'=>'Novembre','12'=>'Décembre'] as $n=>$m)
-                                        <option value="{{ $n }}" :selected="edit.date_naissance && edit.date_naissance.substring(0,2) === '{{ $n }}'">{{ $m }}</option>
+                                        @foreach($mois as $n => $m)
+                                        <option value="{{ $n }}" @selected($dnMois === $n)>{{ $m }}</option>
                                         @endforeach
                                     </select>
-                                    <select name="date_naissance_jour" x-ref="jourshow" class="form-input"
-                                            @change="edit.date_naissance = (edit.date_naissance?.substring(0,2)||'01') + '-' + $el.value">
+                                    <select name="date_naissance_jour" class="form-input">
                                         <option value="">Jour</option>
-                                        @for($d=1;$d<=31;$d++)
-                                        @php $ds=str_pad($d,2,'0',STR_PAD_LEFT) @endphp
-                                        <option value="{{ $ds }}" :selected="edit.date_naissance && edit.date_naissance.substring(3,5) === '{{ $ds }}'">{{ $d }}</option>
+                                        @for($d = 1; $d <= 31; $d++)
+                                        @php $ds = str_pad($d, 2, '0', STR_PAD_LEFT) @endphp
+                                        <option value="{{ $ds }}" @selected($dnJour === $ds)>{{ $d }}</option>
                                         @endfor
                                     </select>
                                 </div>
-                                <input type="hidden" name="date_naissance" :value="edit.date_naissance">
+                                {{-- Champ hidden calculé via JS simple --}}
+                                <input type="hidden" name="date_naissance" id="show-dn-hidden" value="{{ $dn }}">
+                                <script>
+                                (function() {
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        var moisSel = document.querySelector('[name=date_naissance_mois]');
+                                        var jourSel = document.querySelector('[name=date_naissance_jour]');
+                                        var hidden  = document.getElementById('show-dn-hidden');
+                                        function update() {
+                                            hidden.value = (moisSel.value && jourSel.value) ? moisSel.value + '-' + jourSel.value : '';
+                                        }
+                                        if (moisSel) moisSel.addEventListener('change', update);
+                                        if (jourSel) jourSel.addEventListener('change', update);
+                                    });
+                                })();
+                                </script>
                             </div>
                             <div class="col-span-2 form-group mb-0">
                                 <label class="form-label">Notes</label>
                                 <textarea name="notes" rows="2" maxlength="1000" class="form-input resize-none"
-                                          x-model="edit.notes" placeholder="Allergies, préférences..."></textarea>
+                                          placeholder="Allergies, préférences...">{{ old('notes', $client->notes) }}</textarea>
                             </div>
                         </div>
                         <div class="flex gap-3 pt-1">
-                            <button type="button" @click="editOpen = false" class="btn btn-outline flex-1 justify-center">Annuler</button>
+                            <button type="button" @click="show = false" class="btn btn-outline flex-1 justify-center">Annuler</button>
                             <button type="submit" class="btn-primary flex-1 justify-center">Enregistrer</button>
                         </div>
                     </form>
