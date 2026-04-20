@@ -69,11 +69,6 @@ class ClientController extends Controller
         return view('dashboard.clients.show', compact('client', 'ventes'));
     }
 
-    public function edit(Client $client)
-    {
-        return view('dashboard.clients.edit', compact('client'));
-    }
-
     public function update(Request $request, Client $client)
     {
         $data = $request->validate([
