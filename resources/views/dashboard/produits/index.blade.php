@@ -204,7 +204,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form :action="formAction" method="POST" class="space-y-4">
+                <form id="produit-form" :action="formAction" method="POST" class="space-y-4">
                     @csrf
                     <template x-if="isEdit">
                         <input type="hidden" name="_method" value="PUT">
@@ -236,59 +236,59 @@
                                x-model="form.reference" class="form-input" placeholder="SKU-001">
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-2 gap-3">
                         <div class="form-group">
-                            <label class="form-label">Prix d'achat (FCFA)</label>
+                            <label class="form-label text-xs">Prix d'achat (FCFA)</label>
                             <input type="number" name="prix_achat" min="0" step="1"
                                    x-model="form.prix_achat" class="form-input" placeholder="5000">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Prix de vente (FCFA) *</label>
+                            <label class="form-label text-xs">Prix de vente (FCFA) *</label>
                             <input type="number" name="prix_vente" required min="0" step="1"
                                    x-model="form.prix_vente" class="form-input" placeholder="8000">
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-2 gap-3">
                         <div class="form-group">
-                            <label class="form-label" x-text="isEdit ? 'Stock actuel' : 'Stock initial *'"></label>
+                            <label class="form-label text-xs" x-text="isEdit ? 'Stock actuel' : 'Stock initial *'"></label>
                             <input type="number" name="stock" min="0"
                                    x-model="form.stock" class="form-input"
                                    :required="!isEdit" :disabled="isEdit">
                             <template x-if="isEdit">
-                                <p class="text-xs text-gray-400 mt-1">Modifiez le stock via Entrée / Correction.</p>
+                                <p class="text-xs text-gray-400 mt-1">Modifiable via Entrée / Correction.</p>
                             </template>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Seuil d'alerte *</label>
+                            <label class="form-label text-xs">Seuil d'alerte *</label>
                             <input type="number" name="seuil_alerte" required min="0"
                                    x-model="form.seuil_alerte" class="form-input">
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Unité</label>
-                        <select name="unite" x-model="form.unite" class="form-select">
-                            <option value="pièce">pièce</option>
-                            <option value="flacon">flacon</option>
-                            <option value="tube">tube</option>
-                            <option value="kg">kg</option>
-                            <option value="litre">litre</option>
-                            <option value="boîte">boîte</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <textarea name="description" rows="2" maxlength="500"
-                                  x-model="form.description" class="form-textarea"></textarea>
-                    </div>
-
-                    <div class="flex gap-3 pt-2">
-                        <button type="button" @click="show = false" class="btn btn-outline flex-1 justify-center">Annuler</button>
-                        <button type="submit" class="btn-primary flex-1 justify-center">Enregistrer</button>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="form-group">
+                            <label class="form-label text-xs">Unité</label>
+                            <select name="unite" x-model="form.unite" class="form-select">
+                                <option value="pièce">pièce</option>
+                                <option value="flacon">flacon</option>
+                                <option value="tube">tube</option>
+                                <option value="kg">kg</option>
+                                <option value="litre">litre</option>
+                                <option value="boîte">boîte</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label text-xs">Description</label>
+                            <textarea name="description" rows="2" maxlength="500"
+                                      x-model="form.description" class="form-textarea text-sm"></textarea>
+                        </div>
                     </div>
                 </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" @click="show = false" class="btn btn-outline flex-1 justify-center">Annuler</button>
+                <button type="submit" form="produit-form" class="btn-primary flex-1 justify-center">Enregistrer</button>
             </div>
         </div>
     </div>
