@@ -84,7 +84,6 @@ class PlanAbonnement extends Model
 
     /**
      * Prix effectif = prix avec meilleure offre active, sinon prix normal.
-     * Garde la rétrocompatibilité avec l'ancien système prix_lancement.
      */
     public function prixEffectif(?string $periode = null): int
     {
@@ -92,11 +91,6 @@ class PlanAbonnement extends Model
         $offre = $this->meilleureOffre($periode);
         if ($offre) {
             return $offre->calculerPrix($this->prix);
-        }
-
-        // Rétrocompatibilité : ancien système prix_lancement
-        if ($this->offreLancementActive()) {
-            return $this->prix_lancement;
         }
 
         return $this->prix;
