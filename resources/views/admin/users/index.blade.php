@@ -80,13 +80,13 @@
                 </td>
                 <td>
                     @if(!$user->isSuperAdmin())
-                    <form action="{{ route('admin.users.toggle', $user) }}" method="POST">
+                    <form id="form-user-{{ $user->id }}" action="{{ route('admin.users.toggle', $user) }}" method="POST">
                         @csrf @method('PATCH')
-                        <button class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition
+                        <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition
                             {{ $user->actif
                                 ? 'border-red-200 text-red-600 bg-red-50 hover:bg-red-100'
                                 : 'border-emerald-200 text-emerald-600 bg-emerald-50 hover:bg-emerald-100' }}"
-                            onclick="return confirm('{{ $user->actif ? 'Désactiver' : 'Activer' }} ce compte ?')">
+                            onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-user-{{ $user->id }}',title:'{{ $user->actif ? 'Désactiver' : 'Activer' }} ce compte',message:'{{ $user->actif ? 'Ce compte sera désactivé et l\'utilisateur ne pourra plus se connecter.' : 'Ce compte sera réactivé.' }}',confirmLabel:'{{ $user->actif ? 'Désactiver' : 'Activer' }}',confirmClass:'{{ $user->actif ? '!bg-red-600 hover:!bg-red-700' : '!bg-emerald-600 hover:!bg-emerald-700' }}',danger:{{ $user->actif ? 'true' : 'false' }}}}))">
                             @if($user->actif)
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
                                 Désactiver

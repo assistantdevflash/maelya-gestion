@@ -184,15 +184,16 @@
     <div class="card p-6">
         <h2 class="font-bold text-lg text-gray-900 mb-4">Actions</h2>
         <div class="flex flex-wrap gap-4">
-            <form action="{{ route('admin.abonnements.valider', $abonnement) }}" method="POST">
+            <form id="form-valider-{{ $abonnement->id }}" action="{{ route('admin.abonnements.valider', $abonnement) }}" method="POST">
                 @csrf @method('PATCH')
-                <button class="btn-primary" onclick="return confirm('Valider cet abonnement ?')">
+                <button type="button" class="btn-primary"
+                        onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-valider-{{ $abonnement->id }}',title:'Valider cet abonnement',message:'L\'abonnement sera activé et le client notifié.',confirmLabel:'Valider',confirmClass:'!bg-emerald-600 hover:!bg-emerald-700',danger:false}}))">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     Valider l'abonnement
                 </button>
             </form>
 
-            <form action="{{ route('admin.abonnements.rejeter', $abonnement) }}" method="POST" x-data="{ showReason: false }">
+            <form id="form-rejeter-{{ $abonnement->id }}" action="{{ route('admin.abonnements.rejeter', $abonnement) }}" method="POST" x-data="{ showReason: false }">
                 @csrf @method('PATCH')
                 <div class="flex items-center gap-3">
                     <button type="button" @click="showReason = !showReason" class="btn-danger">
@@ -201,7 +202,8 @@
                     </button>
                     <div x-show="showReason" x-cloak class="flex items-center gap-2">
                         <input type="text" name="notes_admin" placeholder="Raison du rejet (optionnel)" class="form-input max-w-xs">
-                        <button type="submit" class="btn-danger text-sm" onclick="return confirm('Confirmer le rejet ?')">Confirmer</button>
+                        <button type="button" class="btn-danger text-sm"
+                                onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-rejeter-{{ $abonnement->id }}',title:'Rejeter cet abonnement',message:'L\'abonnement sera rejeté et le client notifié.',confirmLabel:'Rejeter',confirmClass:'!bg-red-600 hover:!bg-red-700',danger:true}}))">Confirmer</button>
                     </div>
                 </div>
             </form>

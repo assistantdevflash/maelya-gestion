@@ -137,12 +137,12 @@
                                     </svg>
                                 </button>
                                 {{-- Archiver / Réactiver --}}
-                                <form method="POST" action="{{ route('dashboard.clients.archiver', $client) }}"
-                                      onsubmit="return confirm('{{ $client->actif ? 'Archiver' : 'Réactiver' }} ce client ?')">
+                                <form id="form-archiver-{{ $client->id }}" method="POST" action="{{ route('dashboard.clients.archiver', $client) }}">
                                     @csrf @method('PATCH')
-                                    <button type="submit"
+                                    <button type="button"
                                             class="btn-icon text-amber-500 hover:text-amber-700"
-                                            title="{{ $client->actif ? 'Archiver' : 'Réactiver' }}">
+                                            title="{{ $client->actif ? 'Archiver' : 'Réactiver' }}"
+                                            onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-archiver-{{ $client->id }}',title:'{{ $client->actif ? 'Archiver' : 'Réactiver' }} ce client',message:'{{ $client->actif ? 'Ce client sera archivé et ne sera plus visible.' : 'Ce client sera réactivé.' }}',confirmLabel:'{{ $client->actif ? 'Archiver' : 'Réactiver' }}',confirmClass:'{{ $client->actif ? '!bg-amber-500 hover:!bg-amber-600' : '!bg-emerald-600 hover:!bg-emerald-700' }}',danger:{{ $client->actif ? 'true' : 'false' }}}}))">
                                         @if($client->actif)
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2L19 8m-9 4v4m4-4v4"/>

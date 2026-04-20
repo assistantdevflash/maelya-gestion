@@ -43,10 +43,10 @@
                 <td class="flex items-center gap-3">
                     <button onclick="document.getElementById('modal-{{ $msg->id }}').showModal()"
                             class="text-primary-600 text-sm hover:underline">Lire</button>
-                    <form action="{{ route('admin.messages.destroy', $msg) }}" method="POST"
-                          onsubmit="return confirm('Supprimer ce message ?')">
+                    <form id="form-msg-{{ $msg->id }}" action="{{ route('admin.messages.destroy', $msg) }}" method="POST">
                         @csrf @method('DELETE')
-                        <button class="text-red-500 text-sm hover:underline">Supprimer</button>
+                        <button type="button" class="text-red-500 text-sm hover:underline"
+                                onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-msg-{{ $msg->id }}',title:'Supprimer ce message',message:'Ce message sera définitivement supprimé.',confirmLabel:'Supprimer',confirmClass:'!bg-red-600 hover:!bg-red-700',danger:true}}))">Supprimer</button>
                     </form>
                 </td>
             </tr>
