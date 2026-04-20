@@ -133,28 +133,43 @@
                 </div>
                 @endif
             @else
-                <input
-                    type="text"
-                    wire:model.live.debounce.300ms="clientSearch"
-                    placeholder="Chercher un client..."
-                    class="form-input text-sm">
-                <div wire:loading wire:target="clientSearch" class="flex items-center gap-2 mt-2 text-xs text-gray-400">
-                    <span class="spinner spinner-sm text-primary-500"></span> Recherche...
+                <div x-data="{ focused: false }" @click.outside="focused = false; $wire.set('showClientList', false)">
+                    <input
+                        type="text"
+                        wire:model.live.debounce.300ms="clientSearch"
+                        @focus="focused = true; $wire.set('showClientList', true)"
+                        placeholder="Chercher un client..."
+                        class="form-input text-sm">
+                    <div wire:loading wire:target="clientSearch" class="flex items-center gap-2 mt-2 text-xs text-gray-400">
+                        <span class="spinner spinner-sm text-primary-500"></span> Recherche...
+                    </div>
+                    @if($this->clients->count() > 0)
+                    <div class="border border-gray-200 rounded-xl overflow-hidden mt-2 shadow-sm max-h-52 overflow-y-auto">
+                        @foreach($this->clients as $c)
+                        <button wire:click="$set('clientId', '{{ $c->id }}')"
+                                class="w-full text-left px-3 py-2.5 text-sm hover:bg-primary-50/50 flex items-center gap-2.5 border-b border-gray-100 last:border-b-0 transition-colors">
+                            <div class="w-7 h-7 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center text-primary-700 text-xs font-bold">
+                                {{ strtoupper(substr($c->prenom, 0, 1)) }}
+                            </div>
+                            <span class="font-medium">{{ $c->nom_complet }}</span>
+                            <span class="text-gray-400 text-xs ml-auto">{{ $c->telephone }}</span>
+                        </button>
+                        @endforeach
+                    </div>
+                    @elseif($showClientList && strlen($clientSearch) === 0)
+                    <div wire:loading.remove wire:target="clientSearch" class="text-xs text-gray-400 mt-2 text-center py-2">
+                        Aucun client enregistré
+                    </div>
+                    @endif
                 </div>
-                @if($this->clients->count() > 0)
-                <div class="border border-gray-200 rounded-xl overflow-hidden mt-2 shadow-sm">
-                    @foreach($this->clients as $c)
-                    <button wire:click="$set('clientId', '{{ $c->id }}')"
-                            class="w-full text-left px-3 py-2.5 text-sm hover:bg-primary-50/50 flex items-center gap-2.5 border-b border-gray-100 last:border-b-0 transition-colors">
-                        <div class="w-7 h-7 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center text-primary-700 text-xs font-bold">
-                            {{ strtoupper(substr($c->prenom, 0, 1)) }}
-                        </div>
-                        <span class="font-medium">{{ $c->nom_complet }}</span>
-                        <span class="text-gray-400 text-xs ml-auto">{{ $c->telephone }}</span>
-                    </button>
-                    @endforeach
-                </div>
-                @endif
+
+                {{-- Bouton + Nouveau client --}}
+                <button wire:click="$toggle('showNewClientForm')" class="mt-2 flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-800 font-medium transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    Nouveau client
+                </button>
             @endif
         </div>
 
@@ -565,4 +580,99 @@
             </div>
         </div>
     </div>
+
+    {{-- ═══ MODAL NOUVEAU CLIENT ═══ --}}
+    @if($showNewClientForm)
+    <div class="modal-backdrop" x-data x-init="document.body.classList.add('overflow-hidden')"
+         x-on:remove="document.body.classList.remove('overflow-hidden')"
+         @keydown.escape.window="$wire.set('showNewClientForm', false); document.body.classList.remove('overflow-hidden')"
+         @click.self="$wire.set('showNewClientForm', false); document.body.classList.remove('overflow-hidden')">
+        <div class="modal max-w-lg" x-transition @click.stop>
+            <div class="modal-header">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, rgba(147,51,234,0.1), rgba(236,72,153,0.1));">
+                        <svg class="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                        </svg>
+                    </div>
+                    <h3 class="modal-title">Nouveau client</h3>
+                </div>
+                <button wire:click="$set('showNewClientForm', false)" class="btn-icon"
+                        @click="document.body.classList.remove('overflow-hidden')">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                @if($errors->any())
+                <div class="mb-4 p-3 bg-red-50 rounded-xl text-sm text-red-600 space-y-0.5">
+                    @foreach($errors->all() as $e)<p>• {{ $e }}</p>@endforeach
+                </div>
+                @endif
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="form-group mb-0">
+                            <label class="form-label">Prénom *</label>
+                            <input type="text" wire:model="newClientPrenom" maxlength="50" class="form-input" placeholder="Fatou">
+                        </div>
+                        <div class="form-group mb-0">
+                            <label class="form-label">Nom *</label>
+                            <input type="text" wire:model="newClientNom" maxlength="50" class="form-input" placeholder="Traoré">
+                        </div>
+                        <div class="form-group mb-0">
+                            <label class="form-label">Téléphone *</label>
+                            <input type="text" wire:model="newClientTelephone" maxlength="30" class="form-input" placeholder="+225 07 00 00 00">
+                        </div>
+                        <div class="form-group mb-0">
+                            <label class="form-label">Email</label>
+                            <input type="email" wire:model="newClientEmail" maxlength="255" class="form-input" placeholder="fatou@exemple.ci">
+                        </div>
+                        <div class="col-span-2 form-group mb-0">
+                            <label class="form-label">Anniversaire (jour et mois)</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <select wire:model="newClientNaissanceMois" class="form-input">
+                                    <option value="">Mois</option>
+                                    <option value="01">Janvier</option>
+                                    <option value="02">Février</option>
+                                    <option value="03">Mars</option>
+                                    <option value="04">Avril</option>
+                                    <option value="05">Mai</option>
+                                    <option value="06">Juin</option>
+                                    <option value="07">Juillet</option>
+                                    <option value="08">Août</option>
+                                    <option value="09">Septembre</option>
+                                    <option value="10">Octobre</option>
+                                    <option value="11">Novembre</option>
+                                    <option value="12">Décembre</option>
+                                </select>
+                                <select wire:model="newClientNaissanceJour" class="form-input">
+                                    <option value="">Jour</option>
+                                    @for($d = 1; $d <= 31; $d++)
+                                    <option value="{{ str_pad($d, 2, '0', STR_PAD_LEFT) }}">{{ $d }}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-span-2 form-group mb-0">
+                            <label class="form-label">Notes</label>
+                            <textarea wire:model="newClientNotes" rows="2" maxlength="1000" class="form-input resize-none"
+                                      placeholder="Allergies, préférences..."></textarea>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 pt-1">
+                        <button type="button" wire:click="$set('showNewClientForm', false)" class="btn btn-outline flex-1 justify-center"
+                                @click="document.body.classList.remove('overflow-hidden')">Annuler</button>
+                        <button type="button" wire:click="ajouterClientRapide" class="btn-primary flex-1 justify-center">
+                            <span wire:loading.remove wire:target="ajouterClientRapide">Enregistrer</span>
+                            <span wire:loading wire:target="ajouterClientRapide" class="flex items-center gap-2">
+                                <span class="spinner spinner-sm"></span> Ajout...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>
