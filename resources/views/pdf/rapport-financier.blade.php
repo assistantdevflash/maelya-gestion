@@ -16,12 +16,12 @@
     .divider { border: none; border-top: 2px solid #8b5cf6; margin-bottom: 24px; }
 
     /* ── KPI ── */
-    .kpi-grid { display: flex; gap: 10px; margin-bottom: 24px; }
-    .kpi-box { flex: 1; border-radius: 8px; padding: 12px 14px; }
-    .kpi-box.violet { background: #f5f3ff; border-left: 3px solid #7c3aed; }
-    .kpi-box.red    { background: #fff5f5; border-left: 3px solid #dc2626; }
-    .kpi-box.green  { background: #f0fdf4; border-left: 3px solid #059669; }
-    .kpi-box.gray   { background: #f9fafb; border-left: 3px solid #9ca3af; }
+    .kpi-table { width: 100%; border-collapse: separate; border-spacing: 10px; margin-bottom: 14px; }
+    .kpi-box { border-radius: 8px; padding: 12px 14px; width: 50%; }
+    .kpi-box.violet { background: #f5f3ff; border-left: 4px solid #7c3aed; }
+    .kpi-box.red    { background: #fff5f5; border-left: 4px solid #dc2626; }
+    .kpi-box.green  { background: #f0fdf4; border-left: 4px solid #059669; }
+    .kpi-box.gray   { background: #f9fafb; border-left: 4px solid #9ca3af; }
     .kpi-label { font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.5px; color: #9ca3af; margin-bottom: 5px; }
     .kpi-value { font-size: 17px; font-weight: bold; }
     .kpi-box.violet .kpi-value { color: #7c3aed; }
@@ -77,24 +77,28 @@
 <hr class="divider">
 
 {{-- ── KPIs ── --}}
-<div class="kpi-grid">
-    <div class="kpi-box violet">
-        <div class="kpi-label">Chiffre d'affaires</div>
-        <div class="kpi-value">{{ number_format($ca, 0, ',', ' ') }}<span class="kpi-unit">FCFA</span></div>
-    </div>
-    <div class="kpi-box red">
-        <div class="kpi-label">Total dépenses</div>
-        <div class="kpi-value">{{ number_format($depenses_total, 0, ',', ' ') }}<span class="kpi-unit">FCFA</span></div>
-    </div>
-    <div class="kpi-box {{ $benefice >= 0 ? 'green' : 'red' }}">
-        <div class="kpi-label">Bénéfice net</div>
-        <div class="kpi-value">{{ number_format($benefice, 0, ',', ' ') }}<span class="kpi-unit">FCFA</span></div>
-    </div>
-    <div class="kpi-box gray">
-        <div class="kpi-label">Nbre de ventes</div>
-        <div class="kpi-value">{{ $nbVentes }}</div>
-    </div>
-</div>
+<table class="kpi-table">
+    <tr>
+        <td class="kpi-box violet">
+            <div class="kpi-label">Chiffre d'affaires</div>
+            <div class="kpi-value">{{ number_format($ca, 0, ',', ' ') }}<span class="kpi-unit">FCFA</span></div>
+        </td>
+        <td class="kpi-box red">
+            <div class="kpi-label">Total dépenses</div>
+            <div class="kpi-value">{{ number_format($depenses_total, 0, ',', ' ') }}<span class="kpi-unit">FCFA</span></div>
+        </td>
+    </tr>
+    <tr>
+        <td class="kpi-box {{ $benefice >= 0 ? 'green' : 'red' }}">
+            <div class="kpi-label">Bénéfice net</div>
+            <div class="kpi-value">{{ number_format($benefice, 0, ',', ' ') }}<span class="kpi-unit">FCFA</span></div>
+        </td>
+        <td class="kpi-box gray">
+            <div class="kpi-label">Nbre de ventes</div>
+            <div class="kpi-value">{{ $nbVentes }}</div>
+        </td>
+    </tr>
+</table>
 
 {{-- ── Répartition paiement ── --}}
 <div class="section-title">Répartition par mode de paiement</div>
