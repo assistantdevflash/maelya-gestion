@@ -9,27 +9,25 @@
         <a href="{{ route('dashboard.finances.index') }}" class="btn-secondary text-sm">← Retour</a>
     </div>
 
-    {{-- Filtres --}}
+    {{-- Filtres + PDF --}}
     <form method="GET" action="{{ route('dashboard.finances.rapport') }}" class="flex flex-wrap items-end gap-3"
-          x-data="{ debut: '{{ $debut }}' }">
+          x-data="{ debut: '{{ $debut }}', fin: '{{ $fin }}' }">
         <div>
             <label class="form-label">Du</label>
-            <input type="date" name="debut" x-model="debut" value="{{ $debut }}" class="form-input">
+            <input type="date" name="debut" x-model="debut" value="{{ $debut }}" class="form-input" @change="$el.form.submit()">
         </div>
         <div>
             <label class="form-label">Au</label>
-            <input type="date" name="fin" :min="debut" value="{{ $fin }}" class="form-input">
+            <input type="date" name="fin" x-model="fin" :min="debut" value="{{ $fin }}" class="form-input" @change="$el.form.submit()">
         </div>
-        <button type="submit" class="btn-primary">Générer</button>
+        <a :href="`{{ route('dashboard.finances.export-pdf') }}?debut=${debut}&fin=${fin}`"
+           class="btn-primary inline-flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Télécharger PDF
+        </a>
     </form>
-
-    {{-- Télécharger PDF --}}
-    <a href="{{ route('dashboard.finances.export-pdf', ['debut' => $debut, 'fin' => $fin]) }}" class="btn-primary inline-flex items-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-        Télécharger PDF
-    </a>
 
     {{-- Résumé --}}
     <div class="grid sm:grid-cols-3 gap-4">
