@@ -19,18 +19,24 @@
 
         {{-- Filtres période --}}
         <div class="card p-4">
-            <form method="GET" action="{{ route('dashboard.finances.index') }}" class="flex flex-wrap gap-3 items-end"
-                  x-data="{ debut: '{{ $debut->format('Y-m-d') }}' }">
+            <form method="GET" action="{{ route('dashboard.finances.index') }}" id="form-finances-filtre"
+                  class="flex flex-wrap gap-3 items-end"
+                  x-data="{ debut: '{{ $debut->format('Y-m-d') }}', fin: '{{ $fin->format('Y-m-d') }}' }">
                 <input type="hidden" name="periode" value="custom">
                 <div class="form-group mb-0">
                     <label class="form-label text-xs">Début</label>
-                    <input type="date" name="debut" x-model="debut" value="{{ $debut->format('Y-m-d') }}" class="form-input">
+                    <input type="date" name="debut" x-model="debut" value="{{ $debut->format('Y-m-d') }}" class="form-input" @change="$el.form.submit()">
                 </div>
                 <div class="form-group mb-0">
                     <label class="form-label text-xs">Fin</label>
-                    <input type="date" name="fin" :min="debut" value="{{ $fin->format('Y-m-d') }}" class="form-input">
+                    <input type="date" name="fin" x-model="fin" :min="debut" value="{{ $fin->format('Y-m-d') }}" class="form-input" @change="$el.form.submit()">
                 </div>
-                <button type="submit" class="btn-outline">Appliquer</button>
+                <a href="{{ route('dashboard.finances.index') }}" class="btn-outline text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    Réinitialiser
+                </a>
                 <div class="flex gap-1 ml-auto">
                     @foreach([
                         ['today', "Aujourd'hui"],
