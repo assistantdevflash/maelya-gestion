@@ -8,10 +8,12 @@ use App\Models\Institut;
 use App\Models\Parrainage;
 use App\Models\User;
 use App\Models\PlanAbonnement;
+use App\Mail\BienvenueMaelya;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules;
 
 class InscriptionController extends Controller
@@ -49,7 +51,9 @@ class InscriptionController extends Controller
             'cgu.required' => 'Vous devez accepter les CGU.',
         ]);
 
-        DB::transaction(function () use ($request) {
+        $newUser = null;
+
+        DB::transaction(function () use ($request, &$newUser) {
             // Vérifier le code de parrainage
             $parrain = null;
             if ($request->filled('code_parrainage')) {
@@ -67,7 +71,7 @@ class InscriptionController extends Controller
                 'actif' => true,
             ]);
 
-            $user = User::create([
+            $newUser = $user = User::create([
                 'institut_id' => $institut->id,
                 'prenom' => $request->prenom,
                 'nom_famille' => $request->nom_famille,
@@ -109,6 +113,11 @@ class InscriptionController extends Controller
                     'statut' => 'en_attente',
                 ]);
             }        });
+
+        // Email de bienvenue
+        if ($newUser) {
+            Mail::to($newUser->email)->send(new BienvenueMaelya($newUser));
+        }
 
         return redirect()->route('dashboard.index')
             ->with('success', "Bienvenue ! Votre essai gratuit de 14 jours est activé. 🎉");

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Notifications\ResetPasswordMaelya;
+use App\Notifications\VerifyEmailMaelya;
 use Illuminate\Support\Str;
 
 class User extends Authenticatable
@@ -158,6 +160,16 @@ class User extends Authenticatable
     public function parrainageRecu()
     {
         return $this->hasOne(Parrainage::class, 'filleul_id');
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmailMaelya);
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordMaelya($token));
     }
 }
 
