@@ -138,7 +138,7 @@
                                 </button>
                                 {{-- Archiver / Réactiver --}}
                                 <form id="form-archiver-{{ $client->id }}" method="POST" action="{{ route('dashboard.clients.archiver', $client) }}">
-                                    @csrf @method('PATCH')
+                                    @csrf
                                     <button type="button"
                                             class="btn-icon text-amber-500 hover:text-amber-700"
                                             title="{{ $client->actif ? 'Archiver' : 'Réactiver' }}"
