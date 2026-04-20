@@ -17,15 +17,15 @@
 
         {{-- Alerte abonnement --}}
         @if(isset($joursRestants) && $joursRestants <= 7)
-            <div class="flex items-center gap-3 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl ring-1 ring-amber-200/60">
-                <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
-                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="flex items-center gap-3 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 rounded-2xl ring-1 ring-amber-200/60 dark:ring-amber-700/40">
+                <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                     </svg>
                 </div>
                 <div class="flex-1">
-                    <p class="text-sm font-semibold text-amber-800">Votre abonnement expire dans {{ $joursRestants }} jour(s)</p>
-                    <a href="{{ route('abonnement.plans') }}" class="text-xs font-bold text-amber-600 hover:text-amber-800 underline underline-offset-2">Renouveler maintenant →</a>
+                    <p class="text-sm font-semibold text-amber-800 dark:text-amber-300">Votre abonnement expire dans {{ $joursRestants }} jour(s)</p>
+                    <a href="{{ route('abonnement.plans') }}" class="text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 underline underline-offset-2">Renouveler maintenant →</a>
                 </div>
             </div>
         @endif
@@ -40,16 +40,16 @@
         @endphp
         @if($parrainagesRecents->isNotEmpty())
         @php $lastParrainageKey = $parrainagesRecents->max('updated_at')->timestamp; @endphp
-        <div x-data="{ show: localStorage.getItem('parrainage_dismissed') !== '{{ $lastParrainageKey }}' }" x-show="show" x-transition class="relative card p-4 bg-emerald-50 border-emerald-200 flex items-start gap-3">
-            <button @click="show = false; localStorage.setItem('parrainage_dismissed', '{{ $lastParrainageKey }}')" class="absolute top-2 right-2 p-1 text-emerald-400 hover:text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors">
+        <div x-data="{ show: localStorage.getItem('parrainage_dismissed') !== '{{ $lastParrainageKey }}' }" x-show="show" x-transition class="relative card p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 flex items-start gap-3">
+            <button @click="show = false; localStorage.setItem('parrainage_dismissed', '{{ $lastParrainageKey }}')" class="absolute top-2 right-2 p-1 text-emerald-400 dark:text-emerald-600 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
-            <div class="w-9 h-9 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 flex-shrink-0 mt-0.5">
+            <div class="w-9 h-9 bg-emerald-100 dark:bg-emerald-900/40 rounded-full flex items-center justify-center text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
             </div>
             <div class="flex-1 pr-6">
-                <p class="font-semibold text-emerald-900">🎉 Bonus parrainage crédité !</p>
-                <p class="text-sm text-emerald-700 mt-0.5">
+                <p class="font-semibold text-emerald-900 dark:text-emerald-300">🎉 Bonus parrainage crédité !</p>
+                <p class="text-sm text-emerald-700 dark:text-emerald-400 mt-0.5">
                     @foreach($parrainagesRecents as $pr)
                         <strong>{{ $pr->filleul->nom_complet ?? $pr->filleul->name }}</strong> a souscrit un abonnement — vous avez reçu <strong>+{{ $pr->jours_offerts_parrain }} jours</strong> gratuits.@if(!$loop->last)<br>@endif
                     @endforeach
@@ -60,21 +60,21 @@
 
         {{-- Carte abonnement (alerte si < 8 jours) --}}
         @if(isset($abonnement) && $abonnement && $abonnement->joursRestants() <= 8)
-        <div class="card p-4 flex items-center gap-4 bg-gradient-to-r from-primary-50/50 to-secondary-50/50 border-primary-100/50">
+        <div class="card p-4 flex items-center gap-4 bg-gradient-to-r from-primary-50/50 to-secondary-50/50 dark:from-primary-950/30 dark:to-secondary-950/30 border-primary-100/50 dark:border-primary-800/30">
             <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg, #9333ea, #ec4899);">
                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
             </div>
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2">
-                    <p class="font-semibold text-gray-900 text-sm">{{ $abonnement->plan->nom ?? 'Abonnement' }}</p>
+                    <p class="font-semibold text-gray-900 dark:text-gray-100 text-sm">{{ $abonnement->plan->nom ?? 'Abonnement' }}</p>
                     <span class="badge badge-success text-[10px]">Actif</span>
                 </div>
-                <p class="text-xs text-gray-500 mt-0.5">
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                     Expire le {{ $abonnement->expire_le->format('d/m/Y') }}
-                    <span class="text-gray-400">·</span>
+                    <span class="text-gray-400 dark:text-gray-600">·</span>
                     {{ $abonnement->joursRestants() }} jour(s) restant(s)
                     @if($abonnement->plan->max_employes)
-                        <span class="text-gray-400">·</span>
+                        <span class="text-gray-400 dark:text-gray-600">·</span>
                         {{ $abonnement->plan->max_employes }} employé(s) max
                     @endif
                 </p>

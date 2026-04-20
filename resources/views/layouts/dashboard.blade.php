@@ -498,14 +498,14 @@
         {{-- Bannière sursis (abonnement expiré, période de grâce de 2 jours) --}}
         @if(isset($enSursis) && $enSursis)
         <div class="px-3 sm:px-6 lg:px-8 pt-4">
-            <div class="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/40 rounded-xl text-sm text-red-700 dark:text-red-300">
                 <div class="flex items-start gap-3 flex-1">
-                    <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                     </svg>
                     <div>
                         <p class="font-semibold">Mode lecture seule — Abonnement expiré</p>
-                        <p class="text-red-600 mt-0.5">
+                        <p class="text-red-600 dark:text-red-400 mt-0.5">
                             Votre abonnement a expiré il y a {{ $sursisJours ?? 0 }} jour(s).
                             Vous ne pouvez plus enregistrer de ventes, ajouter des clients ni modifier vos données.
                         </p>
