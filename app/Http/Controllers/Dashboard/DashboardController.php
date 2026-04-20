@@ -122,7 +122,7 @@ class DashboardController extends Controller
         $cadeauClientIds = \App\Models\CodeReduction::withoutGlobalScopes()
             ->where('institut_id', $institutId)
             ->where('code', 'like', 'ANNIV-%')
-            ->where('date_debut', now()->toDateString())
+            ->whereDate('date_debut', now()->toDateString())
             ->pluck('client_id')
             ->toArray();
 

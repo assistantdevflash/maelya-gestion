@@ -37,7 +37,7 @@ class ClientController extends Controller
         $cadeauClientIds = CodeReduction::withoutGlobalScopes()
             ->where('institut_id', $this->institutId())
             ->where('code', 'like', 'ANNIV-%')
-            ->where('date_debut', now()->toDateString())
+            ->whereDate('date_debut', now()->toDateString())
             ->pluck('client_id')
             ->toArray();
 
