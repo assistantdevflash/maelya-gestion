@@ -95,7 +95,7 @@
                                 </div>
                                 <div>
                                     <a href="{{ route('dashboard.clients.show', $client) }}" class="font-semibold text-gray-900 hover:text-primary-600 transition-colors">
-                                        @if($client->date_naissance === now()->format('m-d'))🎂 @endif{{ $client->nom_complet }}
+                                        {{ $client->nom_complet }}@if($client->date_naissance === now()->format('m-d')) 🎂@endif
                                     </a>
                                     @if($client->email)
                                         <p class="text-xs text-gray-400">{{ $client->email }}</p>
