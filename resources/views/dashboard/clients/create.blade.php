@@ -47,9 +47,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Date de naissance</label>
-                    <input type="date" name="date_naissance"
-                           value="{{ old('date_naissance') }}" class="form-input">
+                    <label class="form-label">Anniversaire (jour et mois)</label>
+                    <x-input-naissance :valeur="old('date_naissance')" />
                 </div>
 
                 <div class="form-group">

@@ -4,11 +4,19 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Client;
+use App\Models\CodeReduction;
 use App\Models\Vente;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class ClientController extends Controller
 {
+    private function institutId(): string
+    {
+        return session('current_institut_id', Auth::user()->institut_id);
+    }
+
     public function index(Request $request)
     {
         $search = $request->input('q');
@@ -25,7 +33,12 @@ class ClientController extends Controller
             ->paginate(25)
             ->withQueryString();
 
-        return view('dashboard.clients.index', compact('clients', 'search'));
+        // Clients fêtant leur anniversaire aujourd'hui
+        $anniversairesAujourdhui = Client::where('actif', true)
+            ->where('date_naissance', now()->format('m-d'))
+            ->get();
+
+        return view('dashboard.clients.index', compact('clients', 'search', 'anniversairesAujourdhui'));
     }
 
     public function create()
@@ -36,12 +49,12 @@ class ClientController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'prenom' => ['required', 'string', 'max:50'],
-            'nom' => ['required', 'string', 'max:50'],
-            'telephone' => ['required', 'string', 'max:30'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'date_naissance' => ['nullable', 'date'],
-            'notes' => ['nullable', 'string', 'max:1000'],
+            'prenom'         => ['required', 'string', 'max:50'],
+            'nom'            => ['required', 'string', 'max:50'],
+            'telephone'      => ['required', 'string', 'max:30'],
+            'email'          => ['nullable', 'email', 'max:255'],
+            'date_naissance' => ['nullable', 'regex:/^\d{2}-\d{2}$/'],
+            'notes'          => ['nullable', 'string', 'max:1000'],
         ]);
 
         Client::create($data);
@@ -64,12 +77,12 @@ class ClientController extends Controller
     public function update(Request $request, Client $client)
     {
         $data = $request->validate([
-            'prenom' => ['required', 'string', 'max:50'],
-            'nom' => ['required', 'string', 'max:50'],
-            'telephone' => ['required', 'string', 'max:30'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'date_naissance' => ['nullable', 'date'],
-            'notes' => ['nullable', 'string', 'max:1000'],
+            'prenom'         => ['required', 'string', 'max:50'],
+            'nom'            => ['required', 'string', 'max:50'],
+            'telephone'      => ['required', 'string', 'max:30'],
+            'email'          => ['nullable', 'email', 'max:255'],
+            'date_naissance' => ['nullable', 'regex:/^\d{2}-\d{2}$/'],
+            'notes'          => ['nullable', 'string', 'max:1000'],
         ]);
 
         $client->update($data);
@@ -90,5 +103,40 @@ class ClientController extends Controller
         $client->update(['actif' => !$client->actif]);
         $msg = $client->actif ? 'Client réactivé.' : 'Client archivé.';
         return back()->with('success', $msg);
+    }
+
+    /**
+     * Crée un code de réduction d'anniversaire pour un client.
+     */
+    public function cadeauAnniversaire(Request $request, Client $client)
+    {
+        abort_unless($client->institut_id === $this->institutId(), 403);
+
+        $data = $request->validate([
+            'type'   => ['required', 'in:pourcentage,montant_fixe'],
+            'valeur' => ['required', 'integer', 'min:1'],
+        ]);
+
+        $code = 'ANNIV-' . strtoupper(Str::slug($client->prenom)) . '-' . strtoupper(Str::random(4));
+
+        // S'assurer de l'unicité
+        while (CodeReduction::where('institut_id', $this->institutId())->where('code', $code)->exists()) {
+            $code = 'ANNIV-' . strtoupper(Str::slug($client->prenom)) . '-' . strtoupper(Str::random(4));
+        }
+
+        CodeReduction::create([
+            'institut_id'        => $this->institutId(),
+            'client_id'          => $client->id,
+            'code'               => $code,
+            'description'        => 'Cadeau anniversaire — ' . $client->nom_complet,
+            'type'               => $data['type'],
+            'valeur'             => $data['valeur'],
+            'date_debut'         => now()->toDateString(),
+            'date_fin'           => now()->addDays(30)->toDateString(),
+            'limite_utilisation' => 1,
+            'actif'              => true,
+        ]);
+
+        return back()->with('success', "Cadeau créé ! Code : {$code} (valable 30 jours)");
     }
 }

@@ -79,6 +79,7 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         Route::resource('clients', ClientController::class)->except(['show']);
         Route::get('clients/{client}', [ClientController::class, 'show'])->name('clients.show');
         Route::post('clients/{client}/archiver', [ClientController::class, 'archiver'])->name('clients.archiver');
+        Route::post('clients/{client}/cadeau-anniversaire', [ClientController::class, 'cadeauAnniversaire'])->name('clients.cadeau-anniversaire');
 
         // Prestations
         Route::resource('prestations', PrestationController::class)->except(['show']);

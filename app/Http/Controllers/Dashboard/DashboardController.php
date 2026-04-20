@@ -118,6 +118,11 @@ class DashboardController extends Controller
         $abonnement = $user->abonnementActif;
         $joursRestants = $abonnement?->expire_le ? (int) now()->diffInDays($abonnement->expire_le, false) : null;
 
+        // Clients fêtant leur anniversaire aujourd'hui
+        $anniversairesAujourdhui = \App\Models\Client::where('actif', true)
+            ->where('date_naissance', now()->format('m-d'))
+            ->get();
+
         // Données graphique
         $chartData = ['labels' => $labels, 'values' => $data];
 
@@ -126,7 +131,7 @@ class DashboardController extends Controller
             'nouveauxClientsJour', 'produitsEnAlerte', 'depensesMois', 'beneficeEstime', 'beneficeMois',
             'paiementsCash', 'paiementsMobile', 'paiementsCarte', 'paiementsMixte',
             'labels', 'data', 'chartData', 'dernieresVentes', 'alertesStock',
-            'abonnement', 'joursRestants'
+            'abonnement', 'joursRestants', 'anniversairesAujourdhui'
         ));
     }
 }

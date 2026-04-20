@@ -1,5 +1,10 @@
 <x-dashboard-layout>
     <div class="space-y-5">
+        {{-- Bannière anniversaire --}}
+        @if($client->isAnniversaire())
+        <x-banniere-anniversaire :clients="collect([$client])" />
+        @endif
+
         {{-- Header --}}
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div class="flex items-center gap-3">
@@ -15,7 +20,7 @@
                     <div>
                         <h1 class="text-xl font-display font-bold text-gray-900">{{ $client->nom_complet }}</h1>
                         @if($client->date_naissance)
-                            <p class="text-sm text-gray-500">{{ $client->date_naissance->age }} ans</p>
+                            <p class="text-sm text-gray-500">{{ $client->naissance_formatee }}</p>
                         @endif
                     </div>
                 </div>

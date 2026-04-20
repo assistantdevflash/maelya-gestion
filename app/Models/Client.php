@@ -18,7 +18,6 @@ class Client extends Model
 
     protected $casts = [
         'actif' => 'boolean',
-        'date_naissance' => 'date',
         'points_fidelite' => 'integer',
     ];
 
@@ -35,6 +34,22 @@ class Client extends Model
     public function getNomCompletAttribute(): string
     {
         return $this->prenom . ' ' . $this->nom;
+    }
+
+    public function isAnniversaire(): bool
+    {
+        return $this->date_naissance !== null
+            && $this->date_naissance === now()->format('m-d');
+    }
+
+    public function getNaissanceFormateeAttribute(): ?string
+    {
+        if (!$this->date_naissance) return null;
+        $mois = ['01'=>'janvier','02'=>'février','03'=>'mars','04'=>'avril',
+                 '05'=>'mai','06'=>'juin','07'=>'juillet','08'=>'août',
+                 '09'=>'septembre','10'=>'octobre','11'=>'novembre','12'=>'décembre'];
+        [$m, $j] = explode('-', $this->date_naissance);
+        return intval($j) . ' ' . ($mois[$m] ?? $m);
     }
 
     public function getTotalDepenseAttribute(): float

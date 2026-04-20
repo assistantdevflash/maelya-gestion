@@ -17,7 +17,7 @@
             nom:            @js(old('nom',            $editErrorClient?->nom ?? '')),
             telephone:      @js(old('telephone',      $editErrorClient?->telephone ?? '')),
             email:          @js(old('email',          $editErrorClient?->email ?? '')),
-            date_naissance: @js(old('date_naissance', $editErrorClient?->date_naissance?->format('Y-m-d') ?? '')),
+            date_naissance: @js(old('date_naissance', $editErrorClient?->date_naissance ?? '')),
             notes:          @js(old('notes',          $editErrorClient?->notes ?? '')),
         },
         openEdit(client) {
@@ -49,6 +49,9 @@
         {{ session('success') }}
     </div>
     @endif
+
+    {{-- Bannières anniversaire --}}
+    <x-banniere-anniversaire :clients="$anniversairesAujourdhui" />
 
     {{-- Recherche --}}
     <div class="card p-4">
@@ -125,10 +128,7 @@
                                             nom:            @js($client->nom),
                                             telephone:      @js($client->telephone ?? ''),
                                             email:          @js($client->email ?? ''),
-                                            date_naissance: @js($client->date_naissance?->format('Y-m-d') ?? ''),
-                                            notes:          @js($client->notes ?? '')
-                                        })"
-                                        class="btn-icon">
+                                            date_naissance: @js($client->date_naissance ?? ''),
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                     </svg>
@@ -228,9 +228,8 @@
                                    value="{{ old('_form') === 'create' ? old('email') : '' }}" placeholder="fatou@exemple.ci">
                         </div>
                         <div class="col-span-2 form-group mb-0">
-                            <label class="form-label">Date de naissance</label>
-                            <input type="date" name="date_naissance" class="form-input"
-                                   value="{{ old('_form') === 'create' ? old('date_naissance') : '' }}">
+                            <label class="form-label">Anniversaire (jour et mois)</label>
+                            <x-input-naissance :valeur="old('_form') === 'create' ? old('date_naissance') : null" />
                         </div>
                         <div class="col-span-2 form-group mb-0">
                             <label class="form-label">Notes</label>
@@ -294,8 +293,25 @@
                             <input type="email" name="email" maxlength="255" class="form-input" x-model="edit.email">
                         </div>
                         <div class="col-span-2 form-group mb-0">
-                            <label class="form-label">Date de naissance</label>
-                            <input type="date" name="date_naissance" class="form-input" x-model="edit.date_naissance">
+                            <label class="form-label">Anniversaire (jour et mois)</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <select name="date_naissance_mois" class="form-input"
+                                        @change="edit.date_naissance = $el.value ? $el.value + '-' + ($refs.joureditsel?.value||'01') : ''">
+                                    <option value="">Mois</option>
+                                    @foreach(['01'=>'Janvier','02'=>'Février','03'=>'Mars','04'=>'Avril','05'=>'Mai','06'=>'Juin','07'=>'Juillet','08'=>'Août','09'=>'Septembre','10'=>'Octobre','11'=>'Novembre','12'=>'Décembre'] as $n=>$m)
+                                    <option value="{{ $n }}" :selected="edit.date_naissance && edit.date_naissance.substring(0,2) === '{{ $n }}'">{{ $m }}</option>
+                                    @endforeach
+                                </select>
+                                <select name="date_naissance_jour" x-ref="joureditsel" class="form-input"
+                                        @change="edit.date_naissance = ($refs.moissel?.value||edit.date_naissance.substring(0,2)||'01') + '-' + $el.value">
+                                    <option value="">Jour</option>
+                                    @for($d=1;$d<=31;$d++)
+                                    @php $ds=str_pad($d,2,'0',STR_PAD_LEFT) @endphp
+                                    <option value="{{ $ds }}" :selected="edit.date_naissance && edit.date_naissance.substring(3,5) === '{{ $ds }}'">{{ $d }}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                            <input type="hidden" name="date_naissance" :value="edit.date_naissance">
                         </div>
                         <div class="col-span-2 form-group mb-0">
                             <label class="form-label">Notes</label>
