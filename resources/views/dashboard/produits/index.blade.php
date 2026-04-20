@@ -239,12 +239,12 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label class="form-label">Prix d'achat (FCFA)</label>
-                            <input type="number" name="prix_achat" min="0" step="50"
+                            <input type="number" name="prix_achat" min="0" step="1"
                                    x-model="form.prix_achat" class="form-input" placeholder="5000">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Prix de vente (FCFA) *</label>
-                            <input type="number" name="prix_vente" required min="0" step="50"
+                            <input type="number" name="prix_vente" required min="0" step="1"
                                    x-model="form.prix_vente" class="form-input" placeholder="8000">
                         </div>
                     </div>

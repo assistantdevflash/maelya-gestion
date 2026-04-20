@@ -48,6 +48,8 @@ class ProduitController extends Controller
             return back()->withErrors(['prix_vente' => 'Le prix de vente ne peut pas être inférieur au prix d\'achat.'])->withInput();
         }
 
+        $data['prix_achat'] = $data['prix_achat'] ?? 0;
+
         Produit::create($data);
 
         return redirect()->route('dashboard.produits.index')
@@ -76,6 +78,8 @@ class ProduitController extends Controller
         if (isset($data['prix_achat']) && $data['prix_vente'] < $data['prix_achat']) {
             return back()->withErrors(['prix_vente' => 'Le prix de vente ne peut pas être inférieur au prix d\'achat.'])->withInput();
         }
+
+        $data['prix_achat'] = $data['prix_achat'] ?? 0;
 
         $produit->update($data);
 
