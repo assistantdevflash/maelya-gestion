@@ -15,8 +15,8 @@ echo "▶ Déploiement Maëlya Gestion..."
 # 1. Mettre en maintenance
 $PHP artisan down --render="errors.503" || true
 
-# 2. Pull des dernières modifications (si Git configuré)
-# git pull origin main
+# 2. Pull des dernières modifications
+git -C ~/maelya pull origin main
 
 # 3. Installer les dépendances PHP (sans dev)
 $COMPOSER install --no-dev --optimize-autoloader --no-interaction
