@@ -14,7 +14,7 @@
 
         {{-- Filtres --}}
         <div class="card p-4">
-            <form method="GET" action="{{ route('dashboard.ventes.index') }}" class="flex flex-wrap gap-3"
+            <form method="GET" action="{{ route('dashboard.ventes.index') }}" class="flex flex-wrap items-end gap-3"
                   x-data="{ debut: '{{ request('debut') }}' }">
                 <div class="flex flex-col gap-1">
                     <label class="text-xs text-gray-500 font-medium">Début</label>
@@ -24,7 +24,7 @@
                     <label class="text-xs text-gray-500 font-medium">Fin</label>
                     <input type="date" name="fin" :min="debut" value="{{ request('fin') }}" class="form-input">
                 </div>
-                <select name="mode" class="form-select w-auto">
+                <select name="mode" class="form-select w-auto self-end">
                     <option value="">Tous modes</option>
                     <option value="cash" {{ request('mode') === 'cash' ? 'selected' : '' }}>Espèces</option>
                     <option value="carte" {{ request('mode') === 'carte' ? 'selected' : '' }}>Carte</option>
@@ -32,7 +32,7 @@
                     <option value="mixte" {{ request('mode') === 'mixte' ? 'selected' : '' }}>Mixte</option>
                 </select>
                 @if(!Auth::user()->isEmploye() && $membres->count() > 1)
-                <select name="employe_id" class="form-select w-auto">
+                <select name="employe_id" class="form-select w-auto self-end">
                     <option value="">Tous les vendeurs</option>
                     @foreach($membres as $membre)
                     <option value="{{ $membre->id }}" {{ request('employe_id') === $membre->id ? 'selected' : '' }}>
@@ -42,9 +42,9 @@
                     @endforeach
                 </select>
                 @endif
-                <button type="submit" class="btn-outline">Filtrer</button>
+                <button type="submit" class="btn-outline self-end border py-2">Filtrer</button>
                 @if(request()->hasAny(['debut','fin','mode','employe_id']))
-                    <a href="{{ route('dashboard.ventes.index') }}" class="btn btn-ghost">Réinitialiser</a>
+                    <a href="{{ route('dashboard.ventes.index') }}" class="btn btn-ghost self-end border py-2">Réinitialiser</a>
                 @endif
             </form>
         </div>
