@@ -135,13 +135,27 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
                                             <span class="text-xs font-bold text-primary-700 dark:text-primary-400">{{ strtoupper(substr($client->prenom, 0, 1) . substr($client->nom, 0, 1)) }}</span>
                                         </div>
-                                        <div>
+                                        <div class="min-w-0">
                                             <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $client->nom_complet }}</p>
                                             <p class="text-xs text-gray-400">{{ $client->telephone }}</p>
+                                            @if($client->codesReductionFidelite && $client->codesReductionFidelite->count())
+                                            <div class="flex flex-wrap gap-1.5 mt-1.5">
+                                                @foreach($client->codesReductionFidelite as $codeReduc)
+                                                <div class="inline-flex items-center gap-1.5 px-2 py-1 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/40 rounded-md">
+                                                    <span class="text-[10px]">🎟️</span>
+                                                    <span class="text-[11px] font-mono font-bold text-amber-700 dark:text-amber-400">{{ $codeReduc->code }}</span>
+                                                    <span class="text-[10px] text-gray-400">{{ $codeReduc->valeur }}{{ $codeReduc->type === 'pourcentage' ? '%' : ' FCFA' }} • exp. {{ $codeReduc->date_fin?->format('d/m/Y') ?? '∞' }}</span>
+                                                    <button onclick="window.open('{{ route('dashboard.fidelite.imprimer-code', $codeReduc) }}', '_blank')" class="p-0.5 rounded hover:bg-amber-100 dark:hover:bg-amber-900/30 text-amber-500 dark:text-amber-400 transition-colors" title="Imprimer">
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                                                    </button>
+                                                </div>
+                                                @endforeach
+                                            </div>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>
@@ -175,26 +189,6 @@
                                     </div>
                                 </td>
                             </tr>
-                            @if($client->codesReductionFidelite && $client->codesReductionFidelite->count())
-                            <tr class="bg-amber-50/50 dark:bg-amber-900/10">
-                                <td></td>
-                                <td colspan="4" class="py-2">
-                                    <div class="flex flex-wrap items-center gap-2">
-                                        @foreach($client->codesReductionFidelite as $codeReduc)
-                                        <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700/40 rounded-lg shadow-sm">
-                                            <span class="text-xs">🎟️</span>
-                                            <span class="text-xs font-mono font-bold text-amber-700 dark:text-amber-400">{{ $codeReduc->code }}</span>
-                                            <span class="text-[10px] text-gray-400">{{ $codeReduc->valeur }}{{ $codeReduc->type === 'pourcentage' ? '%' : ' FCFA' }}</span>
-                                            <span class="text-[10px] text-gray-400">• exp. {{ $codeReduc->date_fin?->format('d/m/Y') ?? '∞' }}</span>
-                                            <button onclick="window.open('{{ route('dashboard.fidelite.imprimer-code', $codeReduc) }}', '_blank')" class="p-1 rounded hover:bg-amber-100 dark:hover:bg-amber-900/30 text-amber-600 dark:text-amber-400 transition-colors" title="Imprimer le code">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                                            </button>
-                                        </div>
-                                        @endforeach
-                                    </div>
-                                </td>
-                            </tr>
-                            @endif
                             @endforeach
                         </tbody>
                     </table>
