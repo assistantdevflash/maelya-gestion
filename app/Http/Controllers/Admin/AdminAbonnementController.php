@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AbonnementValide;
 use App\Models\Abonnement;
 use App\Models\Parrainage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class AdminAbonnementController extends Controller
 {
@@ -113,7 +115,15 @@ class AdminAbonnementController extends Controller
             }
         }
 
-        return back()->with('success', "Abonnement validé ! Actif jusqu'au " . $abonnement->fresh()->expire_le->format('d/m/Y') . '.' . ($parrainage ? ' Bonus parrainage appliqué.' : ''));
+        // ── Notification email au propriétaire de l'établissement ─────────────
+        $abonnementFresh = $abonnement->fresh(['user', 'plan', 'validePar']);
+        try {
+            Mail::to($abonnementFresh->user->email)->send(new AbonnementValide($abonnementFresh));
+        } catch (\Throwable) {
+            // Ne pas bloquer la validation si l'envoi échoue
+        }
+
+        return back()->with('success', "Abonnement validé ! Actif jusqu'au " . $abonnementFresh->expire_le->format('d/m/Y') . '.' . ($parrainage ? ' Bonus parrainage appliqué.' : ''));
     }
 
     public function rejeter(Request $request, Abonnement $abonnement)
