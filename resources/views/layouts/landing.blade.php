@@ -11,6 +11,12 @@
     @endif
     <link rel="canonical" href="{{ url()->current() }}">
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Maëlya">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 
     {{-- Open Graph --}}
     <meta property="og:type" content="website">
@@ -319,5 +325,76 @@
         </div>
     </footer>
 
+{{-- ═══ Bouton flottant d'installation PWA ═══ --}}
+<div id="pwa-install-banner"
+     style="display:none; position:fixed; bottom:1.5rem; right:1.5rem; z-index:9999;">
+    <button id="pwa-install-btn"
+            style="display:flex; align-items:center; gap:0.625rem; padding:0.75rem 1.25rem;
+                   background:linear-gradient(135deg,#9333ea,#ec4899);
+                   color:#fff; font-family:inherit; font-size:0.875rem; font-weight:600;
+                   border:none; border-radius:9999px; cursor:pointer;
+                   box-shadow:0 4px 24px rgba(147,51,234,0.45); transition:transform .15s,box-shadow .15s;"
+            onmouseover="this.style.transform='scale(1.04)';this.style.boxShadow='0 6px 30px rgba(147,51,234,0.55)'"
+            onmouseout="this.style.transform='';this.style.boxShadow='0 4px 24px rgba(147,51,234,0.45)'">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        <span>Installer l'application</span>
+    </button>
+    <button id="pwa-dismiss-btn"
+            title="Ignorer"
+            style="position:absolute; top:-0.5rem; right:-0.5rem; width:1.5rem; height:1.5rem;
+                   background:#fff; border:1px solid #e5e7eb; border-radius:9999px;
+                   display:flex; align-items:center; justify-content:center;
+                   cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,.1); color:#9ca3af; font-size:0.75rem;">
+        ✕
+    </button>
+</div>
+
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('[PWA] SW enregistré', reg.scope))
+                .catch(err => console.warn('[PWA] Échec SW:', err));
+        });
+    }
+
+    (function () {
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) return;
+        var dismissed = localStorage.getItem('pwa-install-dismissed');
+        if (dismissed && Date.now() < parseInt(dismissed)) return;
+
+        var banner  = document.getElementById('pwa-install-banner');
+        var btn     = document.getElementById('pwa-install-btn');
+        var dismiss = document.getElementById('pwa-dismiss-btn');
+        var deferredPrompt = null;
+
+        window.addEventListener('beforeinstallprompt', function (e) {
+            e.preventDefault();
+            deferredPrompt = e;
+            banner.style.display = 'block';
+        });
+
+        window.addEventListener('appinstalled', function () {
+            banner.style.display = 'none';
+            localStorage.setItem('pwa-install-dismissed', Date.now() + 365 * 24 * 3600 * 1000);
+        });
+
+        btn.addEventListener('click', function () {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(function (choice) {
+                if (choice.outcome === 'accepted') banner.style.display = 'none';
+                deferredPrompt = null;
+            });
+        });
+
+        dismiss.addEventListener('click', function () {
+            banner.style.display = 'none';
+            localStorage.setItem('pwa-install-dismissed', Date.now() + 7 * 24 * 3600 * 1000);
+        });
+    })();
+</script>
 </body>
 </html>
