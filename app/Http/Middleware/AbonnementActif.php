@@ -16,8 +16,11 @@ class AbonnementActif
             return redirect()->route('login');
         }
 
-        // Super admin : toujours autorisé
+        // Super admin : appartient à l'espace /admin, pas au dashboard établissement
         if ($user->isSuperAdmin()) {
+            if (str_starts_with($request->route()?->getName() ?? '', 'dashboard.')) {
+                return redirect()->route('admin.dashboard');
+            }
             view()->share('enSursis', false);
             return $next($request);
         }
