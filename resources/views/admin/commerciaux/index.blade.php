@@ -125,9 +125,8 @@
 
     {{-- Modal création --}}
     <div x-show="open" x-cloak
-         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-         @keydown.escape.window="open = false">
-        <div @click.outside="open = false" class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
             <div class="flex items-center justify-between mb-5">
                 <h3 class="font-bold text-gray-900 text-lg">Nouveau commercial</h3>
                 <button @click="open = false" class="text-gray-400 hover:text-gray-700 transition-colors">
