@@ -656,6 +656,26 @@
     </button>
 </div>
 
+{{-- Modale instructions (iOS / Firefox) --}}
+<div id="pwa-help-modal"
+     style="display:none; position:fixed; inset:0; z-index:10000;
+            background:rgba(0,0,0,.55); align-items:center; justify-content:center; padding:1rem;">
+    <div style="background:#fff; border-radius:1rem; padding:1.5rem; max-width:320px; width:100%;
+                box-shadow:0 20px 60px rgba(0,0,0,.3); font-family:inherit;">
+        <p style="margin:0 0 .75rem; font-weight:700; font-size:1rem; color:#111;">Installer Maëlya Gestion</p>
+        <p style="margin:0 0 .5rem; font-size:.875rem; color:#555;">
+            <strong>Android Chrome :</strong> Menu ⋮ → <em>Ajouter à l'écran d'accueil</em>
+        </p>
+        <p style="margin:0 0 1rem; font-size:.875rem; color:#555;">
+            <strong>iPhone Safari :</strong> Partager ↑ → <em>Sur l'écran d'accueil</em>
+        </p>
+        <button onclick="document.getElementById('pwa-help-modal').style.display='none'"
+                style="width:100%; padding:.6rem; background:linear-gradient(135deg,#9333ea,#ec4899);
+                       color:#fff; border:none; border-radius:.5rem; font-weight:600;
+                       font-size:.875rem; cursor:pointer;">Fermer</button>
+    </div>
+</div>
+
 {{-- PWA Service Worker --}}
 <script>
     if ('serviceWorker' in navigator) {
@@ -666,45 +686,49 @@
         });
     }
 
-    // ── Bouton d'installation ──────────────────────────────────────────────
     (function () {
-        // Ne rien afficher si déjà en mode standalone (déjà installé)
+        // Déjà en mode standalone = déjà ouvert comme app → rien à faire
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) return;
-        // Ne rien afficher si l'utilisateur a déjà ignoré (7 jours)
+        // Utilisateur a explicitement ignoré récemment
         var dismissed = localStorage.getItem('pwa-install-dismissed');
         if (dismissed && Date.now() < parseInt(dismissed)) return;
 
         var banner  = document.getElementById('pwa-install-banner');
         var btn     = document.getElementById('pwa-install-btn');
         var dismiss = document.getElementById('pwa-dismiss-btn');
+        var modal   = document.getElementById('pwa-help-modal');
         var deferredPrompt = null;
 
+        // Afficher immédiatement (pas besoin d'attendre beforeinstallprompt)
+        banner.style.display = 'block';
+
+        // Chrome/Edge/Android : stocker le prompt natif
         window.addEventListener('beforeinstallprompt', function (e) {
             e.preventDefault();
             deferredPrompt = e;
-            banner.style.display = 'block';
         });
 
-        // Masquer si l'appli vient d'être installée
+        // Masquer si l'app vient d'être installée (sans verrouiller longtemps)
         window.addEventListener('appinstalled', function () {
             banner.style.display = 'none';
-            localStorage.setItem('pwa-install-dismissed', Date.now() + 365 * 24 * 3600 * 1000);
         });
 
         btn.addEventListener('click', function () {
-            if (!deferredPrompt) return;
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then(function (choice) {
-                if (choice.outcome === 'accepted') {
-                    banner.style.display = 'none';
-                }
-                deferredPrompt = null;
-            });
+            if (deferredPrompt) {
+                // Popup native Chrome/Edge
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(function (choice) {
+                    if (choice.outcome === 'accepted') banner.style.display = 'none';
+                    deferredPrompt = null;
+                });
+            } else {
+                // iOS / autres : instructions manuelles
+                modal.style.display = 'flex';
+            }
         });
 
         dismiss.addEventListener('click', function () {
             banner.style.display = 'none';
-            // Masquer pendant 7 jours
             localStorage.setItem('pwa-install-dismissed', Date.now() + 7 * 24 * 3600 * 1000);
         });
     })();
