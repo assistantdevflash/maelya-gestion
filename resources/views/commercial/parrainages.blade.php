@@ -28,12 +28,12 @@
         @foreach($parrainages as $p)
         <tr>
             <td>
-                <p class="font-medium text-gray-900">{{ $p->proprietaire?->institut?->nom ?? '—' }}</p>
+                <p class="font-medium text-gray-900 dark:text-gray-100">{{ $p->proprietaire?->institut?->nom ?? '—' }}</p>
                 <p class="text-xs text-gray-400">{{ $p->proprietaire?->institut?->ville ?? '' }}</p>
             </td>
-            <td class="hidden md:table-cell text-gray-600">{{ $p->proprietaire?->nom_complet }}</td>
+            <td class="hidden md:table-cell text-gray-600 dark:text-gray-300">{{ $p->proprietaire?->nom_complet }}</td>
             <td class="hidden md:table-cell">
-                <span class="font-medium text-gray-900">{{ number_format($p->commissions->sum('montant'), 0, ',', ' ') }} FCFA</span>
+                <span class="font-medium text-gray-900 dark:text-gray-100">{{ number_format($p->commissions->sum('montant'), 0, ',', ' ') }} FCFA</span>
                 <span class="text-xs text-gray-400">({{ $p->commissions->count() }} abonnement(s))</span>
             </td>
             <td class="text-gray-600">{{ $p->expire_le->format('d/m/Y') }}</td>

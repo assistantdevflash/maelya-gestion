@@ -47,7 +47,7 @@
         @foreach($commissions as $c)
         <tr>
             <td>
-                <p class="font-medium text-gray-900">{{ $c->parrainage?->proprietaire?->institut?->nom ?? '—' }}</p>
+                <p class="font-medium text-gray-900 dark:text-gray-100">{{ $c->parrainage?->proprietaire?->institut?->nom ?? '—' }}</p>
                 <p class="text-xs text-gray-400">{{ $c->created_at->format('d/m/Y') }}</p>
             </td>
             <td class="hidden md:table-cell text-gray-600">{{ $c->abonnement?->plan?->nom ?? '—' }}</td>

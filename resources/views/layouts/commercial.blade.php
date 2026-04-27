@@ -20,7 +20,19 @@
     </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="text-gray-900 dark:text-white overflow-x-hidden" x-data="{ sidebarOpen: false }">
+<body class="text-gray-900 dark:text-white overflow-x-hidden" x-data="{
+    sidebarOpen: false,
+    themeMenu: false,
+    theme: localStorage.getItem('maelya-theme') || 'system',
+    get isDark() { return this.theme==='dark' || (this.theme==='system' && matchMedia('(prefers-color-scheme: dark)').matches) },
+    setTheme(t) {
+        this.theme = t;
+        localStorage.setItem('maelya-theme', t);
+        if (t === 'dark') document.documentElement.classList.add('dark');
+        else if (t === 'light') document.documentElement.classList.remove('dark');
+        else document.documentElement.classList.toggle('dark', matchMedia('(prefers-color-scheme: dark)').matches);
+        this.themeMenu = false;
+    }}">
 
     {{-- ═══ Sidebar ═══ --}}
     <aside class="fixed inset-y-0 left-0 z-50 w-[260px] bg-gray-950 flex flex-col transform transition-transform duration-300 lg:translate-x-0"
@@ -70,6 +82,26 @@
 
         {{-- Bas de sidebar --}}
         <div class="p-3 border-t border-white/[0.06]">
+            {{-- Sélecteur thème (sidebar desktop) --}}
+            <div class="relative mb-2">
+                <button @click="themeMenu = !themeMenu" @click.outside="themeMenu = false"
+                        class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.06] text-[13px] font-medium transition-all">
+                    <svg x-show="isDark" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <svg x-show="!isDark" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                    <span x-text="theme === 'dark' ? 'Sombre' : theme === 'light' ? 'Clair' : 'Système'"></span>
+                </button>
+                <div x-show="themeMenu" x-cloak
+                     x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95 translate-y-1" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                     class="absolute bottom-full left-0 right-0 mb-1 bg-gray-900 border border-white/[0.08] rounded-xl shadow-xl p-1 z-50">
+                    @foreach([['system','Système'],['light','Clair'],['dark','Sombre']] as [$val,$lbl])
+                    <button @click="setTheme('{{ $val }}')" class="w-full text-left flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-colors"
+                            :class="theme === '{{ $val }}' ? 'bg-primary-600/20 text-primary-300 font-semibold' : 'text-gray-400 hover:text-white hover:bg-white/[0.06]'">
+                        {{ $lbl }}
+                        <svg x-show="theme === '{{ $val }}'" class="w-3 h-3 ml-auto text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    @endforeach
+                </div>
+            </div>
             <div class="flex items-center gap-3 px-3 py-2 mb-2">
                 <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
                      style="background: linear-gradient(135deg, #9333ea, #ec4899);">
@@ -107,7 +139,26 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                 </svg>
             </button>
-            <span class="font-bold text-gray-900 dark:text-white text-sm">Espace Commercial</span>
+            <span class="font-bold text-gray-900 dark:text-white text-sm flex-1">Espace Commercial</span>
+            {{-- Bouton thème (mobile) --}}
+            <div class="relative">
+                <button @click="themeMenu = !themeMenu" @click.outside="themeMenu = false"
+                        class="w-8 h-8 rounded-xl flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-all" title="Thème">
+                    <svg x-show="isDark" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <svg x-show="!isDark" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                </button>
+                <div x-show="themeMenu" x-cloak
+                     x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95 translate-y-1" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                     class="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-white/10 p-1 z-50">
+                    @foreach([['system','Système'],['light','Clair'],['dark','Sombre']] as [$val,$lbl])
+                    <button @click="setTheme('{{ $val }}')" class="w-full text-left flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-colors"
+                            :class="theme === '{{ $val }}' ? 'bg-primary-50 dark:bg-primary-950 text-primary-700 dark:text-primary-300 font-semibold' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'">
+                        {{ $lbl }}
+                        <svg x-show="theme === '{{ $val }}'" class="w-3 h-3 ml-auto text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    @endforeach
+                </div>
+            </div>
         </header>
 
         {{-- Flash messages --}}
