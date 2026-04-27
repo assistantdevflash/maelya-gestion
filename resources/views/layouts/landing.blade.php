@@ -394,6 +394,10 @@
         var deferredPrompt = null;
 
         // Afficher immédiatement (pas besoin d'attendre beforeinstallprompt)
+        // Reset forcé via ?reset-pwa=1
+        if (new URLSearchParams(location.search).get('reset-pwa') === '1') {
+            localStorage.removeItem('pwa-install-dismissed');
+        }
         banner.style.display = 'block';
 
         // Chrome/Edge/Android : stocker le prompt natif
