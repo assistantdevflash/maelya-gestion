@@ -94,8 +94,8 @@
                      x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95 translate-y-1" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
                      class="absolute bottom-full left-0 right-0 mb-1 bg-gray-900 border border-white/[0.08] rounded-xl shadow-xl p-1 z-50">
                     @foreach([['system','Système'],['light','Clair'],['dark','Sombre']] as [$val,$lbl])
-                    <button @click="setTheme('{{ $val }}')" class="w-full text-left flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-colors"
-                            :class="theme === '{{ $val }}' ? 'bg-primary-600/20 text-primary-300 font-semibold' : 'text-gray-400 hover:text-white hover:bg-white/[0.06]'">
+                    <button @click="setTheme('{{ $val }}')" class="w-full text-left flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-colors text-gray-400 hover:text-white hover:bg-white/[0.06]"
+                            :class="theme === '{{ $val }}' ? 'bg-primary-600/20 !text-primary-300 font-semibold' : ''">
                         {{ $lbl }}
                         <svg x-show="theme === '{{ $val }}'" class="w-3 h-3 ml-auto text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                     </button>
@@ -151,8 +151,8 @@
                      x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95 translate-y-1" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
                      class="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-white/10 p-1 z-50">
                     @foreach([['system','Système'],['light','Clair'],['dark','Sombre']] as [$val,$lbl])
-                    <button @click="setTheme('{{ $val }}')" class="w-full text-left flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-colors"
-                            :class="theme === '{{ $val }}' ? 'bg-primary-50 dark:bg-primary-950 text-primary-700 dark:text-primary-300 font-semibold' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'">
+                    <button @click="setTheme('{{ $val }}')" class="w-full text-left flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-colors text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                            :class="theme === '{{ $val }}' ? 'bg-primary-50 dark:bg-primary-950 !text-primary-700 dark:!text-primary-300 font-semibold' : ''">
                         {{ $lbl }}
                         <svg x-show="theme === '{{ $val }}'" class="w-3 h-3 ml-auto text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                     </button>
