@@ -1,6 +1,6 @@
 {
     "name": "Maëlya Gestion",
-    "short_name": "Maëlya",
+    "short_name": "Maëlya Gestion",
     "description": "Gestion de salon de beauté — clients, ventes, stocks et abonnements",
     "start_url": "/dashboard",
     "scope": "/",

@@ -12,7 +12,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Maëlya">
+    <meta name="apple-mobile-web-app-title" content="Maëlya Gestion">
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
