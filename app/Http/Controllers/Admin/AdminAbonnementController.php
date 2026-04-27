@@ -91,6 +91,28 @@ class AdminAbonnementController extends Controller
             ]);
         }
 
+        // ── Commission commerciale si parrainage commercial actif ─────────────
+        if ($abonnement->montant > 0) {
+            $commercialParrainage = \App\Models\CommercialParrainage::where('proprietaire_id', $abonnement->user_id)
+                ->where('expire_le', '>=', now()->toDateString())
+                ->first();
+            if ($commercialParrainage) {
+                $config = \DB::table('commercial_config')->first();
+                $taux = $config?->taux ?? 20;
+                \App\Models\CommercialCommission::firstOrCreate(
+                    ['abonnement_id' => $abonnement->id],
+                    [
+                        'commercial_id' => $commercialParrainage->commercial_id,
+                        'parrainage_id' => $commercialParrainage->id,
+                        'montant_base'  => $abonnement->montant,
+                        'taux'          => $taux,
+                        'montant'       => (int) round($abonnement->montant * $taux / 100),
+                        'statut'        => 'en_attente',
+                    ]
+                );
+            }
+        }
+
         return back()->with('success', "Abonnement validé ! Actif jusqu'au " . $abonnement->fresh()->expire_le->format('d/m/Y') . '.' . ($parrainage ? ' Bonus parrainage appliqué.' : ''));
     }
 

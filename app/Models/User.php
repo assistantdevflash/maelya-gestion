@@ -111,6 +111,16 @@ class User extends Authenticatable
         return $this->role === 'employe';
     }
 
+    public function isCommercial(): bool
+    {
+        return $this->role === 'commercial';
+    }
+
+    public function commercialProfile()
+    {
+        return $this->hasOne(CommercialProfile::class);
+    }
+
     /**
      * Indique si l'utilisateur a un plan Entreprise actif.
      */

@@ -226,13 +226,13 @@
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/>
                                         </svg>
-                                        J'ai un code de parrainage
+                                        J'ai un code de parrainage ou commercial
                                     </button>
                                     <div x-show="showParrain" x-collapse class="mt-2">
                                         <input type="text" name="code_parrainage" maxlength="10"
                                                value="{{ old('code_parrainage', request('ref')) }}"
                                                class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white text-sm font-mono uppercase tracking-wider placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900 transition-all @error('code_parrainage') border-red-400 @enderror"
-                                               placeholder="Ex: AB12CD34"
+                                               placeholder="Code parrainage ou commercial"
                                                oninput="this.value=this.value.toUpperCase()">
                                         @error('code_parrainage')<p class="text-xs text-red-500 mt-1">{{ $message }}</p>@enderror
                                     </div>

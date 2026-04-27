@@ -25,6 +25,14 @@ class AbonnementActif
             return $next($request);
         }
 
+        // Commercial : appartient à son espace /commercial
+        if ($user->isCommercial()) {
+            if (!str_starts_with($request->route()?->getName() ?? '', 'commercial.')) {
+                return redirect()->route('commercial.dashboard');
+            }
+            return $next($request);
+        }
+
         // Vérifier que l'utilisateur est actif
         if (!$user->actif) {
             auth()->logout();

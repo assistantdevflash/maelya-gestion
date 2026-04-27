@@ -26,6 +26,8 @@ use App\Http\Controllers\Admin\AdminMessageController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminFinanceController;
 use App\Http\Controllers\Admin\AdminOffreController;
+use App\Http\Controllers\Admin\AdminCommercialController;
+use App\Http\Controllers\Commercial\CommercialController;
 use App\Http\Controllers\Auth\InscriptionController;
 use Illuminate\Support\Facades\Route;
 
@@ -161,6 +163,24 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::put('offres/{offre}', [AdminOffreController::class, 'update'])->name('offres.update');
     Route::patch('offres/{offre}/toggle', [AdminOffreController::class, 'toggleActif'])->name('offres.toggle');
     Route::delete('offres/{offre}', [AdminOffreController::class, 'destroy'])->name('offres.destroy');
+
+    // ─── Commerciaux ──────────────────────────────────────────────────────────
+    Route::patch('commerciaux/config', [AdminCommercialController::class, 'updateConfig'])->name('commerciaux.config');
+    Route::patch('commerciaux/commissions/{commission}/payer', [AdminCommercialController::class, 'payerCommission'])->name('commerciaux.commissions.payer');
+    Route::patch('commerciaux/commissions/{commission}/annuler', [AdminCommercialController::class, 'annulerPaiement'])->name('commerciaux.commissions.annuler');
+    Route::get('commerciaux', [AdminCommercialController::class, 'index'])->name('commerciaux.index');
+    Route::post('commerciaux', [AdminCommercialController::class, 'store'])->name('commerciaux.store');
+    Route::get('commerciaux/{commercial}', [AdminCommercialController::class, 'show'])->name('commerciaux.show');
+    Route::patch('commerciaux/{commercial}', [AdminCommercialController::class, 'update'])->name('commerciaux.update');
+    Route::patch('commerciaux/{commercial}/toggle', [AdminCommercialController::class, 'toggle'])->name('commerciaux.toggle');
+    Route::delete('commerciaux/{commercial}', [AdminCommercialController::class, 'destroy'])->name('commerciaux.destroy');
+});
+
+// ─── Espace Commercial ────────────────────────────────────────────────────────
+Route::middleware(['auth', 'role:commercial'])->prefix('commercial')->name('commercial.')->group(function () {
+    Route::get('/', [CommercialController::class, 'dashboard'])->name('dashboard');
+    Route::get('/parrainages', [CommercialController::class, 'parrainages'])->name('parrainages');
+    Route::get('/commissions', [CommercialController::class, 'commissions'])->name('commissions');
 });
 
 require __DIR__.'/auth.php';

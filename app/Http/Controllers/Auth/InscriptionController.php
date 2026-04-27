@@ -37,7 +37,20 @@ class InscriptionController extends Controller
             'telephone' => ['nullable', 'string', 'max:30'],
             'password' => ['required', 'confirmed', Rules\Password::min(8)],
             'cgu' => ['required', 'accepted'],
-            'code_parrainage' => ['nullable', 'string', 'max:10'],
+            'code_parrainage' => ['nullable', 'string', 'max:10', function ($attribute, $value, $fail) {
+                if ($value) {
+                    $code = strtoupper($value);
+                    $existsCommercial = \App\Models\CommercialProfile::where('code', $code)
+                        ->whereHas('user', fn($q) => $q->where('actif', true))
+                        ->exists();
+                    $existsParrain = \App\Models\User::where('code_parrainage', $code)
+                        ->where('role', 'admin')
+                        ->exists();
+                    if (!$existsCommercial && !$existsParrain) {
+                        $fail('Ce code est invalide ou n\'existe pas.');
+                    }
+                }
+            }],
         ], [
             'nom_institut.required' => "Le nom de l'institut est requis.",
             'type_institut.required' => "Le type d'institut est requis.",
@@ -54,12 +67,23 @@ class InscriptionController extends Controller
         $newUser = null;
 
         DB::transaction(function () use ($request, &$newUser) {
-            // Vérifier le code de parrainage
+            // Vérifier le code de parrainage — commercial d'abord, puis parrain classique
             $parrain = null;
+            $commercialProfile = null;
             if ($request->filled('code_parrainage')) {
-                $parrain = User::where('code_parrainage', strtoupper($request->code_parrainage))
-                    ->where('role', 'admin')
+                $code = strtoupper($request->code_parrainage);
+
+                // 1. Code commercial ?
+                $commercialProfile = \App\Models\CommercialProfile::where('code', $code)
+                    ->whereHas('user', fn($q) => $q->where('actif', true))
                     ->first();
+
+                // 2. Sinon, code parrainage classique
+                if (!$commercialProfile) {
+                    $parrain = User::where('code_parrainage', $code)
+                        ->where('role', 'admin')
+                        ->first();
+                }
             }
 
             $institut = Institut::create([
@@ -101,6 +125,16 @@ class InscriptionController extends Controller
                     'reference_transfert' => 'ESSAI-' . strtoupper(substr(md5($user->id), 0, 8)),
                     'debut_le'  => now()->toDateString(),
                     'expire_le' => now()->addDays(14)->toDateString(),
+                ]);
+            }
+            // ── Créer le parrainage commercial si code commercial utilisé ─────────
+            if ($commercialProfile) {
+                $config = \DB::table('commercial_config')->first();
+                $duree = $config?->duree_mois ?? 6;
+                \App\Models\CommercialParrainage::create([
+                    'commercial_id'   => $commercialProfile->id,
+                    'proprietaire_id' => $user->id,
+                    'expire_le'       => now()->addMonths($duree)->toDateString(),
                 ]);
             }
             // ── Créer le parrainage (en attente de validation d'abonnement payant) ──
