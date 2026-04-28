@@ -21,6 +21,29 @@ class DashboardController extends Controller
         $user = Auth::user();
         $institutId = session('current_institut_id', $user->institut_id);
 
+        // ── Plan Basic : dashboard simplifié ─────────────────────────────────
+        if (!$user->aFonctionnalite('dashboard_complet')) {
+            $today = now()->toDateString();
+            $startOfMonth = now()->startOfMonth()->toDateString();
+            $endOfMonth = now()->endOfMonth()->toDateString();
+
+            $caJour = Vente::where('statut', 'validee')->whereDate('created_at', $today)->sum('total');
+            $caMois = Vente::where('statut', 'validee')
+                ->whereDate('created_at', '>=', $startOfMonth)
+                ->whereDate('created_at', '<=', $endOfMonth)->sum('total');
+            $ventesJour = Vente::where('statut', 'validee')->whereDate('created_at', $today)->count();
+            $ventesMois = Vente::where('statut', 'validee')
+                ->whereDate('created_at', '>=', $startOfMonth)
+                ->whereDate('created_at', '<=', $endOfMonth)->count();
+
+            $abonnement = $user->abonnementActif;
+            $joursRestants = $abonnement?->expire_le ? (int) now()->diffInDays($abonnement->expire_le, false) : null;
+
+            return view('dashboard.index-basic', compact(
+                'caJour', 'caMois', 'ventesJour', 'ventesMois', 'abonnement', 'joursRestants'
+            ));
+        }
+
         $today = now()->toDateString();
         $startOfMonth = now()->startOfMonth()->toDateString();
         $endOfMonth = now()->endOfMonth()->toDateString();

@@ -56,10 +56,14 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
     Route::get('ventes', [VenteController::class, 'index'])->name('ventes.index');
     Route::get('ventes/{vente}', [VenteController::class, 'show'])->name('ventes.show');
     Route::post('ventes/{vente}/annuler', [VenteController::class, 'annuler'])->name('ventes.annuler');
-    Route::get('ventes/{vente}/ticket-pdf', [VenteController::class, 'ticketPdf'])->name('ventes.ticket-pdf');
+    Route::get('ventes/{vente}/ticket-pdf', [VenteController::class, 'ticketPdf'])
+        ->middleware('feature:caisse_impression')
+        ->name('ventes.ticket-pdf');
 
-    // Validation code réduction (caisse - tous rôles)
-    Route::post('codes-reduction/valider', [CodeReductionController::class, 'valider'])->name('codes-reduction.valider');
+    // Validation code réduction (caisse - feature: caisse_code_promo)
+    Route::post('codes-reduction/valider', [CodeReductionController::class, 'valider'])
+        ->middleware('feature:caisse_code_promo')
+        ->name('codes-reduction.valider');
 
     // Stock consultation (tous les rôles)
     Route::get('stock', [StockController::class, 'index'])->name('stock.index');
@@ -70,57 +74,73 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
 
     // ── Admin uniquement ──────────────────────────────────────────────
     Route::middleware('role:admin')->group(function () {
-        // Codes de réduction
-        Route::get('codes-reduction', [CodeReductionController::class, 'index'])->name('codes-reduction.index');
-        Route::post('codes-reduction', [CodeReductionController::class, 'store'])->name('codes-reduction.store');
-        Route::get('codes-reduction/{codeReduction}/print', [CodeReductionController::class, 'print'])->name('codes-reduction.print');
-        Route::patch('codes-reduction/{codeReduction}/toggle', [CodeReductionController::class, 'toggle'])->name('codes-reduction.toggle');
-        Route::delete('codes-reduction/{codeReduction}', [CodeReductionController::class, 'destroy'])->name('codes-reduction.destroy');
+        // Codes de réduction (feature: codes_reduction)
+        Route::middleware('feature:codes_reduction')->group(function () {
+            Route::get('codes-reduction', [CodeReductionController::class, 'index'])->name('codes-reduction.index');
+            Route::post('codes-reduction', [CodeReductionController::class, 'store'])->name('codes-reduction.store');
+            Route::get('codes-reduction/{codeReduction}/print', [CodeReductionController::class, 'print'])->name('codes-reduction.print');
+            Route::patch('codes-reduction/{codeReduction}/toggle', [CodeReductionController::class, 'toggle'])->name('codes-reduction.toggle');
+            Route::delete('codes-reduction/{codeReduction}', [CodeReductionController::class, 'destroy'])->name('codes-reduction.destroy');
+        });
 
-        // Clients
-        Route::resource('clients', ClientController::class)->except(['show', 'edit']);
-        Route::get('clients/{client}', [ClientController::class, 'show'])->name('clients.show');
-        Route::post('clients/{client}/archiver', [ClientController::class, 'archiver'])->name('clients.archiver');
-        Route::post('clients/{client}/cadeau-anniversaire', [ClientController::class, 'cadeauAnniversaire'])->name('clients.cadeau-anniversaire');
+        // Clients (feature: clients)
+        Route::middleware('feature:clients')->group(function () {
+            Route::resource('clients', ClientController::class)->except(['show', 'edit']);
+            Route::get('clients/{client}', [ClientController::class, 'show'])->name('clients.show');
+            Route::post('clients/{client}/archiver', [ClientController::class, 'archiver'])->name('clients.archiver');
+            Route::post('clients/{client}/cadeau-anniversaire', [ClientController::class, 'cadeauAnniversaire'])->name('clients.cadeau-anniversaire');
+        });
 
-        // Prestations
+        // Prestations (Basic + Premium)
         Route::resource('prestations', PrestationController::class)->except(['show']);
         Route::resource('categories-prestations', CategoriePrestationController::class)->except(['show', 'edit']);
         Route::patch('prestations/{prestation}/toggle', [PrestationController::class, 'toggle'])->name('prestations.toggle');
 
-        // Produits
-        Route::resource('produits', ProduitController::class)->except(['show']);
-        Route::resource('categories-produits', CategorieProduitController::class)->except(['show', 'create', 'edit']);
-        Route::post('stock/{produit}/entree', [StockController::class, 'entree'])->name('stock.entree');
-        Route::post('stock/{produit}/correction', [StockController::class, 'correction'])->name('stock.correction');
+        // Produits + Stock (feature: produits / stock)
+        Route::middleware('feature:produits')->group(function () {
+            Route::resource('produits', ProduitController::class)->except(['show']);
+            Route::resource('categories-produits', CategorieProduitController::class)->except(['show', 'create', 'edit']);
+        });
+        Route::middleware('feature:stock')->group(function () {
+            Route::post('stock/{produit}/entree', [StockController::class, 'entree'])->name('stock.entree');
+            Route::post('stock/{produit}/correction', [StockController::class, 'correction'])->name('stock.correction');
+        });
 
-        // Finances
-        Route::get('finances', [FinanceController::class, 'index'])->name('finances.index');
-        Route::resource('depenses', FinanceController::class)->only(['store', 'update', 'destroy']);
-        Route::get('finances/rapport', [FinanceController::class, 'rapport'])->name('finances.rapport');
-        Route::get('finances/export-ventes', [FinanceController::class, 'exportVentes'])->name('finances.export-ventes');
-        Route::get('finances/export-depenses', [FinanceController::class, 'exportDepenses'])->name('finances.export-depenses');
-        Route::get('finances/export-pdf', [FinanceController::class, 'exportPdf'])->name('finances.export-pdf');
+        // Finances (feature: finances)
+        Route::middleware('feature:finances')->group(function () {
+            Route::get('finances', [FinanceController::class, 'index'])->name('finances.index');
+            Route::resource('depenses', FinanceController::class)->only(['store', 'update', 'destroy']);
+            Route::get('finances/rapport', [FinanceController::class, 'rapport'])->name('finances.rapport');
+            Route::get('finances/export-ventes', [FinanceController::class, 'exportVentes'])->name('finances.export-ventes');
+            Route::get('finances/export-depenses', [FinanceController::class, 'exportDepenses'])->name('finances.export-depenses');
+            Route::get('finances/export-pdf', [FinanceController::class, 'exportPdf'])->name('finances.export-pdf');
+        });
 
-        // Employés
-        Route::resource('employes', EmployeController::class)->except(['show']);
-        Route::patch('employes/{employe}/toggle', [EmployeController::class, 'toggle'])->name('employes.toggle');
+        // Employés (feature: equipe)
+        Route::middleware('feature:equipe')->group(function () {
+            Route::resource('employes', EmployeController::class)->except(['show']);
+            Route::patch('employes/{employe}/toggle', [EmployeController::class, 'toggle'])->name('employes.toggle');
+        });
 
-        // Mes instituts (plan Entreprise)
+        // Mes instituts : paramètres OK pour tous, création/switch = multi_instituts
         Route::get('mes-instituts', [MesInstitutsController::class, 'index'])->name('mes-instituts.index');
-        Route::post('mes-instituts', [MesInstitutsController::class, 'store'])->name('mes-instituts.store');
         Route::put('mes-instituts/{institut}', [MesInstitutsController::class, 'update'])->name('mes-instituts.update');
-        Route::post('mes-instituts/{institut}/switch', [MesInstitutsController::class, 'switch'])->name('mes-instituts.switch');
+        Route::middleware('feature:multi_instituts')->group(function () {
+            Route::post('mes-instituts', [MesInstitutsController::class, 'store'])->name('mes-instituts.store');
+            Route::post('mes-instituts/{institut}/switch', [MesInstitutsController::class, 'switch'])->name('mes-instituts.switch');
+        });
 
-        // Parrainage
+        // Parrainage (Basic + Premium)
         Route::get('parrainage', [ParrainageController::class, 'index'])->name('parrainage.index');
 
-        // Fidélité
-        Route::get('fidelite', [FideliteController::class, 'index'])->name('fidelite.index');
-        Route::post('fidelite/configurer', [FideliteController::class, 'configurer'])->name('fidelite.configurer');
-        Route::post('fidelite/{client}/recompenser', [FideliteController::class, 'recompenser'])->name('fidelite.recompenser');
-        Route::post('fidelite/{client}/ajuster', [FideliteController::class, 'ajuster'])->name('fidelite.ajuster');
-        Route::get('fidelite/imprimer-code/{codeReduction}', [FideliteController::class, 'imprimerCode'])->name('fidelite.imprimer-code');
+        // Fidélité (feature: fidelite)
+        Route::middleware('feature:fidelite')->group(function () {
+            Route::get('fidelite', [FideliteController::class, 'index'])->name('fidelite.index');
+            Route::post('fidelite/configurer', [FideliteController::class, 'configurer'])->name('fidelite.configurer');
+            Route::post('fidelite/{client}/recompenser', [FideliteController::class, 'recompenser'])->name('fidelite.recompenser');
+            Route::post('fidelite/{client}/ajuster', [FideliteController::class, 'ajuster'])->name('fidelite.ajuster');
+            Route::get('fidelite/imprimer-code/{codeReduction}', [FideliteController::class, 'imprimerCode'])->name('fidelite.imprimer-code');
+        });
     });
 });
 
@@ -128,6 +148,7 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
 Route::middleware('auth')->prefix('abonnement')->name('abonnement.')->group(function () {
     Route::get('/expire', [AbonnementController::class, 'expire'])->name('expire');
     Route::get('/plans', [AbonnementController::class, 'plans'])->name('plans');
+    Route::get('/upgrade', [AbonnementController::class, 'upgrade'])->name('upgrade');
     Route::get('/historique', [AbonnementController::class, 'historique'])->name('historique');
     Route::post('/souscrire/{plan}', [AbonnementController::class, 'souscrire'])->name('souscrire');
 });

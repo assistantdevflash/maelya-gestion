@@ -72,12 +72,21 @@
             </div>
 
             <div class="flex flex-col gap-3">
+                @if(auth()->user()->aFonctionnalite('caisse_impression'))
                 <a href="{{ route('dashboard.ventes.ticket-pdf', $vente) }}" target="_blank" class="btn-outline w-full justify-center">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                     </svg>
                     Imprimer le ticket
                 </a>
+                @else
+                <a href="{{ route('abonnement.upgrade', ['feature' => 'caisse_impression']) }}" class="btn-outline w-full justify-center text-amber-600 border-amber-200 hover:bg-amber-50">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 1a5 5 0 00-5 5v4H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2v-9a2 2 0 00-2-2h-2V6a5 5 0 00-5-5zm-3 9V6a3 3 0 016 0v4H9z"/>
+                    </svg>
+                    Imprimer le ticket
+                </a>
+                @endif
 
                 @if($vente->statut === 'validee' && auth()->user()->isAdmin())
                 <form id="annuler-vente-{{ $vente->id }}" method="POST" action="{{ route('dashboard.ventes.annuler', $vente) }}">

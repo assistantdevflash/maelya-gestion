@@ -109,6 +109,7 @@
     <div class="lg:col-span-2 flex flex-col gap-4">
 
         {{-- Client (Livewire – seule section nécessitant le serveur) --}}
+        @if(auth()->user()->aFonctionnalite('caisse_client'))
         <div class="card p-4">
             <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-2">
@@ -172,6 +173,7 @@
                 </button>
             @endif
         </div>
+        @endif
 
         {{-- Panier + Paiement (100 % Alpine) --}}
         <div class="card flex-1 flex flex-col overflow-hidden" wire:ignore>
@@ -233,6 +235,7 @@
                 </div>
 
                 {{-- Code promo --}}
+                @if(auth()->user()->aFonctionnalite('caisse_code_promo'))
                 <template x-if="codePromo">
                     <div>
                         <div class="flex items-center justify-between p-2.5 rounded-xl" style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2);">
@@ -272,6 +275,7 @@
                         <p x-show="codePromoErreur" x-text="codePromoErreur" class="text-xs text-red-500 mt-1"></p>
                     </div>
                 </template>
+                @endif
 
                 {{-- 4 modes de paiement (2×2) --}}
                 <div class="grid grid-cols-2 gap-2">
@@ -568,7 +572,10 @@
                 <button @click="valider(true)"
                         :disabled="loading"
                         :class="loading ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-lg active:scale-[0.98]'"
-                        class="w-full justify-center py-3 text-sm font-bold rounded-xl text-white flex items-center gap-2 transition-all duration-200"
+                        @class([
+                            'w-full justify-center py-3 text-sm font-bold rounded-xl text-white flex items-center gap-2 transition-all duration-200',
+                            'hidden' => !auth()->user()->aFonctionnalite('caisse_impression'),
+                        ])
                         style="background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);">
                     <span x-show="loading" class="spinner spinner-sm" aria-hidden="true"></span>
                     <svg x-show="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

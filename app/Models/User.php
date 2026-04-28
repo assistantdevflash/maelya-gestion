@@ -126,8 +126,42 @@ class User extends Authenticatable
      */
     public function aPlanEntreprise(): bool
     {
-        $abo = $this->abonnementActif;
-        return $abo && in_array($abo->plan?->slug, ['premium-plus', 'entreprise']);
+        return $this->aFonctionnalite('multi_instituts');
+    }
+
+    /**
+     * Slug du plan actuellement actif (ou null si aucun abonnement).
+     * Pour les employés, retourne le slug du plan du propriétaire de l'institut.
+     */
+    public function planActuelSlug(): ?string
+    {
+        if ($this->isEmploye()) {
+            $owner = $this->institut?->proprietaire_id
+                ? static::find($this->institut->proprietaire_id)
+                : null;
+            return $owner?->abonnementActif?->plan?->slug;
+        }
+        return $this->abonnementActif?->plan?->slug;
+    }
+
+    /**
+     * Vérifie si le plan actuel donne accès à une fonctionnalité.
+     * Source de vérité : config/plans-features.php
+     */
+    public function aFonctionnalite(string $feature): bool
+    {
+        // Super admin et commercial ont accès à tout
+        if ($this->isSuperAdmin() || $this->isCommercial()) {
+            return true;
+        }
+
+        $slug = $this->planActuelSlug();
+        if (!$slug) {
+            return false;
+        }
+
+        $features = config("plans-features.plans.$slug", []);
+        return in_array('*', $features, true) || in_array($feature, $features, true);
     }
 
     /**

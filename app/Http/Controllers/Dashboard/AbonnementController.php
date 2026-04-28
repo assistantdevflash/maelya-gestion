@@ -18,6 +18,31 @@ class AbonnementController extends Controller
         return view('dashboard.abonnement.expire');
     }
 
+    /**
+     * Page d'invitation à passer au plan supérieur lorsqu'une fonctionnalité
+     * n'est pas disponible dans le plan actuel.
+     */
+    public function upgrade(Request $request)
+    {
+        $feature = (string) $request->query('feature', '');
+        $meta = config("plans-features.meta.$feature");
+
+        // Si la feature n'existe pas dans la matrice, on tombe sur la liste des plans
+        if (!$meta) {
+            return redirect()->route('abonnement.plans');
+        }
+
+        $planRequis = PlanAbonnement::where('slug', $meta['plan_requis'])
+            ->where('actif', true)
+            ->first();
+
+        $abonnementActif = Auth::user()->abonnementActif;
+
+        return view('dashboard.abonnement.upgrade', compact(
+            'feature', 'meta', 'planRequis', 'abonnementActif'
+        ));
+    }
+
     public function historique()
     {
         $user = Auth::user();
@@ -33,7 +58,7 @@ class AbonnementController extends Controller
     public function plans()
     {
         $plans = PlanAbonnement::where('actif', true)
-            ->whereIn('slug', ['premium', 'premium-plus', 'entreprise'])
+            ->whereIn('slug', ['basic', 'premium', 'premium-plus', 'entreprise'])
             ->orderBy('ordre')
             ->get();
 

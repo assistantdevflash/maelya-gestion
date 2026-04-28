@@ -348,6 +348,7 @@
 
                     {{-- Actions --}}
                     <div class="px-5 pb-5 flex gap-2">
+                        @if(auth()->user()->aFonctionnalite('caisse_impression'))
                         <a href="{{ route('dashboard.ventes.ticket-pdf', $vente) }}" target="_blank"
                            class="flex-1 btn-outline justify-center text-sm py-2.5">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -355,6 +356,15 @@
                             </svg>
                             Imprimer le reçu
                         </a>
+                        @else
+                        <a href="{{ route('abonnement.upgrade', ['feature' => 'caisse_impression']) }}"
+                           class="flex-1 btn-outline justify-center text-sm py-2.5 !border-amber-200 !text-amber-600 hover:!bg-amber-50">
+                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 1a5 5 0 00-5 5v4H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2v-9a2 2 0 00-2-2h-2V6a5 5 0 00-5-5zm-3 9V6a3 3 0 016 0v4H9z"/>
+                            </svg>
+                            Imprimer le reçu
+                        </a>
+                        @endif
                         @if($vente->statut === 'validee' && auth()->user()->isAdmin())
                         <button @click="confirmAnnuler = true"
                                 class="flex-1 btn-outline justify-center text-sm py-2.5 !border-red-200 !text-red-600 hover:!bg-red-50">

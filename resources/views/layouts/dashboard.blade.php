@@ -197,6 +197,12 @@
 
                 {{-- ── VUE D'ENSEMBLE ──────────────────────────────────────── --}}
                 @if(auth()->user()->isAdmin())
+                @php
+                    // Helpers feature-gating sidebar
+                    $featureHas = fn($f) => auth()->user()->aFonctionnalite($f);
+                    $featureHref = fn($f, $route) => $featureHas($f) ? $route : route('abonnement.upgrade', ['feature' => $f]);
+                @endphp
+
                 <p class="px-3 mt-6 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">Vue d'ensemble</p>
 
                 <a href="{{ route('dashboard.index') }}"
@@ -221,14 +227,16 @@
                     {{ isset($__sidebarNbInstituts) && $__sidebarNbInstituts > 1 ? 'Mes instituts' : 'Paramètres' }}
                 </a>
 
-                <a href="{{ route('dashboard.clients.index') }}"
+                <a href="{{ $featureHref('clients', route('dashboard.clients.index')) }}"
                    class="sidebar-link {{ request()->routeIs('dashboard.clients.*') ? 'active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
                         <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                     </svg>
                     Clients
-                    @if(!empty($sidebarNbAnniversaires) && $sidebarNbAnniversaires > 0)
+                    @if(!$featureHas('clients'))
+                        <svg class="ml-auto w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24" title="Fonctionnalité Premium"><path d="M12 1a5 5 0 00-5 5v4H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2v-9a2 2 0 00-2-2h-2V6a5 5 0 00-5-5zm-3 9V6a3 3 0 016 0v4H9z"/></svg>
+                    @elseif(!empty($sidebarNbAnniversaires) && $sidebarNbAnniversaires > 0)
                     <span class="ml-auto inline-flex items-center justify-center w-5 h-5 rounded-full bg-pink-500 text-white text-[10px] font-bold leading-none">
                         {{ $sidebarNbAnniversaires }}
                     </span>
@@ -267,12 +275,15 @@
                 </a>
 
                 @if(auth()->user()->isAdmin())
-                <a href="{{ route('dashboard.codes-reduction.index') }}"
+                <a href="{{ $featureHref('codes_reduction', route('dashboard.codes-reduction.index')) }}"
                    class="sidebar-link {{ request()->routeIs('dashboard.codes-reduction.*') ? 'active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                     </svg>
                     Codes de réduction
+                    @if(!$featureHas('codes_reduction'))
+                        <svg class="ml-auto w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1a5 5 0 00-5 5v4H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2v-9a2 2 0 00-2-2h-2V6a5 5 0 00-5-5zm-3 9V6a3 3 0 016 0v4H9z"/></svg>
+                    @endif
                 </a>
 
                 @php
@@ -285,29 +296,45 @@
                             ->count();
                     }
                 @endphp
-                <a href="{{ route('dashboard.fidelite.index') }}"
+                <a href="{{ $featureHref('fidelite', route('dashboard.fidelite.index')) }}"
                    class="sidebar-link {{ request()->routeIs('dashboard.fidelite.*') ? 'active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
                     </svg>
                     Fidélité
-                    @if($fideliteBadge > 0)
+                    @if(!$featureHas('fidelite'))
+                        <svg class="ml-auto w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1a5 5 0 00-5 5v4H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2v-9a2 2 0 00-2-2h-2V6a5 5 0 00-5-5zm-3 9V6a3 3 0 016 0v4H9z"/></svg>
+                    @elseif($fideliteBadge > 0)
                     <span class="ml-auto inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-emerald-500 rounded-full">{{ $fideliteBadge }}</span>
                     @endif
                 </a>
 
-                <a href="{{ route('dashboard.finances.index') }}"
+                <a href="{{ $featureHref('finances', route('dashboard.finances.index')) }}"
                    class="sidebar-link {{ request()->routeIs('dashboard.finances.*') || request()->routeIs('dashboard.depenses.*') ? 'active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                         <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                     </svg>
                     Point financier
+                    @if(!$featureHas('finances'))
+                        <svg class="ml-auto w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1a5 5 0 00-5 5v4H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2v-9a2 2 0 00-2-2h-2V6a5 5 0 00-5-5zm-3 9V6a3 3 0 016 0v4H9z"/></svg>
+                    @endif
                 </a>
                 @endif
 
                 @php $alertesStock = \App\Models\Produit::where('actif', true)->whereColumn('stock', '<=', 'seuil_alerte')->count(); @endphp
                 @php $stockOpen = request()->routeIs('dashboard.stock.*') || request()->routeIs('dashboard.produits.*') || request()->routeIs('dashboard.categories-produits.*'); @endphp
 
+                @if(!$featureHas('stock') && !$featureHas('produits'))
+                    {{-- Bloc verrouillé : redirige directement vers la page d'upgrade --}}
+                    <a href="{{ route('abonnement.upgrade', ['feature' => 'stock']) }}" class="sidebar-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+                        </svg>
+                        <span class="flex-1">Gestion stocks</span>
+                        <svg class="ml-auto w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1a5 5 0 00-5 5v4H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2v-9a2 2 0 00-2-2h-2V6a5 5 0 00-5-5zm-3 9V6a3 3 0 016 0v4H9z"/></svg>
+                    </a>
+                @else
                 <div x-data="{ open: {{ $stockOpen ? 'true' : 'false' }} }">
                     <button @click="open = !open"
                             class="sidebar-link w-full {{ $stockOpen ? 'active' : '' }}">
@@ -353,6 +380,7 @@
                         </a>
                     </div>
                 </div>
+                @endif
 
                 {{-- ── COMPTE ───────────────────────────────────────────────── --}}
                 @if(auth()->user()->isAdmin())
@@ -375,13 +403,16 @@
                     Mes transactions
                 </a>
 
-                <a href="{{ route('dashboard.employes.index') }}"
+                <a href="{{ $featureHref('equipe', route('dashboard.employes.index')) }}"
                    class="sidebar-link {{ request()->routeIs('dashboard.employes.*') ? 'active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                         <circle cx="12" cy="7" r="4"/>
                     </svg>
                     Mon équipe
+                    @if(!$featureHas('equipe'))
+                        <svg class="ml-auto w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1a5 5 0 00-5 5v4H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2v-9a2 2 0 00-2-2h-2V6a5 5 0 00-5-5zm-3 9V6a3 3 0 016 0v4H9z"/></svg>
+                    @endif
                 </a>
 
                 <a href="{{ route('dashboard.parrainage.index') }}"
