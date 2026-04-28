@@ -406,26 +406,39 @@
                     }
                 @endphp
                 @if($abonnement && $abonnement->plan?->duree_type === 'essai')
+                @php
+                    $essaiJours = $abonnement->joursRestants();
+                    if ($essaiJours <= 0)      $essaiLabel = "Expire aujourd'hui";
+                    elseif ($essaiJours === 1) $essaiLabel = 'Expire demain';
+                    else                      $essaiLabel = $essaiJours . ' jours restants';
+                    $essaiPct = max(0, min(100, round(($essaiJours / 14) * 100)));
+                @endphp
                     <a href="{{ route('abonnement.plans') }}" class="block p-3 rounded-xl ring-1 transition-all hover:shadow-sm" style="background: linear-gradient(135deg, rgba(147,51,234,0.06), rgba(236,72,153,0.06)); border-color: rgba(147,51,234,0.2);">
                         <div class="flex items-center justify-between mb-1.5">
                             <span class="text-xs font-bold" style="background: linear-gradient(135deg, #9333ea, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Essai gratuit</span>
-                            <span class="text-xs font-bold px-1.5 py-0.5 rounded-full text-white" style="background: linear-gradient(135deg, #9333ea, #ec4899);">{{ $abonnement->joursRestants() }}j</span>
+                            <span class="text-xs font-bold px-1.5 py-0.5 rounded-full text-white" style="background: linear-gradient(135deg, {{ $essaiJours <= 1 ? '#f59e0b, #ef4444' : '#9333ea, #ec4899' }});">{{ $essaiLabel }}</span>
                         </div>
                         <div class="flex items-center gap-1.5">
                             <div class="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                                <div class="h-full rounded-full transition-all" style="width: {{ max(0, min(100, round(($abonnement->joursRestants() / 14) * 100))) }}%; background: linear-gradient(90deg, #9333ea, #ec4899);"></div>
+                                <div class="h-full rounded-full transition-all" style="width: {{ $essaiPct }}%; background: linear-gradient(90deg, #9333ea, #ec4899);"></div>
                             </div>
                         </div>
                         <p class="text-[11px] text-gray-500 mt-1.5">S'abonner pour continuer &rarr;</p>
                     </a>
                 @elseif($abonnement && $abonnement->joursRestants() <= 8)
+                @php
+                    $sidebarJours = $abonnement->joursRestants();
+                    if ($sidebarJours <= 0)      $sidebarLabel = "Expire aujourd'hui";
+                    elseif ($sidebarJours === 1) $sidebarLabel = 'Expire demain';
+                    else                        $sidebarLabel = 'Expire dans ' . $sidebarJours . 'j';
+                @endphp
                     <a href="{{ route('abonnement.plans') }}" class="flex items-center gap-2.5 p-2.5 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl text-xs text-amber-700 font-semibold hover:from-amber-100 hover:to-orange-100 transition-all ring-1 ring-amber-200/50">
                         <div class="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
                             <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                             </svg>
                         </div>
-                        <span>Expire dans {{ $abonnement->joursRestants() }}j</span>
+                        <span>{{ $sidebarLabel }}</span>
                     </a>
                 @endif
 

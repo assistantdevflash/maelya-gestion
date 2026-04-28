@@ -15,20 +15,7 @@
             </a>
         </div>
 
-        {{-- Alerte abonnement --}}
-        @if(isset($joursRestants) && $joursRestants <= 7)
-            <div class="flex items-center gap-3 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 rounded-2xl ring-1 ring-amber-200/60 dark:ring-amber-700/40">
-                <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0">
-                    <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm font-semibold text-amber-800 dark:text-amber-300">Votre abonnement expire dans {{ $joursRestants }} jour(s)</p>
-                    <a href="{{ route('abonnement.plans') }}" class="text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 underline underline-offset-2">Renouveler maintenant →</a>
-                </div>
-            </div>
-        @endif
+        {{-- Alerte abonnement : gérée par la carte ci-dessous --}}
 
         {{-- Bonus parrainage récent --}}
         @php
@@ -60,27 +47,40 @@
 
         {{-- Carte abonnement (alerte si < 8 jours) --}}
         @if(isset($abonnement) && $abonnement && $abonnement->joursRestants() <= 8)
-        <div class="card p-4 flex items-center gap-4 bg-gradient-to-r from-primary-50/50 to-secondary-50/50 dark:from-primary-950/30 dark:to-secondary-950/30 border-primary-100/50 dark:border-primary-800/30">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg, #9333ea, #ec4899);">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+        @php
+            $jours = $abonnement->joursRestants();
+            $urgent = $jours <= 1;
+            if ($jours <= 0)       $expiryLabel = 'Expire aujourd\'hui — renouvelez pour continuer';
+            elseif ($jours === 1)  $expiryLabel = 'Expire demain';
+            else                   $expiryLabel = $jours . ' jours restants';
+            $bgClass   = $urgent ? 'bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 border-amber-200/60 dark:border-amber-700/40' : 'bg-gradient-to-r from-primary-50/50 to-secondary-50/50 dark:from-primary-950/30 dark:to-secondary-950/30 border-primary-100/50 dark:border-primary-800/30';
+            $iconBg    = $urgent ? 'background:linear-gradient(135deg,#f59e0b,#ef4444)' : 'background:linear-gradient(135deg,#9333ea,#ec4899)';
+            $badgeClass = $urgent ? 'badge badge-warning' : 'badge badge-success';
+            $badgeLabel = $urgent ? 'Urgent' : 'Actif';
+        @endphp
+        <div class="card p-4 flex items-center gap-4 {{ $bgClass }}">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="{{ $iconBg }}">
+                @if($urgent)
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                @else
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                @endif
             </div>
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2">
                     <p class="font-semibold text-gray-900 dark:text-gray-100 text-sm">{{ $abonnement->plan->nom ?? 'Abonnement' }}</p>
-                    <span class="badge badge-success text-[10px]">Actif</span>
+                    <span class="{{ $badgeClass }} text-[10px]">{{ $badgeLabel }}</span>
                 </div>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    Expire le {{ $abonnement->expire_le->format('d/m/Y') }}
-                    <span class="text-gray-400 dark:text-gray-600">·</span>
-                    {{ $abonnement->joursRestants() }} jour(s) restant(s)
+                    {{ $expiryLabel }}
                     @if($abonnement->plan->max_employes)
                         <span class="text-gray-400 dark:text-gray-600">·</span>
                         {{ $abonnement->plan->max_employes }} employé(s) max
                     @endif
                 </p>
             </div>
-            <a href="{{ route('abonnement.plans') }}" class="btn-outline text-xs py-1.5 px-3 flex-shrink-0">
-                Gérer
+            <a href="{{ route('abonnement.plans') }}" class="{{ $urgent ? 'btn-primary' : 'btn-outline' }} text-xs py-1.5 px-3 flex-shrink-0">
+                {{ $urgent ? 'Renouveler' : 'Gérer' }}
             </a>
         </div>
         @endif
