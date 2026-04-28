@@ -208,7 +208,7 @@
         </div>
 
         @if($plans->count() > 0)
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 justify-center max-w-4xl mx-auto">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 justify-center max-w-6xl mx-auto">
             @foreach($plans as $plan)
             <div class="relative group {{ $plan->mis_en_avant ? 'sm:scale-105 z-10' : '' }}">
                 @if($plan->mis_en_avant)
@@ -252,12 +252,22 @@
                         </div>
                         <ul class="space-y-3 text-sm text-gray-600 dark:text-gray-300">
                             @php
-                                $features = [
-                                    $plan->max_instituts === null ? 'Instituts illimités' : $plan->max_instituts . ' institut',
-                                    $plan->max_employes === null ? 'Employés illimités' : $plan->max_employes . ' employé(s)',
-                                    'Caisse illimitée', 'Gestion stock & clients', 'Rapports financiers',
-                                ];
-                                if ($plan->mis_en_avant) $features[] = 'Support prioritaire';
+                                if ($plan->slug === 'basic') {
+                                    $features = [
+                                        $plan->max_instituts === null ? 'Instituts illimités' : $plan->max_instituts . ' institut',
+                                        $plan->max_employes === null ? 'Employés illimités' : $plan->max_employes . ' employé(s)',
+                                        'Caisse simple',
+                                        'Catalogue prestations',
+                                        'Historique des ventes',
+                                    ];
+                                } else {
+                                    $features = [
+                                        $plan->max_instituts === null ? 'Instituts illimités' : $plan->max_instituts . ' institut',
+                                        $plan->max_employes === null ? 'Employés illimités' : $plan->max_employes . ' employé(s)',
+                                        'Caisse illimitée', 'Gestion stock & clients', 'Rapports financiers',
+                                    ];
+                                    if ($plan->mis_en_avant) $features[] = 'Support prioritaire';
+                                }
                             @endphp
                             @foreach($features as $feature)
                             <li class="flex items-center gap-3">

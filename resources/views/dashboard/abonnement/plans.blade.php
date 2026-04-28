@@ -80,7 +80,7 @@
             </div>
 
             {{-- Cartes plans --}}
-            <div class="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5 max-w-6xl mx-auto">
                 @foreach($plans as $plan)
                 @php
                     $estPlanActuel = $abonnementActif && $abonnementActif->plan_id === $plan->id;
@@ -159,6 +159,24 @@
                                 <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                                 {{ $plan->max_employes === null ? 'Employés illimités' : $plan->max_employes . ' employé(s)' }}
                             </li>
+                            @if($plan->slug === 'basic')
+                            <li class="flex items-center gap-2.5">
+                                <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                Caisse simple
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                Catalogue prestations
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                Historique des ventes
+                            </li>
+                            <li class="flex items-center gap-2.5 text-gray-300">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                <span class="line-through">Stock, clients, finances</span>
+                            </li>
+                            @else
                             <li class="flex items-center gap-2.5">
                                 <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                                 Caisse illimitée
@@ -176,6 +194,7 @@
                                 <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                                 <span class="font-medium text-gray-900">Support prioritaire</span>
                             </li>
+                            @endif
                             @endif
                         </ul>
                     </div>
