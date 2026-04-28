@@ -28,6 +28,8 @@ class AdminPlanController extends Controller
 
         $data['actif'] = $request->boolean('actif', true);
         $data['mis_en_avant'] = $request->boolean('mis_en_avant');
+        $data['duree_type'] = $data['duree_type'] ?? 'mensuel';
+        $data['duree_jours'] = $data['duree_jours'] ?? 30;
 
         PlanAbonnement::create($data);
 
