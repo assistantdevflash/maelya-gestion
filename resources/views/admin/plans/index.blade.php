@@ -116,7 +116,9 @@
 
             <form :action="editing ? '{{ route('admin.plans.index') }}/' + form.id : '{{ route('admin.plans.store') }}'" method="POST" class="space-y-4">
                 @csrf
-                <input x-show="editing" type="hidden" name="_method" value="PUT">
+                <template x-if="editing">
+                    <input type="hidden" name="_method" value="PUT">
+                </template>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
