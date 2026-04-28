@@ -141,7 +141,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="form-label">Max employés <span class="text-xs text-gray-400">(vide = illimité)</span></label>
-                        <input type="number" name="max_employes" x-model="form.max_employes" min="1" class="form-input">
+                        <input type="number" name="max_employes" x-model="form.max_employes" min="0" class="form-input">
                     </div>
                     <div>
                         <label class="form-label">Max instituts <span class="text-xs text-gray-400">(vide = illimité)</span></label>
