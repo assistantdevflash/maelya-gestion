@@ -52,10 +52,10 @@
             </tr>
 
             {{-- Dialog natif HTML --}}
-            <dialog id="modal-{{ $msg->id }}" class="rounded-2xl shadow-2xl max-w-lg w-full p-8 backdrop:bg-black/50">
-                <h2 class="font-bold text-lg text-gray-900 mb-1">Message de {{ $msg->nom }}</h2>
-                <p class="text-sm text-gray-400 mb-4">De : <strong>{{ $msg->nom }}</strong> ({{ $msg->email }}) — {{ $msg->telephone ?? '' }}</p>
-                <div class="bg-gray-50 rounded-xl p-4 text-sm text-gray-700 leading-relaxed whitespace-pre-line">{{ $msg->message }}</div>
+            <dialog id="modal-{{ $msg->id }}" class="rounded-2xl shadow-2xl max-w-lg w-full p-8 backdrop:bg-black/50 bg-white dark:bg-slate-800">
+                <h2 class="font-bold text-lg text-gray-900 dark:text-white mb-1">Message de {{ $msg->nom }}</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">De : <strong class="text-gray-700 dark:text-gray-200">{{ $msg->nom }}</strong> ({{ $msg->email }}) — {{ $msg->telephone ?? '' }}</p>
+                <div class="bg-gray-50 dark:bg-slate-700 rounded-xl p-4 text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-line">{{ $msg->message }}</div>
                 <div class="mt-5 flex justify-between items-center">
                     @if(!$msg->lu)
                     <form action="{{ route('admin.messages.lire', $msg) }}" method="POST">
