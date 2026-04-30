@@ -99,7 +99,8 @@ class AbonnementActif
 
         // ── Aucun abonnement ni sursis ──────────────────────────────────────────
         // Vérifier s'il existe un historique d'abonnement (compte déjà souscrit)
-        $aDejaEuAbonnement = $abonnementUser->abonnements()->where('statut', 'actif')->exists();
+        // On inclut 'expire' car abonnements:expirer met le statut à jour en base.
+        $aDejaEuAbonnement = $abonnementUser->abonnements()->whereIn('statut', ['actif', 'expire'])->exists();
 
         if (!$aDejaEuAbonnement) {
             // Nouveau compte sans aucun abonnement → redirection vers les plans
@@ -112,7 +113,7 @@ class AbonnementActif
 
         // Abonnement expiré (au-delà du sursis, ou fin d'essai) → lecture seule
         $dernierAbonnement = $abonnementUser->abonnements()
-            ->where('statut', 'actif')
+            ->whereIn('statut', ['actif', 'expire'])
             ->latest('expire_le')
             ->first();
 

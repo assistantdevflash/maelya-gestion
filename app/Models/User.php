@@ -151,7 +151,7 @@ class User extends Authenticatable
 
         // Aucun plan actif → utiliser le dernier plan expiré (pour affichage en lecture seule)
         return $this->abonnements()
-            ->where('statut', 'actif')
+            ->whereIn('statut', ['actif', 'expire'])
             ->latest('expire_le')
             ->first()?->plan?->slug;
     }

@@ -1,6 +1,4 @@
-@extends('layouts.dashboard')
-
-@section('title', $meta['titre'] . ' — Maëlya Gestion')
+<x-dashboard-layout>
 
 @php
     // Mapping icone → svg path
@@ -24,7 +22,6 @@
     };
 @endphp
 
-@section('content')
 <div class="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-6 lg:py-10">
 
     {{-- Bouton retour --}}
@@ -133,4 +130,4 @@
         Vous gardez toutes vos données. La mise à niveau est instantanée après validation du paiement.
     </p>
 </div>
-@endsection
+</x-dashboard-layout>
