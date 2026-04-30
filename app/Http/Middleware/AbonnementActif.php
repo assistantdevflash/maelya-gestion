@@ -49,6 +49,7 @@ class AbonnementActif
         }
 
         // Pour les employés, vérifier l'abonnement du propriétaire (via proprietaire_id de l'institut)
+        $abonnementUser = $user; // utilisateur référent pour l'historique d'abonnement
         if ($user->isEmploye()) {
             $institut = \App\Models\Institut::find($user->currentInstitutId());
             $owner = $institut?->proprietaire_id
@@ -56,6 +57,9 @@ class AbonnementActif
                 : null;
             $abonnement = $owner?->abonnementActif;
             $abonnementSursis = $abonnement ? null : $owner?->abonnementEnSursis();
+            if ($owner) {
+                $abonnementUser = $owner;
+            }
         } else {
             $abonnement = $user->abonnementActif;
             $abonnementSursis = $abonnement ? null : $user->abonnementEnSursis();
@@ -94,11 +98,42 @@ class AbonnementActif
         }
 
         // ── Aucun abonnement ni sursis ──────────────────────────────────────────
-        view()->share('enSursis', false);
+        // Vérifier s'il existe un historique d'abonnement (compte déjà souscrit)
+        $aDejaEuAbonnement = $abonnementUser->abonnements()->where('statut', 'actif')->exists();
+
+        if (!$aDejaEuAbonnement) {
+            // Nouveau compte sans aucun abonnement → redirection vers les plans
+            view()->share('enSursis', false);
+            if ($request->routeIs('abonnement.*')) {
+                return $next($request);
+            }
+            return redirect()->route('abonnement.expire');
+        }
+
+        // Abonnement expiré (au-delà du sursis) → lecture seule
+        $dernierAbonnement = $abonnementUser->abonnements()
+            ->where('statut', 'actif')
+            ->latest('expire_le')
+            ->first();
+
+        view()->share('enSursis', true);
+        view()->share('sursisJours', $dernierAbonnement?->joursDepuisExpiration() ?? 0);
+
         if ($request->routeIs('abonnement.*')) {
             return $next($request);
         }
-        return redirect()->route('abonnement.expire');
+
+        // Bloquer toutes les mutations (POST, PUT, PATCH, DELETE)
+        if (!in_array($request->method(), ['GET', 'HEAD'])) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Accès restreint. Renouvelez votre abonnement pour enregistrer des données.',
+                ], 403);
+            }
+            return back()->with('error', 'Votre abonnement a expiré. Renouvelez-le pour enregistrer des données.');
+        }
+
+        return $next($request);
     }
 }
 

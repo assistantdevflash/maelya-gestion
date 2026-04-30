@@ -130,7 +130,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Slug du plan actuellement actif (ou null si aucun abonnement).
+     * Slug du plan actif, ou du dernier plan expiré (mode lecture seule).
      * Pour les employés, retourne le slug du plan du propriétaire de l'institut.
      */
     public function planActuelSlug(): ?string
@@ -139,9 +139,19 @@ class User extends Authenticatable
             $owner = $this->institut?->proprietaire_id
                 ? static::find($this->institut->proprietaire_id)
                 : null;
-            return $owner?->abonnementActif?->plan?->slug;
+            return $owner?->planActuelSlug();
         }
-        return $this->abonnementActif?->plan?->slug;
+
+        // Plan actif
+        if ($slug = $this->abonnementActif?->plan?->slug) {
+            return $slug;
+        }
+
+        // Aucun plan actif → utiliser le dernier plan expiré (pour affichage en lecture seule)
+        return $this->abonnements()
+            ->where('statut', 'actif')
+            ->latest('expire_le')
+            ->first()?->plan?->slug;
     }
 
     /**
