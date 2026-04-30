@@ -482,7 +482,7 @@
                         <p class="text-xs font-semibold text-gray-900 dark:text-white truncate">{{ auth()->user()->prenom }}</p>
                         <div class="flex items-center gap-1.5 mt-0.5">
                             <p class="text-[11px] text-gray-400 capitalize">{{ auth()->user()->role }}</p>
-                            @if(auth()->user()->isAdmin() && auth()->user()->aPlanEntreprise())
+                            @if(auth()->user()->isAdmin() && auth()->user()->abonnementActif && auth()->user()->aPlanEntreprise())
                             <span class="text-[9px] font-bold px-1.5 py-px rounded-full text-white leading-tight"
                                   style="background: linear-gradient(135deg, #9333ea, #ec4899);">Premium+</span>
                             @endif

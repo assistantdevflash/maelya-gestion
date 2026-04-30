@@ -110,7 +110,7 @@ class AbonnementActif
             return redirect()->route('abonnement.expire');
         }
 
-        // Abonnement expiré (au-delà du sursis) → lecture seule
+        // Abonnement expiré (au-delà du sursis, ou fin d'essai) → lecture seule
         $dernierAbonnement = $abonnementUser->abonnements()
             ->where('statut', 'actif')
             ->latest('expire_le')

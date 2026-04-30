@@ -83,10 +83,12 @@ class User extends Authenticatable
      */
     public function abonnementEnSursis(): ?Abonnement
     {
+        // Le sursis de 2 jours ne s'applique qu'aux plans payants (pas aux essais)
         return $this->abonnements()
             ->where('statut', 'actif')
             ->where('expire_le', '<', now()->toDateString())
             ->where('expire_le', '>=', now()->subDays(2)->toDateString())
+            ->whereHas('plan', fn ($q) => $q->where('duree_type', '!=', 'essai'))
             ->latest('expire_le')
             ->first();
     }
@@ -191,10 +193,7 @@ class User extends Authenticatable
      */
     public function isParrainageActif(): bool
     {
-        if ($this->abonnementActif) {
-            return true;
-        }
-        return $this->abonnementEnSursis() !== null;
+        return $this->abonnementActif !== null;
     }
 
     protected static function booted(): void
