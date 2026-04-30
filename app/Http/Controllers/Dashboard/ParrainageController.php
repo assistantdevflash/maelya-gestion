@@ -24,6 +24,8 @@ class ParrainageController extends Controller
             'jours_gagnes' => $parrainages->where('statut', 'valide')->sum('jours_offerts_parrain'),
         ];
 
-        return view('dashboard.parrainage.index', compact('user', 'parrainages', 'stats'));
+        $parrainageActif = $user->isParrainageActif();
+
+        return view('dashboard.parrainage.index', compact('user', 'parrainages', 'stats', 'parrainageActif'));
     }
 }

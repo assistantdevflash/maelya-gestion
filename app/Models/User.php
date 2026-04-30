@@ -184,6 +184,19 @@ class User extends Authenticatable
 
     // ── Parrainage ────────────────────────────────────────────────────────────
 
+    /**
+     * Le code parrainage est actif si l'utilisateur a un abonnement valide
+     * (actif ou en période de sursis de 2 jours).
+     * Au-delà, le code est suspendu pour éviter les gains sans abonnement actif.
+     */
+    public function isParrainageActif(): bool
+    {
+        if ($this->abonnementActif) {
+            return true;
+        }
+        return $this->abonnementEnSursis() !== null;
+    }
+
     protected static function booted(): void
     {
         static::creating(function (User $user) {

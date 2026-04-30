@@ -7,23 +7,50 @@
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Partagez votre code et gagnez des jours d'abonnement gratuits.</p>
         </div>
 
+        {{-- Bannière code suspendu --}}
+        @if(!$parrainageActif)
+        <div class="flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/40 text-sm text-amber-800 dark:text-amber-300">
+            <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+            <div class="flex-1">
+                <p class="font-semibold">Votre code parrainage est temporairement suspendu</p>
+                <p class="mt-0.5">Votre abonnement a expiré : les nouveaux filleuls ne peuvent pas utiliser votre code pendant cette période. Il sera automatiquement réactivé dès le renouvellement de votre abonnement.</p>
+                <a href="{{ route('abonnement.plans') }}" class="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:underline">
+                    Renouveler mon abonnement →
+                </a>
+            </div>
+        </div>
+        @endif
+
         {{-- Carte code de parrainage --}}
-        <div class="card p-6" x-data="{ copied: false }">
+        <div class="card p-6 {{ !$parrainageActif ? 'opacity-60' : '' }}" x-data="{ copied: false }">
             <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                 <div class="flex-1">
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Votre code de parrainage</p>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                        Votre code de parrainage
+                        @if(!$parrainageActif)
+                            <span class="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                Suspendu
+                            </span>
+                        @endif
+                    </p>
                     <div class="flex items-center gap-3">
-                        <span class="text-3xl font-bold font-mono tracking-[0.2em] text-primary-600 dark:text-primary-400">{{ $user->code_parrainage }}</span>
+                        <span class="text-3xl font-bold font-mono tracking-[0.2em] {{ $parrainageActif ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500 line-through' }}">{{ $user->code_parrainage }}</span>
+                        @if($parrainageActif)
                         <button @click="navigator.clipboard.writeText('{{ $user->code_parrainage }}'); copied = true; setTimeout(() => copied = false, 2000)"
                                 class="p-2 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-primary-50 dark:hover:bg-primary-900/30 text-gray-500 hover:text-primary-600 transition-colors"
                                 title="Copier le code">
                             <svg x-show="!copied" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                             <svg x-show="copied" x-cloak class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         </button>
+                        @endif
                     </div>
                 </div>
 
                 {{-- Lien d'inscription --}}
+                @if($parrainageActif)
                 <div class="flex-1" x-data="{ linkCopied: false }">
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Lien d'inscription avec votre code</p>
                     <div class="flex items-center gap-2">
@@ -33,20 +60,23 @@
                         <button @click="navigator.clipboard.writeText('{{ url('/inscription?ref=' . $user->code_parrainage) }}'); linkCopied = true; setTimeout(() => linkCopied = false, 2000)"
                                 class="btn-outline btn-sm flex-shrink-0">
                             <span x-show="!linkCopied">Copier</span>
-                            <span x-show="linkCopied" x-cloak class="text-emerald-600">Copié !</span>
+                            <span x-show="linkCopied" x-cloak class="text-emerald-600">Copié !</span>
                         </button>
                     </div>
                 </div>
+                @endif
             </div>
 
             {{-- Explication --}}
+            @if($parrainageActif)
             <div class="mt-4 p-3 rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800">
                 <p class="text-xs text-primary-800 dark:text-primary-300 leading-relaxed">
-                    <strong>Comment ça marche ?</strong> Partagez votre code ou lien avec d’autres professionnels de la beauté.
+                    <strong>Comment ça marche ?</strong> Partagez votre code ou lien avec d’autres professionnels de la beauté.
                     Quand ils s'inscrivent avec votre code et souscrivent un abonnement payant,
                     vous recevez <strong>15 jours gratuits</strong> et votre filleul reçoit <strong>7 jours gratuits</strong> en bonus.
                 </p>
             </div>
+            @endif
         </div>
 
         {{-- Notification bonus récent --}}

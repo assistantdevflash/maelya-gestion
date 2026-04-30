@@ -43,11 +43,16 @@ class InscriptionController extends Controller
                     $existsCommercial = \App\Models\CommercialProfile::where('code', $code)
                         ->whereHas('user', fn($q) => $q->where('actif', true))
                         ->exists();
-                    $existsParrain = \App\Models\User::where('code_parrainage', $code)
+                    $parrain = \App\Models\User::where('code_parrainage', $code)
                         ->where('role', 'admin')
-                        ->exists();
-                    if (!$existsCommercial && !$existsParrain) {
+                        ->first();
+                    if (!$existsCommercial && !$parrain) {
                         $fail('Ce code est invalide ou n\'existe pas.');
+                        return;
+                    }
+                    // Vérifier que le parrain a un abonnement actif (code suspendu sinon)
+                    if ($parrain && !$parrain->isParrainageActif()) {
+                        $fail('Ce code de parrainage est temporairement suspendu. Son propriétaire doit renouveler son abonnement.');
                     }
                 }
             }],
