@@ -106,6 +106,11 @@
                 </td>
                 <td>
                     @php
+                        // Un abonnement marqué "actif" en BDD mais dont la date est dépassée
+                        // est traité comme expiré (le cron de mise à jour peut avoir du retard).
+                        $statutEffectif = ($ab->statut === 'actif' && $ab->expire_le?->isPast())
+                            ? 'expire'
+                            : $ab->statut;
                         $colors = [
                             'en_attente' => 'bg-amber-100 text-amber-700',
                             'actif' => 'badge-success',
@@ -121,8 +126,8 @@
                             'annule' => 'Annulé',
                         ];
                     @endphp
-                    <span class="badge {{ $colors[$ab->statut] ?? 'bg-gray-100 text-gray-500' }} text-xs">
-                        {{ $labels[$ab->statut] ?? $ab->statut }}
+                    <span class="badge {{ $colors[$statutEffectif] ?? 'bg-gray-100 text-gray-500' }} text-xs">
+                        {{ $labels[$statutEffectif] ?? $statutEffectif }}
                     </span>
                 </td>
                 <td>
