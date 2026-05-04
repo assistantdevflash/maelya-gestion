@@ -1,8 +1,4 @@
-@extends('layouts.dashboard')
-
-@section('title', 'Tableau de bord — Maëlya Gestion')
-
-@section('content')
+<x-dashboard-layout>
 <div class="px-3 sm:px-6 lg:px-8 py-4 lg:py-6 space-y-6">
 
     {{-- En-tête --}}
@@ -181,4 +177,4 @@
     @endif
 
 </div>
-@endsection
+</x-dashboard-layout>
