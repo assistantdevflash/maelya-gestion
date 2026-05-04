@@ -115,32 +115,72 @@
             </div>
 
             {{-- Liste de sélection multiple --}}
-            <div x-show="mode === 'selection'" x-cloak x-transition class="space-y-3">
-                <div class="flex items-center justify-between mb-2">
-                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        <span x-text="selectedInstituts.length"></span> sélectionné(s)
-                    </p>
-                    <button type="button"
-                            @click="toggleAll({{ $instituts->map(fn($i) => ['id' => $i->id])->values()->toJson() }})"
-                            class="text-xs text-purple-600 hover:text-purple-800 dark:text-purple-400 font-medium">
-                        Tout sélectionner / désélectionner
-                    </button>
+            <div x-show="mode === 'selection'" x-cloak x-transition class="space-y-3"
+                 x-data="{ search: '' }">
+
+                {{-- Barre de recherche + compteur + tout sélectionner --}}
+                <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                    <div class="relative flex-1">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+                        </svg>
+                        <input type="text" x-model="search" placeholder="Rechercher un établissement…"
+                               class="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all">
+                    </div>
+                    <div class="flex items-center gap-3 flex-shrink-0">
+                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                            <span class="font-bold text-purple-600 dark:text-purple-400" x-text="selectedInstituts.length"></span> sélectionné(s)
+                        </span>
+                        <button type="button"
+                                @click="toggleAll({{ $instituts->map(fn($i) => ['id' => $i->id])->values()->toJson() }})"
+                                class="text-xs font-medium px-3 py-1.5 rounded-lg border border-purple-200 dark:border-purple-800 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors">
+                            Tout sélectionner
+                        </button>
+                        <button type="button" x-show="selectedInstituts.length > 0" x-cloak
+                                @click="selectedInstituts = []"
+                                class="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                            Effacer
+                        </button>
+                    </div>
                 </div>
+
                 @if($errors->has('instituts'))
                 <p class="text-xs text-red-500">{{ $errors->first('instituts') }}</p>
                 @endif
-                <div class="max-h-72 overflow-y-auto space-y-1.5 pr-1">
+
+                {{-- Grille avec scroll fixe --}}
+                <div class="h-64 overflow-y-auto rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.02] p-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5">
+                        @foreach($instituts as $institut)
+                        <label class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer transition-colors"
+                               x-show="search === '' || '{{ strtolower($institut->nom . ' ' . $institut->ville) }}'.includes(search.toLowerCase())"
+                               :class="selectedInstituts.includes({{ $institut->id }}) ? 'bg-purple-100 dark:bg-purple-900/40 ring-1 ring-purple-300 dark:ring-purple-700' : 'hover:bg-white dark:hover:bg-white/5'">
+                            <input type="checkbox" name="instituts[]" value="{{ $institut->id }}"
+                                   x-model="selectedInstituts" :value="{{ $institut->id }}"
+                                   class="w-4 h-4 rounded text-purple-600 border-gray-300 focus:ring-purple-500 flex-shrink-0">
+                            <div class="min-w-0">
+                                <p class="text-xs font-semibold text-gray-900 dark:text-white truncate leading-tight">{{ $institut->nom }}</p>
+                                <p class="text-[11px] text-gray-400 truncate">{{ $institut->ville }}</p>
+                            </div>
+                        </label>
+                        @endforeach
+                    </div>
+                    {{-- Message si aucun résultat --}}
+                    <p class="text-center text-sm text-gray-400 py-6 hidden"
+                       x-show="{{ $instituts->count() }} > 0 && search !== '' && document.querySelectorAll('[x-show]:not([style*=\'none\'])').length === 0">
+                        Aucun établissement ne correspond à votre recherche.
+                    </p>
+                </div>
+
+                {{-- Chips des sélectionnés --}}
+                <div x-show="selectedInstituts.length > 0" x-cloak class="flex flex-wrap gap-1.5 pt-1">
                     @foreach($instituts as $institut)
-                    <label class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors"
-                           :class="selectedInstituts.includes({{ $institut->id }}) ? 'bg-purple-50 dark:bg-purple-900/20' : 'hover:bg-gray-50 dark:hover:bg-white/5'">
-                        <input type="checkbox" name="instituts[]" value="{{ $institut->id }}"
-                               x-model="selectedInstituts" :value="{{ $institut->id }}"
-                               class="w-4 h-4 rounded text-purple-600 border-gray-300 focus:ring-purple-500">
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ $institut->nom }}</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $institut->ville }} · {{ $institut->proprietaire?->email }}</p>
-                        </div>
-                    </label>
+                    <span x-show="selectedInstituts.includes({{ $institut->id }})"
+                          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300">
+                        {{ $institut->nom }}
+                        <button type="button" @click="selectedInstituts = selectedInstituts.filter(id => id !== {{ $institut->id }})"
+                                class="ml-0.5 hover:text-purple-900 dark:hover:text-white">✕</button>
+                    </span>
                     @endforeach
                 </div>
             </div>
@@ -224,9 +264,11 @@
             </p>
 
             <button type="submit"
-                    class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white font-semibold text-sm rounded-xl shadow transition-all active:scale-95">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                    style="background: linear-gradient(135deg, #9333ea, #ec4899);"
+                    class="inline-flex items-center gap-2 px-6 py-3 text-white font-semibold text-sm rounded-xl shadow-lg hover:opacity-90 transition-all active:scale-95">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
                 </svg>
                 Envoyer l'email
             </button>
