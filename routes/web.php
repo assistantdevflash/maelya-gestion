@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminFinanceController;
 use App\Http\Controllers\Admin\AdminOffreController;
 use App\Http\Controllers\Admin\AdminCommercialController;
+use App\Http\Controllers\Admin\AdminEmailController;
 use App\Http\Controllers\Commercial\CommercialController;
 use App\Http\Controllers\Auth\InscriptionController;
 use Illuminate\Support\Facades\Route;
@@ -177,6 +178,8 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::get('messages', [AdminMessageController::class, 'index'])->name('messages.index');
     Route::patch('messages/{message}/lire', [AdminMessageController::class, 'marquerLu'])->name('messages.lire');
     Route::delete('messages/{message}', [AdminMessageController::class, 'destroy'])->name('messages.destroy');
+    Route::get('emails', [AdminEmailController::class, 'index'])->name('emails.index');
+    Route::post('emails', [AdminEmailController::class, 'send'])->name('emails.send');
     Route::get('finance', [AdminFinanceController::class, 'index'])->name('finance.index');
     Route::get('offres', [AdminOffreController::class, 'index'])->name('offres.index');
     Route::post('offres', [AdminOffreController::class, 'store'])->name('offres.store');
