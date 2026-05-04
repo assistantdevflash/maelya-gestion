@@ -19,6 +19,7 @@
     </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
+    @stack('styles')
 </head>
 <body class="admin text-gray-900 dark:text-white overflow-x-hidden" x-data="{
     sidebarOpen: false,

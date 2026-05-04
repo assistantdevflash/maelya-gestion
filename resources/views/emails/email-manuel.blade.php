@@ -14,7 +14,12 @@
         .header p { color: rgba(255,255,255,0.85); font-size: 14px; margin-top: 6px; }
         .body { padding: 36px 32px; }
         .greeting { font-size: 16px; font-weight: 600; color: #111827; margin-bottom: 20px; }
-        .message { font-size: 15px; color: #374151; line-height: 1.75; white-space: pre-line; }
+        .message { font-size: 15px; color: #374151; line-height: 1.75; }
+        .message p { margin-bottom: 12px; }
+        .message ul, .message ol { padding-left: 20px; margin-bottom: 12px; }
+        .message li { margin-bottom: 4px; }
+        .message strong { color: #111827; }
+        .message a { color: #9333ea; }
         .divider { border: none; border-top: 1px solid #e5e7eb; margin: 28px 0; }
         .footer { background: #f9fafb; border-top: 1px solid #e5e7eb; padding: 20px 32px; text-align: center; font-size: 12px; color: #9ca3af; }
         .footer a { color: #9333ea; text-decoration: none; }
@@ -31,7 +36,7 @@
 
     <div class="body">
         <p class="greeting">Bonjour {{ $destinataire->prenom }} 👋</p>
-        <p class="message">{{ $corps }}</p>
+        <div class="message">{!! $corps !!}</div>
     </div>
 
     <div class="footer">
