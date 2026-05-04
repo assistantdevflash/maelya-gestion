@@ -39,6 +39,7 @@
 <div class="space-y-6" x-data="{
     mode: 'tous',
     selectedInstituts: [],
+    institutMap: {{ $instituts->pluck('nom', 'id')->toJson() }},
     toggleAll(instituts) {
         if (this.selectedInstituts.length === instituts.length) {
             this.selectedInstituts = [];
@@ -174,14 +175,13 @@
 
                 {{-- Chips des sélectionnés --}}
                 <div x-show="selectedInstituts.length > 0" x-cloak class="flex flex-wrap gap-1.5 pt-1">
-                    @foreach($instituts as $institut)
-                    <span x-show="selectedInstituts.includes({{ $institut->id }})"
-                          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300">
-                        {{ $institut->nom }}
-                        <button type="button" @click="selectedInstituts = selectedInstituts.filter(id => id !== {{ $institut->id }})"
-                                class="ml-0.5 hover:text-purple-900 dark:hover:text-white">✕</button>
-                    </span>
-                    @endforeach
+                    <template x-for="id in selectedInstituts" :key="id">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300">
+                            <span x-text="institutMap[id] || id"></span>
+                            <button type="button" @click="selectedInstituts = selectedInstituts.filter(i => i !== id)"
+                                    class="ml-0.5 hover:text-purple-900 dark:hover:text-white leading-none">✕</button>
+                        </span>
+                    </template>
                 </div>
             </div>
 
