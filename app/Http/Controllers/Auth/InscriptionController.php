@@ -9,6 +9,7 @@ use App\Models\Parrainage;
 use App\Models\User;
 use App\Models\PlanAbonnement;
 use App\Mail\BienvenueMaelya;
+use App\Mail\NouvelInstitutInscrit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -156,6 +157,13 @@ class InscriptionController extends Controller
         // Email de bienvenue
         if ($newUser) {
             Mail::to($newUser->email)->send(new BienvenueMaelya($newUser));
+
+            // Notifier tous les super-admins
+            $superAdmins = User::where('role', 'super_admin')->get();
+            $institut = $newUser->institut;
+            foreach ($superAdmins as $admin) {
+                Mail::to($admin->email)->send(new NouvelInstitutInscrit($newUser, $institut));
+            }
         }
 
         return redirect()->route('dashboard.index')
