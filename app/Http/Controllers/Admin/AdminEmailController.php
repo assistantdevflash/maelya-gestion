@@ -15,16 +15,16 @@ class AdminEmailController extends Controller
 {
     public function index()
     {
-        $instituts = Institut::with('proprietaire')
-            ->whereHas('proprietaire')
-            ->orderBy('nom')
-            ->get();
+        try {
+            $historique = EmailCampagne::with('expediteur')
+                ->orderByDesc('created_at')
+                ->paginate(20);
+        } catch (\Exception $e) {
+            Log::error('[AdminEmail] Table email_campagnes inaccessible : ' . $e->getMessage());
+            $historique = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20);
+        }
 
-        $historique = EmailCampagne::with('expediteur')
-            ->orderByDesc('created_at')
-            ->paginate(20);
-
-        return view('admin.emails.index', compact('instituts', 'historique'));
+        return view('admin.emails.index', compact('historique'));
     }
 
     public function composer()
