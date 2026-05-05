@@ -23,7 +23,7 @@ class EmailCampagne extends Model
 
     public function expediteur()
     {
-        return $this->belongsTo(User::class, 'envoye_par');
+        return $this->belongsTo(User::class, 'envoye_par', 'id');
     }
 
     public function getModeLibelleAttribute(): string

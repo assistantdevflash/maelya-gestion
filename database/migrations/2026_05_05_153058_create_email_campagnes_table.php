@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('email_campagnes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('envoye_par')->constrained('users')->cascadeOnDelete();
+            $table->uuid('envoye_par')->nullable();
+            $table->foreign('envoye_par')->references('id')->on('users')->nullOnDelete();
             $table->string('sujet');
             $table->longText('corps');
             $table->string('mode'); // tous | selection | un | personnalise
