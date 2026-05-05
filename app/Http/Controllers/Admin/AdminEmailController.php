@@ -44,8 +44,8 @@ class AdminEmailController extends Controller
             'sujet'            => ['required', 'string', 'max:255'],
             'corps'            => ['required', 'string'],
             'instituts'        => ['required_if:mode,selection', 'array'],
-            'instituts.*'      => ['integer', 'exists:instituts,id'],
-            'institut_id'      => ['required_if:mode,un', 'nullable', 'integer', 'exists:instituts,id'],
+            'instituts.*'      => ['string', 'exists:instituts,id'],
+            'institut_id'      => ['required_if:mode,un', 'nullable', 'string', 'exists:instituts,id'],
             'email_personnalise' => ['required_if:mode,personnalise', 'nullable', 'email', 'max:255'],
             'nom_personnalise'  => ['nullable', 'string', 'max:100'],
         ], [
@@ -118,16 +118,20 @@ class AdminEmailController extends Controller
         }
 
         // Sauvegarder la campagne dans l'historique
-        EmailCampagne::create([
-            'envoye_par'          => auth()->id(),
-            'sujet'               => $sujet,
-            'corps'               => $corps,
-            'mode'                => $mode,
-            'destinataires_emails' => $emailsEnvoyes,
-            'nb_envoyes'          => $envoyes,
-            'nb_echecs'           => $echecs,
-            'erreurs'             => $erreurs ? implode("\n", $erreurs) : null,
-        ]);
+        try {
+            EmailCampagne::create([
+                'envoye_par'           => auth()->id(),
+                'sujet'                => $sujet,
+                'corps'                => $corps,
+                'mode'                 => $mode,
+                'destinataires_emails' => $emailsEnvoyes,
+                'nb_envoyes'           => $envoyes,
+                'nb_echecs'            => $echecs,
+                'erreurs'              => $erreurs ? implode("\n", $erreurs) : null,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('[AdminEmail] Impossible de sauvegarder la campagne : ' . $e->getMessage());
+        }
 
         if ($envoyes === 0 && $echecs > 0) {
             return redirect()->route('admin.emails.index')
