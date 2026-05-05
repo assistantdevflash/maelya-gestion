@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\AdminFinanceController;
 use App\Http\Controllers\Admin\AdminOffreController;
 use App\Http\Controllers\Admin\AdminCommercialController;
 use App\Http\Controllers\Admin\AdminEmailController;
+use App\Http\Controllers\Admin\AdminLogsController;
 use App\Http\Controllers\Commercial\CommercialController;
 use App\Http\Controllers\Auth\InscriptionController;
 use Illuminate\Support\Facades\Route;
@@ -181,6 +182,8 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::get('emails', [AdminEmailController::class, 'index'])->name('emails.index');
     Route::get('emails/composer', [AdminEmailController::class, 'composer'])->name('emails.composer');
     Route::post('emails', [AdminEmailController::class, 'send'])->name('emails.send');
+    Route::get('logs', [AdminLogsController::class, 'index'])->name('logs.index');
+    Route::post('logs/clear', [AdminLogsController::class, 'clear'])->name('logs.clear');
     Route::get('finance', [AdminFinanceController::class, 'index'])->name('finance.index');
     Route::get('offres', [AdminOffreController::class, 'index'])->name('offres.index');
     Route::post('offres', [AdminOffreController::class, 'store'])->name('offres.store');

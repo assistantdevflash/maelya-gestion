@@ -19,9 +19,9 @@ class AdminEmailController extends Controller
             $historique = EmailCampagne::with('expediteur')
                 ->orderByDesc('created_at')
                 ->paginate(20);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('[AdminEmail] Table email_campagnes inaccessible : ' . $e->getMessage());
-            $historique = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20);
+            $historique = new \Illuminate\Pagination\LengthAwarePaginator(collect(), 0, 20, 1);
         }
 
         return view('admin.emails.index', compact('historique'));
@@ -129,7 +129,7 @@ class AdminEmailController extends Controller
                 'nb_echecs'            => $echecs,
                 'erreurs'              => $erreurs ? implode("\n", $erreurs) : null,
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('[AdminEmail] Impossible de sauvegarder la campagne : ' . $e->getMessage());
         }
 
