@@ -111,3 +111,38 @@ async function networkFirstWithOfflineFallback(request) {
         });
     }
 }
+
+// ── Notifications Push ──────────────────────────────────────────────────────
+self.addEventListener('push', event => {
+    let data = { title: 'Maëlya Gestion', body: 'Nouvelle notification', url: '/', icon: '/icons/icon-192.png' };
+    try {
+        if (event.data) data = { ...data, ...event.data.json() };
+    } catch (e) {}
+
+    event.waitUntil(
+        self.registration.showNotification(data.title, {
+            body:    data.body,
+            icon:    data.icon,
+            badge:   data.badge || '/icons/icon-72.png',
+            data:    { url: data.url },
+            vibrate: [100, 50, 100],
+            tag:     'maelya-' + Date.now(),
+        })
+    );
+});
+
+self.addEventListener('notificationclick', event => {
+    event.notification.close();
+    const url = event.notification.data?.url || '/';
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+            for (const client of clientList) {
+                if (client.url.includes(location.origin) && 'focus' in client) {
+                    client.navigate(url);
+                    return client.focus();
+                }
+            }
+            if (clients.openWindow) return clients.openWindow(url);
+        })
+    );
+});

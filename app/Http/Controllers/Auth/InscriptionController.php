@@ -158,12 +158,19 @@ class InscriptionController extends Controller
         if ($newUser) {
             Mail::to($newUser->email)->send(new BienvenueMaelya($newUser));
 
-            // Notifier tous les super-admins
+            // Notifier tous les super-admins (email + push)
             $superAdmins = User::where('role', 'super_admin')->get();
             $institut = $newUser->institut;
             foreach ($superAdmins as $admin) {
                 Mail::to($admin->email)->send(new NouvelInstitutInscrit($newUser, $institut));
             }
+            try {
+                app(\App\Services\PushNotificationService::class)->sendToAdmins(
+                    '🏠 Nouvel établissement inscrit',
+                    ($institut?->nom ?? 'Un établissement') . ' vient de rejoindre Maëlya Gestion.',
+                    '/admin/instituts'
+                );
+            } catch (\Throwable $e) { \Log::warning('[Push] ' . $e->getMessage()); }
         }
 
         return redirect()->route('dashboard.index')

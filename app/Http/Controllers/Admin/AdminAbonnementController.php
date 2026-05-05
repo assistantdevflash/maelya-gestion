@@ -122,6 +122,14 @@ class AdminAbonnementController extends Controller
         } catch (\Throwable) {
             // Ne pas bloquer la validation si l'envoi échoue
         }
+        try {
+            app(\App\Services\PushNotificationService::class)->sendToUser(
+                $abonnementFresh->user,
+                '✅ Abonnement validé !',
+                'Votre abonnement ' . ($abonnementFresh->plan?->nom ?? '') . ' est actif jusqu\'au ' . $abonnementFresh->expire_le->format('d/m/Y') . '.',
+                '/dashboard'
+            );
+        } catch (\Throwable $e) { \Log::warning('[Push] ' . $e->getMessage()); }
 
         return back()->with('success', "Abonnement validé ! Actif jusqu'au " . $abonnementFresh->expire_le->format('d/m/Y') . '.' . ($parrainage ? ' Bonus parrainage appliqué.' : ''));
     }

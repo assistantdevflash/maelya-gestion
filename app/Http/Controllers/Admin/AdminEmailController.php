@@ -107,6 +107,17 @@ class AdminEmailController extends Controller
                 Mail::to($user->email)->send(new EmailManuel($sujet, $corps, $user));
                 $emailsEnvoyes[] = $user->email;
                 $envoyes++;
+                // Push uniquement pour les vrais users (pas les emails personnalisés sans id)
+                if ($user->id ?? null) {
+                    try {
+                        app(\App\Services\PushNotificationService::class)->sendToUser(
+                            $user,
+                            '📩 Message de l\'équipe Maëlya',
+                            $sujet,
+                            '/dashboard'
+                        );
+                    } catch (\Throwable $e) { \Log::warning('[Push] ' . $e->getMessage()); }
+                }
             } catch (\Exception $e) {
                 $echecs++;
                 $erreurs[] = $user->email . ' : ' . $e->getMessage();

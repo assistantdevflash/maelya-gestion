@@ -125,6 +125,13 @@ class AbonnementController extends Controller
         foreach ($superAdmins as $admin) {
             Mail::to($admin->email)->send(new NouvelleDemandeAbonnement($abonnement));
         }
+        try {
+            app(\App\Services\PushNotificationService::class)->sendToAdmins(
+                '💳 Nouvelle demande d\'abonnement',
+                ($user->prenom ?? '') . ' (' . ($abonnement?->plan?->nom ?? 'Plan') . ') attend votre validation.',
+                '/admin/abonnements'
+            );
+        } catch (\Throwable $e) { \Log::warning('[Push] ' . $e->getMessage()); }
 
         return redirect()->route('abonnement.plans')
             ->with('success', "Votre demande d'abonnement a été envoyée ! Elle sera validée sous 24h.");

@@ -222,5 +222,6 @@
 
     @livewireScripts
     @stack('scripts')
+    @include('partials.push-init')
 </body>
 </html>

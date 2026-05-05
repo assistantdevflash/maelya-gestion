@@ -5,7 +5,9 @@ namespace App\Console\Commands;
 use App\Mail\AbonnementExpire;
 use App\Mail\RappelAbonnement;
 use App\Models\Abonnement;
+use App\Services\PushNotificationService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class AbonnementsExpirer extends Command
@@ -29,6 +31,14 @@ class AbonnementsExpirer extends Command
                 ->each(function (Abonnement $abo) use ($jours, &$rappels) {
                     if ($abo->user?->email) {
                         Mail::to($abo->user->email)->send(new RappelAbonnement($abo, $jours));
+                        try {
+                            app(PushNotificationService::class)->sendToUser(
+                                $abo->user,
+                                '⏰ Abonnement bientôt expiré',
+                                'Votre abonnement expire dans ' . $jours . ' jour' . ($jours > 1 ? 's' : '') . '. Renouvelez-le dès maintenant.',
+                                '/abonnement/plans'
+                            );
+                        } catch (\Throwable $e) { Log::warning('[Push] ' . $e->getMessage()); }
                         $rappels++;
                     }
                 });
@@ -47,6 +57,14 @@ class AbonnementsExpirer extends Command
             // Envoyer le mail d'expiration uniquement pour les plans payants
             if ($abo->plan?->duree_type !== 'essai' && $abo->user?->email) {
                 Mail::to($abo->user->email)->send(new AbonnementExpire($abo));
+                try {
+                    app(PushNotificationService::class)->sendToUser(
+                        $abo->user,
+                        '🔴 Abonnement expiré',
+                        'Votre abonnement Maëlya Gestion est expiré. Renouvelez-le pour retrouver l\'accès complet.',
+                        '/abonnement/plans'
+                    );
+                } catch (\Throwable $e) { Log::warning('[Push] ' . $e->getMessage()); }
             }
 
             $expires++;

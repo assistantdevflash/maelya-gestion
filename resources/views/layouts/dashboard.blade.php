@@ -781,5 +781,6 @@
         });
     })();
 </script>
+@include('partials.push-init')
 </body>
 </html>

@@ -29,12 +29,19 @@ use App\Http\Controllers\Admin\AdminOffreController;
 use App\Http\Controllers\Admin\AdminCommercialController;
 use App\Http\Controllers\Admin\AdminEmailController;
 use App\Http\Controllers\Admin\AdminLogsController;
+use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\Commercial\CommercialController;
 use App\Http\Controllers\Auth\InscriptionController;
 use Illuminate\Support\Facades\Route;
 
 // ─── Landing Page ─────────────────────────────────────────────────────────────
 Route::get('/', [LandingController::class, 'index'])->name('home');
+
+// ─── Push Notifications ───────────────────────────────────────────────────────
+Route::middleware('auth')->group(function () {
+    Route::post('/push/subscribe',   [PushSubscriptionController::class, 'store'])->name('push.subscribe');
+    Route::post('/push/unsubscribe', [PushSubscriptionController::class, 'destroy'])->name('push.unsubscribe');
+});
 Route::get('/a-propos', [LandingController::class, 'apropos'])->name('about');
 Route::get('/faq', [LandingController::class, 'faq'])->name('faq');
 Route::get('/contact', [LandingController::class, 'contact'])->name('contact');
