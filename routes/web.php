@@ -179,6 +179,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::patch('messages/{message}/lire', [AdminMessageController::class, 'marquerLu'])->name('messages.lire');
     Route::delete('messages/{message}', [AdminMessageController::class, 'destroy'])->name('messages.destroy');
     Route::get('emails', [AdminEmailController::class, 'index'])->name('emails.index');
+    Route::get('emails/composer', [AdminEmailController::class, 'composer'])->name('emails.composer');
     Route::post('emails', [AdminEmailController::class, 'send'])->name('emails.send');
     Route::get('finance', [AdminFinanceController::class, 'index'])->name('finance.index');
     Route::get('offres', [AdminOffreController::class, 'index'])->name('offres.index');

@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('page-title', 'Envoyer un email')
+@section('page-title', 'Composer un email')
 
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
@@ -40,6 +40,8 @@
     mode: 'tous',
     selectedInstituts: [],
     institutMap: {{ $instituts->pluck('nom', 'id')->toJson() }},
+    emailPerso: '',
+    nomPerso: '',
     toggleAll(instituts) {
         if (this.selectedInstituts.length === instituts.length) {
             this.selectedInstituts = [];
@@ -49,15 +51,28 @@
     }
 }" x-init="$watch('mode', () => { selectedInstituts = [] })">
 
-    <div>
-        <h1 class="page-title">Envoyer un email</h1>
-        <p class="page-subtitle">Composez et envoyez un email à un ou plusieurs établissements.</p>
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="page-title">Composer un email</h1>
+            <p class="page-subtitle">Composez et envoyez un email à un ou plusieurs établissements.</p>
+        </div>
+        <a href="{{ route('admin.emails.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/10 transition-all shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            Historique
+        </a>
     </div>
 
     @if(session('success'))
     <div class="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl text-green-800 dark:text-green-300 text-sm font-medium">
         <svg class="w-5 h-5 flex-shrink-0 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         {{ session('success') }}
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div class="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl text-red-800 dark:text-red-300 text-sm">
+        <svg class="w-5 h-5 flex-shrink-0 text-red-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>{{ session('error') }}</span>
     </div>
     @endif
 
@@ -68,7 +83,7 @@
         <div class="card-admin p-6">
             <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Destinataires</h2>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                 <label class="relative cursor-pointer" @click="mode = 'tous'">
                     <input type="radio" name="mode" value="tous" class="sr-only" :checked="mode === 'tous'" checked>
                     <div :class="mode === 'tous' ? 'ring-2 ring-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'ring-1 ring-gray-200 dark:ring-white/10 hover:ring-purple-300'" class="rounded-2xl p-4 transition-all">
@@ -109,6 +124,21 @@
                             <div>
                                 <p class="text-sm font-semibold" :class="mode === 'un' ? 'text-purple-700 dark:text-purple-300' : 'text-gray-700 dark:text-gray-300'">Un seul établissement</p>
                                 <p class="text-xs text-gray-500 dark:text-gray-400">Ciblage précis</p>
+                            </div>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="relative cursor-pointer" @click="mode = 'personnalise'">
+                    <input type="radio" name="mode" value="personnalise" class="sr-only" :checked="mode === 'personnalise'">
+                    <div :class="mode === 'personnalise' ? 'ring-2 ring-pink-500 bg-pink-50 dark:bg-pink-900/20' : 'ring-1 ring-gray-200 dark:ring-white/10 hover:ring-pink-300'" class="rounded-2xl p-4 transition-all">
+                        <div class="flex items-center gap-3">
+                            <div :class="mode === 'personnalise' ? 'bg-pink-100 dark:bg-pink-800' : 'bg-gray-100 dark:bg-white/10'" class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5" :class="mode === 'personnalise' ? 'text-pink-600 dark:text-pink-300' : 'text-gray-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold" :class="mode === 'personnalise' ? 'text-pink-700 dark:text-pink-300' : 'text-gray-700 dark:text-gray-300'">Email personnalisé</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Saisir une adresse</p>
                             </div>
                         </div>
                     </div>
@@ -199,6 +229,27 @@
                     @endforeach
                 </select>
             </div>
+
+            {{-- Email personnalisé --}}
+            <div x-show="mode === 'personnalise'" x-cloak x-transition class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Adresse email <span class="text-red-500">*</span></label>
+                    @if($errors->has('email_personnalise'))
+                    <p class="text-xs text-red-500 mb-1">{{ $errors->first('email_personnalise') }}</p>
+                    @endif
+                    <input type="email" name="email_personnalise" x-model="emailPerso"
+                           value="{{ old('email_personnalise') }}"
+                           placeholder="exemple@domaine.com"
+                           class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Prénom / Nom <span class="text-gray-400 font-normal">(optionnel)</span></label>
+                    <input type="text" name="nom_personnalise" x-model="nomPerso"
+                           value="{{ old('nom_personnalise') }}"
+                           placeholder="Ex : Marie Dupont"
+                           class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all">
+                </div>
+            </div>
         </div>
 
         {{-- Composition du message --}}
@@ -261,6 +312,7 @@
                 <span x-show="mode === 'tous'">Envoi à <strong class="text-gray-700 dark:text-gray-200">{{ $instituts->count() }} établissements</strong></span>
                 <span x-show="mode === 'selection'" x-cloak>Envoi à <strong class="text-gray-700 dark:text-gray-200" x-text="selectedInstituts.length + ' établissement(s)'"></strong></span>
                 <span x-show="mode === 'un'" x-cloak>Envoi à <strong class="text-gray-700 dark:text-gray-200">1 établissement</strong></span>
+                <span x-show="mode === 'personnalise'" x-cloak>Envoi à <strong class="text-pink-600 dark:text-pink-400" x-text="emailPerso || '—'"></strong></span>
             </p>
 
             <button type="submit"
