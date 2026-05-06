@@ -29,6 +29,7 @@ use App\Http\Controllers\Admin\AdminOffreController;
 use App\Http\Controllers\Admin\AdminCommercialController;
 use App\Http\Controllers\Admin\AdminEmailController;
 use App\Http\Controllers\Admin\AdminLogsController;
+use App\Http\Controllers\Admin\AdminPushDebugController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\Commercial\CommercialController;
 use App\Http\Controllers\Auth\InscriptionController;
@@ -191,6 +192,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::post('emails', [AdminEmailController::class, 'send'])->name('emails.send');
     Route::get('logs', [AdminLogsController::class, 'index'])->name('logs.index');
     Route::post('logs/clear', [AdminLogsController::class, 'clear'])->name('logs.clear');
+    Route::get('push-debug', [AdminPushDebugController::class, 'index'])->name('push.debug');
     Route::get('finance', [AdminFinanceController::class, 'index'])->name('finance.index');
     Route::get('offres', [AdminOffreController::class, 'index'])->name('offres.index');
     Route::post('offres', [AdminOffreController::class, 'store'])->name('offres.store');
