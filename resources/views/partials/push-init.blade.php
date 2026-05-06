@@ -1,11 +1,19 @@
 @auth
 <script>
 (function () {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        console.warn('[Push] ServiceWorker ou PushManager non supporté.');
+        return;
+    }
 
     const VAPID_PUBLIC_KEY = '{{ config("app.vapid_public_key") }}';
     const SUBSCRIBE_URL    = '{{ route("push.subscribe") }}';
     const CSRF_TOKEN       = '{{ csrf_token() }}';
+
+    if (!VAPID_PUBLIC_KEY) {
+        console.warn('[Push] Clé VAPID manquante — vérifier VAPID_PUBLIC_KEY dans .env');
+        return;
+    }
 
     function urlBase64ToUint8Array(base64String) {
         const padding = '='.repeat((4 - base64String.length % 4) % 4);
