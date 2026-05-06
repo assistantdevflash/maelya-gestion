@@ -193,6 +193,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::get('logs', [AdminLogsController::class, 'index'])->name('logs.index');
     Route::post('logs/clear', [AdminLogsController::class, 'clear'])->name('logs.clear');
     Route::get('push-debug', [AdminPushDebugController::class, 'index'])->name('push.debug');
+    Route::post('push-debug/test', [AdminPushDebugController::class, 'sendTest'])->name('push.debug.test');
     Route::get('finance', [AdminFinanceController::class, 'index'])->name('finance.index');
     Route::get('offres', [AdminOffreController::class, 'index'])->name('offres.index');
     Route::post('offres', [AdminOffreController::class, 'store'])->name('offres.store');

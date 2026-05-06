@@ -60,7 +60,15 @@
         </button>
         <div id="steps" class="text-sm space-y-2 font-mono"></div>
     </div>
-
+    {{-- ── Notification de test ─────────────────────────────────────────────── --}}
+    <div class="bg-white rounded-xl shadow p-6 space-y-3">
+        <h2 class="font-semibold text-gray-700 text-lg">4. Envoyer une notification de test</h2>
+        <p class="text-sm text-gray-500">Envoie une vraie notification push à tous vos abonnements depuis le serveur.</p>
+        <button id="btn-send-test" class="bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition">
+            📨 Envoyer une notification test
+        </button>
+        <div id="send-result" class="text-sm font-mono"></div>
+    </div>
     {{-- ── Tous les abonnements ─────────────────────────────────────────── --}}
     @if($allSubs->count())
     <div class="bg-white rounded-xl shadow p-6">
@@ -226,6 +234,28 @@ document.getElementById('btn-test').addEventListener('click', async () => {
         log('─── Test terminé. Rechargez la page pour voir l\'abonnement en base. ───');
     } finally {
         document.getElementById('btn-test').disabled = false;
+    }
+});
+
+// ── Envoi test depuis serveur ────────────────────────────────────────────────
+document.getElementById('btn-send-test').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-send-test');
+    const res = document.getElementById('send-result');
+    btn.disabled = true;
+    res.innerHTML = '⏳ Envoi en cours…';
+    try {
+        const resp = await fetch('{{ route("admin.push.debug.test") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+        });
+        const data = await resp.json();
+        res.innerHTML = resp.ok
+            ? `<span class="text-green-600">✅ ${data.message}</span>`
+            : `<span class="text-red-600">❌ ${data.message}</span>`;
+    } catch(e) {
+        res.innerHTML = `<span class="text-red-600">❌ Erreur réseau : ${e.message}</span>`;
+    } finally {
+        btn.disabled = false;
     }
 });
 </script>
