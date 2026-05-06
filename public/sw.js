@@ -123,7 +123,7 @@ self.addEventListener('push', event => {
         self.registration.showNotification(data.title, {
             body:    data.body,
             icon:    data.icon,
-            badge:   data.badge || '/icons/icon-72.png',
+            badge:   data.badge || '/icons/badge-72.svg',
             data:    { url: data.url },
             vibrate: [100, 50, 100],
             tag:     'maelya-' + Date.now(),
