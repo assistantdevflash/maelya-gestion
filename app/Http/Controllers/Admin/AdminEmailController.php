@@ -40,37 +40,48 @@ class AdminEmailController extends Controller
     public function send(Request $request)
     {
         $request->validate([
-            'mode'             => ['required', 'in:tous,selection,un,personnalise'],
-            'sujet'            => ['required', 'string', 'max:255'],
-            'corps'            => ['required', 'string'],
-            'instituts'        => ['required_if:mode,selection', 'array'],
-            'instituts.*'      => ['string', 'exists:instituts,id'],
-            'institut_id'      => ['required_if:mode,un', 'nullable', 'string', 'exists:instituts,id'],
-            'email_personnalise' => ['required_if:mode,personnalise', 'nullable', 'email', 'max:255'],
-            'nom_personnalise'  => ['nullable', 'string', 'max:100'],
-            'send_push'         => ['nullable', 'in:0,1'],
-            'push_titre'        => ['nullable', 'string', 'max:60'],
-            'push_message'      => ['nullable', 'string', 'max:120'],
+            'mode'               => ['required', 'in:tous,selection,un,personnalise'],
+            'send_mode'          => ['required', 'in:email,both,push'],
+            'sujet'              => ['required_unless:send_mode,push', 'nullable', 'string', 'max:255'],
+            'corps'              => ['required_unless:send_mode,push', 'nullable', 'string'],
+            'instituts'          => ['required_if:mode,selection', 'array'],
+            'instituts.*'        => ['string', 'exists:instituts,id'],
+            'institut_id'        => ['required_if:mode,un', 'nullable', 'string', 'exists:instituts,id'],
+            'email_personnalise'  => ['required_if:mode,personnalise', 'nullable', 'email', 'max:255'],
+            'nom_personnalise'    => ['nullable', 'string', 'max:100'],
+            'push_titre'          => ['required_unless:send_mode,email', 'nullable', 'string', 'max:60'],
+            'push_message'        => ['nullable', 'string', 'max:120'],
         ], [
-            'sujet.required'              => 'Le sujet est requis.',
-            'corps.required'              => 'Le corps du message est requis.',
-            'instituts.required_if'       => 'Sélectionnez au moins un établissement.',
-            'institut_id.required_if'     => 'Sélectionnez un établissement.',
+            'sujet.required_unless'          => 'Le sujet est requis pour un envoi email.',
+            'corps.required_unless'          => 'Le corps du message est requis pour un envoi email.',
+            'push_titre.required_unless'     => 'Le titre de la notification est requis.',
+            'instituts.required_if'          => 'Sélectionnez au moins un établissement.',
+            'institut_id.required_if'        => 'Sélectionnez un établissement.',
             'email_personnalise.required_if' => 'Saisissez une adresse email.',
-            'email_personnalise.email'    => 'L\'adresse email n\'est pas valide.',
+            'email_personnalise.email'       => 'L\'adresse email n\'est pas valide.',
         ]);
 
-        // Nettoyer le corps si Quill renvoie du HTML vide
-        $corps = strip_tags($request->corps) === '' ? null : $request->corps;
-        if (!$corps) {
-            return back()->withErrors(['corps' => 'Le corps du message est vide.'])->withInput();
+        $sendMode = $request->input('send_mode', 'email');
+        $doEmail  = in_array($sendMode, ['email', 'both']);
+        $doPush   = in_array($sendMode, ['both', 'push']);
+
+        // Nettoyer le corps si Quill renvoie du HTML vide (seulement si email requis)
+        $corps = null;
+        if ($doEmail) {
+            $corps = strip_tags($request->corps ?? '') === '' ? null : $request->corps;
+            if (!$corps) {
+                return back()->withErrors(['corps' => 'Le corps du message est vide.'])->withInput();
+            }
         }
 
-        $sujet    = $request->sujet;
-        $mode     = $request->mode;
-        $doPush   = $request->input('send_push') === '1' && $mode !== 'personnalise';
+        $sujet       = $request->sujet ?? '';
+        $mode        = $request->mode;
         $pushTitre   = $request->input('push_titre') ?: mb_substr($sujet, 0, 60);
-        $pushMessage = $request->input('push_message') ?: mb_substr(strip_tags($request->corps), 0, 120);
+        $pushMessage = $request->input('push_message') ?: ($corps ? mb_substr(strip_tags($corps), 0, 120) : '');
+        // Mode push-only sur email personnalisé : impossible, on l'interdit côté frontend mais on sécurise côté serveur
+        if ($sendMode === 'push' && $mode === 'personnalise') {
+            return back()->withErrors(['send_mode' => 'La notification push n\'est pas disponible en mode email personnalisé.'])->withInput();
+        }
         $destinataires = collect();
 
         if ($mode === 'tous') {
@@ -110,10 +121,11 @@ class AdminEmailController extends Controller
 
         foreach ($destinataires as $user) {
             try {
-                Mail::to($user->email)->send(new EmailManuel($sujet, $corps, $user));
-                $emailsEnvoyes[] = $user->email;
-                $envoyes++;
-                // Notification push si demandée et utilisateur réel (compte existant)
+                if ($doEmail) {
+                    Mail::to($user->email)->send(new EmailManuel($sujet, $corps, $user));
+                    $emailsEnvoyes[] = $user->email;
+                    $envoyes++;
+                }
                 if ($doPush && ($user->id ?? null)) {
                     try {
                         app(\App\Services\PushNotificationService::class)->sendToUser(
@@ -123,6 +135,7 @@ class AdminEmailController extends Controller
                             '/dashboard'
                         );
                     } catch (\Throwable $e) { \Log::warning('[Push] ' . $e->getMessage()); }
+                    if (!$doEmail) $envoyes++; // compter les envois push-only
                 }
             } catch (\Exception $e) {
                 $echecs++;
@@ -155,10 +168,12 @@ class AdminEmailController extends Controller
                 ->with('error', "Aucun email n'a pu être envoyé. Consultez les logs. Erreur : " . $erreurs[0]);
         }
 
-        $message = "Email envoyé à {$envoyes} destinataire(s) avec succès.";
-        if ($doPush && $envoyes > 0) {
-            $message .= ' Notification push envoyée.';
-        }
+        $what = match($sendMode) {
+            'both'  => 'Email + notification envoyé(s)',
+            'push'  => 'Notification envoyée',
+            default => 'Email envoyé',
+        };
+        $message = "{$what} à {$envoyes} destinataire(s) avec succès.";
         if ($echecs > 0) {
             $message .= " ({$echecs} échec(s))";
         }
