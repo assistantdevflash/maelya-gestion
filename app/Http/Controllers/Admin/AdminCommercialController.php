@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\CommercialCommissionPayee;
 use App\Models\CommercialCommission;
 use App\Models\CommercialProfile;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 
@@ -141,6 +143,23 @@ class AdminCommercialController extends Controller
             return back()->with('error', 'Déjà marquée comme payée.');
         }
         $commission->update(['statut' => 'payee', 'payee_le' => now()]);
+
+        // Notifier le commercial par email + push
+        $commission->load(['commercial.user', 'abonnement.user', 'abonnement.plan']);
+        $commercialUser = $commission->commercial?->user;
+        if ($commercialUser) {
+            try {
+                Mail::to($commercialUser->email)->send(new CommercialCommissionPayee($commercialUser, $commission));
+            } catch (\Throwable $e) { \Log::warning('[Mail Commercial] ' . $e->getMessage()); }
+            try {
+                app(\App\Services\PushNotificationService::class)->sendToUser(
+                    $commercialUser,
+                    '💳 Commission versée !',
+                    'Votre commission de ' . number_format($commission->montant, 2, ',', ' ') . ' € a été versée.',
+                    '/commercial'
+                );
+            } catch (\Throwable $e) { \Log::warning('[Push Commercial] ' . $e->getMessage()); }
+        }
 
         return back()->with('success', 'Commission marquée comme payée.');
     }

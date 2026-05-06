@@ -9,6 +9,7 @@ use App\Models\Parrainage;
 use App\Models\User;
 use App\Models\PlanAbonnement;
 use App\Mail\BienvenueMaelya;
+use App\Mail\CommercialNouveauFilleul;
 use App\Mail\NouvelInstitutInscrit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -71,8 +72,9 @@ class InscriptionController extends Controller
         ]);
 
         $newUser = null;
+        $commercialParrainageCreated = null;
 
-        DB::transaction(function () use ($request, &$newUser) {
+        DB::transaction(function () use ($request, &$newUser, &$commercialParrainageCreated) {
             // Vérifier le code de parrainage — commercial d'abord, puis parrain classique
             $parrain = null;
             $commercialProfile = null;
@@ -137,11 +139,14 @@ class InscriptionController extends Controller
             if ($commercialProfile) {
                 $config = \DB::table('commercial_config')->first();
                 $duree = $config?->duree_mois ?? 6;
-                \App\Models\CommercialParrainage::create([
+                $commercialParrainageCreated = \App\Models\CommercialParrainage::create([
                     'commercial_id'   => $commercialProfile->id,
                     'proprietaire_id' => $user->id,
                     'expire_le'       => now()->addMonths($duree)->toDateString(),
                 ]);
+                $commercialParrainageCreated->setRelation('commercial', $commercialProfile);
+                $commercialProfile->loadMissing('user');
+                $commercialParrainageCreated->setRelation('commercialUser', $commercialProfile->user);
             }
             // ── Créer le parrainage (en attente de validation d'abonnement payant) ──
             if ($parrain) {
@@ -171,6 +176,28 @@ class InscriptionController extends Controller
                     '/admin/instituts'
                 );
             } catch (\Throwable $e) { \Log::warning('[Push] ' . $e->getMessage()); }
+
+            // Notifier le commercial si parrainage commercial créé
+            if ($commercialParrainageCreated) {
+                $commercialUser = $commercialParrainageCreated->getRelation('commercialUser');
+                if ($commercialUser?->email) {
+                    try {
+                        Mail::to($commercialUser->email)->send(
+                            new CommercialNouveauFilleul($commercialUser, $newUser, $commercialParrainageCreated)
+                        );
+                    } catch (\Throwable $e) { \Log::warning('[Mail Commercial] ' . $e->getMessage()); }
+                }
+                if ($commercialUser) {
+                    try {
+                        app(\App\Services\PushNotificationService::class)->sendToUser(
+                            $commercialUser,
+                            '🎉 Nouveau filleul inscrit !',
+                            ($newUser->prenom ?? 'Un établissement') . ' vient de s\'inscrire avec votre code.',
+                            '/commercial'
+                        );
+                    } catch (\Throwable $e) { \Log::warning('[Push Commercial] ' . $e->getMessage()); }
+                }
+            }
         }
 
         return redirect()->route('dashboard.index')

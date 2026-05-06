@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Mail\AbonnementValide;
+use App\Mail\CommercialCommissionGagnee;
 use App\Models\Abonnement;
 use App\Models\Parrainage;
 use Illuminate\Http\Request;
@@ -130,7 +131,26 @@ class AdminAbonnementController extends Controller
                 '/abonnement/historique'
             );
         } catch (\Throwable $e) { \Log::warning('[Push] ' . $e->getMessage()); }
-
+        // Notifier le commercial si commission créée
+        if ($abonnement->montant > 0) {
+            $commission = \App\Models\CommercialCommission::where('abonnement_id', $abonnement->id)
+                ->with(['commercial.user', 'abonnement.user', 'abonnement.plan'])
+                ->first();
+            if ($commission?->commercial?->user) {
+                $commercialUser = $commission->commercial->user;
+                try {
+                    Mail::to($commercialUser->email)->send(new CommercialCommissionGagnee($commercialUser, $commission));
+                } catch (\Throwable $e) { \Log::warning('[Mail Commercial] ' . $e->getMessage()); }
+                try {
+                    app(\App\Services\PushNotificationService::class)->sendToUser(
+                        $commercialUser,
+                        '💰 Commission générée !',
+                        ($abonnementFresh->user->prenom ?? 'Votre filleul') . ' a souscrit au plan ' . ($abonnementFresh->plan?->nom ?? '') . '. Commission : ' . number_format($commission->montant, 2, ',', ' ') . ' €.',
+                        '/commercial'
+                    );
+                } catch (\Throwable $e) { \Log::warning('[Push Commercial] ' . $e->getMessage()); }
+            }
+        }
         return back()->with('success', "Abonnement validé ! Actif jusqu'au " . $abonnementFresh->expire_le->format('d/m/Y') . '.' . ($parrainage ? ' Bonus parrainage appliqué.' : ''));
     }
 
