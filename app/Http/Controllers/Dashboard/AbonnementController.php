@@ -129,7 +129,7 @@ class AbonnementController extends Controller
             app(\App\Services\PushNotificationService::class)->sendToAdmins(
                 '💳 Nouvelle demande d\'abonnement',
                 ($user->prenom ?? '') . ' (' . ($abonnement?->plan?->nom ?? 'Plan') . ') attend votre validation.',
-                '/admin/abonnements'
+                '/admin/abonnements?statut=en_attente'
             );
         } catch (\Throwable $e) { \Log::warning('[Push] ' . $e->getMessage()); }
 

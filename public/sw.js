@@ -133,11 +133,13 @@ self.addEventListener('push', event => {
 
 self.addEventListener('notificationclick', event => {
     event.notification.close();
-    const url = event.notification.data?.url || '/';
+    const rawUrl = event.notification.data?.url || '/';
+    // Résoudre les chemins relatifs en URL absolue (nécessaire pour clients.openWindow)
+    const url = rawUrl.startsWith('http') ? rawUrl : (self.location.origin + rawUrl);
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
             for (const client of clientList) {
-                if (client.url.includes(location.origin) && 'focus' in client) {
+                if (client.url.startsWith(self.location.origin) && 'focus' in client) {
                     client.navigate(url);
                     return client.focus();
                 }

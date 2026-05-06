@@ -127,7 +127,7 @@ class AdminAbonnementController extends Controller
                 $abonnementFresh->user,
                 '✅ Abonnement validé !',
                 'Votre abonnement ' . ($abonnementFresh->plan?->nom ?? '') . ' est actif jusqu\'au ' . $abonnementFresh->expire_le->format('d/m/Y') . '.',
-                '/dashboard'
+                '/abonnement/historique'
             );
         } catch (\Throwable $e) { \Log::warning('[Push] ' . $e->getMessage()); }
 
