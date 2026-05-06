@@ -42,6 +42,9 @@
     institutMap: {{ $instituts->pluck('nom', 'id')->toJson() }},
     emailPerso: '',
     nomPerso: '',
+    sendPush: false,
+    pushTitre: '',
+    pushMessage: '',
     toggleAll(instituts) {
         if (this.selectedInstituts.length === instituts.length) {
             this.selectedInstituts = [];
@@ -306,6 +309,54 @@
             </div>
         </div>
 
+        {{-- Section Push Notification --}}
+        <div class="card-admin p-6 space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Notification Push</h2>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Envoyer également une notification push sur le téléphone/navigateur des destinataires.</p>
+                </div>
+                <button type="button" @click="sendPush = !sendPush"
+                        :class="sendPush ? 'bg-purple-600' : 'bg-gray-200 dark:bg-white/10'"
+                        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none flex-shrink-0">
+                    <span :class="sendPush ? 'translate-x-6' : 'translate-x-1'"
+                          class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"></span>
+                </button>
+            </div>
+
+            <div x-show="sendPush" x-cloak x-transition class="space-y-4 pt-2 border-t border-gray-100 dark:border-white/10">
+
+                <div x-show="mode === 'personnalise'" x-cloak
+                     class="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-3 py-2">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    La notification push ne sera pas envoyée en mode "Email personnalisé" (pas de compte utilisateur associé).
+                </div>
+
+                <input type="hidden" name="send_push" :value="sendPush ? '1' : '0'">
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">
+                        Titre de la notification <span class="text-gray-400 font-normal">(max 60 caractères)</span>
+                    </label>
+                    <input type="text" name="push_titre" x-model="pushTitre" maxlength="60"
+                           x-init="$watch('sendPush', v => { if(v && !pushTitre) pushTitre = document.getElementById('sujet-input').value.substring(0,60) })"
+                           placeholder="Ex : 📢 Mise à jour importante"
+                           class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all">
+                    <p class="text-right text-xs text-gray-400 mt-1" x-text="(pushTitre.length) + '/60'"></p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">
+                        Message de la notification <span class="text-gray-400 font-normal">(max 120 caractères)</span>
+                    </label>
+                    <textarea name="push_message" x-model="pushMessage" maxlength="120" rows="2"
+                              placeholder="Message court affiché dans la notification…"
+                              class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all resize-none"></textarea>
+                    <p class="text-right text-xs text-gray-400 mt-1" x-text="(pushMessage.length) + '/120'"></p>
+                </div>
+            </div>
+        </div>
+
         {{-- Bouton d'envoi --}}
         <div class="flex items-center justify-between">
             <p class="text-sm text-gray-500 dark:text-gray-400">
@@ -322,7 +373,8 @@
                     <line x1="22" y1="2" x2="11" y2="13"/>
                     <polygon points="22 2 15 22 11 13 2 9 22 2"/>
                 </svg>
-                Envoyer l'email
+                <span x-show="!sendPush">Envoyer l'email</span>
+                <span x-show="sendPush" x-cloak>Envoyer email + notification</span>
             </button>
         </div>
     </form>

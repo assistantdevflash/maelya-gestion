@@ -48,6 +48,9 @@ class AdminEmailController extends Controller
             'institut_id'      => ['required_if:mode,un', 'nullable', 'string', 'exists:instituts,id'],
             'email_personnalise' => ['required_if:mode,personnalise', 'nullable', 'email', 'max:255'],
             'nom_personnalise'  => ['nullable', 'string', 'max:100'],
+            'send_push'         => ['nullable', 'in:0,1'],
+            'push_titre'        => ['nullable', 'string', 'max:60'],
+            'push_message'      => ['nullable', 'string', 'max:120'],
         ], [
             'sujet.required'              => 'Le sujet est requis.',
             'corps.required'              => 'Le corps du message est requis.',
@@ -63,8 +66,11 @@ class AdminEmailController extends Controller
             return back()->withErrors(['corps' => 'Le corps du message est vide.'])->withInput();
         }
 
-        $sujet = $request->sujet;
-        $mode  = $request->mode;
+        $sujet    = $request->sujet;
+        $mode     = $request->mode;
+        $doPush   = $request->input('send_push') === '1' && $mode !== 'personnalise';
+        $pushTitre   = $request->input('push_titre') ?: mb_substr($sujet, 0, 60);
+        $pushMessage = $request->input('push_message') ?: mb_substr(strip_tags($request->corps), 0, 120);
         $destinataires = collect();
 
         if ($mode === 'tous') {
@@ -107,13 +113,13 @@ class AdminEmailController extends Controller
                 Mail::to($user->email)->send(new EmailManuel($sujet, $corps, $user));
                 $emailsEnvoyes[] = $user->email;
                 $envoyes++;
-                // Push uniquement pour les vrais users (pas les emails personnalisés sans id)
-                if ($user->id ?? null) {
+                // Notification push si demandée et utilisateur réel (compte existant)
+                if ($doPush && ($user->id ?? null)) {
                     try {
                         app(\App\Services\PushNotificationService::class)->sendToUser(
                             $user,
-                            '📩 Message de l\'équipe Maëlya',
-                            $sujet,
+                            $pushTitre,
+                            $pushMessage,
                             '/dashboard'
                         );
                     } catch (\Throwable $e) { \Log::warning('[Push] ' . $e->getMessage()); }
@@ -150,6 +156,9 @@ class AdminEmailController extends Controller
         }
 
         $message = "Email envoyé à {$envoyes} destinataire(s) avec succès.";
+        if ($doPush && $envoyes > 0) {
+            $message .= ' Notification push envoyée.';
+        }
         if ($echecs > 0) {
             $message .= " ({$echecs} échec(s))";
         }
