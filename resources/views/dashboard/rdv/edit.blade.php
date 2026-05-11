@@ -29,7 +29,9 @@
             <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Client</p>
             <div>
                 <label class="form-label">Changer de client (optionnel)</label>
-                <select name="client_id" class="form-input" x-on:change="fillClientFromSelect($event)">
+                <select name="client_id" class="form-input"
+                        x-on:change="fillClientFromSelect($el)"
+                        x-init="$nextTick(() => { if ($el.value) fillClientFromSelect($el) })">
                     <option value="">— Conserver les informations saisies —</option>
                     @foreach($clients as $c)
                     <option value="{{ $c->id }}"
@@ -106,41 +108,44 @@
                 </template>
             </div>
 
-            {{-- Barre de recherche --}}
-            <div class="relative">
-                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {{-- Barre de recherche + dropdown --}}
+            <div x-data="{ open: false }" @click.outside="open = false" class="relative">
+                <svg class="absolute left-3 top-3.5 w-4 h-4 text-gray-400 pointer-events-none z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
-                <input type="text" x-model="recherche" placeholder="Rechercher une prestation à ajouter…"
-                       class="form-input pl-9 text-sm">
-            </div>
+                <input type="text" x-model="$root.recherche"
+                       @focus="open = true"
+                       @input="open = true"
+                       placeholder="Cliquez pour choisir ou tapez pour rechercher…"
+                       class="form-input pl-9 text-sm"
+                       autocomplete="off">
 
-            {{-- Résultats --}}
-            <div x-show="recherche.length > 0"
-                 class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-52 overflow-y-auto rounded-xl border border-gray-100 dark:border-slate-700 p-2 bg-gray-50/40 dark:bg-slate-800/40">
-                <template x-for="p in prestationsFiltrees" :key="p.id">
-                    <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border cursor-pointer transition-colors"
-                           :class="prestationsIds.includes(String(p.id))
-                               ? 'border-primary-400 bg-primary-50 dark:bg-primary-900/30 dark:border-primary-600'
-                               : 'border-gray-200 dark:border-slate-600 dark:bg-slate-800 hover:border-primary-200 dark:hover:border-primary-700'">
-                        <input type="checkbox"
-                               :checked="prestationsIds.includes(String(p.id))"
-                               @change="togglePrestation(String(p.id), p.duree || 0)"
-                               class="accent-primary-600 w-4 h-4 flex-shrink-0">
-                        <span class="flex-1 min-w-0">
-                            <span class="block text-sm font-medium text-gray-900 dark:text-slate-100 truncate" x-text="p.nom"></span>
-                            <span x-show="p.duree" class="text-xs text-gray-400 dark:text-slate-500" x-text="p.duree + ' min'"></span>
-                        </span>
-                    </label>
-                </template>
-                <p x-show="prestationsFiltrees.length === 0"
-                   class="col-span-2 text-sm text-center text-gray-400 dark:text-slate-500 py-2">
-                    Aucune prestation trouvée.
-                </p>
+                <div x-show="open"
+                     class="absolute z-50 w-full mt-1 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 shadow-xl max-h-56 overflow-y-auto">
+                    <template x-for="p in $root.prestationsFiltrees" :key="p.id">
+                        <label class="flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors border-b border-gray-50 dark:border-slate-700/50 last:border-0"
+                               :class="$root.prestationsIds.includes(String(p.id))
+                                   ? 'bg-primary-50 dark:bg-primary-900/30'
+                                   : 'hover:bg-gray-50 dark:hover:bg-slate-700/40'">
+                            <input type="checkbox"
+                                   :checked="$root.prestationsIds.includes(String(p.id))"
+                                   @change="$root.togglePrestation(String(p.id), p.duree || 0)"
+                                   class="accent-primary-600 w-4 h-4 flex-shrink-0">
+                            <span class="flex-1 min-w-0">
+                                <span class="block text-sm font-medium text-gray-900 dark:text-slate-100" x-text="p.nom"></span>
+                                <span x-show="p.duree" class="text-xs text-gray-400 dark:text-slate-500" x-text="p.duree + ' min'"></span>
+                            </span>
+                            <svg x-show="$root.prestationsIds.includes(String(p.id))"
+                                 class="w-4 h-4 text-primary-500 dark:text-primary-400 flex-shrink-0"
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </label>
+                    </template>
+                    <p x-show="$root.prestationsFiltrees.length === 0"
+                       class="text-sm text-center text-gray-400 dark:text-slate-500 py-3">Aucune prestation trouvée.</p>
+                </div>
             </div>
-            <p x-show="recherche.length === 0" class="text-xs text-gray-400 dark:text-slate-500">
-                Tapez pour rechercher et ajouter une prestation.
-            </p>
             @endif
             <div>
                 <label class="form-label">Prestation libre (texte)</label>
@@ -197,7 +202,6 @@ function rdvForm(prestations, selectedIds, initialDuree) {
         clientTel:   '{{ addslashes($rdv->client_telephone ?? '') }}',
         clientEmail: '{{ addslashes($rdv->client_email ?? '') }}',
         recherche: '',
-        showDropdown: false,
 
         get prestationsFiltrees() {
             if (!this.recherche) return this.prestations;
@@ -229,14 +233,14 @@ function rdvForm(prestations, selectedIds, initialDuree) {
             if (total > 0) this.dureeMinutes = total;
         },
 
-        fillClientFromSelect(event) {
-            const opt = event.target.selectedOptions[0];
-            if (!opt.value) {
+        fillClientFromSelect(el) {
+            if (!el.value) {
                 this.clientNom   = '';
                 this.clientTel   = '';
                 this.clientEmail = '';
                 return;
             }
+            const opt = el.options[el.selectedIndex];
             this.clientNom   = opt.dataset.nom   || '';
             this.clientTel   = opt.dataset.tel   || '';
             this.clientEmail = opt.dataset.email || '';
