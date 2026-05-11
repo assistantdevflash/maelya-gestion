@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('email_campagnes')) {
+            return;
+        }
+
         Schema::create('email_campagnes', function (Blueprint $table) {
             $table->id();
             $table->uuid('envoye_par')->nullable();
