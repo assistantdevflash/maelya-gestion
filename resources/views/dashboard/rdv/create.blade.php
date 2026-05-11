@@ -118,41 +118,41 @@
             </div>
 
             {{-- Barre de recherche + dropdown --}}
-            <div x-data="{ open: false }" @click.outside="open = false" class="relative">
+            <div @click.outside="prestationOpen = false" class="relative">
                 <svg class="absolute left-3 top-3.5 w-4 h-4 text-gray-400 pointer-events-none z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
-                <input type="text" x-model="$root.recherche"
-                       @focus="open = true"
-                       @input="open = true"
+                <input type="text" x-model="recherche"
+                       @focus="prestationOpen = true"
+                       @input="prestationOpen = true"
                        placeholder="Cliquez pour choisir ou tapez pour rechercher…"
                        class="form-input pl-9 text-sm"
                        autocomplete="off">
 
                 {{-- Dropdown --}}
-                <div x-show="open"
+                <div x-show="prestationOpen"
                      class="absolute z-50 w-full mt-1 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 shadow-xl max-h-56 overflow-y-auto">
-                    <template x-for="p in $root.prestationsFiltrees" :key="p.id">
+                    <template x-for="p in prestationsFiltrees" :key="p.id">
                         <label class="flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors border-b border-gray-50 dark:border-slate-700/50 last:border-0"
-                               :class="$root.prestationsIds.includes(String(p.id))
+                               :class="prestationsIds.includes(String(p.id))
                                    ? 'bg-primary-50 dark:bg-primary-900/30'
                                    : 'hover:bg-gray-50 dark:hover:bg-slate-700/40'">
                             <input type="checkbox"
-                                   :checked="$root.prestationsIds.includes(String(p.id))"
-                                   @change="$root.togglePrestation(String(p.id), p.duree || 0)"
+                                   :checked="prestationsIds.includes(String(p.id))"
+                                   @change="togglePrestation(String(p.id), p.duree || 0)"
                                    class="accent-primary-600 w-4 h-4 flex-shrink-0">
                             <span class="flex-1 min-w-0">
                                 <span class="block text-sm font-medium text-gray-900 dark:text-slate-100" x-text="p.nom"></span>
                                 <span x-show="p.duree" class="text-xs text-gray-400 dark:text-slate-500" x-text="p.duree + ' min'"></span>
                             </span>
-                            <svg x-show="$root.prestationsIds.includes(String(p.id))"
+                            <svg x-show="prestationsIds.includes(String(p.id))"
                                  class="w-4 h-4 text-primary-500 dark:text-primary-400 flex-shrink-0"
                                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                             </svg>
                         </label>
                     </template>
-                    <p x-show="$root.prestationsFiltrees.length === 0"
+                    <p x-show="prestationsFiltrees.length === 0"
                        class="text-sm text-center text-gray-400 dark:text-slate-500 py-3">Aucune prestation trouvée.</p>
                 </div>
             </div>
@@ -224,7 +224,7 @@ function rdvForm(prestations, selectedIds) {
         clientTel:   {{ json_encode(old('client_telephone', $clientPreselectionne?->telephone ?? '')) }},
         clientEmail: {{ json_encode(old('client_email', $clientPreselectionne?->email ?? '')) }},
         recherche: '',
-        showDropdown: false,
+        prestationOpen: false,
 
         get prestationsFiltrees() {
             if (!this.recherche) return this.prestations;
