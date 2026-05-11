@@ -85,7 +85,7 @@
         </div>
 
         {{-- PRESTATIONS --}}
-        <div class="card p-5 space-y-3">
+        <div class="card p-5 space-y-3 overflow-visible">
             <p class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Prestations</p>
             @if($prestations->isNotEmpty())
             {{-- Hidden inputs pour la soumission --}}
