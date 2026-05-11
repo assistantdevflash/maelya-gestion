@@ -197,9 +197,10 @@ function rdvForm(prestations, selectedIds, initialDuree) {
         clientTel:   '{{ addslashes($rdv->client_telephone ?? '') }}',
         clientEmail: '{{ addslashes($rdv->client_email ?? '') }}',
         recherche: '',
+        showDropdown: false,
 
         get prestationsFiltrees() {
-            if (!this.recherche) return [];
+            if (!this.recherche) return this.prestations;
             const q = this.recherche.toLowerCase();
             return this.prestations.filter(p => p.nom.toLowerCase().includes(q));
         },
@@ -230,7 +231,12 @@ function rdvForm(prestations, selectedIds, initialDuree) {
 
         fillClientFromSelect(event) {
             const opt = event.target.selectedOptions[0];
-            if (!opt.value) return;
+            if (!opt.value) {
+                this.clientNom   = '';
+                this.clientTel   = '';
+                this.clientEmail = '';
+                return;
+            }
             this.clientNom   = opt.dataset.nom   || '';
             this.clientTel   = opt.dataset.tel   || '';
             this.clientEmail = opt.dataset.email || '';
