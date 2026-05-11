@@ -220,9 +220,9 @@ function rdvForm(prestations, selectedIds) {
         prestations: prestations,
         prestationsIds: (selectedIds || []).map(String),
         dureeMinutes: {{ old('duree_minutes', 30) }},
-        clientNom:   {{ json_encode(old('client_nom', $clientPreselectionne ? $clientPreselectionne->prenom . ' ' . $clientPreselectionne->nom : '')) }},
-        clientTel:   {{ json_encode(old('client_telephone', $clientPreselectionne?->telephone ?? '')) }},
-        clientEmail: {{ json_encode(old('client_email', $clientPreselectionne?->email ?? '')) }},
+        clientNom:   @json(old('client_nom', $clientPreselectionne ? $clientPreselectionne->prenom . ' ' . $clientPreselectionne->nom : '')),
+        clientTel:   @json(old('client_telephone', $clientPreselectionne?->telephone ?? '')),
+        clientEmail: @json(old('client_email', $clientPreselectionne?->email ?? '')),
         recherche: '',
         prestationOpen: false,
 

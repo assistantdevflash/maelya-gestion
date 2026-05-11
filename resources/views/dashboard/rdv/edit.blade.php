@@ -198,9 +198,9 @@ function rdvForm(prestations, selectedIds, initialDuree) {
         prestations: prestations,
         prestationsIds: (selectedIds || []).map(String),
         dureeMinutes: initialDuree,
-        clientNom:   '{{ addslashes($rdv->client_nom) }}',
-        clientTel:   '{{ addslashes($rdv->client_telephone ?? '') }}',
-        clientEmail: '{{ addslashes($rdv->client_email ?? '') }}',
+        clientNom:   @json($rdv->client_nom),
+        clientTel:   @json($rdv->client_telephone ?? ''),
+        clientEmail: @json($rdv->client_email ?? ''),
         recherche: '',
         prestationOpen: false,
 
