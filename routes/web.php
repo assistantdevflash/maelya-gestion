@@ -17,6 +17,7 @@ use App\Http\Controllers\Dashboard\MesInstitutsController;
 use App\Http\Controllers\Dashboard\ParrainageController;
 use App\Http\Controllers\Dashboard\FideliteController;
 use App\Http\Controllers\Dashboard\ProfilController;
+use App\Http\Controllers\Dashboard\RdvController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminInstitutController;
 use App\Http\Controllers\Admin\AdminAbonnementController;
@@ -91,6 +92,18 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
             Route::get('codes-reduction/{codeReduction}/print', [CodeReductionController::class, 'print'])->name('codes-reduction.print');
             Route::patch('codes-reduction/{codeReduction}/toggle', [CodeReductionController::class, 'toggle'])->name('codes-reduction.toggle');
             Route::delete('codes-reduction/{codeReduction}', [CodeReductionController::class, 'destroy'])->name('codes-reduction.destroy');
+        });
+
+        // Rendez-vous (feature: rdv)
+        Route::middleware('feature:rdv')->group(function () {
+            Route::get('rdv', [RdvController::class, 'index'])->name('rdv.index');
+            Route::get('rdv/create', [RdvController::class, 'create'])->name('rdv.create');
+            Route::post('rdv', [RdvController::class, 'store'])->name('rdv.store');
+            Route::get('rdv/{rdv}', [RdvController::class, 'show'])->name('rdv.show');
+            Route::get('rdv/{rdv}/edit', [RdvController::class, 'edit'])->name('rdv.edit');
+            Route::patch('rdv/{rdv}', [RdvController::class, 'update'])->name('rdv.update');
+            Route::post('rdv/{rdv}/annuler', [RdvController::class, 'annuler'])->name('rdv.annuler');
+            Route::post('rdv/{rdv}/terminer', [RdvController::class, 'terminer'])->name('rdv.terminer');
         });
 
         // Clients (feature: clients)

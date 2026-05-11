@@ -74,7 +74,22 @@ class ClientController extends Controller
     public function show(Client $client)
     {
         $ventes = $client->ventes()->with('items')->where('statut', 'validee')->latest()->paginate(20);
-        return view('dashboard.clients.show', compact('client', 'ventes'));
+
+        $rdvAVenir = $client->rendezVous()
+            ->with('prestations')
+            ->where('debut_le', '>=', now())
+            ->whereIn('statut', ['en_attente', 'confirme'])
+            ->orderBy('debut_le')
+            ->get();
+
+        $rdvPasses = $client->rendezVous()
+            ->with('prestations')
+            ->where(fn ($q) => $q->where('debut_le', '<', now())->orWhereIn('statut', ['termine', 'annule']))
+            ->orderByDesc('debut_le')
+            ->take(10)
+            ->get();
+
+        return view('dashboard.clients.show', compact('client', 'ventes', 'rdvAVenir', 'rdvPasses'));
     }
 
     public function update(Request $request, Client $client)

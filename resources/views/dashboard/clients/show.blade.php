@@ -81,13 +81,29 @@
                 </div>
             </div>
 
-            {{-- Historique ventes --}}
-            <div class="lg:col-span-2 card overflow-hidden">
-                <div class="p-5 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="font-semibold text-gray-900 text-sm">🛍️ Historique des achats</h2>
+            {{-- Onglets Achats / Rendez-vous --}}
+            <div class="lg:col-span-2 card overflow-hidden" x-data="{ onglet: 'achats' }">
+                {{-- En-tête onglets --}}
+                <div class="p-3 border-b border-gray-100 flex items-center gap-1 bg-gray-50/60">
+                    <button type="button" x-on:click="onglet = 'achats'"
+                            class="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+                            :class="onglet === 'achats' ? 'bg-white shadow-sm text-primary-700' : 'text-gray-500 hover:text-gray-700'">
+                        🛍️ Achats
+                        <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $ventes->total() }}</span>
+                    </button>
+                    @if(auth()->user()?->aFonctionnalite('rdv'))
+                    <button type="button" x-on:click="onglet = 'rdv'"
+                            class="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+                            :class="onglet === 'rdv' ? 'bg-white shadow-sm text-primary-700' : 'text-gray-500 hover:text-gray-700'">
+                        📅 Rendez-vous
+                        <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $rdvAVenir->count() + $rdvPasses->count() }}</span>
+                    </button>
+                    @endif
                 </div>
-                <div class="divide-y divide-gray-50 max-h-96 overflow-y-auto">
-                    @forelse($client->ventes()->latest()->take(20)->get() as $vente)
+
+                {{-- Onglet Achats --}}
+                <div x-show="onglet === 'achats'" class="divide-y divide-gray-50 max-h-96 overflow-y-auto">
+                    @forelse($ventes as $vente)
                     <div class="px-5 py-3 flex items-center justify-between text-sm">
                         <div>
                             <p class="font-medium text-gray-900">{{ number_format($vente->total, 0, ',', ' ') }} FCFA</p>
@@ -109,6 +125,79 @@
                     <div class="px-5 py-8 text-center text-sm text-gray-400">Aucun achat enregistré.</div>
                     @endforelse
                 </div>
+
+                {{-- Onglet RDV --}}
+                @if(auth()->user()?->aFonctionnalite('rdv'))
+                <div x-show="onglet === 'rdv'" x-cloak class="divide-y divide-gray-50 max-h-96 overflow-y-auto">
+                    @if($rdvAVenir->isNotEmpty())
+                    <div class="px-5 py-2 text-[10px] font-bold uppercase tracking-wider text-primary-600 bg-primary-50/40">
+                        À venir ({{ $rdvAVenir->count() }})
+                    </div>
+                    @foreach($rdvAVenir as $rdv)
+                    <div class="px-5 py-3 flex items-center justify-between text-sm">
+                        <div>
+                            <p class="font-semibold text-gray-900">{{ $rdv->debut_le->translatedFormat('d F Y') }} à {{ $rdv->debut_le->format('H\hi') }}</p>
+                            <p class="text-xs text-gray-400">{{ $rdv->label_prestations }}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            @php $badge = $rdv->statut_badge; @endphp
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold
+                                @switch($badge['color'])
+                                    @case('amber') bg-amber-100 text-amber-700 @break
+                                    @case('blue') bg-blue-100 text-blue-700 @break
+                                    @default bg-gray-100 text-gray-700
+                                @endswitch">{{ $badge['label'] }}</span>
+                            <a href="{{ route('dashboard.rdv.show', $rdv) }}" class="btn-icon text-gray-400">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    @endforeach
+                    @endif
+
+                    @if($rdvPasses->isNotEmpty())
+                    <div class="px-5 py-2 text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-50/60">
+                        Historique
+                    </div>
+                    @foreach($rdvPasses as $rdv)
+                    <div class="px-5 py-3 flex items-center justify-between text-sm opacity-70">
+                        <div>
+                            <p class="font-medium text-gray-700">{{ $rdv->debut_le->translatedFormat('d F Y') }} à {{ $rdv->debut_le->format('H\hi') }}</p>
+                            <p class="text-xs text-gray-400">{{ $rdv->label_prestations }}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            @php $badge = $rdv->statut_badge; @endphp
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold
+                                @switch($badge['color'])
+                                    @case('emerald') bg-emerald-100 text-emerald-700 @break
+                                    @case('red') bg-red-100 text-red-700 @break
+                                    @default bg-gray-100 text-gray-600
+                                @endswitch">{{ $badge['label'] }}</span>
+                            <a href="{{ route('dashboard.rdv.show', $rdv) }}" class="btn-icon text-gray-400">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    @endforeach
+                    @endif
+
+                    @if($rdvAVenir->isEmpty() && $rdvPasses->isEmpty())
+                    <div class="px-5 py-8 text-center text-sm text-gray-400">Aucun rendez-vous enregistré.</div>
+                    @endif
+
+                    <div class="px-5 py-3">
+                        <a href="{{ route('dashboard.rdv.create') }}?client_id={{ $client->id }}"
+                           class="text-xs text-primary-600 hover:underline font-medium">+ Créer un RDV pour ce client</a>
+                    </div>
+                </div>
+                @endif
+
             </div>
         </div>
 

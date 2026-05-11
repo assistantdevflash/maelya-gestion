@@ -72,6 +72,19 @@ class Client extends Model
         return $query->where('actif', true);
     }
 
+    public function rendezVous()
+    {
+        return $this->hasMany(RendezVous::class, 'client_id')->orderBy('debut_le', 'desc');
+    }
+
+    public function prochainRdv()
+    {
+        return $this->hasOne(RendezVous::class, 'client_id')
+                    ->where('debut_le', '>=', now())
+                    ->whereIn('statut', ['en_attente', 'confirme'])
+                    ->orderBy('debut_le', 'asc');
+    }
+
     public function codesReduction()
     {
         return $this->hasMany(CodeReduction::class, 'client_id');

@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 // Expiration quotidienne des abonnements dont la date est dépassée
 Schedule::command('abonnements:expirer')->dailyAt('01:00');
+
+// Rappels J-1 pour les rendez-vous du lendemain
+Schedule::command('rdv:rappels')->dailyAt('08:00');

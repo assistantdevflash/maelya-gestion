@@ -7,13 +7,18 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('super_admin', 'admin', 'employe', 'commercial') DEFAULT 'admin'");
+        // MODIFY COLUMN n'est pas supporté par SQLite (utilisé pour les tests)
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('super_admin', 'admin', 'employe', 'commercial') DEFAULT 'admin'");
+        }
+        // Sur SQLite la colonne est VARCHAR, 'commercial' est déjà accepté sans ENUM
     }
 
     public function down(): void
     {
-        // Retire les commerciaux avant de supprimer la valeur de l'enum
         DB::table('users')->where('role', 'commercial')->update(['role' => 'admin']);
-        DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('super_admin', 'admin', 'employe') DEFAULT 'admin'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('super_admin', 'admin', 'employe') DEFAULT 'admin'");
+        }
     }
 };
