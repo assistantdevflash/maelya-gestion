@@ -57,8 +57,8 @@ class RdvController extends Controller
                            ->orderBy('prenom')
                            ->get();
 
-        $clientPreselectionne = $request->filled('client')
-            ? Client::find($request->get('client'))
+        $clientPreselectionne = $request->filled('client_id')
+            ? Client::find($request->get('client_id'))
             : null;
 
         return view('dashboard.rdv.create', compact('clients', 'prestations', 'employes', 'clientPreselectionne'));

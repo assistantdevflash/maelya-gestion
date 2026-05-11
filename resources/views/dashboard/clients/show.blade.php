@@ -84,17 +84,17 @@
             {{-- Onglets Achats / Rendez-vous --}}
             <div class="lg:col-span-2 card overflow-hidden" x-data="{ onglet: 'achats' }">
                 {{-- En-tête onglets --}}
-                <div class="p-3 border-b border-gray-100 flex items-center gap-1 bg-gray-50/60">
+                <div class="p-3 border-b border-gray-100 dark:border-slate-700 flex items-center gap-1 bg-gray-50/60 dark:bg-slate-800/50">
                     <button type="button" x-on:click="onglet = 'achats'"
                             class="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
-                            :class="onglet === 'achats' ? 'bg-white shadow-sm text-primary-700' : 'text-gray-500 hover:text-gray-700'">
+                            :class="onglet === 'achats' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
                         🛍️ Achats
                         <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $ventes->total() }}</span>
                     </button>
                     @if(auth()->user()?->aFonctionnalite('rdv'))
                     <button type="button" x-on:click="onglet = 'rdv'"
                             class="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
-                            :class="onglet === 'rdv' ? 'bg-white shadow-sm text-primary-700' : 'text-gray-500 hover:text-gray-700'">
+                            :class="onglet === 'rdv' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
                         📅 Rendez-vous
                         <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $rdvAVenir->count() + $rdvPasses->count() }}</span>
                     </button>
@@ -102,7 +102,7 @@
                 </div>
 
                 {{-- Onglet Achats --}}
-                <div x-show="onglet === 'achats'" class="divide-y divide-gray-50 max-h-96 overflow-y-auto">
+                <div x-show="onglet === 'achats'" class="divide-y divide-gray-50 dark:divide-slate-700 max-h-96 overflow-y-auto">
                     @forelse($ventes as $vente)
                     <div class="px-5 py-3 flex items-center justify-between text-sm">
                         <div>
@@ -128,16 +128,16 @@
 
                 {{-- Onglet RDV --}}
                 @if(auth()->user()?->aFonctionnalite('rdv'))
-                <div x-show="onglet === 'rdv'" x-cloak class="divide-y divide-gray-50 max-h-96 overflow-y-auto">
+                <div x-show="onglet === 'rdv'" x-cloak class="divide-y divide-gray-50 dark:divide-slate-700 max-h-96 overflow-y-auto">
                     @if($rdvAVenir->isNotEmpty())
-                    <div class="px-5 py-2 text-[10px] font-bold uppercase tracking-wider text-primary-600 bg-primary-50/40">
+                    <div class="px-5 py-2 text-[10px] font-bold uppercase tracking-wider text-primary-600 dark:text-primary-400 bg-primary-50/40 dark:bg-primary-900/20">
                         À venir ({{ $rdvAVenir->count() }})
                     </div>
                     @foreach($rdvAVenir as $rdv)
                     <div class="px-5 py-3 flex items-center justify-between text-sm">
                         <div>
-                            <p class="font-semibold text-gray-900">{{ $rdv->debut_le->translatedFormat('d F Y') }} à {{ $rdv->debut_le->format('H\hi') }}</p>
-                            <p class="text-xs text-gray-400">{{ $rdv->label_prestations }}</p>
+                            <p class="font-semibold text-gray-900 dark:text-slate-100">{{ $rdv->debut_le->translatedFormat('d F Y') }} à {{ $rdv->debut_le->format('H\hi') }}</p>
+                            <p class="text-xs text-gray-400 dark:text-slate-500">{{ $rdv->label_prestations }}</p>
                         </div>
                         <div class="flex items-center gap-2">
                             @php $badge = $rdv->statut_badge; @endphp
@@ -159,14 +159,14 @@
                     @endif
 
                     @if($rdvPasses->isNotEmpty())
-                    <div class="px-5 py-2 text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-50/60">
+                    <div class="px-5 py-2 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 bg-gray-50/60 dark:bg-slate-800/60">
                         Historique
                     </div>
                     @foreach($rdvPasses as $rdv)
                     <div class="px-5 py-3 flex items-center justify-between text-sm opacity-70">
                         <div>
-                            <p class="font-medium text-gray-700">{{ $rdv->debut_le->translatedFormat('d F Y') }} à {{ $rdv->debut_le->format('H\hi') }}</p>
-                            <p class="text-xs text-gray-400">{{ $rdv->label_prestations }}</p>
+                            <p class="font-medium text-gray-700 dark:text-slate-300">{{ $rdv->debut_le->translatedFormat('d F Y') }} à {{ $rdv->debut_le->format('H\hi') }}</p>
+                            <p class="text-xs text-gray-400 dark:text-slate-500">{{ $rdv->label_prestations }}</p>
                         </div>
                         <div class="flex items-center gap-2">
                             @php $badge = $rdv->statut_badge; @endphp

@@ -12,7 +12,7 @@
     </div>
 
     <form method="POST" action="{{ route('dashboard.rdv.store') }}"
-          x-data="rdvForm({{ $prestations->toJson() }})"
+          x-data="rdvForm({{ $prestations->toJson() }}, @json(old('prestations', [])))"
           class="space-y-4">
         @csrf
 
@@ -36,7 +36,7 @@
                             data-nom="{{ $c->prenom }} {{ $c->nom }}"
                             data-tel="{{ $c->telephone ?? '' }}"
                             data-email="{{ $c->email ?? '' }}"
-                            {{ old('client_id') == $c->id ? 'selected' : '' }}>
+                                    {{ old('client_id') == $c->id || ($clientPreselectionne && $clientPreselectionne->id == $c->id) ? 'selected' : '' }}>
                         {{ $c->prenom }} {{ $c->nom }}
                     </option>
                     @endforeach
@@ -93,27 +93,65 @@
         </div>
 
         {{-- PRESTATIONS --}}
-        <div class="card p-5 space-y-4">
-            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Prestations</p>
+        <div class="card p-5 space-y-3">
+            <p class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Prestations</p>
 
             @if($prestations->isNotEmpty())
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                @foreach($prestations as $p)
-                <label class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors"
-                       :class="prestationsIds.includes('{{ $p->id }}') ? 'border-primary-400 bg-primary-50/50' : 'border-gray-200 hover:border-gray-300'">
-                    <input type="checkbox" name="prestations[]" value="{{ $p->id }}"
-                           class="accent-primary-600 w-4 h-4 flex-shrink-0"
-                           x-on:change="togglePrestation('{{ $p->id }}', {{ $p->duree ?? 0 }})"
-                           {{ in_array($p->id, old('prestations', [])) ? 'checked' : '' }}>
-                    <span class="flex-1 text-sm">
-                        <span class="font-medium text-gray-900">{{ $p->nom }}</span>
-                        @if($p->duree)
-                        <span class="text-xs text-gray-400 block">{{ $p->duree }} min</span>
-                        @endif
+            {{-- Hidden inputs pour la soumission --}}
+            <template x-for="id in prestationsIds" :key="'hi-'+id">
+                <input type="hidden" name="prestations[]" :value="id">
+            </template>
+
+            {{-- Chips des prestations sélectionnées --}}
+            <div x-show="prestationsIds.length > 0" x-cloak class="flex flex-wrap gap-1.5">
+                <template x-for="id in prestationsIds" :key="'chip-'+id">
+                    <span class="inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-full text-xs font-medium bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-700/60">
+                        <span x-text="getPrestationNom(id)"></span>
+                        <button type="button" @click="togglePrestation(id, getPrestationDuree(id))"
+                                class="ml-0.5 p-0.5 rounded-full hover:bg-primary-200 dark:hover:bg-primary-800 transition-colors">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
                     </span>
-                </label>
-                @endforeach
+                </template>
             </div>
+
+            {{-- Barre de recherche --}}
+            <div class="relative">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <input type="text" x-model="recherche" placeholder="Rechercher une prestation à ajouter…"
+                       class="form-input pl-9 text-sm">
+            </div>
+
+            {{-- Résultats de recherche --}}
+            <div x-show="recherche.length > 0"
+                 class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-52 overflow-y-auto rounded-xl border border-gray-100 dark:border-slate-700 p-2 bg-gray-50/40 dark:bg-slate-800/40">
+                <template x-for="p in prestationsFiltrees" :key="p.id">
+                    <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border cursor-pointer transition-colors"
+                           :class="prestationsIds.includes(String(p.id))
+                               ? 'border-primary-400 bg-primary-50 dark:bg-primary-900/30 dark:border-primary-600'
+                               : 'border-gray-200 dark:border-slate-600 dark:bg-slate-800 hover:border-primary-200 dark:hover:border-primary-700'">
+                        <input type="checkbox"
+                               :checked="prestationsIds.includes(String(p.id))"
+                               @change="togglePrestation(String(p.id), p.duree || 0)"
+                               class="accent-primary-600 w-4 h-4 flex-shrink-0">
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-sm font-medium text-gray-900 dark:text-slate-100 truncate" x-text="p.nom"></span>
+                            <span x-show="p.duree" class="text-xs text-gray-400 dark:text-slate-500" x-text="p.duree + ' min'"></span>
+                        </span>
+                    </label>
+                </template>
+                <p x-show="prestationsFiltrees.length === 0"
+                   class="col-span-2 text-sm text-center text-gray-400 dark:text-slate-500 py-2">
+                    Aucune prestation trouvée.
+                </p>
+            </div>
+            <p x-show="recherche.length === 0" class="text-xs text-gray-400 dark:text-slate-500">
+                Tapez pour rechercher et ajouter une prestation.
+            </p>
             @endif
 
             <div>
@@ -173,22 +211,36 @@
 </div>
 
 <script>
-function rdvForm(prestations) {
+function rdvForm(prestations, selectedIds) {
     return {
         prestations: prestations,
-        prestationsIds: @json(old('prestations', [])),
+        prestationsIds: (selectedIds || []).map(String),
         dureeMinutes: {{ old('duree_minutes', 30) }},
-        clientNom: '{{ old('client_nom', '') }}',
-        clientTel: '{{ old('client_telephone', '') }}',
-        clientEmail: '{{ old('client_email', '') }}',
+        clientNom:   {{ json_encode(old('client_nom', $clientPreselectionne ? $clientPreselectionne->prenom . ' ' . $clientPreselectionne->nom : '')) }},
+        clientTel:   {{ json_encode(old('client_telephone', $clientPreselectionne?->telephone ?? '')) }},
+        clientEmail: {{ json_encode(old('client_email', $clientPreselectionne?->email ?? '')) }},
+        recherche: '',
+
+        get prestationsFiltrees() {
+            if (!this.recherche) return [];
+            const q = this.recherche.toLowerCase();
+            return this.prestations.filter(p => p.nom.toLowerCase().includes(q));
+        },
+
+        getPrestationNom(id) {
+            const p = this.prestations.find(p => String(p.id) === String(id));
+            return p ? p.nom : '';
+        },
+
+        getPrestationDuree(id) {
+            const p = this.prestations.find(p => String(p.id) === String(id));
+            return p ? (parseInt(p.duree) || 0) : 0;
+        },
 
         togglePrestation(id, duree) {
-            const idx = this.prestationsIds.indexOf(id);
-            if (idx === -1) {
-                this.prestationsIds.push(id);
-            } else {
-                this.prestationsIds.splice(idx, 1);
-            }
+            const sid = String(id);
+            const idx = this.prestationsIds.indexOf(sid);
+            idx === -1 ? this.prestationsIds.push(sid) : this.prestationsIds.splice(idx, 1);
             this.recalcDuree();
         },
 
