@@ -113,7 +113,7 @@
 
     {{-- Actions --}}
     @if(!in_array($rdv->statut, ['termine', 'annule']))
-    <div class="card p-5" x-data="{ confirmAnnule: false }">
+    <div class="card p-5" x-data="{ confirmAnnule: false, confirmTermine: false }">
         <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Actions</p>
         <div class="flex flex-wrap gap-3">
             <a href="{{ route('dashboard.rdv.edit', $rdv) }}" class="btn-outline">
@@ -124,15 +124,12 @@
             </a>
 
             @if($rdv->statut !== 'termine')
-            <form method="POST" action="{{ route('dashboard.rdv.terminer', $rdv) }}">
-                @csrf
-                <button type="submit" class="btn-primary">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    Marquer terminé
-                </button>
-            </form>
+            <button type="button" x-on:click="confirmTermine = true" class="btn-primary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Marquer terminé
+            </button>
             @endif
 
             <button type="button" x-on:click="confirmAnnule = true"
@@ -142,6 +139,19 @@
                 </svg>
                 Annuler le RDV
             </button>
+        </div>
+
+        {{-- Confirmation terminé --}}
+        <div x-show="confirmTermine" x-cloak
+             class="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-sm">
+            <p class="text-emerald-700 font-medium mb-3">Confirmer que ce rendez-vous est terminé ?</p>
+            <div class="flex gap-3">
+                <form method="POST" action="{{ route('dashboard.rdv.terminer', $rdv) }}">
+                    @csrf
+                    <button type="submit" class="btn-primary">Oui, marquer terminé</button>
+                </form>
+                <button type="button" x-on:click="confirmTermine = false" class="btn-outline">Retour</button>
+            </div>
         </div>
 
         {{-- Confirmation annulation --}}
