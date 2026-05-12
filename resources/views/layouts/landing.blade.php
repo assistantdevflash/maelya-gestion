@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#9333ea">
     <title>{{ isset($title) ? $title . ' — ' : '' }}Maëlya Gestion</title>
-    <meta name="description" content="{{ $metaDescription ?? 'Maëlya Gestion : logiciel de gestion tout-en-un pour instituts de beauté en Côte d\'Ivoire. Caisse, clients, stocks et finances.' }}">
+    <meta name="description" content="{{ $metaDescription ?? 'Maëlya Gestion : logiciel de gestion tout-en-un pour établissements en Côte d\'Ivoire. Caisse, clients, rendez-vous, stocks et finances.' }}">
     @if(!empty($noindex))
     <meta name="robots" content="noindex, nofollow">
     @endif
@@ -23,20 +23,20 @@
     <meta property="og:site_name" content="Maëlya Gestion">
     <meta property="og:locale" content="fr_CI">
     <meta property="og:title" content="{{ isset($title) ? $title . ' — Maëlya Gestion' : 'Maëlya Gestion' }}">
-    <meta property="og:description" content="{{ $metaDescription ?? 'Maëlya Gestion : logiciel de gestion tout-en-un pour instituts de beauté en Côte d\'Ivoire. Caisse, clients, stocks et finances.' }}">
+    <meta property="og:description" content="{{ $metaDescription ?? 'Maëlya Gestion : logiciel de gestion tout-en-un pour établissements en Côte d\'Ivoire. Caisse, clients, rendez-vous, stocks et finances.' }}">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:image" content="{{ asset('og-image.svg') }}">
     <meta property="og:image:type" content="image/svg+xml">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Maëlya Gestion — Logiciel de gestion pour instituts de beauté">
+    <meta property="og:image:alt" content="Maëlya Gestion — Logiciel de gestion pour établissements">
 
     {{-- Twitter Card --}}
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ isset($title) ? $title . ' — Maëlya Gestion' : 'Maëlya Gestion' }}">
-    <meta name="twitter:description" content="{{ $metaDescription ?? 'Maëlya Gestion : logiciel de gestion tout-en-un pour instituts de beauté en Côte d\'Ivoire. Caisse, clients, stocks et finances.' }}">
+    <meta name="twitter:description" content="{{ $metaDescription ?? 'Maëlya Gestion : logiciel de gestion tout-en-un pour établissements en Côte d\'Ivoire. Caisse, clients, rendez-vous, stocks et finances.' }}">
     <meta name="twitter:image" content="{{ asset('og-image.svg') }}">
-    <meta name="twitter:image:alt" content="Maëlya Gestion — Logiciel de gestion pour instituts de beauté">
+    <meta name="twitter:image:alt" content="Maëlya Gestion — Logiciel de gestion pour établissements">
     {{-- Anti-flash : appliquer le thème avant le rendu --}}
     <script>
         (function() {
@@ -89,7 +89,7 @@
         "name": "Maëlya Gestion",
         "url": "{{ url('/') }}",
         "logo": "{{ asset('favicon.svg') }}",
-        "description": "Logiciel de gestion tout-en-un pour instituts de beauté en Côte d'Ivoire.",
+        "description": "Logiciel de gestion tout-en-un pour établissements en Côte d'Ivoire.",
         "address": {
             "@@type": "PostalAddress",
             "addressLocality": "Abidjan",
@@ -290,7 +290,7 @@
                         <span class="font-display font-bold text-white text-lg tracking-tight">Maëlya Gestion</span>
                     </div>
                     <p class="text-sm leading-relaxed max-w-sm mb-6">
-                        La solution de gestion tout-en-un pour les instituts de beauté en Côte d'Ivoire et en Afrique de l'Ouest.
+                        La solution de gestion tout-en-un pour les établissements de beauté et de bien-être en Côte d'Ivoire et en Afrique de l'Ouest.
                     </p>
                 </div>
 

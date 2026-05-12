@@ -21,7 +21,7 @@
             @foreach([
                 ['from-primary-500 to-violet-600', 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', '1. Éditeur du site', '
                     <p>Le site <strong>maelyagestion.com</strong> est édité par la société <strong>Maëlya Tech SARL</strong>,
-                    enregistrée en Côte d'Ivoire, dont le siège social est situé à Abidjan.</p>
+                    enregistrée en Côte d\'Ivoire, dont le siège social est situé à Abidjan.</p>
                     <p class="mt-2">Contact : <strong>contact@maelyagestion.com</strong></p>
                 '],
                 ['from-secondary-500 to-pink-600', 'M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01', '2. Hébergement', '
@@ -30,7 +30,7 @@
                 '],
                 ['from-emerald-500 to-teal-600', 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z', '3. Protection des données personnelles', '
                     <p>Maëlya Gestion collecte des données personnelles nécessaires au fonctionnement du service (nom, email, téléphone,
-                    données de gestion d'établissement). Ces données ne sont <strong>jamais revendues à des tiers</strong>.</p>
+                    données de gestion d\'établissement). Ces données ne sont <strong>jamais revendues à des tiers</strong>.</p>
                     <p class="mt-2">Conformément à la législation applicable, vous disposez d\'un droit d\'accès, de rectification et de suppression
                     de vos données. Pour exercer ce droit, contactez-nous à <strong>contact@maelyagestion.com</strong>.</p>
                 '],
