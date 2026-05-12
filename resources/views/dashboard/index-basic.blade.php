@@ -171,7 +171,7 @@
                 </div>
                 <h3 class="font-display font-bold text-gray-900 dark:text-white">Paramètres</h3>
             </div>
-            <p class="text-sm text-gray-500">Coordonnées de votre institut, logo et informations de contact.</p>
+            <p class="text-sm text-gray-500">Coordonnées de votre établissement, logo et informations de contact.</p>
         </a>
     </div>
     @endif

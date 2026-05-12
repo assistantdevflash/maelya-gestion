@@ -35,7 +35,7 @@
                     Créez votre espace en quelques minutes.
                 </h1>
                 <p class="text-lg text-gray-500 dark:text-gray-400 mt-4">
-                    Configurez votre institut et commencez à gérer vos prestations, ventes et finances.
+                    Configurez votre établissement et commencez à gérer vos rendez-vous, ventes et finances.
                 </p>
             </div>
         </div>
@@ -53,7 +53,7 @@
                         <div class="flex items-center gap-2 flex-1">
                             <div class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold transition-all"
                                  :class="step >= 1 ? 'bg-primary-600 text-white' : 'bg-gray-200 dark:bg-slate-600 text-gray-500 dark:text-gray-400'">1</div>
-                            <span class="text-xs font-medium" :class="step >= 1 ? 'text-primary-700 dark:text-primary-400' : 'text-gray-400'">Votre Institut</span>
+                            <span class="text-xs font-medium" :class="step >= 1 ? 'text-primary-700 dark:text-primary-400' : 'text-gray-400'">Votre Établissement</span>
                         </div>
                         <div class="flex-1 h-0.5 rounded transition-colors" :class="step >= 2 ? 'bg-primary-400' : 'bg-gray-200 dark:bg-slate-600'"></div>
                         <div class="flex items-center gap-2 flex-1 justify-end">
@@ -74,8 +74,8 @@
                              x-transition:leave="transition ease-in duration-200"
                              x-transition:leave-start="opacity-100 translate-x-0"
                              x-transition:leave-end="opacity-0 -translate-x-4">
-                            <h2 class="text-2xl font-display font-bold text-gray-900 dark:text-white text-center">Votre Institut</h2>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 text-center mt-1 mb-6">Dites-nous en plus sur votre salon.</p>
+                            <h2 class="text-2xl font-display font-bold text-gray-900 dark:text-white text-center">Votre Établissement</h2>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 text-center mt-1 mb-6">Dites-nous en plus sur votre établissement.</p>
 
                             @if($errors->hasAny(['nom_institut','type_institut','ville','telephone_institut']))
                                 <div class="alert-danger mb-4 text-sm">
@@ -89,7 +89,7 @@
 
                             <div class="space-y-4">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nom de l'institut *</label>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nom de l'établissement *</label>
                                     <input type="text" name="nom_institut" required maxlength="150"
                                            value="{{ old('nom_institut') }}"
                                            class="w-full px-4 py-3.5 rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white text-base placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900 transition-all @error('nom_institut') border-red-400 @enderror"
@@ -152,7 +152,7 @@
                              x-transition:leave-start="opacity-100 translate-x-0"
                              x-transition:leave-end="opacity-0 translate-x-4">
                             <h2 class="text-2xl font-display font-bold text-gray-900 dark:text-white text-center">Votre Compte</h2>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 text-center mt-1 mb-6">Ce compte vous permettra de gérer votre institut.</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 text-center mt-1 mb-6">Ce compte vous permettra de gérer votre établissement.</p>
 
                             @if($errors->hasAny(['prenom','nom_famille','email','telephone','password','cgu']))
                                 <div class="alert-danger mb-4 text-sm">

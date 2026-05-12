@@ -32,10 +32,10 @@
                     <span class="text-2xl font-display font-bold text-gray-900 dark:text-white tracking-tight">Maëlya Gestion</span>
                 </a>
                 <h1 class="text-3xl lg:text-4xl font-display font-bold text-gray-900 dark:text-white leading-tight">
-                    Gérez votre institut de beauté en toute simplicité.
+                    Gérez votre établissement en toute simplicité.
                 </h1>
                 <p class="text-lg text-gray-500 dark:text-gray-400 mt-4">
-                    Prestations, caisse, stocks, finances — tout dans un seul espace.
+                    Rendez-vous, caisse, clients, stocks — tout dans un seul espace.
                 </p>
             </div>
         </div>

@@ -5,7 +5,7 @@
 <div class="space-y-6">
     <div>
         <h1 class="page-title">Plateforme Maëlya Gestion</h1>
-        <p class="page-subtitle">Vue globale des instituts, abonnements et revenus.</p>
+        <p class="page-subtitle">Vue globale des établissements, abonnements et revenus.</p>
     </div>
 
     {{-- Alerte demandes en attente --}}
@@ -31,7 +31,7 @@
                 </div>
             </div>
             <p class="text-2xl font-bold text-gray-900">{{ $totalInstituts }}</p>
-            <p class="text-xs text-gray-500 mt-1">Instituts inscrits</p>
+            <p class="text-xs text-gray-500 mt-1">Établissements inscrits</p>
         </div>
         <div class="stat-card">
             <div class="flex items-center gap-3 mb-3">
@@ -148,13 +148,13 @@
     {{-- Derniers instituts --}}
     <div class="card overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 class="font-bold text-gray-900 text-sm">Derniers instituts inscrits</h2>
+            <h2 class="font-bold text-gray-900 text-sm">Derniers établissements inscrits</h2>
             <a href="{{ route('admin.instituts.index') }}" class="text-xs text-primary-600 hover:underline">Voir tout →</a>
         </div>
         <table class="table-auto">
             <thead>
             <tr>
-                <th>Institut</th>
+                <th>Établissement</th>
                 <th>Ville</th>
                 <th>Abonnement</th>
                 <th>Statut</th>

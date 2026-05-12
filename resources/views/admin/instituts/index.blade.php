@@ -1,12 +1,12 @@
 @extends('layouts.admin')
-@section('page-title', 'Instituts')
+@section('page-title', 'Établissements')
 
 @section('content')
 <div class="space-y-6">
 
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="page-title">Instituts</h1>
+            <h1 class="page-title">Établissements</h1>
             <p class="page-subtitle">{{ $paginator->total() }} inscrits au total</p>
         </div>
     </div>
@@ -72,7 +72,7 @@
         <table class="table-auto w-full">
             <thead>
             <tr>
-                <th>Institut</th>
+                <th>Établissement</th>
                 <th class="hidden sm:table-cell">Type</th>
                 <th class="hidden sm:table-cell">Ville</th>
                 <th>Statut</th>
@@ -111,7 +111,7 @@
         </div>
     </div>
     @empty
-    <div class="card p-10 text-center text-gray-400">Aucun institut trouvé.</div>
+    <div class="card p-10 text-center text-gray-400">Aucun établissement trouvé.</div>
     @endforelse
 
     {{ $paginator->withQueryString()->links() }}

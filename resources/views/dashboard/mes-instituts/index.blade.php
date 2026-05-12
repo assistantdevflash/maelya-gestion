@@ -4,10 +4,10 @@
         {{-- En-tête --}}
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <h1 class="text-2xl font-display font-bold text-gray-900 tracking-tight">Mes instituts</h1>
+                <h1 class="text-2xl font-display font-bold text-gray-900 tracking-tight">Mes établissements</h1>
                 <p class="text-sm text-gray-500 mt-1">
                     @if($maxInstituts === null)
-                        Plan Premium+ — instituts illimités
+                        Plan Premium+ — établissements illimités
                     @else
                         {{ $instituts->count() }} / {{ $maxInstituts }} institut{{ $maxInstituts > 1 ? 's' : '' }}
                     @endif
@@ -18,7 +18,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                 </svg>
-                Créer un institut
+                Créer un établissement
             </button>
             @endif
         </div>
@@ -43,8 +43,8 @@
                 </svg>
             </div>
             <div class="flex-1">
-                <p class="text-sm font-semibold text-gray-900">Passez au plan Premium+ pour plusieurs instituts</p>
-                <p class="text-xs text-gray-500 mt-0.5">Votre plan actuel autorise {{ $maxInstituts }} institut. Le plan Premium+ permet des instituts illimités avec employés illimités.</p>
+                <p class="text-sm font-semibold text-gray-900">Passez au plan Premium+ pour plusieurs établissements</p>
+                <p class="text-xs text-gray-500 mt-0.5">Votre plan actuel autorise {{ $maxInstituts }} établissement. Le plan Premium+ permet des établissements illimités avec employés illimités.</p>
             </div>
             <a href="{{ route('abonnement.plans') }}" class="btn-primary text-sm flex-shrink-0">Voir les plans</a>
         </div>
@@ -62,12 +62,12 @@
                 </div>
                 <div class="flex-1">
                     <div class="flex items-center gap-2 mb-1">
-                        <p class="font-bold text-gray-900">Gérez plusieurs instituts depuis un seul compte</p>
+                        <p class="font-bold text-gray-900">Gérez plusieurs établissements depuis un seul compte</p>
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white flex-shrink-0"
                               style="background: linear-gradient(135deg, #9333ea, #ec4899);">Premium+</span>
                     </div>
                     <p class="text-sm text-gray-500 mb-3">
-                        Votre plan Premium+ vous permet de créer autant d'instituts que vous souhaitez. Chaque institut a ses propres clients, stock, ventes et employés indépendants.
+                        Votre plan Premium+ vous permet de créer autant d'établissements que vous souhaitez. Chaque établissement a ses propres clients, stock, ventes et employés indépendants.
                     </p>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div class="flex items-center gap-2">
@@ -76,7 +76,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                                 </svg>
                             </div>
-                            <p class="text-xs text-gray-600">Basculer entre instituts</p>
+                            <p class="text-xs text-gray-600">Basculer entre établissements</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <div class="w-6 h-6 rounded-lg bg-pink-100 flex items-center justify-center flex-shrink-0">
@@ -84,7 +84,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                                 </svg>
                             </div>
-                            <p class="text-xs text-gray-600">Données séparées par institut</p>
+                            <p class="text-xs text-gray-600">Données séparées par établissement</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <div class="w-6 h-6 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
@@ -92,7 +92,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 </svg>
                             </div>
-                            <p class="text-xs text-gray-600">Employés illimités par institut</p>
+                            <p class="text-xs text-gray-600">Employés illimités par établissement</p>
                         </div>
                     </div>
                 </div>
@@ -102,7 +102,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                     </svg>
-                    Créer un 2<sup>e</sup> institut
+                    Créer un 2<sup>e</sup> établissement
                 </button>
             </div>
         </div>
@@ -199,7 +199,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    Institut en cours de gestion
+                    Établissement en cours de gestion
                 </div>
                 @else
                 <form method="POST" action="{{ route('dashboard.mes-instituts.switch', $institut) }}">
@@ -208,7 +208,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                         </svg>
-                        Gérer cet institut
+                        Gérer cet établissement
                     </button>
                 </form>
                 @endif
@@ -237,7 +237,7 @@
                                 @method('PUT')
                                 <div class="grid grid-cols-2 gap-3">
                                     <div class="col-span-2 form-group mb-0">
-                                        <label class="form-label">Nom de l'institut *</label>
+                                        <label class="form-label">Nom de l'établissement *</label>
                                         <input type="text" name="nom" required maxlength="100" class="form-input"
                                                x-model="form.nom">
                                     </div>
@@ -299,7 +299,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                         </svg>
                     </div>
-                    <h3 class="modal-title">Créer un nouvel institut</h3>
+                    <h3 class="modal-title">Créer un nouvel établissement</h3>
                 </div>
                 <button @click="show = false" class="btn-icon">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -317,7 +317,7 @@
                     @csrf
                     <div class="grid grid-cols-2 gap-3">
                         <div class="col-span-2 form-group mb-0">
-                            <label class="form-label">Nom de l'institut *</label>
+                            <label class="form-label">Nom de l'établissement *</label>
                             <input type="text" name="nom" required maxlength="100" class="form-input"
                                    placeholder="Ex: Maëlya Cocody" value="{{ old('nom') }}">
                         </div>
@@ -354,10 +354,10 @@
                             </select>
                         </div>
                     </div>
-                    <p class="text-xs text-gray-400">Le nouvel institut sera automatiquement activé et vous basculerez dessus.</p>
+                    <p class="text-xs text-gray-400">Le nouvel établissement sera automatiquement activé et vous basculerez dessus.</p>
                     <div class="flex gap-3 pt-1">
                         <button type="button" @click="show = false" class="btn btn-outline flex-1 justify-center">Annuler</button>
-                        <button type="submit" class="btn-primary flex-1 justify-center">Créer l'institut</button>
+                        <button type="submit" class="btn-primary flex-1 justify-center">Créer l'établissement</button>
                     </div>
                 </form>
             </div>

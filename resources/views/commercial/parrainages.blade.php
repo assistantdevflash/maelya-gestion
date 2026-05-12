@@ -4,7 +4,7 @@
 @section('content')
 <div class="mb-6">
     <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Mes parrainages</h1>
-    <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Instituts inscrits via votre code <span class="font-mono font-bold text-primary-600">{{ $profil->code }}</span></p>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Établissements inscrits via votre code <span class="font-mono font-bold text-primary-600">{{ $profil->code }}</span></p>
 </div>
 
 <div class="card overflow-hidden">
@@ -17,7 +17,7 @@
     <table class="table-auto">
         <thead>
         <tr>
-            <th>Institut</th>
+            <th>Établissement</th>
             <th class="hidden md:table-cell">Propriétaire</th>
             <th class="hidden md:table-cell">Commission générée</th>
             <th>Expire le</th>

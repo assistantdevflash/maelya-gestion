@@ -66,7 +66,7 @@
     {{-- Header --}}
     <div class="header">
         <div class="header-logo">Maëlya <span>Gestion</span></div>
-        <div class="header-tagline">La plateforme de gestion des instituts de beauté</div>
+        <div class="header-tagline">La plateforme de gestion des établissements</div>
         <div class="header-welcome">
             <p>🎉 Bienvenue, {{ $user->prenom ?: $user->name }} !</p>
             <small>Votre espace est prêt. Commencez dès maintenant.</small>
@@ -77,7 +77,7 @@
 
         <p class="intro">
             Votre compte <strong>{{ config('app.name') }}</strong> vient d'être créé avec succès.<br><br>
-            Vous avez désormais accès à une suite d'outils conçus spécialement pour les instituts de beauté : gérez vos ventes, vos clients, vos stocks et bien plus — depuis un seul tableau de bord.
+            Vous avez désormais accès à une suite d'outils conçus pour les professionnels : gérez vos rendez-vous, vos ventes, vos clients, vos stocks et bien plus — depuis un seul tableau de bord.
         </p>
 
         {{-- Fonctionnalités --}}
@@ -89,8 +89,13 @@
                     <h4>Caisse enregistreuse</h4>
                     <p>Enregistrez vos ventes en quelques secondes — prestations, produits, paiements mixtes (espèces, carte, mobile money).</p>
                 </div>
-            </div>
-            <div class="feature">
+            </div>                <div class="feature">
+                <div class="feature-icon purple">📅</div>
+                <div class="feature-text">
+                    <h4>Agenda & Rendez-vous</h4>
+                    <p>Gérez votre planning, confirmez les RDV et envoyez des rappels automatiques à vos clients par email.</p>
+                </div>
+            </div>            <div class="feature">
                 <div class="feature-icon pink">👥</div>
                 <div class="feature-text">
                     <h4>Gestion des clients</h4>
@@ -125,7 +130,7 @@
         <div class="steps">
             <div class="step">
                 <div class="step-num">1</div>
-                <p>Complétez <strong>le profil de votre institut</strong> (nom, adresse, logo) depuis "Mes Instituts".</p>
+                <p>Complétez <strong>le profil de votre établissement</strong> (nom, adresse, logo) depuis “Mon Établissement”.</p>
             </div>
             <div class="step">
                 <div class="step-num">2</div>

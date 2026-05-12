@@ -53,7 +53,7 @@
         <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
             Vous touchez <strong class="text-gray-600 dark:text-gray-300">{{ $config->taux }}%</strong> de commission
             pendant <strong class="text-gray-600 dark:text-gray-300">{{ $config->duree_mois }} mois</strong>
-            sur chaque abonnement payant des instituts que vous parrainez.
+            sur chaque abonnement payant des établissements que vous parrainez.
         </p>
         @endif
     </div>

@@ -146,7 +146,7 @@
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 Fonctionnalités
             </div>
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">Tout ce dont votre institut a besoin</h2>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">Tout ce dont votre établissement a besoin</h2>
             <p class="text-lg text-gray-500 dark:text-gray-400 mt-4 max-w-2xl mx-auto leading-relaxed">Plus besoin de cahiers ou de tableurs. Gérez tout depuis votre téléphone.</p>
         </div>
 
@@ -157,7 +157,8 @@
                 ['from-emerald-500 to-teal-600', 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4', 'Stock & Alertes', 'Suivez vos produits en temps réel. Alertes automatiques quand vous manquez de stock.'],
                 ['from-amber-500 to-orange-600', 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', 'Rapports financiers', 'Visualisez vos revenus, dépenses et bénéfices par jour, semaine ou mois.'],
                 ['from-blue-500 to-indigo-600', 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'Multi-employés', 'Ajoutez vos employés avec des accès limités. Chaque membre se connecte avec ses identifiants.'],
-                ['from-rose-500 to-red-500', 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z', 'Accessible partout', 'Interface pensée mobile-first. Gérez votre institut depuis n\'importe où.'],
+                ['from-violet-500 to-purple-600', 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'Agenda & Rendez-vous', 'Gérez vos rendez-vous en ligne avec confirmations et rappels automatiques envoyés à vos clients.'],
+                ['from-rose-500 to-red-500', 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z', 'Accessible partout', 'Interface mobile-first. Gérez votre établissement depuis n\'importe où, à tout moment.'],
             ] as [$gradient, $icon, $title, $desc])
                 <div class="group relative bg-white/70 dark:bg-gray-800 rounded-2xl p-5 sm:p-7 shadow-sm border border-primary-100/60 dark:border-gray-700 hover:shadow-xl hover:shadow-primary-200/30 hover:-translate-y-1 transition-all duration-500">
                     <div class="w-12 h-12 bg-gradient-to-br {{ $gradient }} rounded-2xl flex items-center justify-center mb-5 shadow-lg shadow-gray-200/50 group-hover:scale-110 transition-transform duration-300">
@@ -181,8 +182,8 @@
 
         <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
             @foreach([
-                ['1', 'from-primary-500 to-primary-600', 'Créez votre compte', 'Inscrivez-vous gratuitement avec votre nom, email et les infos de votre institut.'],
-                ['2', 'from-secondary-500 to-secondary-600', 'Configurez votre institut', 'Ajoutez vos prestations, vos produits et invitez votre équipe.'],
+                ['1', 'from-primary-500 to-primary-600', 'Créez votre compte', 'Inscrivez-vous gratuitement avec votre nom, email et les infos de votre établissement.'],
+                ['2', 'from-secondary-500 to-secondary-600', 'Configurez votre établissement', 'Ajoutez vos prestations, vos rendez-vous, vos produits et invitez votre équipe.'],
                 ['3', 'from-emerald-500 to-emerald-600', 'Gérez au quotidien', 'Encaissez, suivez vos clients, consultez vos rapports. Tout est fluide.'],
             ] as [$num, $gradient, $title, $desc])
                 <div class="relative text-center group">
@@ -254,7 +255,7 @@
                             @php
                                 if ($plan->slug === 'basic') {
                                     $features = [
-                                        $plan->max_instituts === null ? 'Instituts illimités' : $plan->max_instituts . ' institut',
+                                        $plan->max_instituts === null ? 'Établissements illimités' : $plan->max_instituts . ' établissement',
                                         $plan->max_employes === null ? 'Employés illimités' : $plan->max_employes . ' employé(s)',
                                         'Caisse simple',
                                         'Catalogue prestations',
@@ -262,9 +263,9 @@
                                     ];
                                 } else {
                                     $features = [
-                                        $plan->max_instituts === null ? 'Instituts illimités' : $plan->max_instituts . ' institut',
+                                        $plan->max_instituts === null ? 'Établissements illimités' : $plan->max_instituts . ' établissement',
                                         $plan->max_employes === null ? 'Employés illimités' : $plan->max_employes . ' employé(s)',
-                                        'Caisse illimitée', 'Gestion stock & clients', 'Rapports financiers',
+                                        'Caisse illimitée', 'Agenda & Rendez-vous', 'Gestion stock & clients', 'Rapports financiers',
                                     ];
                                     if ($plan->mis_en_avant) $features[] = 'Support prioritaire';
                                 }
@@ -339,7 +340,7 @@
 
     <div class="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">
         <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-6 leading-tight">
-            Prêt(e) à transformer la gestion de votre institut ?
+            Prêt(e) à transformer la gestion de votre établissement ?
         </h2>
         <p class="text-white/70 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
             Rejoignez plus de 500 professionnels qui font confiance à Maëlya Gestion. Essai gratuit de 14 jours, sans engagement.

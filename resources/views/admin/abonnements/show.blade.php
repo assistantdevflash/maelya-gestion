@@ -84,7 +84,7 @@
                         <p class="text-gray-500">{{ $abonnement->user->email }}</p>
                         <p class="text-gray-500">{{ $abonnement->user->telephone ?? '' }}</p>
                         @if($abonnement->user->institut)
-                        <p class="text-gray-500">Institut : <strong>{{ $abonnement->user->institut->nom }}</strong> ({{ $abonnement->user->institut->ville ?? '' }})</p>
+                        <p class="text-gray-500">Établissement : <strong>{{ $abonnement->user->institut->nom }}</strong> ({{ $abonnement->user->institut->ville ?? '' }})</p>
                         @endif
                     </div>
                 @else

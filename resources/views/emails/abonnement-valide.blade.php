@@ -124,7 +124,7 @@
                             <tr>
                                 <td>
                                     <p style="font-size:18px;font-weight:800;color:#fff;margin:0 0 3px;">{{ config('app.name') }}</p>
-                                    <p style="font-size:11px;color:rgba(255,255,255,0.8);margin:0;">Logiciel de gestion pour instituts</p>
+                                    <p style="font-size:11px;color:rgba(255,255,255,0.8);margin:0;">Logiciel de gestion d'établissements</p>
                                 </td>
                                 <td align="right">
                                     <p style="font-size:10px;color:rgba(255,255,255,0.75);text-transform:uppercase;letter-spacing:0.08em;margin:0 0 3px;">Facture</p>

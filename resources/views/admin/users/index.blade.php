@@ -32,7 +32,7 @@
             <tr>
                 <th>Utilisateur</th>
                 <th>Rôle</th>
-                <th>Institut</th>
+                <th>Établissement</th>
                 <th>Téléphone</th>
                 <th>Inscrit le</th>
                 <th>Statut</th>

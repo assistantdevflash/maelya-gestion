@@ -92,7 +92,7 @@
                         {{ strtoupper(substr($__sidebarCurrentInst?->nom ?? 'M', 0, 1)) }}
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="font-display font-bold text-gray-900 dark:text-white text-sm leading-tight tracking-tight truncate">{{ $__sidebarCurrentInst?->nom ?? 'Mon Institut' }}</p>
+                        <p class="font-display font-bold text-gray-900 dark:text-white text-sm leading-tight tracking-tight truncate">{{ $__sidebarCurrentInst?->nom ?? 'Mon Établissement' }}</p>
                         @if($__sidebarCurrentInst?->ville)
                         <p class="text-[11px] text-gray-400 truncate">{{ $__sidebarCurrentInst->ville }}</p>
                         @else
@@ -126,7 +126,7 @@
 
                     {{-- Header du dropdown --}}
                     <div class="px-4 pt-3 pb-1.5">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">Vos instituts ({{ $__sidebarNbInstituts }})</p>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">Vos établissements ({{ $__sidebarNbInstituts }})</p>
                     </div>
 
                     {{-- Liste des instituts --}}
@@ -174,7 +174,7 @@
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
-                            {{ $__sidebarNbInstituts > 1 ? 'Gérer mes instituts' : 'Gérer mon institut' }}
+                            {{ $__sidebarNbInstituts > 1 ? 'Gérer mes établissements' : 'Gérer mon établissement' }}
                         </a>
                         @if($__sidebarUser->aPlanEntreprise())
                         <a href="{{ route('dashboard.mes-instituts.index') }}"
@@ -185,7 +185,7 @@
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                             </svg>
-                            Ajouter un institut
+                            Ajouter un établissement
                         </a>
                         @endif
                     </div>
@@ -217,7 +217,7 @@
 
                 {{-- ── MON INSTITUT (admin) ─────────────────────────────────── --}}
                 @if(auth()->user()->isAdmin())
-                <p class="px-3 mt-14 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">Mon institut</p>
+                <p class="px-3 mt-14 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">Mon établissement</p>
 
                 <a href="{{ route('dashboard.mes-instituts.index') }}"
                    class="sidebar-link {{ request()->routeIs('dashboard.mes-instituts.*') ? 'active' : '' }}">

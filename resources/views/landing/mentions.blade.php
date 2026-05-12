@@ -30,7 +30,7 @@
                 '],
                 ['from-emerald-500 to-teal-600', 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z', '3. Protection des données personnelles', '
                     <p>Maëlya Gestion collecte des données personnelles nécessaires au fonctionnement du service (nom, email, téléphone,
-                    données de gestion d\'institut). Ces données ne sont <strong>jamais revendues à des tiers</strong>.</p>
+                    données de gestion d'établissement). Ces données ne sont <strong>jamais revendues à des tiers</strong>.</p>
                     <p class="mt-2">Conformément à la législation applicable, vous disposez d\'un droit d\'accès, de rectification et de suppression
                     de vos données. Pour exercer ce droit, contactez-nous à <strong>contact@maelyagestion.com</strong>.</p>
                 '],
