@@ -213,6 +213,88 @@
                 </form>
                 @endif
 
+                {{-- ── Vitrine publique & QR Code ── --}}
+                @php $vitrineUrl = route('vitrine.show', $institut->slug); @endphp
+                <div class="mt-3 border-t border-gray-100 dark:border-gray-700 pt-3 space-y-2">
+
+                    {{-- Toggle vitrine --}}
+                    <div class="flex items-center justify-between gap-3 px-1">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/>
+                            </svg>
+                            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Page publique</span>
+                            @if($institut->vitrine_active)
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">En ligne</span>
+                            @else
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-gray-100 dark:bg-gray-700 text-gray-500">Hors ligne</span>
+                            @endif
+                        </div>
+                        <form method="POST" action="{{ route('dashboard.mes-instituts.vitrine', $institut) }}">
+                            @csrf @method('PATCH')
+                            <button type="submit"
+                                    class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none {{ $institut->vitrine_active ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-600' }}"
+                                    title="{{ $institut->vitrine_active ? 'Désactiver' : 'Activer' }} la page publique">
+                                <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $institut->vitrine_active ? 'translate-x-4' : 'translate-x-0' }}"></span>
+                            </button>
+                        </form>
+                    </div>
+
+                    {{-- Lien + QR si active --}}
+                    @if($institut->vitrine_active)
+                    <div x-data="{ qrOpen: false }">
+                        <div class="flex items-center gap-2">
+                            <a href="{{ $vitrineUrl }}" target="_blank"
+                               class="flex-1 truncate text-xs text-primary-600 hover:underline font-medium">
+                                {{ $vitrineUrl }}
+                            </a>
+                            <button @click="qrOpen = !qrOpen"
+                                    class="flex-shrink-0 inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/><path d="M14 14h2v2h-2zM18 14h3v2h-3zM14 18h2v3h-2zM18 18h3v3h-3z" stroke-width="0" fill="currentColor"/>
+                                </svg>
+                                QR Code
+                            </button>
+                        </div>
+
+                        {{-- Panneau QR Code --}}
+                        <div x-show="qrOpen" x-cloak
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             class="mt-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 text-center">
+                            <p class="text-xs text-gray-500 mb-3">Scannez pour accéder à la vitrine</p>
+                            {{-- QR Code via API Google Charts (simple, fiable, pas de package) --}}
+                            <img id="qr-{{ $institut->id }}"
+                                 src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ urlencode($vitrineUrl) }}&bgcolor=ffffff&color=1a1a1a&margin=10"
+                                 alt="QR Code {{ $institut->nom }}"
+                                 class="mx-auto rounded-xl shadow-md w-40 h-40 object-contain">
+                            <div class="mt-3 flex items-center justify-center gap-2">
+                                <a href="{{ $vitrineUrl }}" target="_blank"
+                                   class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                    </svg>
+                                    Voir la page
+                                </a>
+                                <a href="https://api.qrserver.com/v1/create-qr-code/?size=600x600&data={{ urlencode($vitrineUrl) }}&bgcolor=ffffff&color=1a1a1a&margin=20"
+                                   download="qr-{{ Str::slug($institut->nom) }}.png"
+                                   target="_blank"
+                                   class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg text-white transition-colors"
+                                   style="background: linear-gradient(135deg, #9333ea, #ec4899);">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                    </svg>
+                                    Télécharger
+                                </a>
+                            </div>
+                            <p class="text-[10px] text-gray-400 mt-2">Imprimez et affichez ce QR code dans votre établissement</p>
+                        </div>
+                    </div>
+                    @endif
+
+                </div>
+
                 {{-- ═══ Modal édition fiche ═══ --}}
                 <div x-show="editOpen" x-cloak class="modal-backdrop" @keydown.escape.window="editOpen = false" @click.self="editOpen = false">
                     <div class="modal max-w-md" x-transition @click.stop>

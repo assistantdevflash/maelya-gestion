@@ -98,6 +98,21 @@ class MesInstitutsController extends Controller
             ->with('success', "Fiche de \"" . $data['nom'] . "\" mise à jour.");
     }
 
+    public function toggleVitrine(Institut $institut)
+    {
+        $user = Auth::user();
+        $aAcces = $institut->proprietaire_id === $user->id || $user->institut_id === $institut->id;
+        abort_unless($aAcces, 403, 'Accès refusé.');
+
+        $institut->update(['vitrine_active' => !$institut->vitrine_active]);
+
+        $msg = $institut->vitrine_active
+            ? "Vitrine publique activée pour \"{$institut->nom}\"."
+            : "Vitrine publique désactivée pour \"{$institut->nom}\".";
+
+        return redirect()->route('dashboard.mes-instituts.index')->with('success', $msg);
+    }
+
     public function switch(Institut $institut)
     {
         $user = Auth::user();

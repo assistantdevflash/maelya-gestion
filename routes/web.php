@@ -34,6 +34,7 @@ use App\Http\Controllers\Admin\AdminPushDebugController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\Commercial\CommercialController;
 use App\Http\Controllers\Auth\InscriptionController;
+use App\Http\Controllers\VitrineController;
 use Illuminate\Support\Facades\Route;
 
 // ─── Landing Page ─────────────────────────────────────────────────────────────
@@ -50,6 +51,9 @@ Route::get('/contact', [LandingController::class, 'contact'])->name('contact');
 Route::post('/contact', [LandingController::class, 'sendContact'])->name('contact.send')->middleware('throttle:contact');
 Route::get('/mentions-legales', [LandingController::class, 'mentionsLegales'])->name('mentions');
 Route::get('/sitemap.xml', [LandingController::class, 'sitemap'])->name('sitemap');
+
+// ─── Vitrine publique des établissements ──────────────────────────────────────
+Route::get('/e/{slug}', [VitrineController::class, 'show'])->name('vitrine.show');
 
 // ─── Inscription personnalisée (remplace Breeze) ─────────────────────────────
 Route::middleware('guest')->group(function () {
@@ -148,6 +152,7 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         // Mes instituts : paramètres OK pour tous, création/switch = multi_instituts
         Route::get('mes-instituts', [MesInstitutsController::class, 'index'])->name('mes-instituts.index');
         Route::put('mes-instituts/{institut}', [MesInstitutsController::class, 'update'])->name('mes-instituts.update');
+        Route::patch('mes-instituts/{institut}/vitrine', [MesInstitutsController::class, 'toggleVitrine'])->name('mes-instituts.vitrine');
         Route::middleware('feature:multi_instituts')->group(function () {
             Route::post('mes-instituts', [MesInstitutsController::class, 'store'])->name('mes-instituts.store');
             Route::post('mes-instituts/{institut}/switch', [MesInstitutsController::class, 'switch'])->name('mes-instituts.switch');

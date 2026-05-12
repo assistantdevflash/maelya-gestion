@@ -13,11 +13,12 @@ class Institut extends Model
     protected $table = 'instituts';
 
     protected $fillable = [
-        'nom', 'slug', 'email', 'telephone', 'ville', 'type', 'logo', 'actif',
+        'nom', 'slug', 'email', 'telephone', 'ville', 'type', 'logo', 'actif', 'vitrine_active',
     ];
 
     protected $casts = [
         'actif' => 'boolean',
+        'vitrine_active' => 'boolean',
     ];
 
     protected static function boot(): void
