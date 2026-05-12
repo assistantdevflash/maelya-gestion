@@ -243,6 +243,20 @@
                     @endif
                 </a>
 
+                <a href="{{ $featureHref('rdv', route('dashboard.rdv.index')) }}"
+                   class="sidebar-link {{ request()->routeIs('dashboard.rdv.*') ? 'active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <rect x="3" y="4" width="18" height="18" rx="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    Rendez-vous
+                    @if(!$featureHas('rdv'))
+                        <svg class="ml-auto w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1a5 5 0 00-5 5v4H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2v-9a2 2 0 00-2-2h-2V6a5 5 0 00-5-5zm-3 9V6a3 3 0 016 0v4H9z"/></svg>
+                    @endif
+                </a>
+
                 <a href="{{ route('dashboard.prestations.index') }}"
                    class="sidebar-link {{ request()->routeIs('dashboard.prestations.*') || request()->routeIs('dashboard.categories-prestations.*') ? 'active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -263,22 +277,6 @@
                     </svg>
                     Caisse
                 </a>
-
-                @if(auth()->user()->isAdmin())
-                <a href="{{ $featureHref('rdv', route('dashboard.rdv.index')) }}"
-                   class="sidebar-link {{ request()->routeIs('dashboard.rdv.*') ? 'active' : '' }}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <rect x="3" y="4" width="18" height="18" rx="2"/>
-                        <line x1="16" y1="2" x2="16" y2="6"/>
-                        <line x1="8" y1="2" x2="8" y2="6"/>
-                        <line x1="3" y1="10" x2="21" y2="10"/>
-                    </svg>
-                    Rendez-vous
-                    @if(!$featureHas('rdv'))
-                        <svg class="ml-auto w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1a5 5 0 00-5 5v4H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2v-9a2 2 0 00-2-2h-2V6a5 5 0 00-5-5zm-3 9V6a3 3 0 016 0v4H9z"/></svg>
-                    @endif
-                </a>
-                @endif
 
                 <a href="{{ route('dashboard.ventes.index') }}"
                    class="sidebar-link {{ request()->routeIs('dashboard.ventes.*') ? 'active' : '' }}">
