@@ -233,9 +233,11 @@
                         <form method="POST" action="{{ route('dashboard.mes-instituts.vitrine', $institut) }}">
                             @csrf @method('PATCH')
                             <button type="submit"
-                                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 {{ $institut->vitrine_active ? 'bg-emerald-500 border-2 border-transparent' : 'bg-white dark:bg-gray-800 border-2 border-gray-400 dark:border-gray-500' }}"
+                                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none"
+                                    style="{{ $institut->vitrine_active ? 'background:#10b981;' : 'background:#9ca3af; outline: 2px solid #6b7280;' }}"
                                     title="{{ $institut->vitrine_active ? 'Désactiver' : 'Activer' }} la page publique">
-                                <span class="pointer-events-none inline-block h-4 w-4 m-0.5 transform rounded-full transition duration-200 ease-in-out shadow-sm {{ $institut->vitrine_active ? 'translate-x-5 bg-white' : 'translate-x-0 bg-gray-400 dark:bg-gray-500' }}"></span>
+                                <span class="pointer-events-none inline-block h-4 w-4 m-0.5 rounded-full shadow transition duration-200 ease-in-out"
+                                      style="background:#ffffff; transform: translateX({{ $institut->vitrine_active ? '20px' : '0px' }});"></span>
                             </button>
                         </form>
                     </div>
