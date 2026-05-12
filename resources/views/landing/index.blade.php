@@ -13,12 +13,12 @@
             <div class="text-center lg:text-left animate-fade-in-up">
                 
                 <h1 class="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold leading-[1.1] text-white mb-6 tracking-tight">
-                    La gestion de votre institut,
+                    La gestion de votre établissement,
                     <span class="shimmer-text"> enfin simple.</span>
                 </h1>
 
                 <p class="text-lg sm:text-xl text-white/60 mb-10 leading-relaxed max-w-xl mx-auto lg:mx-0">
-                    Caisse, clients, stock, finances — tout centralisé dans une application conçue pour les instituts de beauté africains.
+                    Caisse, rendez-vous, clients, stock — tout centralisé dans une application pensée pour les professionnels de la beauté, du bien-être, de la coiffure, de la mode et bien d'autres.
                 </p>
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
