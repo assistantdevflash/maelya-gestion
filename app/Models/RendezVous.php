@@ -45,6 +45,11 @@ class RendezVous extends Model
         return $this->belongsTo(User::class, 'employe_id');
     }
 
+    public function institut()
+    {
+        return $this->belongsTo(Institut::class, 'institut_id');
+    }
+
     public function prestations()
     {
         return $this->belongsToMany(Prestation::class, 'rendez_vous_prestations', 'rendez_vous_id', 'prestation_id');

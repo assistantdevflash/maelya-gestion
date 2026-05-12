@@ -15,13 +15,13 @@ class RdvConfirmeClient extends Mailable
 
     public function __construct(public RendezVous $rdv)
     {
-        $this->rdv->loadMissing('prestations');
+        $this->rdv->loadMissing(['prestations', 'institut']);
     }
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '📅 Votre rendez-vous est confirmé – ' . config('app.name'),
+            subject: '📅 Votre rendez-vous est confirmé – ' . ($this->rdv->institut?->nom ?? config('app.name')),
         );
     }
 

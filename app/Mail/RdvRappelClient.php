@@ -15,13 +15,13 @@ class RdvRappelClient extends Mailable
 
     public function __construct(public RendezVous $rdv)
     {
-        $this->rdv->loadMissing('prestations');
+        $this->rdv->loadMissing(['prestations', 'institut']);
     }
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '⏰ Rappel – votre rendez-vous est demain – ' . config('app.name'),
+            subject: '⏰ Rappel – votre rendez-vous est demain – ' . ($this->rdv->institut?->nom ?? config('app.name')),
         );
     }
 

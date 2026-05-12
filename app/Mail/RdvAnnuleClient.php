@@ -15,13 +15,13 @@ class RdvAnnuleClient extends Mailable
 
     public function __construct(public RendezVous $rdv)
     {
-        $this->rdv->loadMissing('prestations');
+        $this->rdv->loadMissing(['prestations', 'institut']);
     }
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '❌ Votre rendez-vous a été annulé – ' . config('app.name'),
+            subject: '❌ Votre rendez-vous a été annulé – ' . ($this->rdv->institut?->nom ?? config('app.name')),
         );
     }
 
