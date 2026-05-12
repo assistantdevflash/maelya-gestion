@@ -254,6 +254,8 @@
                     Rendez-vous
                     @if(!$featureHas('rdv'))
                         <svg class="ml-auto w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1a5 5 0 00-5 5v4H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2v-9a2 2 0 00-2-2h-2V6a5 5 0 00-5-5zm-3 9V6a3 3 0 016 0v4H9z"/></svg>
+                    @elseif(!empty($rdvEchusBadge) && $rdvEchusBadge > 0)
+                    <span class="ml-auto inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold leading-none">{{ $rdvEchusBadge }}</span>
                     @endif
                 </a>
 
@@ -300,6 +302,15 @@
                     @endif
                 </a>
 
+                @php
+                    $rdvEchusBadge = 0;
+                    if ($featureHas('rdv')) {
+                        $rdvEchusBadge = \App\Models\RendezVous::where('institut_id', session('current_institut_id', auth()->user()->institut_id))
+                            ->where('statut', 'en_attente')
+                            ->where('debut_le', '<', now())
+                            ->count();
+                    }
+                @endphp
                 @php
                     $fideliteBadge = 0;
                     $fideliteProgramme = \App\Models\ProgrammeFidelite::where('institut_id', session('current_institut_id', auth()->user()->institut_id))->first();
