@@ -101,12 +101,17 @@
                                     <select name="type_institut" required
                                             class="w-full px-4 py-3.5 rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white text-base focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900 transition-all @error('type_institut') border-red-400 @enderror">
                                         <option value="">Choisir...</option>
-                                        <option value="salon_coiffure" {{ old('type_institut') === 'salon_coiffure' ? 'selected' : '' }}>Salon de coiffure</option>
-                                        <option value="institut_beaute" {{ old('type_institut') === 'institut_beaute' ? 'selected' : '' }}>Institut de beauté</option>
-                                        <option value="nail_bar" {{ old('type_institut') === 'nail_bar' ? 'selected' : '' }}>Nail Bar / Onglerie</option>
-                                        <option value="spa" {{ old('type_institut') === 'spa' ? 'selected' : '' }}>Spa</option>
-                                        <option value="barbier" {{ old('type_institut') === 'barbier' ? 'selected' : '' }}>Barbier</option>
-                                        <option value="autre" {{ old('type_institut') === 'autre' ? 'selected' : '' }}>Autre</option>
+                                        <option value="salon_coiffure"      {{ old('type_institut') === 'salon_coiffure'      ? 'selected' : '' }}>Salon de coiffure</option>
+                                        <option value="institut_beaute"     {{ old('type_institut') === 'institut_beaute'     ? 'selected' : '' }}>Institut de beauté</option>
+                                        <option value="nail_bar"            {{ old('type_institut') === 'nail_bar'            ? 'selected' : '' }}>Nail Bar / Onglerie</option>
+                                        <option value="spa"                 {{ old('type_institut') === 'spa'                 ? 'selected' : '' }}>Spa / Bien-être</option>
+                                        <option value="barbier"             {{ old('type_institut') === 'barbier'             ? 'selected' : '' }}>Barbier</option>
+                                        <option value="hammam"              {{ old('type_institut') === 'hammam'              ? 'selected' : '' }}>Hammam</option>
+                                        <option value="centre_esthetique"   {{ old('type_institut') === 'centre_esthetique'   ? 'selected' : '' }}>Centre esthétique</option>
+                                        <option value="soins_capillaires"   {{ old('type_institut') === 'soins_capillaires'   ? 'selected' : '' }}>Soins capillaires</option>
+                                        <option value="tatouage"            {{ old('type_institut') === 'tatouage'            ? 'selected' : '' }}>Tatouage / Piercing</option>
+                                        <option value="boutique_mode"       {{ old('type_institut') === 'boutique_mode'       ? 'selected' : '' }}>Boutique de mode</option>
+                                        <option value="autre"               {{ old('type_institut') === 'autre'               ? 'selected' : '' }}>Autre</option>
                                     </select>
                                 </div>
 

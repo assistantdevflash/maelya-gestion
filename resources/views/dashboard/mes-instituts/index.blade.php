@@ -259,11 +259,16 @@
                                     <div class="col-span-2 form-group mb-0">
                                         <label class="form-label">Type d'établissement *</label>
                                         <select name="type" required class="form-input" x-model="form.type">
-                                            <option value="institut_beaute">Institut de beauté</option>
                                             <option value="salon_coiffure">Salon de coiffure</option>
-                                            <option value="nail_bar">Nail bar</option>
-                                            <option value="spa">Spa</option>
+                                            <option value="institut_beaute">Institut de beauté</option>
+                                            <option value="nail_bar">Nail Bar / Onglerie</option>
+                                            <option value="spa">Spa / Bien-être</option>
                                             <option value="barbier">Barbier</option>
+                                            <option value="hammam">Hammam</option>
+                                            <option value="centre_esthetique">Centre esthétique</option>
+                                            <option value="soins_capillaires">Soins capillaires</option>
+                                            <option value="tatouage">Tatouage / Piercing</option>
+                                            <option value="boutique_mode">Boutique de mode</option>
                                             <option value="autre">Autre</option>
                                         </select>
                                     </div>
@@ -335,12 +340,17 @@
                             <label class="form-label">Type d'établissement *</label>
                             <select name="type" required class="form-input">
                                 <option value="">-- Choisir un type --</option>
-                                <option value="institut_beaute"  {{ old('type') === 'institut_beaute'  ? 'selected' : '' }}>Institut de beauté</option>
-                                <option value="salon_coiffure"   {{ old('type') === 'salon_coiffure'   ? 'selected' : '' }}>Salon de coiffure</option>
-                                <option value="nail_bar"         {{ old('type') === 'nail_bar'         ? 'selected' : '' }}>Nail bar</option>
-                                <option value="spa"              {{ old('type') === 'spa'              ? 'selected' : '' }}>Spa</option>
-                                <option value="barbier"          {{ old('type') === 'barbier'          ? 'selected' : '' }}>Barbier</option>
-                                <option value="autre"            {{ old('type') === 'autre'            ? 'selected' : '' }}>Autre</option>
+                                <option value="salon_coiffure"     {{ old('type') === 'salon_coiffure'     ? 'selected' : '' }}>Salon de coiffure</option>
+                                <option value="institut_beaute"    {{ old('type') === 'institut_beaute'    ? 'selected' : '' }}>Institut de beauté</option>
+                                <option value="nail_bar"           {{ old('type') === 'nail_bar'           ? 'selected' : '' }}>Nail Bar / Onglerie</option>
+                                <option value="spa"                {{ old('type') === 'spa'                ? 'selected' : '' }}>Spa / Bien-être</option>
+                                <option value="barbier"            {{ old('type') === 'barbier'            ? 'selected' : '' }}>Barbier</option>
+                                <option value="hammam"             {{ old('type') === 'hammam'             ? 'selected' : '' }}>Hammam</option>
+                                <option value="centre_esthetique" {{ old('type') === 'centre_esthetique' ? 'selected' : '' }}>Centre esthétique</option>
+                                <option value="soins_capillaires" {{ old('type') === 'soins_capillaires' ? 'selected' : '' }}>Soins capillaires</option>
+                                <option value="tatouage"           {{ old('type') === 'tatouage'           ? 'selected' : '' }}>Tatouage / Piercing</option>
+                                <option value="boutique_mode"      {{ old('type') === 'boutique_mode'      ? 'selected' : '' }}>Boutique de mode</option>
+                                <option value="autre"              {{ old('type') === 'autre'              ? 'selected' : '' }}>Autre</option>
                             </select>
                         </div>
                     </div>
