@@ -145,15 +145,15 @@
                         <span class="spinner spinner-sm text-primary-500"></span> Recherche...
                     </div>
                     @if($this->clients->count() > 0)
-                    <div class="border border-gray-200 rounded-xl overflow-hidden mt-2 shadow-sm max-h-52 overflow-y-auto">
+                    <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden mt-2 shadow-sm max-h-52 overflow-y-auto bg-white dark:bg-gray-800">
                         @foreach($this->clients as $c)
                         <button wire:click="$set('clientId', '{{ $c->id }}')"
-                                class="w-full text-left px-3 py-2.5 text-sm hover:bg-primary-50/50 flex items-center gap-2.5 border-b border-gray-100 last:border-b-0 transition-colors">
+                                class="w-full text-left px-3 py-2.5 text-sm hover:bg-primary-50/50 dark:hover:bg-gray-700 flex items-center gap-2.5 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors">
                             <div class="w-7 h-7 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center text-primary-700 text-xs font-bold">
                                 {{ strtoupper(substr($c->prenom, 0, 1)) }}
                             </div>
-                            <span class="font-medium">{{ $c->nom_complet }}</span>
-                            <span class="text-gray-400 text-xs ml-auto">{{ $c->telephone }}</span>
+                            <span class="font-medium text-gray-900 dark:text-white">{{ $c->nom_complet }}</span>
+                            <span class="text-gray-400 dark:text-gray-400 text-xs ml-auto">{{ $c->telephone }}</span>
                         </button>
                         @endforeach
                     </div>
