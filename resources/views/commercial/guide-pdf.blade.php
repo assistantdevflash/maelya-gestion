@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Guide Porte-à-Porte — Maëlya Gestion</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 11px; color: #1f2937; line-height: 1.5; }
+    .page { padding: 24px 28px; }
+
+    /* En-tête */
+    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #9333ea; padding-bottom: 12px; margin-bottom: 18px; }
+    .header-title { font-size: 18px; font-weight: 800; color: #1f2937; }
+    .header-sub { font-size: 9px; color: #6b7280; margin-top: 2px; }
+    .header-logo { text-align: right; font-size: 9px; color: #6b7280; }
+    .header-logo strong { display: block; font-size: 13px; color: #9333ea; font-weight: 700; }
+
+    /* Sections */
+    .section { margin-bottom: 16px; page-break-inside: avoid; }
+    .section-title { font-size: 12px; font-weight: 700; color: #ffffff; background: linear-gradient(135deg, #9333ea, #ec4899); padding: 6px 12px; border-radius: 6px; margin-bottom: 8px; }
+    .section-num { display: inline-block; background: rgba(255,255,255,0.25); border-radius: 4px; padding: 1px 6px; margin-right: 6px; font-size: 10px; }
+    .section-body { padding: 0 4px; }
+
+    /* Texte */
+    p { margin-bottom: 6px; }
+    ul, ol { margin: 4px 0 8px 18px; }
+    li { margin-bottom: 2px; }
+    strong { font-weight: 700; }
+    em { font-style: italic; color: #6b7280; }
+
+    /* Citation / script */
+    .quote { background: #f3e8ff; border-left: 4px solid #9333ea; padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 6px 0; font-style: normal; color: #3b0764; }
+
+    /* Tableaux */
+    table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 10px; }
+    th { background: #f3e8ff; color: #6b21a8; font-weight: 700; padding: 5px 7px; border: 1px solid #e9d5ff; text-align: left; }
+    td { padding: 4px 7px; border: 1px solid #e5e7eb; vertical-align: top; }
+    tr:nth-child(even) td { background: #fafafa; }
+
+    /* Alerte */
+    .alert { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 6px; padding: 8px 12px; margin-bottom: 14px; font-size: 10px; color: #92400e; }
+
+    /* Footer */
+    .footer { margin-top: 20px; border-top: 1px solid #e5e7eb; padding-top: 8px; text-align: center; font-size: 9px; color: #9ca3af; }
+
+    /* Top 5 */
+    .top5 li { font-size: 11.5px; margin-bottom: 5px; }
+
+    .page-break { page-break-before: always; }
+</style>
+</head>
+<body>
+<div class="page">
+
+    {{-- En-tête --}}
+    <div class="header">
+        <div>
+            <div class="header-title">🚶 Guide Porte-à-Porte</div>
+            <div class="header-sub">Document terrain · Commerciaux Maëlya Gestion · Mai 2026</div>
+        </div>
+        <div class="header-logo">
+            <strong>Maëlya Gestion</strong>
+            maelyagestion.com
+        </div>
+    </div>
+
+    {{-- Rappel --}}
+    <div class="alert">
+        <strong>À avoir avec soi :</strong> téléphone chargé avec compte démo · flyers A5 · cartes de visite ·
+        Meilleurs horaires : 09h30–11h30 et 15h00–17h00 · Éviter vendredi et samedi
+    </div>
+
+    {{-- Section 1 --}}
+    <div class="section">
+        <div class="section-title"><span class="section-num">1</span> AVANT DE PARTIR — Préparer sa journée</div>
+        <div class="section-body">
+            <p><strong>Ce qu'il faut avoir :</strong> téléphone démo (3 prestations, 2 produits, 5 clients) · flyers A5 · cartes de visite avec code parrainage · Google Sheet pour noter les contacts</p>
+            <p><strong>Ciblage par quartier (tourner chaque semaine) :</strong><br>
+            Cocody/Riviera → Marcory/Zone 4 → Plateau/Adjamé → Yopougon → Treichville</p>
+        </div>
+    </div>
+
+    {{-- Section 2 --}}
+    <div class="section">
+        <div class="section-title"><span class="section-num">2</span> APPROCHE — Comment entrer dans le salon</div>
+        <div class="section-body">
+            <p><strong>Les 3 règles d'or :</strong> 1) Sourire et se présenter immédiatement · 2) Ne jamais interrompre une cliente en service · 3) Poser une question, ne pas réciter un discours</p>
+            <p><strong>Script d'entrée (30 secondes) :</strong></p>
+            <div class="quote">« Bonjour Madame ! Je m'appelle [Prénom], je travaille pour Maëlya Gestion — c'est une application ivoirienne pour aider les salons à gérer leurs ventes et leurs clientes depuis le téléphone. Est-ce que vous avez 2 petites minutes pour que je vous montre comment ça marche ? »</div>
+            <p><strong>Si "je suis occupée" :</strong></p>
+            <div class="quote">« Pas de souci ! Je peux repasser dans 30 minutes ou demain matin — ça vous arrange mieux quand ? »</div>
+            <p><strong>Si "j'ai pas besoin" :</strong></p>
+            <div class="quote">« Juste une curiosité : vous suivez comment vos ventes en ce moment ? Cahier, téléphone, ou de tête ? »</div>
+        </div>
+    </div>
+
+    {{-- Section 3 --}}
+    <div class="section">
+        <div class="section-title"><span class="section-num">3</span> PITCH PRINCIPAL — La démonstration en 5 minutes</div>
+        <div class="section-body">
+            <table>
+                <thead><tr><th>Étape</th><th>Durée</th><th>Ce qu'on montre / dit</th></tr></thead>
+                <tbody>
+                <tr><td><strong>1. Identifier la douleur</strong></td><td>1 min</td><td>
+                    Si employées : « Vous savez combien chaque employée a encaissé aujourd'hui ? »<br>
+                    Si seule : « Vous notez vos ventes comment ? »<br>
+                    Si multi-salons : « Vous êtes sur place tout le temps ? »<br>
+                    → <em>« C'est exactement pour ça que Maëlya a été créé. »</em>
+                </td></tr>
+                <tr><td><strong>2. Caisse</strong></td><td>1 min</td><td>Cliquer "Shampoing + coupe" → prix auto → Wave/OM → valider → ticket<br><em>« 10 secondes. Plus de cahier, plus de calculatrice. »</em></td></tr>
+                <tr><td><strong>3. Tableau de bord</strong></td><td>30 sec</td><td>CA jour/mois en gros chiffres<br><em>« Même si vous êtes à la maison, vous savez ce qui se passe. »</em></td></tr>
+                <tr><td><strong>4. Fonctionnalité ciblée</strong></td><td>2 min</td><td>
+                    Employées → Équipe · RDV → Agenda · Produits → Stock<br>
+                    Fidélisation → Fidélité · Bénéfices → Finances · Web → Page Vitrine
+                </td></tr>
+                <tr><td><strong>5. Clôture essai</strong></td><td>30 sec</td><td><div class="quote" style="margin:0;">« Essai gratuit 14 jours, accès complet, sans carte bancaire. On crée votre compte maintenant ? »</div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {{-- Section 4 --}}
+    <div class="section page-break">
+        <div class="section-title"><span class="section-num">4</span> LES FONCTIONNALITÉS — Mémo complet</div>
+        <div class="section-body">
+            <table>
+                <thead><tr><th>Module</th><th>Ce que ça fait</th><th>Argument clé</th></tr></thead>
+                <tbody>
+                <tr><td><strong>Caisse</strong></td><td>Ventes en 10s, cash/Wave/OM/mixte</td><td>« Plus jamais de calcul à la main »</td></tr>
+                <tr><td><strong>Ticket de caisse</strong></td><td>Numérique ou imprimable</td><td>« Professionnel comme une vraie caisse »</td></tr>
+                <tr><td><strong>Tableau de bord</strong></td><td>CA jour/mois, alertes stocks</td><td>« Tout d'un coup d'œil »</td></tr>
+                <tr><td><strong>Clients</strong></td><td>Fiche + historique visites</td><td>« Vous connaissez vos clientes mieux qu'elles »</td></tr>
+                <tr><td><strong>Anniversaires</strong></td><td>Alerte + code cadeau automatique</td><td>« Vos clientes se sentent choyées »</td></tr>
+                <tr><td><strong>Agenda / RDV</strong></td><td>Planning + email confirmation</td><td>« Fini les oublis et les no-shows »</td></tr>
+                <tr><td><strong>Prestations</strong></td><td>Catalogue services avec prix</td><td>« Plus d'erreur de prix »</td></tr>
+                <tr><td><strong>Produits</strong></td><td>Catalogue produits vendables</td><td>« Vous vendez aussi les produits »</td></tr>
+                <tr><td><strong>Stocks</strong></td><td>Mise à jour auto + alerte rupture</td><td>« Ne tombez plus en rupture »</td></tr>
+                <tr><td><strong>Fidélité</strong></td><td>Points + code cadeau automatique</td><td>« Vos clientes reviennent »</td></tr>
+                <tr><td><strong>Codes de réduction</strong></td><td>Promos % ou montant fixe</td><td>« Boostez les ventes »</td></tr>
+                <tr><td><strong>Finances</strong></td><td>Dépenses, bénéfice net, export PDF</td><td>« Vous savez combien vous gagnez vraiment »</td></tr>
+                <tr><td><strong>Mon équipe</strong></td><td>Comptes séparés employées</td><td>« Chacune encaisse, vous contrôlez »</td></tr>
+                <tr><td><strong>Page vitrine</strong></td><td>Page web publique + QR code</td><td>« Vos clientes voient vos prix avant d'appeler »</td></tr>
+                <tr><td><strong>Multi-établissements</strong></td><td>Gérer plusieurs salons</td><td>« Vous surveillez tout depuis votre téléphone »</td></tr>
+                <tr><td><strong>Parrainage</strong></td><td>Inviter = mois gratuits</td><td>« Faites-vous parrainer, payez moins cher »</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {{-- Section 5 --}}
+    <div class="section">
+        <div class="section-title"><span class="section-num">5</span> LES TARIFS — Quoi dire</div>
+        <div class="section-body">
+            <table>
+                <thead><tr><th>Plan</th><th>Prix/mois</th><th>Pour qui</th><th>Ce qu'on dit</th></tr></thead>
+                <tbody>
+                <tr><td><strong>Essai</strong></td><td>Gratuit 14j</td><td>Tout le monde</td><td>« Vous testez tout, sans rien payer »</td></tr>
+                <tr><td><strong>Basic</strong></td><td>2 000 FCFA</td><td>Solo, sans employées</td><td>« Moins cher qu'un café par jour »</td></tr>
+                <tr><td><strong>Premium</strong></td><td>4 900 FCFA</td><td>Salon avec 1-3 employées</td><td>« Tout inclus : clients, stock, fidélité, finances »</td></tr>
+                <tr><td><strong>Premium+</strong></td><td>9 900 FCFA</td><td>Multi-salons</td><td>« Pour les propriétaires de plusieurs établissements »</td></tr>
+                </tbody>
+            </table>
+            <p style="margin-top:6px;"><strong>Paiement :</strong> Orange Money ou Wave. Pas de carte bancaire, pas de compte bancaire nécessaire.</p>
+        </div>
+    </div>
+
+    {{-- Section 6 --}}
+    <div class="section">
+        <div class="section-title"><span class="section-num">6</span> RÉPONSES AUX OBJECTIONS</div>
+        <div class="section-body">
+            <p><strong>« C'est trop cher »</strong></p>
+            <div class="quote">« 2 000 FCFA par mois, c'est 67 FCFA par jour — moins qu'un café. Commencez par l'essai gratuit 14 jours, vous décidez après. »</div>
+            <p><strong>« Je ne suis pas forte en technologie »</strong></p>
+            <div class="quote">« Si vous savez utiliser WhatsApp, vous saurez utiliser Maëlya. On vous aide à configurer le compte ici maintenant. »</div>
+            <p><strong>« J'ai déjà un cahier, ça marche »</strong></p>
+            <div class="quote">« Un cahier ne vous dit pas combien vous avez fait ce mois-ci. Il ne vous alerte pas quand un produit est épuisé. Il ne retient pas les anniversaires de vos clientes. »</div>
+            <p><strong>« Je vais en parler à mon mari / associée »</strong></p>
+            <div class="quote">« Je peux vous envoyer une vidéo de 2 minutes sur WhatsApp maintenant. Vous avez votre numéro disponible ? »</div>
+            <p><strong>« Je vais réfléchir »</strong></p>
+            <div class="quote">« L'essai est gratuit, vous ne risquez rien. Je vous crée le compte maintenant et vous avez 14 jours — si non, zéro engagement. On le fait maintenant ? »</div>
+        </div>
+    </div>
+
+    {{-- Section 7 --}}
+    <div class="section">
+        <div class="section-title"><span class="section-num">7</span> SUIVI — Ce qu'on fait après la visite</div>
+        <div class="section-body">
+            <p><strong>Google Sheet :</strong> Nom du salon · Nom de la gérante · Numéro WhatsApp · 🔥 Chaud / 🟠 Tiède / ❄️ Froid · Date visite</p>
+            <p><strong>J+1 :</strong></p>
+            <div class="quote">« Bonjour [Prénom] 👋 C'est [Prénom] de Maëlya Gestion. On s'est rencontré hier au salon. Voici le lien : maelyagestion.com — ça prend 2 minutes 😊 »</div>
+            <p><strong>J+4 (si pas de réponse) :</strong></p>
+            <div class="quote">« Bonjour ! Vous avez eu le temps de jeter un œil à Maëlya ? Je peux faire une démo rapide de 5 min cette semaine. »</div>
+            <p><strong>J+10 (si toujours rien) :</strong></p>
+            <div class="quote">« Bonjour [Prénom] ! Essai gratuit 14 jours, sans carte bancaire. C'est le bon moment pour tester avant le week-end 😊 »</div>
+            <p>Après J+14 sans réponse → ❄️ Froid, revenir dans 1 mois.</p>
+        </div>
+    </div>
+
+    {{-- Section 8 --}}
+    <div class="section">
+        <div class="section-title"><span class="section-num">8</span> TOP 5 ARGUMENTS — À retenir absolument</div>
+        <div class="section-body">
+            <ol class="top5">
+                <li><strong>Caisse en 10 secondes</strong> → Plus rapide que noter sur un cahier</li>
+                <li><strong>Ventes en temps réel</strong> → Même quand vous n'êtes pas là</li>
+                <li><strong>Vos employées encaissent, vous contrôlez</strong> → Fini les pertes inexpliquées</li>
+                <li><strong>Essai gratuit 14 jours, paiement Wave/OM</strong> → Aucun risque, aucune complication</li>
+                <li><strong>Page vitrine avec QR code</strong> → Vos clientes voient vos prix sur internet</li>
+            </ol>
+        </div>
+    </div>
+
+    {{-- Section 9 --}}
+    <div class="section">
+        <div class="section-title"><span class="section-num">9</span> PROFILS ET ARGUMENTS PRIORITAIRES</div>
+        <div class="section-body">
+            <table>
+                <thead><tr><th>Type de salon</th><th>Argument n°1</th><th>Argument n°2</th><th>Module à montrer</th></tr></thead>
+                <tbody>
+                <tr><td>Salon de coiffure avec employées</td><td>Contrôle des ventes par employée</td><td>Tableau de bord temps réel</td><td>Équipe + Dashboard</td></tr>
+                <tr><td>Nail bar solo</td><td>Caisse rapide + clients fidèles</td><td>Page vitrine QR code</td><td>Caisse + Vitrine</td></tr>
+                <tr><td>Institut de beauté</td><td>Agenda RDV + fidélité</td><td>Finances & bénéfice net</td><td>RDV + Fidélité</td></tr>
+                <tr><td>Barbershop</td><td>Caisse professionnelle + équipe</td><td>Tickets imprimables</td><td>Caisse + Tickets</td></tr>
+                <tr><td>Spa / multi-salons</td><td>Multi-établissements</td><td>Contrôle à distance</td><td>Dashboard complet</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="footer">
+        Maëlya Gestion — maelyagestion.com — Support WhatsApp : réponse &lt; 2h — Document terrain v2 — Mai 2026
+    </div>
+
+</div>
+</body>
+</html>

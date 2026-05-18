@@ -237,6 +237,8 @@ Route::middleware(['auth', 'role:commercial'])->prefix('commercial')->name('comm
     Route::get('/', [CommercialController::class, 'dashboard'])->name('dashboard');
     Route::get('/parrainages', [CommercialController::class, 'parrainages'])->name('parrainages');
     Route::get('/commissions', [CommercialController::class, 'commissions'])->name('commissions');
+    Route::get('/guide', [CommercialController::class, 'guide'])->name('guide');
+    Route::get('/guide/pdf', [CommercialController::class, 'guidePdf'])->name('guide.pdf');
 });
 
 require __DIR__.'/auth.php';

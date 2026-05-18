@@ -82,4 +82,17 @@ class CommercialController extends Controller
             'profil', 'commissions', 'totalGagne', 'totalEnAttente'
         ));
     }
+
+    public function guide()
+    {
+        return view('commercial.guide');
+    }
+
+    public function guidePdf()
+    {
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('commercial.guide-pdf')
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->download('guide-porte-a-porte-maelya.pdf');
+    }
 }
