@@ -4,6 +4,12 @@
 @section('content')
 
 <style>
+/* --- Bandeau parrainage dark mode --- */
+.dark .ref-banner { background:linear-gradient(135deg,#292000,#1f1500) !important; border-color:rgba(245,158,11,.3) !important; }
+.dark .ref-banner-header { background:rgba(245,158,11,.08) !important; border-bottom-color:rgba(245,158,11,.15) !important; }
+.dark .ref-banner-header span { color:#fcd34d !important; }
+.dark .ref-banner code { color:#fde68a !important; }
+
 /* --- En-tête accordéon --- */
 .guide-btn { width:100%; display:flex; align-items:center; gap:12px; padding:16px 20px; text-align:left; transition:background .15s; }
 .guide-btn:hover { background: rgba(0,0,0,.04); }
@@ -66,15 +72,35 @@
 
 {{-- Lien de parrainage --}}
 @if(Auth::user()->commercialProfile)
-<div class="rounded-xl p-4 mb-6 flex items-start gap-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40">
-    <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-    </svg>
-    <p class="text-sm text-amber-800 dark:text-amber-300">
-        <strong>Votre lien de parrainage :</strong>
-        maelyagestion.com/inscription?ref={{ Auth::user()->commercialProfile->code }}
-        — À partager après chaque démo !
-    </p>
+@php $refLink = 'https://maelyagestion.com/inscription?ref=' . Auth::user()->commercialProfile->code; @endphp
+<div class="ref-banner rounded-xl mb-6 overflow-hidden border border-amber-300 dark:border-amber-600/50"
+     style="background:linear-gradient(135deg,#fffbeb,#fef3c7);"
+     x-data="{ copied: false }">
+    <div class="ref-banner-header px-4 py-2 flex items-center gap-2 border-b border-amber-200 dark:border-amber-600/40"
+         style="background:rgba(245,158,11,.15);">
+        <svg class="w-4 h-4 flex-shrink-0" style="color:#d97706;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+        </svg>
+        <span class="text-xs font-bold tracking-wide uppercase" style="color:#92400e;">Votre lien de parrainage — À partager après chaque démo !</span>
+    </div>
+    <div class="px-4 py-3 flex items-center gap-3">
+        <code class="flex-1 text-sm font-mono font-semibold break-all" style="color:#78350f;">{{ $refLink }}</code>
+        <button type="button"
+                @click="navigator.clipboard.writeText('{{ $refLink }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                class="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200"
+                :style="copied
+                    ? 'background:#d1fae5; color:#065f46; border:1px solid #6ee7b7;'
+                    : 'background:#fef3c7; color:#92400e; border:1px solid #fcd34d; cursor:pointer;'"
+                :title="copied ? 'Copié !' : 'Copier le lien'">
+            <svg x-show="!copied" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+            <svg x-show="copied" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span x-text="copied ? 'Copié !' : 'Copier'"></span>
+        </button>
+    </div>
 </div>
 @endif
 
