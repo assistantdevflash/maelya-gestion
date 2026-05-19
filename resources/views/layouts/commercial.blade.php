@@ -128,7 +128,7 @@
     </aside>
 
     {{-- ═══ Top bar mobile/tablette (style WhatsApp) ═══ --}}
-    <header class="lg:hidden fixed top-0 left-0 right-0 z-40 bg-gray-950 px-4 flex items-center" style="height:57px;">
+    <header class="lg:hidden fixed top-0 left-0 right-0 z-40 bg-gray-950 px-4 h-14 flex items-center">
         <div class="flex items-center gap-2.5 flex-1 min-w-0">
             <div class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-white text-sm flex-shrink-0"
                  style="background:linear-gradient(135deg,#9333ea,#ec4899);">M</div>
@@ -190,7 +190,7 @@
     </header>
 
     {{-- ═══ Contenu principal ═══ --}}
-    <div class="lg:ml-[260px] min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col pt-[57px] pb-16 lg:pt-0 lg:pb-0">
+    <div class="lg:ml-[260px] min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col pt-14 pb-16 lg:pt-0 lg:pb-0">
 
         {{-- Flash messages --}}
         @if(session('success'))
