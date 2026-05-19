@@ -23,6 +23,7 @@
 <body class="text-gray-900 dark:text-white overflow-x-hidden" x-data="{
     sidebarOpen: false,
     themeMenu: false,
+    mobileMenu: false,
     theme: localStorage.getItem('maelya-theme') || 'system',
     get isDark() { return this.theme==='dark' || (this.theme==='system' && matchMedia('(prefers-color-scheme: dark)').matches) },
     setTheme(t) {
@@ -32,11 +33,20 @@
         else if (t === 'light') document.documentElement.classList.remove('dark');
         else document.documentElement.classList.toggle('dark', matchMedia('(prefers-color-scheme: dark)').matches);
         this.themeMenu = false;
+        this.mobileMenu = false;
     }}">
 
-    {{-- ═══ Sidebar ═══ --}}
-    <aside class="fixed inset-y-0 left-0 z-50 w-[260px] bg-gray-950 flex flex-col transform transition-transform duration-300 lg:translate-x-0"
-           :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
+    @php
+    $nav = [
+        ['route' => 'commercial.dashboard',   'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', 'label' => 'Tableau de bord',     'short' => 'Accueil'],
+        ['route' => 'commercial.parrainages', 'icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z', 'label' => 'Mes parrainages',   'short' => 'Parrainages'],
+        ['route' => 'commercial.commissions', 'icon' => 'M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z',                                       'label' => 'Mes commissions', 'short' => 'Commissions'],
+        ['route' => 'commercial.guide',       'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',               'label' => 'Guide Porte-à-Porte', 'short' => 'Guide'],
+    ];
+    @endphp
+
+    {{-- ═══ Sidebar (desktop uniquement) ═══ --}}
+    <aside class="hidden lg:flex fixed inset-y-0 left-0 z-50 w-[260px] bg-gray-950 flex-col">
 
         {{-- Logo --}}
         <div class="flex items-center gap-3 px-5 py-5 border-b border-white/[0.06]">
@@ -53,15 +63,6 @@
 
         {{-- Navigation --}}
         <nav class="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
-            @php
-            $nav = [
-                ['route' => 'commercial.dashboard', 'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', 'label' => 'Tableau de bord'],
-                ['route' => 'commercial.parrainages', 'icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z', 'label' => 'Mes parrainages'],
-                ['route' => 'commercial.commissions', 'icon' => 'M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z', 'label' => 'Mes commissions'],
-                ['route' => 'commercial.guide', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'label' => 'Guide Porte-à-Porte'],
-            ];
-            @endphp
-
             @foreach($nav as $item)
             <a href="{{ route($item['route']) }}"
                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 relative
@@ -126,41 +127,70 @@
         </div>
     </aside>
 
-    {{-- Overlay mobile --}}
-    <div class="fixed inset-0 z-40 bg-black/50 lg:hidden"
-         x-show="sidebarOpen" x-cloak @click="sidebarOpen = false"></div>
-
-    {{-- ═══ Contenu principal ═══ --}}
-    <div class="lg:ml-[260px] min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
-
-        {{-- Topbar mobile --}}
-        <header class="lg:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center gap-3">
-            <button @click="sidebarOpen = true" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+    {{-- ═══ Top bar mobile/tablette (style WhatsApp) ═══ --}}
+    <header class="lg:hidden fixed top-0 left-0 right-0 z-40 bg-gray-950 px-4 flex items-center" style="height:57px;">
+        <div class="flex items-center gap-2.5 flex-1 min-w-0">
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-white text-sm flex-shrink-0"
+                 style="background:linear-gradient(135deg,#9333ea,#ec4899);">M</div>
+            <span class="font-bold text-white text-base truncate">Maëlya Gestion</span>
+        </div>
+        <div class="relative flex-shrink-0">
+            <button @click="mobileMenu = !mobileMenu" @click.outside="mobileMenu = false"
+                    class="w-10 h-10 rounded-full flex items-center justify-center text-gray-300 hover:bg-white/10 transition-colors" aria-label="Menu">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z"/>
                 </svg>
             </button>
-            <span class="font-bold text-gray-900 dark:text-white text-sm flex-1">Espace Commercial</span>
-            {{-- Bouton thème (mobile) --}}
-            <div class="relative">
-                <button @click="themeMenu = !themeMenu" @click.outside="themeMenu = false"
-                        class="w-8 h-8 rounded-xl flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-all" title="Thème">
-                    <svg x-show="isDark" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                    <svg x-show="!isDark" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-                </button>
-                <div x-show="themeMenu" x-cloak
-                     x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95 translate-y-1" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                     class="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-white/10 p-1 z-50">
-                    @foreach([['system','Système'],['light','Clair'],['dark','Sombre']] as [$val,$lbl])
-                    <button @click="setTheme('{{ $val }}')" class="w-full text-left flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-colors text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
-                            :class="theme === '{{ $val }}' ? 'bg-primary-50 dark:bg-primary-950 !text-primary-700 dark:!text-primary-300 font-semibold' : ''">
-                        {{ $lbl }}
-                        <svg x-show="theme === '{{ $val }}'" class="w-3 h-3 ml-auto text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                    </button>
-                    @endforeach
+            <div x-show="mobileMenu" x-cloak
+                 x-transition:enter="transition ease-out duration-150"
+                 x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                 class="absolute right-0 top-full mt-1 w-56 bg-gray-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50">
+                {{-- Infos utilisateur --}}
+                <div class="px-4 py-3 border-b border-white/10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+                             style="background:linear-gradient(135deg,#9333ea,#ec4899);">
+                            {{ mb_strtoupper(mb_substr(Auth::user()->prenom ?? 'C', 0, 1)) }}
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-white text-sm font-semibold truncate">{{ Auth::user()->nom_complet }}</p>
+                            <p class="text-gray-400 text-xs truncate">{{ Auth::user()->email }}</p>
+                        </div>
+                    </div>
+                </div>
+                {{-- Sélecteur thème --}}
+                <div class="px-2 py-2 border-b border-white/10">
+                    <p class="text-gray-500 text-[10px] font-semibold uppercase tracking-wider px-2 mb-1.5">Thème</p>
+                    <div class="flex gap-1 px-1">
+                        @foreach([['system','Système'],['light','Clair'],['dark','Sombre']] as [$val,$lbl])
+                        <button @click="setTheme('{{ $val }}')"
+                                class="flex-1 py-1.5 text-xs rounded-lg transition-colors font-medium"
+                                :class="theme === '{{ $val }}' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/10'">
+                            {{ $lbl }}
+                        </button>
+                        @endforeach
+                    </div>
+                </div>
+                {{-- Déconnexion --}}
+                <div class="p-2">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                                class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 text-sm font-medium transition-colors">
+                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                            </svg>
+                            Déconnexion
+                        </button>
+                    </form>
                 </div>
             </div>
-        </header>
+        </div>
+    </header>
+
+    {{-- ═══ Contenu principal ═══ --}}
+    <div class="lg:ml-[260px] min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col pt-[57px] pb-16 lg:pt-0 lg:pb-0">
 
         {{-- Flash messages --}}
         @if(session('success'))
@@ -180,6 +210,24 @@
             @yield('content')
         </main>
     </div>
+
+    {{-- ═══ Barre de navigation inférieure (mobile/tablette, style WhatsApp) ═══ --}}
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-gray-950 border-t border-white/[0.08] flex"
+         style="padding-bottom:env(safe-area-inset-bottom,0px);">
+        @foreach($nav as $item)
+        <a href="{{ route($item['route']) }}"
+           class="flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 min-w-0 transition-colors
+                  {{ request()->routeIs($item['route'].'*') ? 'text-purple-400' : 'text-gray-500 hover:text-gray-300' }}"
+           style="-webkit-tap-highlight-color:transparent;touch-action:manipulation;">
+            <svg class="w-[22px] h-[22px] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="{{ request()->routeIs($item['route'].'*') ? '2.2' : '1.6' }}"
+                      d="{{ $item['icon'] }}"/>
+            </svg>
+            <span class="text-[10px] font-medium leading-none">{{ $item['short'] }}</span>
+        </a>
+        @endforeach
+    </nav>
 
 </body>
 </html>
