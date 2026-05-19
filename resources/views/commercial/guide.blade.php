@@ -45,13 +45,39 @@
 }
 
 /* Tableaux */
-.guide-content table { width:100%; border-collapse:collapse; font-size:.75rem; margin:8px 0 14px; }
-.guide-content th { padding:6px 10px; background:#f5f3ff; color:#6d28d9; font-weight:700; text-align:left; border:1px solid #ede9fe; }
+.guide-content table { width:100%; border-collapse:collapse; font-size:.75rem; margin:0; }
+.guide-content th { padding:6px 10px; background:#f5f3ff; color:#6d28d9; font-weight:700; text-align:left; border:1px solid #ede9fe; white-space:nowrap; }
 .dark .guide-content th { background:rgba(109,40,217,.2); color:#c4b5fd; border-color:rgba(139,92,246,.25); }
 .guide-content td { padding:5px 10px; border:1px solid #e5e7eb; vertical-align:top; }
 .dark .guide-content td { border-color:rgba(255,255,255,.08); }
 .guide-content tr:nth-child(even) td { background:#fafafa; }
 .dark .guide-content tr:nth-child(even) td { background:rgba(255,255,255,.03); }
+
+/* Scroll horizontal tableaux sur mobile */
+.table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:8px 0 14px; border-radius:6px; }
+.table-scroll table { min-width:100%; }
+
+/* Touch feedback */
+.guide-btn:active { background:rgba(0,0,0,.07); }
+.dark .guide-btn:active { background:rgba(255,255,255,.08); }
+.guide-btn, .guide-copy-btn { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
+
+/* Responsive mobile */
+@media (max-width:640px) {
+    .guide-btn { padding:13px 14px; gap:10px; min-height:52px; }
+    .guide-title { font-size:.8rem; line-height:1.35; }
+    .guide-content { padding:13px 14px 16px; font-size:.8rem; }
+    .guide-content blockquote { padding:8px 10px; font-size:.8rem; }
+    .guide-content th, .guide-content td { padding:5px 7px; font-size:.7rem; }
+    .guide-content ul, .guide-content ol { margin-left:16px; }
+    .ref-banner-body { flex-direction:column !important; align-items:stretch !important; gap:8px !important; }
+    .guide-copy-btn { align-self:flex-end; }
+}
+
+/* Safe-area insets (iPhone à encoche) */
+@supports (padding: max(0px)) {
+    .guide-content { padding-left:max(14px, calc(14px + env(safe-area-inset-left))); padding-right:max(14px, calc(14px + env(safe-area-inset-right))); }
+}
 </style>
 
 {{-- En-tête page --}}
@@ -83,11 +109,11 @@
         </svg>
         <span class="text-xs font-bold tracking-wide uppercase" style="color:#92400e;">Votre lien de parrainage — À partager après chaque démo !</span>
     </div>
-    <div class="px-4 py-3 flex items-center gap-3">
+    <div class="ref-banner-body px-4 py-3 flex items-center gap-3">
         <code class="flex-1 text-sm font-mono font-semibold break-all" style="color:#78350f;">{{ $refLink }}</code>
         <button type="button"
                 @click="navigator.clipboard.writeText('{{ $refLink }}'); copied = true; setTimeout(() => copied = false, 2000)"
-                class="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200"
+                class="guide-copy-btn flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200"
                 :style="copied
                     ? 'background:#d1fae5; color:#065f46; border:1px solid #6ee7b7;'
                     : 'background:#fef3c7; color:#92400e; border:1px solid #fcd34d; cursor:pointer;'"
@@ -273,8 +299,33 @@ Cocody/Riviera &rarr; Marcory/Zone 4 &rarr; Plateau/Adjam&eacute; &rarr; Yopougo
     @endforeach
 </div>
 
-<p class="mt-6 text-center text-xs text-gray-400 dark:text-gray-600">
+<p class="mt-6 text-center text-xs text-gray-400 dark:text-gray-600 pb-safe">
     Ma&euml;lya Gestion &middot; maelyagestion.com &middot; Support WhatsApp : r&eacute;ponse &lt; 2h &middot; Document terrain v2 &mdash; Mai 2026
 </p>
+
+<script>
+/* Wrap tables pour scroll horizontal mobile */
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.guide-content table').forEach(function (table) {
+        if (table.parentNode.classList.contains('table-scroll')) return;
+        var wrap = document.createElement('div');
+        wrap.className = 'table-scroll';
+        table.parentNode.insertBefore(wrap, table);
+        wrap.appendChild(table);
+    });
+    /* Re-wrapper quand un accordéon s'ouvre (Alpine x-collapse) */
+    document.querySelectorAll('[x-collapse]').forEach(function (el) {
+        el.addEventListener('transitionend', function () {
+            el.querySelectorAll('.guide-content table').forEach(function (table) {
+                if (table.parentNode.classList.contains('table-scroll')) return;
+                var wrap = document.createElement('div');
+                wrap.className = 'table-scroll';
+                table.parentNode.insertBefore(wrap, table);
+                wrap.appendChild(table);
+            });
+        }, { once: false });
+    });
+});
+</script>
 
 @endsection
