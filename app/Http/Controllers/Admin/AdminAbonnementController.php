@@ -52,6 +52,19 @@ class AdminAbonnementController extends Controller
         $plan = $abonnement->plan;
         $jours = $plan->joursPourPeriode($abonnement->periode);
 
+        // Récupérer l'abonnement actif avant de l'expirer (pour conserver les jours restants)
+        $aboActif = Abonnement::where('user_id', $abonnement->user_id)
+            ->where('id', '!=', $abonnement->id)
+            ->where('statut', 'actif')
+            ->where('expire_le', '>=', now()->toDateString())
+            ->latest('expire_le')
+            ->first();
+
+        // Le nouveau départ = max(aujourd'hui, fin de l'abonnement actif) → les jours restants sont conservés
+        $debutNouveau = $aboActif && $aboActif->expire_le->isAfter(now())
+            ? $aboActif->expire_le->addDay()
+            : now();
+
         // Expirer les abonnements actifs précédents de cet utilisateur
         Abonnement::where('user_id', $abonnement->user_id)
             ->where('id', '!=', $abonnement->id)
@@ -60,8 +73,8 @@ class AdminAbonnementController extends Controller
 
         $abonnement->update([
             'statut' => 'actif',
-            'debut_le' => now()->toDateString(),
-            'expire_le' => now()->addDays($jours)->toDateString(),
+            'debut_le' => $debutNouveau->toDateString(),
+            'expire_le' => $debutNouveau->copy()->addDays($jours)->toDateString(),
             'valide_par' => Auth::id(),
         ]);
 
