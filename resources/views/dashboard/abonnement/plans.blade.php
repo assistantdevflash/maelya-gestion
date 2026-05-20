@@ -202,6 +202,13 @@
                     <div class="p-6 pt-0">
                         @if($demandeEnAttente)
                             <button disabled class="btn-secondary w-full justify-center opacity-50 cursor-not-allowed">Demande en cours...</button>
+                        @elseif($estPlanActuel && $abonnementActif->joursRestants() <= 7)
+                            <button @click="openModal('{{ $plan->id }}', '{{ $plan->nom }}', {{ $plan->prixEffectif() }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }})"
+                                    class="w-full justify-center inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all"
+                                    style="background:linear-gradient(135deg,#9333ea,#ec4899);">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                Renouveler
+                            </button>
                         @elseif($estPlanActuel)
                             <button disabled class="btn-secondary w-full justify-center opacity-50 cursor-not-allowed">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>

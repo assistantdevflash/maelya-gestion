@@ -211,15 +211,18 @@
     </div>
     @endif
 
-    {{-- Prolonger essai --}}
-    @if($abonnement->plan && $abonnement->plan->slug === 'essai')
+    {{-- Prolonger l'abonnement --}}
+    @if($abonnement->plan && in_array($abonnement->statut, ['actif', 'expire']))
     <div class="card p-6">
-        <h2 class="font-bold text-lg text-gray-900 mb-4">Prolonger l'essai</h2>
+        <h2 class="font-bold text-lg text-gray-900 mb-1">
+            {{ $abonnement->plan->slug === 'essai' ? "Prolonger l'essai" : "Prolonger l'abonnement" }}
+        </h2>
+        <p class="text-sm text-gray-500 mb-4">Ajoute des jours supplémentaires à la date d'expiration actuelle.</p>
         <form action="{{ route('admin.abonnements.prolonger', $abonnement) }}" method="POST" class="flex items-end gap-4">
             @csrf @method('PATCH')
             <div>
                 <label class="form-label">Jours supplémentaires</label>
-                <input type="number" name="jours" class="form-input w-32" value="14" min="1" max="90">
+                <input type="number" name="jours" class="form-input w-32" value="{{ $abonnement->plan->slug === 'essai' ? 14 : 30 }}" min="1" max="366">
             </div>
             <button class="btn-primary">Prolonger</button>
         </form>
