@@ -52,7 +52,7 @@ class AdminAbonnementController extends Controller
         $plan = $abonnement->plan;
         $jours = $plan->joursPourPeriode($abonnement->periode);
 
-        // Récupérer l'abonnement actif avant de l'expirer (pour conserver les jours restants)
+        // Récupérer l'abonnement actif avant de l'expirer
         $aboActif = Abonnement::where('user_id', $abonnement->user_id)
             ->where('id', '!=', $abonnement->id)
             ->where('statut', 'actif')
@@ -60,8 +60,10 @@ class AdminAbonnementController extends Controller
             ->latest('expire_le')
             ->first();
 
-        // Le nouveau départ = max(aujourd'hui, fin de l'abonnement actif) → les jours restants sont conservés
-        $debutNouveau = $aboActif && $aboActif->expire_le->isAfter(now())
+        // Renouvellement (même plan) → départ le lendemain de l'expiration, jours restants préservés
+        // Mise à niveau (plan supérieur) → départ immédiat, accès aux nouvelles fonctionnalités tout de suite
+        $estRenouvellement = $aboActif && $aboActif->plan_id === $abonnement->plan_id;
+        $debutNouveau = ($estRenouvellement && $aboActif->expire_le->isAfter(now()))
             ? $aboActif->expire_le->addDay()
             : now();
 
