@@ -48,7 +48,7 @@
          x-transition:leave="transition ease-in duration-100"
          x-transition:leave-start="opacity-100 scale-100 translate-y-0"
          x-transition:leave-end="opacity-0 scale-95 translate-y-1"
-         class="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-white/10 z-[60] overflow-hidden">
+         class="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-1rem)] bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-white/10 z-[60] overflow-hidden">
 
         {{-- En-tête --}}
         <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-white/10">

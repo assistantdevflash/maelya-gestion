@@ -134,7 +134,9 @@
                  style="background:linear-gradient(135deg,#9333ea,#ec4899);">M</div>
             <span class="font-bold text-white text-base truncate">Maëlya Gestion</span>
         </div>
-        <div class="relative flex-shrink-0">
+        <div class="flex items-center gap-2 flex-shrink-0">
+            <x-notif-bell :dark="true" />
+            <div class="relative">
             <button @click="mobileMenu = !mobileMenu" @click.outside="mobileMenu = false"
                     class="w-10 h-10 rounded-full flex items-center justify-center text-gray-300 hover:bg-white/10 transition-colors" aria-label="Menu">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -194,11 +196,42 @@
                     </form>
                 </div>
             </div>
+            </div>
         </div>
     </header>
 
     {{-- ═══ Contenu principal ═══ --}}
     <div class="lg:ml-[260px] min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col pt-14 pb-16 lg:pt-0 lg:pb-0">
+
+        {{-- Topbar desktop --}}
+        <header class="hidden lg:flex sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/60 dark:border-gray-800/60 px-4 sm:px-6 h-14 items-center gap-3">
+            <h1 class="text-sm font-semibold text-gray-900 dark:text-white flex-1">@yield('title', 'Espace Commercial')</h1>
+            <x-notif-bell />
+            <div class="relative">
+                <button @click="themeMenu = !themeMenu" @click.outside="themeMenu = false"
+                        class="w-8 h-8 rounded-xl flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-all" title="Thème">
+                    <svg x-show="isDark" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <svg x-show="!isDark" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                </button>
+                <div x-show="themeMenu" x-cloak
+                     x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95 translate-y-1" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                     class="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-white/10 p-1 z-50">
+                    @foreach([['system','Système'],['light','Clair'],['dark','Sombre']] as [$val,$lbl])
+                    <button @click="setTheme('{{ $val }}')" class="w-full text-left flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-colors"
+                            :class="theme === '{{ $val }}' ? 'bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 font-semibold' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'">
+                        {{ $lbl }}
+                        <svg x-show="theme === '{{ $val }}'" class="w-3 h-3 ml-auto text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    @endforeach
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: linear-gradient(135deg, #9333ea, #ec4899);">
+                    {{ strtoupper(substr(Auth::user()->prenom ?? 'C', 0, 1)) }}
+                </div>
+                <span class="text-xs font-medium text-gray-600 dark:text-gray-400 hidden sm:block">{{ Auth::user()->nom_complet }}</span>
+            </div>
+        </header>
 
         {{-- Flash messages --}}
         @if(session('success'))
