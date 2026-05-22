@@ -55,6 +55,13 @@ class RdvRappels extends Command
                 } catch (\Throwable $e) {
                     Log::warning('[RDV Rappel Push] ' . $e->getMessage());
                 }
+                \App\Services\NotificationService::notifyUser(
+                    $proprietaire,
+                    'rdv_rappel',
+                    '📅 RDV demain — ' . $rdv->client_nom,
+                    $rdv->debut_le->format('H\hi') . ($rdv->label_prestations ? ' · ' . $rdv->label_prestations : ''),
+                    '/dashboard/rdv/' . $rdv->id
+                );
             }
 
             // ── Email client ───────────────────────────────────────────────

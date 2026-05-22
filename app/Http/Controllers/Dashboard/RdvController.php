@@ -106,6 +106,13 @@ class RdvController extends Controller
                 '/dashboard/rdv/' . $rdv->id
             );
         } catch (\Throwable $e) { \Log::warning('[RDV Push] ' . $e->getMessage()); }
+        \App\Services\NotificationService::notifyUser(
+            $user,
+            'rdv_confirme',
+            '📅 Nouveau RDV — ' . $rdv->client_nom,
+            $rdv->debut_le->format('d/m/Y à H\hi') . ($rdv->label_prestations ? ' · ' . $rdv->label_prestations : ''),
+            '/dashboard/rdv/' . $rdv->id
+        );
 
         // Mail de confirmation au client
         if ($request->boolean('envoyer_confirmation') && $rdv->client_email) {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AbonnementRejete;
 use App\Mail\AbonnementValide;
 use App\Mail\CommercialCommissionGagnee;
 use App\Models\Abonnement;
@@ -175,6 +176,13 @@ class AdminAbonnementController extends Controller
                         '/commercial'
                     );
                 } catch (\Throwable $e) { \Log::warning('[Push Commercial] ' . $e->getMessage()); }
+                NotificationService::notifyUser(
+                    $commercialUser,
+                    'commission_gagnee',
+                    '💰 Commission de ' . number_format($commission->montant, 2, ',', ' ') . ' € générée',
+                    ($abonnementFresh->user->prenom ?? 'Votre filleul') . ' a souscrit au plan ' . ($abonnementFresh->plan?->nom ?? '') . '.',
+                    '/commercial'
+                );
             }
         }
         return back()->with('success', "Abonnement validé ! Actif jusqu'au " . $abonnementFresh->expire_le->format('d/m/Y') . '.' . ($parrainage ? ' Bonus parrainage appliqué.' : ''));
@@ -202,6 +210,17 @@ class AdminAbonnementController extends Controller
                 $request->notes_admin ? 'Motif : ' . $request->notes_admin : 'Votre demande n\'a pas pu être validée. Contactez le support.',
                 '/abonnement/plans'
             );
+            try {
+                Mail::to($abonnement->user->email)->send(new AbonnementRejete($abonnement));
+            } catch (\Throwable $e) { \Log::warning('[Mail Rejet] ' . $e->getMessage()); }
+            try {
+                app(\App\Services\PushNotificationService::class)->sendToUser(
+                    $abonnement->user,
+                    '❌ Demande d\'abonnement non validée',
+                    $request->notes_admin ? 'Motif : ' . $request->notes_admin : 'Votre demande n\'a pas pu être validée.',
+                    '/abonnement/plans'
+                );
+            } catch (\Throwable $e) { \Log::warning('[Push Rejet] ' . $e->getMessage()); }
         }
 
         return back()->with('success', 'Demande rejetée.');

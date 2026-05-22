@@ -53,6 +53,21 @@ class RegisteredUserController extends Controller
 
         // Email de bienvenue
         Mail::to($user->email)->send(new BienvenueMaelya($user));
+        try {
+            app(\App\Services\PushNotificationService::class)->sendToUser(
+                $user,
+                '🎉 Bienvenue sur ' . config('app.name') . ' !',
+                'Votre compte est créé. Commencez par configurer votre établissement.',
+                '/dashboard'
+            );
+        } catch (\Throwable $e) { \Log::warning('[Push Bienvenue] ' . $e->getMessage()); }
+        \App\Services\NotificationService::notifyUser(
+            $user,
+            'bienvenue',
+            '🎉 Bienvenue sur ' . config('app.name') . ' !',
+            'Votre compte est créé. Commencez par configurer votre établissement.',
+            '/dashboard'
+        );
 
         Auth::login($user);
 

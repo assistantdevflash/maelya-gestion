@@ -159,6 +159,13 @@ class AdminCommercialController extends Controller
                     '/commercial'
                 );
             } catch (\Throwable $e) { \Log::warning('[Push Commercial] ' . $e->getMessage()); }
+            \App\Services\NotificationService::notifyUser(
+                $commercialUser,
+                'commission_payee',
+                '💳 Commission de ' . number_format($commission->montant, 2, ',', ' ') . ' € versée',
+                'Votre commission a été marquée comme payée.',
+                '/commercial'
+            );
         }
 
         return back()->with('success', 'Commission marquée comme payée.');

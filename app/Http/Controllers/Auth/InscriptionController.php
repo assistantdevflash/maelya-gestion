@@ -176,6 +176,20 @@ class InscriptionController extends Controller
                     '/admin/instituts'
                 );
             } catch (\Throwable $e) { \Log::warning('[Push] ' . $e->getMessage()); }
+            \App\Services\NotificationService::notifyAdmins(
+                'nouvel_institut',
+                '🏠 Nouvel établissement inscrit',
+                ($institut?->nom ?? 'Un établissement') . ' (' . ($newUser->prenom ?? $newUser->name) . ') vient de rejoindre Maëlya Gestion.',
+                '/admin/instituts'
+            );
+            // In-app bienvenue pour le nouvel utilisateur
+            \App\Services\NotificationService::notifyUser(
+                $newUser,
+                'bienvenue',
+                '🎉 Bienvenue sur ' . config('app.name') . ' !',
+                'Votre essai gratuit de 14 jours est activé. Explorez toutes les fonctionnalités.',
+                '/dashboard'
+            );
 
             // Notifier le commercial si parrainage commercial créé
             if ($commercialParrainageCreated) {
@@ -196,6 +210,13 @@ class InscriptionController extends Controller
                             '/commercial'
                         );
                     } catch (\Throwable $e) { \Log::warning('[Push Commercial] ' . $e->getMessage()); }
+                    \App\Services\NotificationService::notifyUser(
+                        $commercialUser,
+                        'nouveau_filleul',
+                        '🎉 Nouveau filleul — ' . ($newUser->prenom ?? $newUser->name),
+                        ($newUser->prenom ?? $newUser->name) . ' vient de s\'inscrire avec votre code de parrainage.',
+                        '/commercial'
+                    );
                 }
             }
         }
