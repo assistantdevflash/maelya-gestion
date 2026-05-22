@@ -204,7 +204,7 @@
     <div class="lg:ml-[260px] min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col pt-14 pb-16 lg:pt-0 lg:pb-0">
 
         {{-- Topbar desktop --}}
-        <header class="hidden lg:flex sticky top-0 z-30 bg-gray-950 border-b border-white/[0.06] px-4 sm:px-6 h-14 items-center justify-between">
+        <header class="hidden lg:flex sticky top-0 z-30 bg-gray-950 border-b border-white/[0.06] px-4 sm:px-6 h-16 items-center justify-between">
             <h1 class="text-sm font-semibold text-white">@yield('title', 'Espace Commercial')</h1>
             <x-notif-bell :dark="true" />
         </header>
