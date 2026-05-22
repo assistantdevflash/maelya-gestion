@@ -122,6 +122,8 @@
                 </svg>
             </button>
             <h1 class="text-sm font-semibold text-gray-900 dark:text-white flex-1">@yield('page-title', 'Administration')</h1>
+            {{-- Cloche notifications --}}
+            <x-notif-bell />
             {{-- Bouton thème --}}
             <div class="relative">
                 <button @click="themeMenu = !themeMenu" @click.outside="themeMenu = false"

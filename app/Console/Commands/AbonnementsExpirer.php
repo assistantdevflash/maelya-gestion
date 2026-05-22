@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Mail\AbonnementExpire;
 use App\Mail\RappelAbonnement;
 use App\Models\Abonnement;
+use App\Services\NotificationService;
 use App\Services\PushNotificationService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -39,6 +40,13 @@ class AbonnementsExpirer extends Command
                                 '/abonnement/plans'
                             );
                         } catch (\Throwable $e) { Log::warning('[Push] ' . $e->getMessage()); }
+                        NotificationService::notifyUser(
+                            $abo->user,
+                            'rappel_abonnement',
+                            '\u23F0 Abonnement expire dans ' . $jours . ' jour' . ($jours > 1 ? 's' : ''),
+                            'Pensez \u00e0 renouveler votre abonnement ' . ($abo->plan?->nom ?? '') . ' avant le ' . $abo->expire_le->format('d/m/Y') . '.',
+                            '/abonnement/plans'
+                        );
                         $rappels++;
                     }
                 });
@@ -65,6 +73,13 @@ class AbonnementsExpirer extends Command
                         '/abonnement/plans'
                     );
                 } catch (\Throwable $e) { Log::warning('[Push] ' . $e->getMessage()); }
+                NotificationService::notifyUser(
+                    $abo->user,
+                    'abonnement_expire',
+                    '🔴 Abonnement expiré',
+                    'Votre abonnement ' . ($abo->plan?->nom ?? '') . ' a expiré. Renouvelez-le pour retrouver l\'accès complet.',
+                    '/abonnement/plans'
+                );
             }
 
             $expires++;

@@ -7,6 +7,7 @@ use App\Mail\AbonnementValide;
 use App\Mail\CommercialCommissionGagnee;
 use App\Models\Abonnement;
 use App\Models\Parrainage;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -131,8 +132,18 @@ class AdminAbonnementController extends Controller
             }
         }
 
-        // ── Notification email au propriétaire de l'établissement ─────────────
+        // ── Notification in-app au propriétaire ────────────────────────────────
         $abonnementFresh = $abonnement->fresh(['user', 'plan', 'validePar']);
+        if ($abonnementFresh->user) {
+            NotificationService::notifyUser(
+                $abonnementFresh->user,
+                'abonnement_valide',
+                '✅ Abonnement ' . ($abonnementFresh->plan?->nom ?? '') . ' validé',
+                'Votre abonnement est actif jusqu\'au ' . $abonnementFresh->expire_le->format('d/m/Y') . '.',
+                '/abonnement/historique'
+            );
+        }
+        // ── Notification email au propriétaire de l'établissement ─────────────
         try {
             Mail::to($abonnementFresh->user->email)->send(new AbonnementValide($abonnementFresh));
         } catch (\Throwable) {
@@ -182,6 +193,16 @@ class AdminAbonnementController extends Controller
             'notes_admin' => $request->notes_admin,
             'valide_par' => Auth::id(),
         ]);
+
+        if ($abonnement->user) {
+            NotificationService::notifyUser(
+                $abonnement->user,
+                'abonnement_rejete',
+                '❌ Demande d\'abonnement rejetée',
+                $request->notes_admin ? 'Motif : ' . $request->notes_admin : 'Votre demande n\'a pas pu être validée. Contactez le support.',
+                '/abonnement/plans'
+            );
+        }
 
         return back()->with('success', 'Demande rejetée.');
     }
