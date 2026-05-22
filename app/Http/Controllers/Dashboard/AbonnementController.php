@@ -127,7 +127,7 @@ class AbonnementController extends Controller
         }
         \App\Services\NotificationService::notifyAdmins(
             'nouvelle_demande',
-            '\uD83D\uDCB3 Nouvelle demande \u2014 ' . ($abonnement?->plan?->nom ?? 'Plan'),
+            '💳 Nouvelle demande — ' . ($abonnement?->plan?->nom ?? 'Plan'),
             ($user->prenom ?? $user->name) . ' attend la validation de son abonnement.',
             '/admin/abonnements?statut=en_attente'
         );

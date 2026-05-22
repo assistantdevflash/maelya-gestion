@@ -43,8 +43,8 @@ class AbonnementsExpirer extends Command
                         NotificationService::notifyUser(
                             $abo->user,
                             'rappel_abonnement',
-                            '\u23F0 Abonnement expire dans ' . $jours . ' jour' . ($jours > 1 ? 's' : ''),
-                            'Pensez \u00e0 renouveler votre abonnement ' . ($abo->plan?->nom ?? '') . ' avant le ' . $abo->expire_le->format('d/m/Y') . '.',
+                            '⏰ Abonnement expire dans ' . $jours . ' jour' . ($jours > 1 ? 's' : ''),
+                            'Pensez à renouveler votre abonnement ' . ($abo->plan?->nom ?? '') . ' avant le ' . $abo->expire_le->format('d/m/Y') . '.',
                             '/abonnement/plans'
                         );
                         $rappels++;
