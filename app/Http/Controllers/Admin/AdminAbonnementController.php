@@ -119,17 +119,40 @@ class AdminAbonnementController extends Controller
             if ($commercialParrainage) {
                 $config = \DB::table('commercial_config')->first();
                 $taux = $config?->taux ?? 20;
-                \App\Models\CommercialCommission::firstOrCreate(
-                    ['abonnement_id' => $abonnement->id],
-                    [
-                        'commercial_id' => $commercialParrainage->commercial_id,
-                        'parrainage_id' => $commercialParrainage->id,
-                        'montant_base'  => $abonnement->montant,
-                        'taux'          => $taux,
-                        'montant'       => (int) round($abonnement->montant * $taux / 100),
-                        'statut'        => 'en_attente',
-                    ]
-                );
+
+                // Durée en mois selon la période choisie par le filleul
+                $dureeMois = match ($abonnement->periode) {
+                    'annuel'   => 12,
+                    'triennal' => 36,
+                    default    => 1,
+                };
+
+                // Option C — commission proratisée sur les mois éligibles (max 6)
+                $moisEligibles = min($dureeMois, 6);
+                $commissionProratisee = (int) round($abonnement->montant * $moisEligibles / $dureeMois * $taux / 100);
+
+                // Budget global max pour ce parrainage = prix mensuel × taux × 6 mois
+                $budgetMax = (int) round($plan->prix * $taux / 100 * 6);
+
+                // Commissions déjà générées pour ce parrainage (mensualités précédentes)
+                $dejaVerse = (int) \App\Models\CommercialCommission::where('parrainage_id', $commercialParrainage->id)->sum('montant');
+
+                // Ne jamais dépasser le budget global, quelle que soit la période
+                $commissionFinale = min($commissionProratisee, max(0, $budgetMax - $dejaVerse));
+
+                if ($commissionFinale > 0) {
+                    \App\Models\CommercialCommission::firstOrCreate(
+                        ['abonnement_id' => $abonnement->id],
+                        [
+                            'commercial_id' => $commercialParrainage->commercial_id,
+                            'parrainage_id' => $commercialParrainage->id,
+                            'montant_base'  => $abonnement->montant,
+                            'taux'          => $taux,
+                            'montant'       => $commissionFinale,
+                            'statut'        => 'en_attente',
+                        ]
+                    );
+                }
             }
         }
 
