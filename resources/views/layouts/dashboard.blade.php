@@ -567,13 +567,13 @@
                 <span class="font-display font-bold text-gray-900 dark:text-white text-sm">Maëlya Gestion</span>
             </div>
             <div class="flex items-center gap-1.5">
-                <x-notif-bell />
                 <a href="{{ route('dashboard.caisse') }}" class="btn-primary btn-sm">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
                     Vente
                 </a>
+                <x-notif-bell />
             </div>
         </header>
 
