@@ -95,7 +95,31 @@
             @endforeach
         </nav>
 
-        <div class="px-3 py-4 border-t border-white/[0.06]">
+        <div class="px-3 py-4 border-t border-white/[0.06] space-y-1">
+            {{-- Infos utilisateur --}}
+            <div class="flex items-center gap-3 px-3 py-2 mb-1">
+                <div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    {{ strtoupper(substr(auth()->user()->prenom ?? auth()->user()->name ?? 'A', 0, 1)) }}
+                </div>
+                <div class="min-w-0">
+                    <p class="text-white text-xs font-semibold truncate">{{ auth()->user()->nom_complet ?? auth()->user()->name }}</p>
+                    <p class="text-gray-500 text-[10px] truncate">Super Admin</p>
+                </div>
+            </div>
+            {{-- Sélecteur thème --}}
+            <div class="px-3 py-2 mb-1">
+                <p class="text-gray-500 text-[10px] font-semibold uppercase tracking-wider mb-1.5">Thème</p>
+                <div class="flex gap-1">
+                    @foreach([['system','Système'],['light','Clair'],['dark','Sombre']] as [$val,$lbl])
+                    <button @click="setTheme('{{ $val }}')"
+                            class="flex-1 py-1.5 text-[11px] rounded-lg transition-colors font-medium"
+                            :class="theme === '{{ $val }}' ? 'bg-primary-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/10'">
+                        {{ $lbl }}
+                    </button>
+                    @endforeach
+                </div>
+            </div>
+            {{-- Déconnexion --}}
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-[13px] font-medium text-gray-400 hover:text-white hover:bg-white/[0.06] transition-all duration-200">
