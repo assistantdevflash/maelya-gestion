@@ -126,6 +126,9 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         // Rendez-vous (feature: rdv)
         Route::middleware('feature:rdv')->group(function () {
             Route::get('rdv', [RdvController::class, 'index'])->name('rdv.index');
+            Route::get('rdv/calendrier', [RdvController::class, 'calendrier'])->name('rdv.calendrier');
+            Route::get('rdv/calendrier/events', [RdvController::class, 'events'])->name('rdv.events');
+            Route::post('rdv/{rdv}/move', [RdvController::class, 'move'])->name('rdv.move');
             Route::get('rdv/create', [RdvController::class, 'create'])->name('rdv.create');
             Route::post('rdv', [RdvController::class, 'store'])->name('rdv.store');
             Route::get('rdv/{rdv}', [RdvController::class, 'show'])->name('rdv.show');

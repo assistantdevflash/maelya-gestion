@@ -195,4 +195,49 @@ class RdvController extends Controller
         $rdv->update(['statut' => 'termine']);
         return back()->with('success', 'Rendez-vous marqué comme terminé.');
     }
+
+    /** Vue calendrier interactif (FullCalendar) */
+    public function calendrier()
+    {
+        return view('dashboard.rdv.calendrier');
+    }
+
+    /** Flux JSON pour FullCalendar */
+    public function events(Request $request)
+    {
+        $start = $request->query('start');
+        $end   = $request->query('end');
+
+        $q = RendezVous::with('prestation', 'client')->whereNotNull('debut_le');
+        if ($start) $q->where('debut_le', '>=', $start);
+        if ($end)   $q->where('debut_le', '<=', $end);
+
+        return $q->limit(500)->get()->map(function ($r) {
+            $color = match ($r->statut) {
+                'confirme' => '#10b981',
+                'en_attente' => '#f59e0b',
+                'annule'   => '#9ca3af',
+                'termine'  => '#6366f1',
+                default    => '#7c3aed',
+            };
+            return [
+                'id'    => $r->id,
+                'title' => trim(($r->client_nom ?: ($r->client->nom_complet ?? 'RDV')) . ' — ' . ($r->prestation->nom ?? '')),
+                'start' => $r->debut_le->toIso8601String(),
+                'end'   => $r->debut_le->copy()->addMinutes($r->duree_minutes ?? 30)->toIso8601String(),
+                'color' => $color,
+                'url'   => route('dashboard.rdv.show', $r),
+            ];
+        });
+    }
+
+    /** Drag & drop : déplacer un RDV (AJAX) */
+    public function move(Request $request, RendezVous $rdv)
+    {
+        $data = $request->validate([
+            'debut_le' => ['required', 'date'],
+        ]);
+        $rdv->update(['debut_le' => $data['debut_le']]);
+        return response()->json(['ok' => true]);
+    }
 }
