@@ -141,6 +141,40 @@ class DashboardController extends Controller
         $abonnement = $user->abonnementActif;
         $joursRestants = $abonnement?->expire_le ? (int) now()->diffInDays($abonnement->expire_le, false) : null;
 
+        // ── Comparaison période précédente ──
+        $yesterday = now()->subDay()->toDateString();
+        $startOfPrevMonth = now()->subMonthNoOverflow()->startOfMonth()->toDateString();
+        $endOfPrevMonth   = now()->subMonthNoOverflow()->endOfMonth()->toDateString();
+
+        $caJourPrec = Vente::where('statut', 'validee')
+            ->whereDate('created_at', $yesterday)
+            ->sum('total');
+        $caMoisPrec = Vente::where('statut', 'validee')
+            ->whereDate('created_at', '>=', $startOfPrevMonth)
+            ->whereDate('created_at', '<=', $endOfPrevMonth)
+            ->sum('total');
+        $ventesJourPrec = Vente::where('statut', 'validee')
+            ->whereDate('created_at', $yesterday)
+            ->count();
+        $ventesMoisPrec = Vente::where('statut', 'validee')
+            ->whereDate('created_at', '>=', $startOfPrevMonth)
+            ->whereDate('created_at', '<=', $endOfPrevMonth)
+            ->count();
+        $nouveauxClientsJourPrec = Client::whereDate('created_at', $yesterday)->count();
+
+        $pct = function ($actuel, $prec) {
+            if ($prec <= 0) {
+                return $actuel > 0 ? 100 : 0;
+            }
+            return round((($actuel - $prec) / $prec) * 100, 1);
+        };
+        $evolutionCaJour       = $pct($caJour, $caJourPrec);
+        $evolutionCaMois       = $pct($caMois, $caMoisPrec);
+        $evolutionCa           = $evolutionCaMois; // back-compat vue
+        $evolutionVentesJour   = $pct($ventesJour, $ventesJourPrec);
+        $evolutionVentesMois   = $pct($ventesMois, $ventesMoisPrec);
+        $evolutionClientsJour  = $pct($nouveauxClientsJour, $nouveauxClientsJourPrec);
+
         // Clients fêtant leur anniversaire aujourd'hui sans cadeau déjà créé
         $cadeauClientIds = \App\Models\CodeReduction::withoutGlobalScopes()
             ->where('institut_id', $institutId)
@@ -162,7 +196,10 @@ class DashboardController extends Controller
             'nouveauxClientsJour', 'produitsEnAlerte', 'depensesMois', 'beneficeEstime', 'beneficeMois',
             'paiementsCash', 'paiementsMobile', 'paiementsCarte', 'paiementsMixte',
             'labels', 'data', 'chartData', 'dernieresVentes', 'alertesStock',
-            'abonnement', 'joursRestants', 'anniversairesAujourdhui'
+            'abonnement', 'joursRestants', 'anniversairesAujourdhui',
+            'caJourPrec', 'caMoisPrec', 'ventesJourPrec', 'ventesMoisPrec',
+            'evolutionCa', 'evolutionCaJour', 'evolutionCaMois',
+            'evolutionVentesJour', 'evolutionVentesMois', 'evolutionClientsJour'
         ));
     }
 }
