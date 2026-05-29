@@ -8,10 +8,24 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
-        body { font-family: 'Inter', system-ui, sans-serif; background: #0f0f0f; color: #f5f5f5; min-height: 100vh; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #0f0f0f; color: #f5f5f5; min-height: 100vh; color-scheme: dark; }
+        /* Force les champs de formulaire à rester en mode sombre */
+        .rdv-input {
+            background: rgba(255,255,255,0.08) !important;
+            color: #f9fafb !important;
+            border: 1px solid rgba(255,255,255,0.15) !important;
+            color-scheme: dark;
+        }
+        .rdv-input::placeholder { color: #9ca3af !important; }
+        .rdv-input:focus { outline: none; border-color: #a855f7 !important; box-shadow: 0 0 0 2px rgba(168,85,247,0.25); }
+        .rdv-input option { background: #1f1f1f; color: #f9fafb; }
+        /* Overlay modal */
+        .rdv-overlay { background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); }
     </style>
 </head>
-<body class="bg-gray-950 text-white min-h-screen">
+<body class="bg-gray-950 text-white min-h-screen"
+      x-data="{ rdvOpen: {{ (session('success') || $errors->any()) && isset($prestationsFlat) && $prestationsFlat->isNotEmpty() ? 'true' : 'false' }} }"
+      @keydown.escape.window="rdvOpen = false">
 
     {{-- ── HEADER ────────────────────────────────────────────────────────── --}}
     <header class="sticky top-0 z-50 bg-gray-950/90 backdrop-blur-md border-b border-white/5">
@@ -34,14 +48,36 @@
                 </div>
             </div>
             @if($institut->telephone)
-            <a href="tel:{{ $institut->telephone }}"
-               class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl text-white"
-               style="background: linear-gradient(135deg, #9333ea, #ec4899);">
+            <div class="flex items-center gap-2">
+                <a href="tel:{{ $institut->telephone }}"
+                   class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl text-white border border-white/20 hover:bg-white/5 transition">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                    </svg>
+                    Appeler
+                </a>
+                @if(isset($prestationsFlat) && $prestationsFlat->isNotEmpty())
+                <button type="button"
+                        @click="rdvOpen = true"
+                        class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl text-white"
+                        style="background: linear-gradient(135deg, #9333ea, #ec4899);">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    Prendre un RDV
+                </button>
+                @endif
+            </div>
+            @elseif(isset($prestationsFlat) && $prestationsFlat->isNotEmpty())
+            <button type="button"
+                    @click="rdvOpen = true"
+                    class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl text-white"
+                    style="background: linear-gradient(135deg, #9333ea, #ec4899);">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
-                Appeler
-            </a>
+                Prendre un RDV
+            </button>
             @endif
         </div>
     </header>
@@ -133,65 +169,113 @@
         </div>
         @endif
 
-        {{-- ── FORMULAIRE RÉSERVATION ─────────────────────────────────── --}}
+        {{-- ── MODAL RÉSERVATION ─────────────────────────────────────── --}}
         @if(isset($prestationsFlat) && $prestationsFlat->isNotEmpty())
-        <section class="mt-12 max-w-2xl mx-auto" id="reserver">
-            <div class="bg-gradient-to-br from-primary-600/20 to-pink-600/20 border border-white/10 rounded-2xl p-6">
-                <h2 class="text-xl font-bold text-white mb-1">Réserver un rendez-vous</h2>
-                <p class="text-xs text-gray-400 mb-5">Votre demande sera confirmée par l'institut.</p>
+        <div x-show="rdvOpen"
+             x-cloak
+             class="fixed inset-0 z-50 flex items-end sm:items-center justify-center rdv-overlay"
+             @click.self="rdvOpen = false"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0">
 
-                @if(session('success'))
-                    <div class="mb-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm">
-                        {{ session('success') }}
-                    </div>
-                @endif
-                @if($errors->any())
-                    <div class="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
-                        @foreach($errors->all() as $err)<div>• {{ $err }}</div>@endforeach
-                    </div>
-                @endif
+            <div class="w-full sm:max-w-lg bg-gray-900 sm:rounded-2xl rounded-t-2xl shadow-2xl border border-white/10 overflow-hidden"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
 
-                <form method="POST" action="{{ route('vitrine.reserver', $institut->slug) }}" class="space-y-3">
-                    @csrf
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs text-gray-300 mb-1">Nom complet *</label>
-                            <input type="text" name="client_nom" required value="{{ old('client_nom') }}" class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-primary-400">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-300 mb-1">Téléphone *</label>
-                            <input type="tel" name="client_telephone" required value="{{ old('client_telephone') }}" class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-primary-400">
-                        </div>
-                    </div>
+                {{-- En-tête du modal --}}
+                <div class="flex items-center justify-between px-5 py-4 border-b border-white/10"
+                     style="background: linear-gradient(135deg, rgba(147,51,234,0.2), rgba(236,72,153,0.2));">
                     <div>
-                        <label class="block text-xs text-gray-300 mb-1">Email (optionnel)</label>
-                        <input type="email" name="client_email" value="{{ old('client_email') }}" class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-primary-400">
+                        <h2 class="text-base font-bold text-white">Réserver un rendez-vous</h2>
+                        <p class="text-xs text-gray-400 mt-0.5">Votre demande sera confirmée par l'institut.</p>
                     </div>
-                    <div>
-                        <label class="block text-xs text-gray-300 mb-1">Prestation souhaitée *</label>
-                        <select name="prestation_id" required class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-primary-400">
-                            <option value="">— Choisir —</option>
-                            @foreach($prestationsFlat as $p)
-                                <option value="{{ $p->id }}" {{ old('prestation_id') == $p->id ? 'selected' : '' }}>
-                                    {{ $p->nom }} ({{ $p->duree }} min — {{ number_format($p->prix, 0, ',', ' ') }} F)
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-300 mb-1">Date et heure *</label>
-                        <input type="datetime-local" name="debut_le" required min="{{ now()->addHour()->format('Y-m-d\TH:i') }}" value="{{ old('debut_le') }}" class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-primary-400">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-300 mb-1">Notes (optionnel)</label>
-                        <textarea name="notes" rows="2" maxlength="500" class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-primary-400">{{ old('notes') }}</textarea>
-                    </div>
-                    <button type="submit" class="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-primary-500 to-pink-500 text-white font-semibold text-sm hover:opacity-90 transition">
-                        Envoyer ma demande
+                    <button @click="rdvOpen = false"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
                     </button>
-                </form>
+                </div>
+
+                {{-- Corps du formulaire --}}
+                <div class="px-5 py-5 max-h-[80vh] overflow-y-auto">
+                    @if(session('success'))
+                        <div class="mb-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+                    @if($errors->any())
+                        <div class="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
+                            @foreach($errors->all() as $err)<div>• {{ $err }}</div>@endforeach
+                        </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('vitrine.reserver', $institut->slug) }}" class="space-y-3">
+                        @csrf
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs text-gray-300 mb-1 font-medium">Nom complet *</label>
+                                <input type="text" name="client_nom" required
+                                       value="{{ old('client_nom') }}"
+                                       placeholder="Ex : Awa Koné"
+                                       class="rdv-input w-full px-3 py-2.5 rounded-lg text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-300 mb-1 font-medium">Téléphone *</label>
+                                <input type="tel" name="client_telephone" required
+                                       value="{{ old('client_telephone') }}"
+                                       placeholder="Ex : 07 00 00 00 00"
+                                       class="rdv-input w-full px-3 py-2.5 rounded-lg text-sm">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-300 mb-1 font-medium">Email (optionnel)</label>
+                            <input type="email" name="client_email"
+                                   value="{{ old('client_email') }}"
+                                   placeholder="votre@email.com"
+                                   class="rdv-input w-full px-3 py-2.5 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-300 mb-1 font-medium">Prestation souhaitée *</label>
+                            <select name="prestation_id" required class="rdv-input w-full px-3 py-2.5 rounded-lg text-sm">
+                                <option value="">— Choisir une prestation —</option>
+                                @foreach($prestationsFlat as $p)
+                                    <option value="{{ $p->id }}" {{ old('prestation_id') == $p->id ? 'selected' : '' }}>
+                                        {{ $p->nom }}{{ $p->duree ? ' ('.$p->duree.' min' : '' }}{{ $p->duree && $p->prix ? ' — ' : ($p->duree ? ')' : '') }}{{ $p->prix ? number_format($p->prix, 0, ',', ' ').' F)' : '' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-300 mb-1 font-medium">Date et heure *</label>
+                            <input type="datetime-local" name="debut_le" required
+                                   min="{{ now()->addHour()->format('Y-m-d\TH:i') }}"
+                                   value="{{ old('debut_le') }}"
+                                   class="rdv-input w-full px-3 py-2.5 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-300 mb-1 font-medium">Notes (optionnel)</label>
+                            <textarea name="notes" rows="2" maxlength="500"
+                                      placeholder="Précisions, demandes particulières…"
+                                      class="rdv-input w-full px-3 py-2.5 rounded-lg text-sm resize-none">{{ old('notes') }}</textarea>
+                        </div>
+                        <button type="submit"
+                                class="w-full px-4 py-3 rounded-xl text-white font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition"
+                                style="background: linear-gradient(135deg, #9333ea, #ec4899);">
+                            Envoyer ma demande
+                        </button>
+                    </form>
+                </div>
             </div>
-        </section>
+        </div>
         @endif
 
     </main>
