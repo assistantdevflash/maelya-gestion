@@ -13,14 +13,6 @@ use Illuminate\Support\Facades\DB;
 
 class InventaireController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next) {
-            abort_unless(Auth::user()->isAdmin(), 403);
-            return $next($request);
-        });
-    }
-
     private function institutId(): string
     {
         return session('current_institut_id', Auth::user()->institut_id);

@@ -208,7 +208,7 @@ class RdvController extends Controller
         $start = $request->query('start');
         $end   = $request->query('end');
 
-        $q = RendezVous::with('prestation', 'client')->whereNotNull('debut_le');
+        $q = RendezVous::with('prestations', 'client')->whereNotNull('debut_le');
         if ($start) $q->where('debut_le', '>=', $start);
         if ($end)   $q->where('debut_le', '<=', $end);
 
@@ -222,7 +222,7 @@ class RdvController extends Controller
             };
             return [
                 'id'    => $r->id,
-                'title' => trim(($r->client_nom ?: ($r->client->nom_complet ?? 'RDV')) . ' — ' . ($r->prestation->nom ?? '')),
+                'title' => trim(($r->client_nom ?: ($r->client->nom_complet ?? 'RDV')) . ' — ' . ($r->prestations->first()->nom ?? '')),
                 'start' => $r->debut_le->toIso8601String(),
                 'end'   => $r->debut_le->copy()->addMinutes($r->duree_minutes ?? 30)->toIso8601String(),
                 'color' => $color,
