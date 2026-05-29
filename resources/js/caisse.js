@@ -43,7 +43,6 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         showVenteRapide: false,
         venteRapideNom: '',
         venteRapidePrix: null,
-        venteRapideType: 'prestation',
         venteRapideErreur: '',
         venteRapideCounter: 0,
 
