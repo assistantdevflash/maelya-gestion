@@ -56,6 +56,7 @@ Route::get('/sitemap.xml', [LandingController::class, 'sitemap'])->name('sitemap
 
 // ─── Vitrine publique des établissements ──────────────────────────────────────
 Route::get('/e/{slug}', [VitrineController::class, 'show'])->name('vitrine.show');
+Route::post('/e/{slug}/reserver', [VitrineController::class, 'reserver'])->name('vitrine.reserver');
 
 // ─── Inscription personnalisée (remplace Breeze) ─────────────────────────────
 Route::middleware('guest')->group(function () {

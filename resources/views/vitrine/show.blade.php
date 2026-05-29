@@ -133,6 +133,67 @@
         </div>
         @endif
 
+        {{-- ── FORMULAIRE RÉSERVATION ─────────────────────────────────── --}}
+        @if(isset($prestationsFlat) && $prestationsFlat->isNotEmpty())
+        <section class="mt-12 max-w-2xl mx-auto" id="reserver">
+            <div class="bg-gradient-to-br from-primary-600/20 to-pink-600/20 border border-white/10 rounded-2xl p-6">
+                <h2 class="text-xl font-bold text-white mb-1">Réserver un rendez-vous</h2>
+                <p class="text-xs text-gray-400 mb-5">Votre demande sera confirmée par l'institut.</p>
+
+                @if(session('success'))
+                    <div class="mb-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm">
+                        {{ session('success') }}
+                    </div>
+                @endif
+                @if($errors->any())
+                    <div class="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
+                        @foreach($errors->all() as $err)<div>• {{ $err }}</div>@endforeach
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('vitrine.reserver', $institut->slug) }}" class="space-y-3">
+                    @csrf
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-300 mb-1">Nom complet *</label>
+                            <input type="text" name="client_nom" required value="{{ old('client_nom') }}" class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-primary-400">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-300 mb-1">Téléphone *</label>
+                            <input type="tel" name="client_telephone" required value="{{ old('client_telephone') }}" class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-primary-400">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-300 mb-1">Email (optionnel)</label>
+                        <input type="email" name="client_email" value="{{ old('client_email') }}" class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-primary-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-300 mb-1">Prestation souhaitée *</label>
+                        <select name="prestation_id" required class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-primary-400">
+                            <option value="">— Choisir —</option>
+                            @foreach($prestationsFlat as $p)
+                                <option value="{{ $p->id }}" {{ old('prestation_id') == $p->id ? 'selected' : '' }}>
+                                    {{ $p->nom }} ({{ $p->duree }} min — {{ number_format($p->prix, 0, ',', ' ') }} F)
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-300 mb-1">Date et heure *</label>
+                        <input type="datetime-local" name="debut_le" required min="{{ now()->addHour()->format('Y-m-d\TH:i') }}" value="{{ old('debut_le') }}" class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-primary-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-300 mb-1">Notes (optionnel)</label>
+                        <textarea name="notes" rows="2" maxlength="500" class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-primary-400">{{ old('notes') }}</textarea>
+                    </div>
+                    <button type="submit" class="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-primary-500 to-pink-500 text-white font-semibold text-sm hover:opacity-90 transition">
+                        Envoyer ma demande
+                    </button>
+                </form>
+            </div>
+        </section>
+        @endif
+
     </main>
 
     {{-- ── FOOTER ────────────────────────────────────────────────────────── --}}
