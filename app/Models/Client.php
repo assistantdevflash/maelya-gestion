@@ -34,6 +34,11 @@ class Client extends Model
         return $this->hasMany(Vente::class, 'client_id');
     }
 
+    public function photos()
+    {
+        return $this->hasMany(ClientPhoto::class)->latest('date_prise');
+    }
+
     public function historiquePoints()
     {
         return $this->hasMany(HistoriquePoints::class, 'client_id');

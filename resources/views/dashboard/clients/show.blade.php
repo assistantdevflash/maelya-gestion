@@ -310,5 +310,103 @@
             </div>
         </div>
 
+        {{-- ═══ GALERIE PHOTOS AVANT/APRÈS ═══ --}}
+        <div class="card p-5">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="font-bold text-gray-900">Galerie photos</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ $client->photos->count() }} photo(s)</p>
+                </div>
+                <button x-data type="button" @click="$dispatch('open-photos-modal')" class="btn-primary text-xs">
+                    + Ajouter
+                </button>
+            </div>
+
+            @if($client->photos->count() > 0)
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                    @foreach($client->photos as $photo)
+                        <div class="relative group" x-data="{ open: false }">
+                            <img src="{{ $photo->url }}" alt="{{ $photo->legende }}"
+                                 class="w-full aspect-square object-cover rounded-lg cursor-pointer hover:opacity-80 transition"
+                                 @click="open = true">
+                            <div class="absolute bottom-1 left-1 flex gap-1">
+                                @php
+                                    $typeColor = match($photo->type) {
+                                        'avant' => 'bg-amber-500',
+                                        'apres' => 'bg-emerald-500',
+                                        'avant_apres' => 'bg-blue-500',
+                                        default => 'bg-gray-500',
+                                    };
+                                @endphp
+                                <span class="px-1.5 py-0.5 rounded text-[9px] font-bold text-white {{ $typeColor }} uppercase">
+                                    {{ str_replace('_', '/', $photo->type) }}
+                                </span>
+                            </div>
+                            @if(auth()->user()->isAdmin())
+                            <form method="POST" action="{{ route('dashboard.clients.photos.destroy', [$client, $photo]) }}"
+                                  class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition"
+                                  onsubmit="return confirm('Supprimer cette photo ?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="w-6 h-6 bg-red-600 text-white rounded flex items-center justify-center hover:bg-red-700">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+                            </form>
+                            @endif
+
+                            {{-- Lightbox --}}
+                            <div x-show="open" x-cloak class="fixed inset-0 z-[80] bg-black/90 flex items-center justify-center p-4" @click="open = false">
+                                <img src="{{ $photo->url }}" alt="" class="max-w-full max-h-full object-contain rounded-lg" @click.stop>
+                                <button @click="open = false" class="absolute top-4 right-4 text-white text-3xl">&times;</button>
+                                @if($photo->legende)
+                                <p class="absolute bottom-6 left-1/2 -translate-x-1/2 text-white text-sm bg-black/60 px-4 py-2 rounded">{{ $photo->legende }}</p>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <p class="text-sm text-gray-400 text-center py-8">Aucune photo. Ajoutez-en pour suivre l'évolution.</p>
+            @endif
+        </div>
+
+        {{-- Modal d'ajout photos --}}
+        <div x-data="{ show: false }" x-cloak
+             @open-photos-modal.window="show = true">
+            <div x-show="show" class="fixed inset-0 z-[70] flex items-center justify-center p-4">
+                <div class="absolute inset-0 bg-black/50" @click="show = false"></div>
+                <div class="relative bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md p-6" @click.stop>
+                    <h3 class="font-bold text-gray-900 dark:text-gray-100 mb-4">Ajouter des photos</h3>
+                    <form method="POST" action="{{ route('dashboard.clients.photos.store', $client) }}" enctype="multipart/form-data" class="space-y-3">
+                        @csrf
+                        <div>
+                            <label class="form-label">Type *</label>
+                            <select name="type" required class="form-select">
+                                <option value="avant">Avant</option>
+                                <option value="apres">Après</option>
+                                <option value="avant_apres" selected>Avant / Après</option>
+                                <option value="autre">Autre</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">Date</label>
+                            <input type="date" name="date_prise" value="{{ now()->toDateString() }}" class="form-input">
+                        </div>
+                        <div>
+                            <label class="form-label">Légende</label>
+                            <input type="text" name="legende" maxlength="255" class="form-input" placeholder="Ex: Soin du visage">
+                        </div>
+                        <div>
+                            <label class="form-label">Photos (jpg/png/webp, max 5 Mo) *</label>
+                            <input type="file" name="photos[]" multiple required accept="image/*" class="form-input">
+                        </div>
+                        <div class="flex gap-3 pt-2">
+                            <button type="button" @click="show = false" class="btn btn-outline flex-1 justify-center">Annuler</button>
+                            <button type="submit" class="btn-primary flex-1 justify-center">Téléverser</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
     </div>
 </x-dashboard-layout>

@@ -121,6 +121,8 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
             Route::get('clients/{client}', [ClientController::class, 'show'])->name('clients.show');
             Route::post('clients/{client}/archiver', [ClientController::class, 'archiver'])->name('clients.archiver');
             Route::post('clients/{client}/cadeau-anniversaire', [ClientController::class, 'cadeauAnniversaire'])->name('clients.cadeau-anniversaire');
+            Route::post('clients/{client}/photos', [\App\Http\Controllers\Dashboard\ClientPhotoController::class, 'store'])->name('clients.photos.store');
+            Route::delete('clients/{client}/photos/{photo}', [\App\Http\Controllers\Dashboard\ClientPhotoController::class, 'destroy'])->name('clients.photos.destroy');
         });
 
         // Prestations (Basic + Premium)
