@@ -10,10 +10,11 @@ use Illuminate\Notifications\Notifiable;
 use App\Notifications\ResetPasswordMaelya;
 use App\Notifications\VerifyEmailMaelya;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasUuids;
+    use HasFactory, Notifiable, HasUuids, HasApiTokens;
 
     protected $fillable = [
         'name', 'prenom', 'nom_famille', 'email', 'password',
