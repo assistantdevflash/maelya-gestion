@@ -37,12 +37,20 @@
 
         {{-- Par Catégorie --}}
         @forelse($categories as $categorie)
-        <div class="card overflow-hidden">
-            <div class="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between" x-data="{ editing: false, nom: '{{ addslashes($categorie->nom) }}' }">
-                <div class="flex items-center gap-2">
+        <div class="card overflow-hidden" x-data="{ editing: false, nom: '{{ addslashes($categorie->nom) }}', open: true }">
+            <div class="px-5 py-3 bg-gray-50 dark:bg-slate-800/60 border-b border-gray-100 dark:border-slate-700/60 flex items-center justify-between">
+                <div class="flex items-center gap-2 flex-1 min-w-0">
+                    {{-- Bouton toggle repliage --}}
+                    <button @click="open = !open" x-show="!editing"
+                            class="flex-shrink-0 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                            :title="open ? 'Réduire' : 'Développer'">
+                        <svg class="w-4 h-4 transition-transform duration-200" :class="open ? 'rotate-0' : '-rotate-90'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
                     <template x-if="!editing">
-                        <div class="flex items-center gap-2">
-                            <span class="font-semibold text-gray-900">{{ $categorie->nom }}</span>
+                        <div class="flex items-center gap-2 cursor-pointer select-none" @click="open = !open">
+                            <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $categorie->nom }}</span>
                             <span class="badge badge-secondary">{{ $categorie->prestations->count() }}</span>
                         </div>
                     </template>
@@ -87,7 +95,14 @@
             </div>
 
             @if($categorie->prestations->count() > 0)
-            <div class="divide-y divide-gray-50">
+            <div x-show="open"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 -translate-y-1"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 -translate-y-1"
+                 class="divide-y divide-gray-50 dark:divide-slate-700/60">
                 @foreach($categorie->prestations as $prestation)
                 <div class="px-5 py-3 flex items-center gap-3 hover:bg-gray-50 group">
                     <div class="flex-1 min-w-0">
@@ -138,7 +153,7 @@
                 @endforeach
             </div>
             @else
-                <p class="px-5 py-3 text-sm text-gray-400">Aucune prestation dans cette catégorie.</p>
+                <p x-show="open" class="px-5 py-3 text-sm text-gray-400 dark:text-gray-500">Aucune prestation dans cette catégorie.</p>
             @endif
         </div>
         @empty
