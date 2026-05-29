@@ -221,7 +221,7 @@
                 this.newCatLoading = true;
                 this.newCatErreur = '';
                 try {
-                    const res = await fetch('{{ route('categories-prestations.store') }}', {
+                    const res = await fetch('{{ route('dashboard.categories-prestations.store') }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
