@@ -260,16 +260,6 @@
                     @endif
                 </a>
 
-                @if($featureHas('rdv'))
-                <a href="{{ route('dashboard.rdv.calendrier') }}"
-                   class="sidebar-link text-sm {{ request()->routeIs('dashboard.rdv.calendrier') ? 'active' : '' }}" style="padding-left:2.75rem">
-                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/>
-                    </svg>
-                    Calendrier
-                </a>
-                @endif
-
                 <a href="{{ route('dashboard.prestations.index') }}"
                    class="sidebar-link {{ request()->routeIs('dashboard.prestations.*') || request()->routeIs('dashboard.categories-prestations.*') ? 'active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">

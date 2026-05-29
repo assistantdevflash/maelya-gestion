@@ -7,12 +7,20 @@
             <h1 class="page-title">Rendez-vous</h1>
             <p class="page-subtitle">Gérez l'agenda de votre établissement.</p>
         </div>
-        <a href="{{ route('dashboard.rdv.create') }}" class="btn-primary flex-shrink-0">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-            </svg>
-            Nouveau RDV
-        </a>
+        <div class="flex gap-2 flex-shrink-0">
+            <a href="{{ route('dashboard.rdv.calendrier') }}" class="btn-outline">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2"/><line x1="3" y1="10" x2="21" y2="10" stroke-width="2"/>
+                </svg>
+                Calendrier
+            </a>
+            <a href="{{ route('dashboard.rdv.create') }}" class="btn-primary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                Nouveau RDV
+            </a>
+        </div>
     </div>
 
     {{-- Message succès --}}
