@@ -453,6 +453,16 @@
                     Journal d'activité
                 </a>
 
+                @if(auth()->user()->aPlanEntreprise())
+                <a href="{{ route('dashboard.comparatif.index') }}"
+                   class="sidebar-link {{ request()->routeIs('dashboard.comparatif.*') ? 'active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M3 3v18h18M7 14l4-4 4 4 6-6"/>
+                    </svg>
+                    Comparatif instituts
+                </a>
+                @endif
+
                 <a href="{{ route('abonnement.plans') }}"
                    class="sidebar-link {{ request()->routeIs('abonnement.plans') || request()->routeIs('abonnement.expire') ? 'active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">

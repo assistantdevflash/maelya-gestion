@@ -95,6 +95,10 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         // Journal d'activité (audit log)
         Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
 
+        // Comparatif multi-instituts (feature: multi_instituts)
+        Route::get('comparatif', [\App\Http\Controllers\Dashboard\ComparatifInstitutsController::class, 'index'])
+            ->middleware('feature:multi_instituts')->name('comparatif.index');
+
         // Fournisseurs
         Route::resource('fournisseurs', \App\Http\Controllers\Dashboard\FournisseurController::class)
             ->except(['create', 'show', 'edit']);
