@@ -144,8 +144,10 @@
                     class="card p-4 text-left hover:border-primary-300 active:scale-[0.97] transition-all duration-200 group cursor-pointer">
                     <div class="flex items-start justify-between mb-3">
                         <div class="w-9 h-9 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200 flex-shrink-0"
-                             :style="'background: linear-gradient(135deg, ' + (onglet === 'prestations' ? 'rgba(147,51,234,0.1), rgba(168,85,247,0.15)' : 'rgba(16,185,129,0.1), rgba(52,211,153,0.15)') + ')'">
-                            <svg :class="onglet === 'prestations' ? 'text-primary-600' : 'text-emerald-600'" class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                             :style="onglet === 'prestations'
+                                ? 'background: linear-gradient(135deg, rgba(147,51,234,0.15), rgba(168,85,247,0.22))'
+                                : 'background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(52,211,153,0.22))'">
+                            <svg :class="onglet === 'prestations' ? 'text-primary-500 dark:text-primary-400' : 'text-emerald-500 dark:text-emerald-400'" class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path x-show="onglet === 'prestations'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 <path x-show="onglet === 'produits'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                             </svg>
