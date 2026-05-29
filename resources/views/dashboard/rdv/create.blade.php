@@ -107,6 +107,7 @@
                 <template x-for="id in prestationsIds" :key="'chip-'+id">
                     <span class="inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-full text-xs font-medium bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-700/60">
                         <span x-text="getPrestationNom(id)"></span>
+                        <span x-show="getPrestationCategorie(id)" class="opacity-60" x-text="'(' + getPrestationCategorie(id) + ')'"></span>
                         <button type="button" @click="togglePrestation(id, getPrestationDuree(id))"
                                 class="ml-0.5 p-0.5 rounded-full hover:bg-primary-200 dark:hover:bg-primary-800 transition-colors">
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,7 +144,7 @@
                                    class="accent-primary-600 w-4 h-4 flex-shrink-0">
                             <span class="flex-1 min-w-0">
                                 <span class="block text-sm font-medium text-gray-900 dark:text-slate-100" x-text="p.nom"></span>
-                                <span x-show="p.duree" class="text-xs text-gray-400 dark:text-slate-500" x-text="p.duree + ' min'"></span>
+                                <span class="text-xs text-gray-400 dark:text-slate-500" x-text="[p.categorie?.nom, p.duree ? p.duree + ' min' : null].filter(Boolean).join(' · ')"></span>
                             </span>
                             <svg x-show="prestationsIds.includes(String(p.id))"
                                  class="w-4 h-4 text-primary-500 dark:text-primary-400 flex-shrink-0"
@@ -235,6 +236,11 @@ function rdvForm(prestations, selectedIds) {
         getPrestationNom(id) {
             const p = this.prestations.find(p => String(p.id) === String(id));
             return p ? p.nom : '';
+        },
+
+        getPrestationCategorie(id) {
+            const p = this.prestations.find(p => String(p.id) === String(id));
+            return p?.categorie?.nom || '';
         },
 
         getPrestationDuree(id) {
