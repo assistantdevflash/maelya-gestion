@@ -39,20 +39,27 @@ class Produit extends Model
      */
     public function recalculerCmp(int $quantiteEntree, int $prixUnitaire): void
     {
+        $nouveauCmp = $this->calculerNouveauCmp($quantiteEntree, $prixUnitaire);
+        if ($nouveauCmp === null) return;
+
+        $this->cout_moyen_pondere = $nouveauCmp;
+        $this->save();
+    }
+
+    /** Calcul pur (sans I/O) — exposé pour les tests unitaires. */
+    public function calculerNouveauCmp(int $quantiteEntree, int $prixUnitaire): ?int
+    {
         $stockAvant = (int) $this->stock;
         $cmpAvant   = (int) ($this->cout_moyen_pondere ?: $this->prix_achat);
         $nouveauStock = $stockAvant + $quantiteEntree;
 
-        if ($nouveauStock <= 0) {
-            return;
+        if ($nouveauStock <= 0 || $quantiteEntree <= 0) {
+            return null;
         }
 
-        $nouveauCmp = (int) round(
+        return (int) round(
             (($stockAvant * $cmpAvant) + ($quantiteEntree * $prixUnitaire)) / $nouveauStock
         );
-
-        $this->cout_moyen_pondere = $nouveauCmp;
-        $this->save();
     }
 
     /** Marge unitaire en FCFA (prix vente - CMP, fallback prix achat) */
