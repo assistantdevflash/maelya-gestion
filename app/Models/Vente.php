@@ -15,7 +15,7 @@ class Vente extends Model
         'institut_id', 'client_id', 'user_id', 'numero', 'total',
         'remise', 'code_reduction_id',
         'mode_paiement', 'reference_paiement', 'montant_cash', 'montant_mobile', 'montant_carte',
-        'statut', 'notes', 'ip_address',
+        'statut', 'motif_annulation', 'annulee_le', 'annulee_par', 'notes', 'ip_address',
     ];
 
     protected $casts = [
@@ -24,6 +24,7 @@ class Vente extends Model
         'montant_cash'   => 'integer',
         'montant_mobile' => 'integer',
         'montant_carte'  => 'integer',
+        'annulee_le'     => 'datetime',
     ];
 
     protected static function boot(): void

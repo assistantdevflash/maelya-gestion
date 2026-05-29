@@ -89,15 +89,62 @@
                 @endif
 
                 @if($vente->statut === 'validee' && auth()->user()->isAdmin())
-                <form id="annuler-vente-{{ $vente->id }}" method="POST" action="{{ route('dashboard.ventes.annuler', $vente) }}">
-                    @csrf
-                </form>
-                <button x-data @click="$dispatch('confirm-delete', { formId: 'annuler-vente-{{ $vente->id }}', title: 'Annuler cette vente ?', message: 'Le stock sera restauré pour les produits concernés.' })" class="btn-danger w-full justify-center">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                    Annuler la vente
-                </button>
+                <div x-data="{ showAnnul: false, motif: '' }" class="contents">
+                    <button type="button" @click="showAnnul = true" class="btn-danger w-full justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        Annuler la vente
+                    </button>
+
+                    {{-- Modal saisie motif --}}
+                    <div x-show="showAnnul" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center px-4"
+                         x-transition.opacity>
+                        <div class="absolute inset-0 bg-black/50" @click="showAnnul = false"></div>
+                        <div class="relative bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4" @click.stop>
+                            <h3 class="font-semibold text-gray-900 dark:text-gray-100">Annuler cette vente ?</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                Le stock sera restauré et les points de fidélité gagnés seront reversés. Cette action est irréversible.
+                            </p>
+                            <form method="POST" action="{{ route('dashboard.ventes.annuler', $vente) }}" class="space-y-3">
+                                @csrf
+                                <div>
+                                    <label class="form-label">Motif d'annulation <span class="text-red-500">*</span></label>
+                                    <select name="motif_annulation" required x-model="motif" class="form-select">
+                                        <option value="">— Sélectionner —</option>
+                                        <option value="Erreur de caisse">Erreur de caisse</option>
+                                        <option value="Retour client">Retour client</option>
+                                        <option value="Geste commercial">Geste commercial</option>
+                                        <option value="Test / démonstration">Test / démonstration</option>
+                                        <option value="Autre">Autre</option>
+                                    </select>
+                                </div>
+                                <div class="flex gap-3 pt-2">
+                                    <button type="button" @click="showAnnul = false" class="btn btn-outline flex-1 justify-center">Retour</button>
+                                    <button type="submit" :disabled="!motif" class="btn-danger flex-1 justify-center disabled:opacity-50 disabled:cursor-not-allowed">Confirmer l'annulation</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                @if($vente->statut === 'annulee')
+                <div class="rounded-xl border border-red-200 dark:border-red-700/60 bg-red-50 dark:bg-red-900/20 p-3 text-sm space-y-1">
+                    <p class="font-semibold text-red-700 dark:text-red-300">Vente annulée</p>
+                    @if($vente->motif_annulation)
+                        <p class="text-red-700 dark:text-red-300"><span class="opacity-70">Motif :</span> {{ $vente->motif_annulation }}</p>
+                    @endif
+                    @if($vente->annulee_le)
+                        <p class="text-xs text-red-600/80 dark:text-red-300/70">
+                            Le {{ $vente->annulee_le->format('d/m/Y à H:i') }}
+                            @if($vente->annulee_par)
+                                @php($annulePar = \App\Models\User::withoutGlobalScopes()->find($vente->annulee_par))
+                                @if($annulePar) par {{ $annulePar->name ?? $annulePar->email }} @endif
+                            @endif
+                        </p>
+                    @endif
+                </div>
                 @endif
             </div>
         </div>

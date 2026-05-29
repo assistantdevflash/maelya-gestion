@@ -257,7 +257,7 @@ class VenteController extends Controller
         return view('dashboard.caisse.show', compact('vente'));
     }
 
-    public function annuler(Vente $vente)
+    public function annuler(Request $request, Vente $vente)
     {
         if (Auth::user()->isEmploye() && $vente->user_id !== Auth::id()) {
             abort(403);
@@ -267,9 +267,14 @@ class VenteController extends Controller
             return back()->with('error', 'Cette vente est déjà annulée.');
         }
 
-        DB::transaction(function () use ($vente) {
+        $data = $request->validate([
+            'motif_annulation' => ['required', 'string', 'max:255'],
+        ]);
+
+        DB::transaction(function () use ($vente, $data) {
+            // Réintégration du stock pour chaque produit vendu
             foreach ($vente->items as $item) {
-                if ($item->type === 'produit') {
+                if ($item->type === 'produit' && $item->item_id) {
                     $produit = Produit::withoutGlobalScopes()->find($item->item_id);
                     if ($produit) {
                         $stockAvant = $produit->stock;
@@ -278,10 +283,10 @@ class VenteController extends Controller
                         MouvementStock::create([
                             'institut_id' => $this->institutId(),
                             'produit_id' => $produit->id,
-                            'user_id' => Auth::id(),
-                            'vente_id' => $vente->id,
-                            'type' => 'annulation_vente',
-                            'quantite' => $item->quantite,
+                            'user_id'    => Auth::id(),
+                            'vente_id'   => $vente->id,
+                            'type'       => 'annulation_vente',
+                            'quantite'   => $item->quantite,
                             'stock_avant' => $stockAvant,
                             'stock_apres' => $stockAvant + $item->quantite,
                         ]);
@@ -289,10 +294,38 @@ class VenteController extends Controller
                 }
             }
 
-            $vente->update(['statut' => 'annulee']);
+            // Reversement des points de fidélité gagnés lors de la vente
+            $pointsGagnes = HistoriquePoints::where('vente_id', $vente->id)
+                ->where('type', 'gain')
+                ->sum('points');
+
+            if ($pointsGagnes > 0 && $vente->client_id) {
+                $client = $vente->client()->withoutGlobalScopes()->first();
+                if ($client) {
+                    $pointsARetirer = min($pointsGagnes, (int) $client->points_fidelite);
+                    if ($pointsARetirer > 0) {
+                        $client->decrement('points_fidelite', $pointsARetirer);
+                        HistoriquePoints::create([
+                            'institut_id' => $this->institutId(),
+                            'client_id'   => $client->id,
+                            'vente_id'    => $vente->id,
+                            'points'      => $pointsARetirer,
+                            'type'        => 'perte',
+                            'description' => "Annulation vente #{$vente->numero}",
+                        ]);
+                    }
+                }
+            }
+
+            $vente->update([
+                'statut'           => 'annulee',
+                'motif_annulation' => $data['motif_annulation'],
+                'annulee_le'       => now(),
+                'annulee_par'      => Auth::id(),
+            ]);
         });
 
-        return back()->with('success', 'Vente annulée et stock restauré.');
+        return back()->with('success', 'Vente annulée : stock restauré et points reversés.');
     }
 
     public function ticketPdf(Vente $vente)
