@@ -110,8 +110,8 @@
                 <tr><td><strong>2. Caisse</strong></td><td>1 min</td><td>Cliquer "Shampoing + coupe" → prix auto → Wave/OM → valider → ticket<br><em>« 10 secondes. Plus de cahier, plus de calculatrice. »</em></td></tr>
                 <tr><td><strong>3. Tableau de bord</strong></td><td>30 sec</td><td>CA jour/mois en gros chiffres<br><em>« Même si vous êtes à la maison, vous savez ce qui se passe. »</em></td></tr>
                 <tr><td><strong>4. Fonctionnalité ciblée</strong></td><td>2 min</td><td>
-                    Employées → Équipe · RDV → Agenda · Produits → Stock<br>
-                    Fidélisation → Fidélité · Bénéfices → Finances · Web → Page Vitrine
+                    Employées → Équipe · RDV → Agenda &amp; Calendrier drag&amp;drop · Produits → Stock &amp; Inventaire<br>
+                    Fidélisation → Fidélité · Bénéfices → Finances · Web → Vitrine + Réservation en ligne · Portfolio → Galerie photos
                 </td></tr>
                 <tr><td><strong>5. Clôture essai</strong></td><td>30 sec</td><td><div class="quote" style="margin:0;">« Essai gratuit 14 jours, accès complet, sans carte bancaire. On crée votre compte maintenant ? »</div></td></tr>
                 </tbody>
@@ -131,7 +131,8 @@
                 <tr><td><strong>Tableau de bord</strong></td><td>CA jour/mois, alertes stocks</td><td>« Tout d'un coup d'œil »</td></tr>
                 <tr><td><strong>Clients</strong></td><td>Fiche + historique visites</td><td>« Vous connaissez vos clientes mieux qu'elles »</td></tr>
                 <tr><td><strong>Anniversaires</strong></td><td>Alerte + code cadeau automatique</td><td>« Vos clientes se sentent choyées »</td></tr>
-                <tr><td><strong>Agenda / RDV</strong></td><td>Planning + email confirmation</td><td>« Fini les oublis et les no-shows »</td></tr>
+                <tr><td><strong>Agenda / RDV</strong></td><td>Planning + email confirmation auto</td><td>« Fini les oublis »</td></tr>
+                <tr><td><strong>Calendrier RDV</strong></td><td>Vue calendrier, déplacer RDV en glissant</td><td>« Agenda professionnel »</td></tr>
                 <tr><td><strong>Prestations</strong></td><td>Catalogue services avec prix</td><td>« Plus d'erreur de prix »</td></tr>
                 <tr><td><strong>Produits</strong></td><td>Catalogue produits vendables</td><td>« Vous vendez aussi les produits »</td></tr>
                 <tr><td><strong>Stocks</strong></td><td>Mise à jour auto + alerte rupture</td><td>« Ne tombez plus en rupture »</td></tr>
@@ -139,7 +140,12 @@
                 <tr><td><strong>Codes de réduction</strong></td><td>Promos % ou montant fixe</td><td>« Boostez les ventes »</td></tr>
                 <tr><td><strong>Finances</strong></td><td>Dépenses, bénéfice net, export PDF</td><td>« Vous savez combien vous gagnez vraiment »</td></tr>
                 <tr><td><strong>Mon équipe</strong></td><td>Comptes séparés employées</td><td>« Chacune encaisse, vous contrôlez »</td></tr>
-                <tr><td><strong>Page vitrine</strong></td><td>Page web publique + QR code</td><td>« Vos clientes voient vos prix avant d'appeler »</td></tr>
+                <tr><td><strong>Page vitrine</strong></td><td>Page web publique + QR code</td><td>« Vos clientes voient vos prix »</td></tr>
+                <tr><td><strong>Réservation en ligne</strong></td><td>Clientes réservent depuis la vitrine, 24h/24</td><td>« Réservations même fermée »</td></tr>
+                <tr><td><strong>Galerie photos</strong></td><td>Photos avant/après par cliente</td><td>« Portfolio, fidélisation »</td></tr>
+                <tr><td><strong>Bons de commande</strong></td><td>Commander fournisseurs, suivre réception</td><td>« Zéro paperasse »</td></tr>
+                <tr><td><strong>Inventaire physique</strong></td><td>Compter stock, détecter écarts</td><td>« Détectez les pertes »</td></tr>
+                <tr><td><strong>Comparatif instituts</strong></td><td>Comparer CA/clients entre salons</td><td>« Quel salon performe ? »</td></tr>
                 <tr><td><strong>Multi-établissements</strong></td><td>Gérer plusieurs salons</td><td>« Vous surveillez tout depuis votre téléphone »</td></tr>
                 <tr><td><strong>Parrainage</strong></td><td>Inviter = mois gratuits</td><td>« Faites-vous parrainer, payez moins cher »</td></tr>
                 </tbody>
@@ -204,8 +210,9 @@
                 <li><strong>Caisse en 10 secondes</strong> → Plus rapide que noter sur un cahier</li>
                 <li><strong>Ventes en temps réel</strong> → Même quand vous n'êtes pas là</li>
                 <li><strong>Vos employées encaissent, vous contrôlez</strong> → Fini les pertes inexpliquées</li>
+                <li><strong>Réservation en ligne 24h/24</strong> → Les clientes réservent même quand vous êtes fermée</li>
                 <li><strong>Essai gratuit 14 jours, paiement Wave/OM</strong> → Aucun risque, aucune complication</li>
-                <li><strong>Page vitrine avec QR code</strong> → Vos clientes voient vos prix sur internet</li>
+                <li><em>Bonus :</em> galerie photos avant/après, calendrier interactif, inventaire physique</li>
             </ol>
         </div>
     </div>
@@ -217,18 +224,19 @@
             <table>
                 <thead><tr><th>Type de salon</th><th>Argument n°1</th><th>Argument n°2</th><th>Module à montrer</th></tr></thead>
                 <tbody>
-                <tr><td>Salon de coiffure avec employées</td><td>Contrôle des ventes par employée</td><td>Tableau de bord temps réel</td><td>Équipe + Dashboard</td></tr>
-                <tr><td>Nail bar solo</td><td>Caisse rapide + clients fidèles</td><td>Page vitrine QR code</td><td>Caisse + Vitrine</td></tr>
-                <tr><td>Institut de beauté</td><td>Agenda RDV + fidélité</td><td>Finances & bénéfice net</td><td>RDV + Fidélité</td></tr>
+                <tr><td>Salon de coiffure avec employées</td><td>Contrôle des ventes par employée</td><td>Calendrier RDV drag&amp;drop</td><td>Équipe + Calendrier</td></tr>
+                <tr><td>Nail bar solo</td><td>Réservation en ligne 24h/24</td><td>Galerie photos avant/après</td><td>Vitrine + Galerie</td></tr>
+                <tr><td>Institut de beauté</td><td>Galerie avant/après + réservation</td><td>Agenda calendrier + fidélité</td><td>Galerie + Vitrine + RDV</td></tr>
                 <tr><td>Barbershop</td><td>Caisse professionnelle + équipe</td><td>Tickets imprimables</td><td>Caisse + Tickets</td></tr>
-                <tr><td>Spa / multi-salons</td><td>Multi-établissements</td><td>Contrôle à distance</td><td>Dashboard complet</td></tr>
+                <tr><td>Spa / multi-salons</td><td>Comparatif multi-salons (Entreprise)</td><td>Contrôle à distance temps réel</td><td>Comparatif + Dashboard</td></tr>
+                <tr><td>Salon avec boutique</td><td>Inventaire physique + bons commande</td><td>Alertes rupture stock</td><td>Inventaire + Fournisseurs</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
     <div class="footer">
-        Maëlya Gestion — maelyagestion.com — Support WhatsApp : réponse &lt; 2h — Document terrain v2 — Mai 2026
+        Maëlya Gestion — maelyagestion.com — Support WhatsApp : réponse &lt; 2h — Document terrain v3 — Mai 2026 — 22 modules
     </div>
 
 </div>

@@ -182,7 +182,10 @@ Cocody/Riviera &rarr; Marcory/Zone 4 &rarr; Plateau/Adjam&eacute; &rarr; Yopougo
 <li><strong>Vente de produits &rarr; Stock :</strong> &laquo;&nbsp;Stock mis &agrave; jour automatiquement. Alerte quand un produit est presque &eacute;puis&eacute;.&nbsp;&raquo;</li>
 <li><strong>Fid&eacute;lisation &rarr; Fid&eacute;lit&eacute; :</strong> &laquo;&nbsp;Programme de points. Code cadeau automatique. &Ccedil;a les fait revenir.&nbsp;&raquo;</li>
 <li><strong>B&eacute;n&eacute;fices &rarr; Finances :</strong> &laquo;&nbsp;B&eacute;n&eacute;fice net calcul&eacute; automatiquement. Export PDF pour votre comptable.&nbsp;&raquo;</li>
-<li><strong>Visibilit&eacute; &rarr; Page Vitrine :</strong> &laquo;&nbsp;Activez votre page publique. QR code &agrave; coller &agrave; l\'entr&eacute;e du salon.&nbsp;&raquo;</li>
+<li><strong>Visibilit&eacute; &rarr; Vitrine + R&eacute;servation :</strong> &laquo;&nbsp;Activez votre page publique. QR code &agrave; coller &agrave; l\'entr&eacute;e du salon. Les clientes r&eacute;servent directement depuis la page, m&ecirc;me &agrave; 23h.&nbsp;&raquo;</li>
+<li><strong>Portfolio &rarr; Galerie photos :</strong> &laquo;&nbsp;Chaque cliente a sa galerie avant/apr&egrave;s dans son dossier. Montrez vos transformations, fid&eacute;lisez par les r&eacute;sultats.&nbsp;&raquo;</li>
+<li><strong>Agenda charg&eacute; &rarr; Calendrier interactif :</strong> &laquo;&nbsp;Tous vos RDV sur un vrai calendrier. Vous d&eacute;placez un rendez-vous en glissant avec le doigt. Professionnel, rapide.&nbsp;&raquo;</li>
+<li><strong>Contr&ocirc;le stock &rarr; Inventaire :</strong> &laquo;&nbsp;Faites un inventaire physique en 5 minutes. L\'application d&eacute;tecte les &eacute;carts &mdash; vous saurez si des produits disparaissent.&nbsp;&raquo;</li>
 </ul>
 <p><strong>&Eacute;tape 5 &mdash; Cl&ocirc;turer et proposer l\'essai (30 sec)</strong></p>
 <blockquote>&laquo;&nbsp;C\'est tout. Simple, rapide, depuis votre t&eacute;l&eacute;phone. L\'essai est gratuit pendant 14 jours &mdash; vous avez acc&egrave;s &agrave; tout, sans carte bancaire. Est-ce que je peux vous aider &agrave; cr&eacute;er votre compte l&agrave; maintenant&nbsp;? &Ccedil;a prend 2 minutes.&nbsp;&raquo;</blockquote>
@@ -196,7 +199,8 @@ Cocody/Riviera &rarr; Marcory/Zone 4 &rarr; Plateau/Adjam&eacute; &rarr; Yopougo
 <tr><td><strong>Tableau de bord</strong></td><td>CA jour/mois, alertes stocks</td><td>&laquo;&nbsp;Tout d\'un coup d\'&oelig;il&nbsp;&raquo;</td></tr>
 <tr><td><strong>Clients</strong></td><td>Fiche + historique visites</td><td>&laquo;&nbsp;Vous connaissez vos clientes mieux qu\'elles-m&ecirc;mes&nbsp;&raquo;</td></tr>
 <tr><td><strong>Anniversaires</strong></td><td>Alerte + code cadeau automatique</td><td>&laquo;&nbsp;Vos clientes se sentent choy&eacute;es&nbsp;&raquo;</td></tr>
-<tr><td><strong>Agenda / RDV</strong></td><td>Planning + email confirmation</td><td>&laquo;&nbsp;Fini les oublis et les no-shows&nbsp;&raquo;</td></tr>
+<tr><td><strong>Agenda / RDV</strong></td><td>Planning + email confirmation automatique</td><td>&laquo;&nbsp;Fini les oublis et les no-shows&nbsp;&raquo;</td></tr>
+<tr><td><strong>Calendrier RDV</strong></td><td>Vue calendrier, d&eacute;placer les RDV en glissant (drag &amp; drop)</td><td>&laquo;&nbsp;G&eacute;rez votre agenda comme un vrai cabinet&nbsp;&raquo;</td></tr>
 <tr><td><strong>Prestations</strong></td><td>Catalogue services avec prix</td><td>&laquo;&nbsp;Plus d\'erreur de prix&nbsp;&raquo;</td></tr>
 <tr><td><strong>Produits</strong></td><td>Catalogue produits vendables</td><td>&laquo;&nbsp;Vous vendez aussi les produits&nbsp;&raquo;</td></tr>
 <tr><td><strong>Stocks</strong></td><td>Mise &agrave; jour auto + alerte rupture</td><td>&laquo;&nbsp;Ne tombez plus en rupture&nbsp;&raquo;</td></tr>
@@ -204,7 +208,12 @@ Cocody/Riviera &rarr; Marcory/Zone 4 &rarr; Plateau/Adjam&eacute; &rarr; Yopougo
 <tr><td><strong>Codes de r&eacute;duction</strong></td><td>Promos % ou montant fixe</td><td>&laquo;&nbsp;Boostez les ventes&nbsp;&raquo;</td></tr>
 <tr><td><strong>Finances</strong></td><td>D&eacute;penses, b&eacute;n&eacute;fice net, export PDF</td><td>&laquo;&nbsp;Vous savez enfin combien vous gagnez vraiment&nbsp;&raquo;</td></tr>
 <tr><td><strong>Mon &eacute;quipe</strong></td><td>Comptes s&eacute;par&eacute;s employ&eacute;es</td><td>&laquo;&nbsp;Chacune encaisse, vous contr&ocirc;lez&nbsp;&raquo;</td></tr>
-<tr><td><strong>Page vitrine</strong></td><td>Page web publique + QR code</td><td>&laquo;&nbsp;Vos clientes trouvent vos prix avant d\'appeler&nbsp;&raquo;</td></tr>
+<tr><td><strong>Page vitrine</strong></td><td>Page web publique + QR code t&eacute;l&eacute;chargeable</td><td>&laquo;&nbsp;Vos clientes trouvent vos prix avant d\'appeler&nbsp;&raquo;</td></tr>
+<tr><td><strong>R&eacute;servation en ligne</strong></td><td>Les clientes r&eacute;servent depuis la vitrine, 24h/24</td><td>&laquo;&nbsp;Recevez des r&eacute;servations m&ecirc;me quand vous dormez&nbsp;&raquo;</td></tr>
+<tr><td><strong>Galerie photos</strong></td><td>Photos avant/apr&egrave;s par cliente dans son dossier</td><td>&laquo;&nbsp;Montrez vos transformations, fid&eacute;lisez par les r&eacute;sultats&nbsp;&raquo;</td></tr>
+<tr><td><strong>Bons de commande</strong></td><td>Commander chez vos fournisseurs, suivre la r&eacute;ception</td><td>&laquo;&nbsp;Z&eacute;ro paperasse pour vos achats de produits&nbsp;&raquo;</td></tr>
+<tr><td><strong>Inventaire physique</strong></td><td>Compter votre stock, d&eacute;tecter les &eacute;carts et les pertes</td><td>&laquo;&nbsp;Savoir exactement ce que vous avez, d&eacute;tecter les vols&nbsp;&raquo;</td></tr>
+<tr><td><strong>Comparatif instituts</strong></td><td>Comparer CA, clients, top prestations entre vos salons</td><td>&laquo;&nbsp;Voyez quel salon performe le mieux (plan Entreprise)&nbsp;&raquo;</td></tr>
 <tr><td><strong>Multi-&eacute;tablissements</strong></td><td>G&eacute;rer plusieurs salons</td><td>&laquo;&nbsp;Vous surveillez tout depuis votre t&eacute;l&eacute;phone&nbsp;&raquo;</td></tr>
 <tr><td><strong>Parrainage</strong></td><td>Inviter = mois gratuits</td><td>&laquo;&nbsp;Faites-vous parrainer, payez moins cher&nbsp;&raquo;</td></tr>
 </tbody></table>
@@ -252,20 +261,22 @@ Cocody/Riviera &rarr; Marcory/Zone 4 &rarr; Plateau/Adjam&eacute; &rarr; Yopougo
 <ol>
 <li><strong>Caisse en 10 secondes</strong> &rarr; Plus rapide que noter sur un cahier</li>
 <li><strong>Ventes en temps r&eacute;el</strong> &rarr; M&ecirc;me quand vous n\'&ecirc;tes pas l&agrave;</li>
-<li><strong>Vos employ&eacute;es encaissent, vous contr&ocirc;lez</strong> &rarr; Fini les pertes inexplliqu&eacute;es</li>
+<li><strong>Vos employ&eacute;es encaissent, vous contr&ocirc;lez</strong> &rarr; Fini les pertes inexpliqu&eacute;es</li>
+<li><strong>R&eacute;servation en ligne 24h/24</strong> &rarr; Les clientes r&eacute;servent m&ecirc;me quand vous &ecirc;tes ferm&eacute;e</li>
 <li><strong>Essai gratuit 14 jours, paiement Wave/OM</strong> &rarr; Aucun risque, aucune complication</li>
-<li><strong>Page vitrine avec QR code</strong> &rarr; Vos clientes voient vos prix sur internet</li>
+<li><em>Bonus :</em> galerie photos avant/apr&egrave;s, calendrier interactif, inventaire physique &mdash; tout depuis votre t&eacute;l&eacute;phone</li>
 </ol>
 '],
 
 ['num'=>9, 'titre'=>'PROFILS ET ARGUMENTS PRIORITAIRES', 'html'=>'
 <table><thead><tr><th>Type de salon</th><th>Argument n&deg;1</th><th>Argument n&deg;2</th><th>Module &agrave; montrer</th></tr></thead>
 <tbody>
-<tr><td>Salon de coiffure avec employ&eacute;es</td><td>Contr&ocirc;le des ventes par employ&eacute;e</td><td>Tableau de bord temps r&eacute;el</td><td>&Eacute;quipe + Dashboard</td></tr>
-<tr><td>Nail bar solo</td><td>Caisse rapide + clients fid&egrave;les</td><td>Page vitrine QR code</td><td>Caisse + Vitrine</td></tr>
-<tr><td>Institut de beaut&eacute;</td><td>Agenda RDV + fid&eacute;lit&eacute;</td><td>Finances &amp; b&eacute;n&eacute;fice net</td><td>RDV + Fid&eacute;lit&eacute;</td></tr>
+<tr><td>Salon de coiffure avec employ&eacute;es</td><td>Contr&ocirc;le des ventes par employ&eacute;e</td><td>Calendrier RDV drag &amp; drop</td><td>&Eacute;quipe + Calendrier</td></tr>
+<tr><td>Nail bar solo</td><td>R&eacute;servation en ligne 24h/24</td><td>Galerie photos avant/apr&egrave;s</td><td>Vitrine + Galerie</td></tr>
+<tr><td>Institut de beaut&eacute;</td><td>Galerie avant/apr&egrave;s + r&eacute;servation</td><td>Agenda calendrier + fid&eacute;lit&eacute;</td><td>Galerie + Vitrine + RDV</td></tr>
 <tr><td>Barbershop</td><td>Caisse professionnelle + &eacute;quipe</td><td>Tickets imprimables</td><td>Caisse + Tickets</td></tr>
-<tr><td>Spa / multi-salons</td><td>Multi-&eacute;tablissements</td><td>Contr&ocirc;le &agrave; distance</td><td>Dashboard complet</td></tr>
+<tr><td>Spa / multi-salons</td><td>Comparatif multi-salons (Entreprise)</td><td>Contr&ocirc;le &agrave; distance temps r&eacute;el</td><td>Comparatif + Dashboard</td></tr>
+<tr><td>Salon avec boutique</td><td>Inventaire physique + bons commande</td><td>Alertes rupture stock</td><td>Inventaire + Fournisseurs</td></tr>
 </tbody></table>
 '],
 
