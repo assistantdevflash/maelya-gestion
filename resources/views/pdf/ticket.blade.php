@@ -63,7 +63,7 @@
     <tr>
         <td>
             <div class="item-name">{{ $item->nom_snapshot }}</div>
-            <div class="item-qty">{{ ucfirst($item->type) }}</div>
+            <div class="item-qty">{{ match($item->type) { 'prestation' => 'Prestation', 'produit' => 'Produit', 'libre' => 'Article libre', default => ucfirst($item->type) } }}</div>
         </td>
         <td style="text-align:center">{{ $item->quantite }}</td>
         <td>{{ number_format($item->prix_snapshot, 0, ',', ' ') }}</td>

@@ -60,10 +60,95 @@
                     </button>
                 </template>
             </div>
+
+            {{-- Bouton Vente rapide --}}
+            <button @click="toggleVenteRapide()"
+                    :class="showVenteRapide
+                        ? 'border-amber-500 bg-amber-500 text-white shadow-sm'
+                        : 'border-amber-200 dark:border-amber-700/60 bg-amber-50/50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-100/70 dark:hover:bg-amber-900/40'"
+                    class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold border-2 transition-all duration-200">
+                <svg x-show="!showVenteRapide" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <svg x-show="showVenteRapide" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+                <span x-text="showVenteRapide ? 'Annuler' : 'Vente rapide'"></span>
+            </button>
+        </div>
+
+        {{-- Formulaire vente rapide --}}
+        <div x-show="showVenteRapide"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-1"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-1"
+             class="card p-5 border-2 border-amber-200/80 dark:border-amber-700/50">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white">Vente rapide</h3>
+                    <p class="text-xs text-gray-400">Article hors catalogue — non enregistré dans votre liste</p>
+                </div>
+            </div>
+            <div class="space-y-4">
+                {{-- Type --}}
+                <div class="grid grid-cols-2 gap-2">
+                    <button @click="venteRapideType = 'prestation'"
+                            :class="venteRapideType === 'prestation'
+                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 shadow-sm'
+                                : 'border-gray-200 dark:border-slate-600 text-gray-500 hover:border-gray-300'"
+                            class="py-2.5 px-3 rounded-xl text-xs font-semibold border-2 transition-all duration-200 text-center">
+                        ✂️ Prestation
+                    </button>
+                    <button @click="venteRapideType = 'produit'"
+                            :class="venteRapideType === 'produit'
+                                ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 shadow-sm'
+                                : 'border-gray-200 dark:border-slate-600 text-gray-500 hover:border-gray-300'"
+                            class="py-2.5 px-3 rounded-xl text-xs font-semibold border-2 transition-all duration-200 text-center">
+                        📦 Produit
+                    </button>
+                </div>
+                {{-- Nom --}}
+                <div>
+                    <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Nom de l'article *</label>
+                    <input type="text" x-model="venteRapideNom"
+                           placeholder="Ex : Tresse spéciale, Soin visage..."
+                           class="form-input mt-1.5"
+                           maxlength="150"
+                           @keydown.enter="ajouterVenteRapide()">
+                </div>
+                {{-- Prix --}}
+                <div>
+                    <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Prix (F) *</label>
+                    <input type="number" x-model.number="venteRapidePrix"
+                           placeholder="0"
+                           class="form-input mt-1.5"
+                           min="1"
+                           @keydown.enter="ajouterVenteRapide()">
+                </div>
+                {{-- Erreur --}}
+                <p x-show="venteRapideErreur" x-text="venteRapideErreur" class="text-xs text-red-500 -mt-1"></p>
+                {{-- Bouton ajouter --}}
+                <button @click="ajouterVenteRapide()"
+                        class="w-full py-3 rounded-xl text-sm font-bold text-white transition-all duration-200 hover:shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"
+                        style="background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    Ajouter au panier
+                </button>
+            </div>
         </div>
 
         {{-- Grille items --}}
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[55vh] overflow-y-auto pr-1">
+        <div x-show="!showVenteRapide" class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[55vh] overflow-y-auto pr-1">
             <template x-for="item in filteredItems" :key="item.id">
                 <button
                     @click="ajouterItem(item)"

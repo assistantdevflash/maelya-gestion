@@ -67,10 +67,18 @@ class VenteController extends Controller
                     $model = Prestation::findOrFail($item['id']);
                     $prix = $model->prix;
                     $nom = $model->nom;
+                    $itemId = $item['id'];
+                } elseif ($item['type'] === 'libre') {
+                    // Article hors catalogue — prix et nom fournis directement par l'utilisateur
+                    $nom = strip_tags(substr((string) ($item['nom'] ?? ''), 0, 150));
+                    $prix = max(1, min(10_000_000, (int) ($item['prix'] ?? 0)));
+                    abort_if(!$nom || $prix <= 0, 422, 'Article libre invalide.');
+                    $itemId = null;
                 } else {
                     $model = Produit::findOrFail($item['id']);
                     $prix = $model->prix_vente;
                     $nom = $model->nom;
+                    $itemId = $item['id'];
                 }
 
                 $quantite = (int) ($item['quantite'] ?? 1);
@@ -79,7 +87,7 @@ class VenteController extends Controller
 
                 $itemsToSave[] = [
                     'type' => $item['type'],
-                    'item_id' => $item['id'],
+                    'item_id' => $itemId,
                     'nom_snapshot' => $nom,
                     'prix_snapshot' => $prix,
                     'quantite' => $quantite,

@@ -39,6 +39,14 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         showConfirmation: false,
         loading: false,
 
+        // ── Vente rapide ──
+        showVenteRapide: false,
+        venteRapideNom: '',
+        venteRapidePrix: null,
+        venteRapideType: 'prestation',
+        venteRapideErreur: '',
+        venteRapideCounter: 0,
+
         // ═══════════════════════════════════════
         //  Computed (getters réactifs Alpine)
         // ═══════════════════════════════════════
@@ -118,6 +126,43 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
             this.onglet = o;
             this.categorieId = '';
             this.search = '';
+        },
+
+        // ═══════════════════════════════════════
+        //  Vente rapide
+        // ═══════════════════════════════════════
+
+        toggleVenteRapide() {
+            this.showVenteRapide = !this.showVenteRapide;
+            this.venteRapideNom = '';
+            this.venteRapidePrix = null;
+            this.venteRapideErreur = '';
+        },
+
+        ajouterVenteRapide() {
+            if (!this.venteRapideNom.trim()) {
+                this.venteRapideErreur = 'Le nom est requis.';
+                return;
+            }
+            if (!this.venteRapidePrix || this.venteRapidePrix <= 0) {
+                this.venteRapideErreur = 'Le prix doit être supérieur à 0.';
+                return;
+            }
+            const key = `libre_${++this.venteRapideCounter}`;
+            this.panier = {
+                ...this.panier,
+                [key]: {
+                    type: 'libre',
+                    id: key,
+                    nom: this.venteRapideNom.trim(),
+                    prix: Math.round(this.venteRapidePrix),
+                    quantite: 1,
+                },
+            };
+            this.venteRapideNom = '';
+            this.venteRapidePrix = null;
+            this.venteRapideErreur = '';
+            this.showVenteRapide = false;
         },
 
         // ═══════════════════════════════════════

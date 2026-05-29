@@ -122,7 +122,7 @@
                         <td class="px-5 py-2.5">
                             <div>
                                 <span class="font-medium text-gray-900">{{ $item->nom_snapshot }}</span>
-                                <span class="ml-1.5 text-xs text-gray-400">{{ $item->type === 'prestation' ? 'Prestation' : 'Produit' }}</span>
+                                <span class="ml-1.5 text-xs text-gray-400">{{ match($item->type) { 'prestation' => 'Prestation', 'produit' => 'Produit', 'libre' => 'Article libre', default => ucfirst($item->type) } }}</span>
                             </div>
                         </td>
                         <td class="px-5 py-2.5 text-right text-gray-900">{{ $item->quantite }}</td>
