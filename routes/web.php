@@ -94,6 +94,26 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         // Journal d'activité (audit log)
         Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
 
+        // Fournisseurs
+        Route::resource('fournisseurs', \App\Http\Controllers\Dashboard\FournisseurController::class)
+            ->except(['create', 'show', 'edit']);
+
+        // Bons de commande
+        Route::resource('bons-commande', \App\Http\Controllers\Dashboard\BonCommandeController::class)
+            ->except(['edit', 'update']);
+        Route::post('bons-commande/{bonsCommande}/envoyer', [\App\Http\Controllers\Dashboard\BonCommandeController::class, 'envoyer'])
+            ->name('bons-commande.envoyer');
+        Route::post('bons-commande/{bonsCommande}/recevoir', [\App\Http\Controllers\Dashboard\BonCommandeController::class, 'recevoir'])
+            ->name('bons-commande.recevoir');
+        Route::post('bons-commande/{bonsCommande}/annuler', [\App\Http\Controllers\Dashboard\BonCommandeController::class, 'annuler'])
+            ->name('bons-commande.annuler');
+
+        // Inventaires
+        Route::resource('inventaires', \App\Http\Controllers\Dashboard\InventaireController::class)
+            ->except(['edit', 'update']);
+        Route::post('inventaires/{inventaire}/valider', [\App\Http\Controllers\Dashboard\InventaireController::class, 'valider'])
+            ->name('inventaires.valider');
+
         // Codes de réduction (feature: codes_reduction)
         Route::middleware('feature:codes_reduction')->group(function () {
             Route::get('codes-reduction', [CodeReductionController::class, 'index'])->name('codes-reduction.index');

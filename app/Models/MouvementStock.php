@@ -14,11 +14,12 @@ class MouvementStock extends Model
 
     protected $fillable = [
         'institut_id', 'produit_id', 'user_id', 'vente_id',
-        'type', 'quantite', 'stock_avant', 'stock_apres', 'note',
+        'type', 'quantite', 'prix_unitaire', 'stock_avant', 'stock_apres', 'note',
     ];
 
     protected $casts = [
         'quantite' => 'integer',
+        'prix_unitaire' => 'integer',
         'stock_avant' => 'integer',
         'stock_apres' => 'integer',
     ];

@@ -398,11 +398,34 @@
                             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                                 <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2M8 7V5a2 2 0 0 0-4 0v2"/>
                             </svg>
-                            <span class="flex-1">Inventaire</span>
+                            <span class="flex-1">Mouvements</span>
                             @if($alertesStock > 0)
                                 <span class="flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold">{{ $alertesStock }}</span>
                             @endif
                         </a>
+                        @if(auth()->user()->isAdmin())
+                        <a href="{{ route('dashboard.fournisseurs.index') }}"
+                           class="sidebar-link text-sm {{ request()->routeIs('dashboard.fournisseurs.*') ? 'active' : '' }}">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            </svg>
+                            <span class="flex-1">Fournisseurs</span>
+                        </a>
+                        <a href="{{ route('dashboard.bons-commande.index') }}"
+                           class="sidebar-link text-sm {{ request()->routeIs('dashboard.bons-commande.*') ? 'active' : '' }}">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M9 2h6l4 4v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><polyline points="9 12 11 14 15 10"/>
+                            </svg>
+                            <span class="flex-1">Bons de commande</span>
+                        </a>
+                        <a href="{{ route('dashboard.inventaires.index') }}"
+                           class="sidebar-link text-sm {{ request()->routeIs('dashboard.inventaires.*') ? 'active' : '' }}">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                            </svg>
+                            <span class="flex-1">Inventaires</span>
+                        </a>
+                        @endif
                     </div>
                 </div>
                 @endif
