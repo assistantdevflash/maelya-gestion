@@ -9,7 +9,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Prestation extends Model
 {
-    use HasUuids, SoftDeletes, BelongsToInstitut;
+    use HasUuids, SoftDeletes, BelongsToInstitut, \App\Traits\Auditable;
+
+    public function auditLabel(): string
+    {
+        return 'Prestation ' . ($this->nom ?? $this->id);
+    }
 
     protected $fillable = [
         'institut_id', 'categorie_id', 'nom', 'prix', 'duree', 'description', 'actif',

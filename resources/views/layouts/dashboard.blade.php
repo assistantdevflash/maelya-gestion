@@ -411,6 +411,14 @@
                 @if(auth()->user()->isAdmin())
                 <p class="px-3 mt-14 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">Compte</p>
 
+                <a href="{{ route('dashboard.audit.index') }}"
+                   class="sidebar-link {{ request()->routeIs('dashboard.audit.*') ? 'active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                    </svg>
+                    Journal d'activité
+                </a>
+
                 <a href="{{ route('abonnement.plans') }}"
                    class="sidebar-link {{ request()->routeIs('abonnement.plans') || request()->routeIs('abonnement.expire') ? 'active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">

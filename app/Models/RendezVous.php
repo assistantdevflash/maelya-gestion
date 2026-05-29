@@ -8,7 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class RendezVous extends Model
 {
-    use HasUuids, BelongsToInstitut;
+    use HasUuids, BelongsToInstitut, \App\Traits\Auditable;
+
+    public function auditLabel(): string
+    {
+        return 'RDV ' . ($this->client_nom ?? '') . ' ' . optional($this->debut_le)->format('d/m/Y H:i');
+    }
 
     protected $table = 'rendez_vous';
 

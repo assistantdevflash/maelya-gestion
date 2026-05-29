@@ -17,6 +17,7 @@ use App\Http\Controllers\Dashboard\MesInstitutsController;
 use App\Http\Controllers\Dashboard\ParrainageController;
 use App\Http\Controllers\Dashboard\FideliteController;
 use App\Http\Controllers\Dashboard\ProfilController;
+use App\Http\Controllers\Dashboard\AuditLogController;
 use App\Http\Controllers\Dashboard\RdvController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminInstitutController;
@@ -90,6 +91,9 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
 
     // ── Admin uniquement ──────────────────────────────────────────────
     Route::middleware('role:admin')->group(function () {
+        // Journal d'activité (audit log)
+        Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
+
         // Codes de réduction (feature: codes_reduction)
         Route::middleware('feature:codes_reduction')->group(function () {
             Route::get('codes-reduction', [CodeReductionController::class, 'index'])->name('codes-reduction.index');

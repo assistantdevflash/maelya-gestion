@@ -9,7 +9,12 @@ use Illuminate\Support\Str;
 
 class Vente extends Model
 {
-    use HasUuids, BelongsToInstitut;
+    use HasUuids, BelongsToInstitut, \App\Traits\Auditable;
+
+    public function auditLabel(): string
+    {
+        return 'Vente #' . ($this->numero ?? $this->id);
+    }
 
     protected $fillable = [
         'institut_id', 'client_id', 'user_id', 'numero', 'total',

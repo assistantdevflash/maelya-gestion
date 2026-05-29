@@ -8,7 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Depense extends Model
 {
-    use HasUuids, BelongsToInstitut;
+    use HasUuids, BelongsToInstitut, \App\Traits\Auditable;
+
+    public function auditLabel(): string
+    {
+        return 'Dépense ' . ($this->libelle ?? $this->id);
+    }
 
     protected $fillable = [
         'institut_id', 'user_id', 'description', 'categorie',

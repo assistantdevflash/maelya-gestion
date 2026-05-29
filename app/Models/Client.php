@@ -9,7 +9,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Client extends Model
 {
-    use HasUuids, SoftDeletes, BelongsToInstitut;
+    use HasUuids, SoftDeletes, BelongsToInstitut, \App\Traits\Auditable;
+
+    /** @var array Colonnes à ignorer (points_fidelite tracé par HistoriquePoints) */
+    protected array $auditExclude = ['points_fidelite'];
+
+    public function auditLabel(): string
+    {
+        return 'Client ' . trim(($this->prenom ?? '') . ' ' . ($this->nom ?? ''));
+    }
 
     protected $fillable = [
         'institut_id', 'prenom', 'nom', 'telephone', 'email',

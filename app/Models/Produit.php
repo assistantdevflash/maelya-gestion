@@ -9,7 +9,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Produit extends Model
 {
-    use HasUuids, SoftDeletes, BelongsToInstitut;
+    use HasUuids, SoftDeletes, BelongsToInstitut, \App\Traits\Auditable;
+
+    /** @var array Colonnes à ignorer dans l'audit (stock change tracé par MouvementStock) */
+    protected array $auditExclude = ['stock'];
+
+    public function auditLabel(): string
+    {
+        return 'Produit ' . ($this->nom ?? $this->id);
+    }
 
     protected $fillable = [
         'institut_id', 'categorie_id', 'nom', 'reference',
