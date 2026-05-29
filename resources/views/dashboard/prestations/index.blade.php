@@ -191,6 +191,11 @@
             catFixe: false,
             formAction: '{{ route('dashboard.prestations.store') }}',
             form: { categorie_prestation_id: '', nom: '', prix: '', duree: '', description: '', actif: true },
+            categories: @js($categories->map(fn($c) => ['id' => $c->id, 'nom' => $c->nom])->values()),
+            showNewCat: false,
+            newCatNom: '',
+            newCatLoading: false,
+            newCatErreur: '',
             resetForm() {
                 this.isEdit = false;
                 this.catFixe = false;
@@ -210,6 +215,36 @@
                     actif: detail.actif
                 };
                 this.show = true;
+            },
+            async createCategorie() {
+                if (!this.newCatNom.trim()) return;
+                this.newCatLoading = true;
+                this.newCatErreur = '';
+                try {
+                    const res = await fetch('{{ route('categories-prestations.store') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ nom: this.newCatNom.trim() })
+                    });
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => ({}));
+                        this.newCatErreur = err.message || 'Erreur lors de la création.';
+                        return;
+                    }
+                    const data = await res.json();
+                    this.categories.push(data);
+                    this.form.categorie_prestation_id = data.id;
+                    this.newCatNom = '';
+                    this.showNewCat = false;
+                } catch (e) {
+                    this.newCatErreur = 'Erreur lors de la création.';
+                } finally {
+                    this.newCatLoading = false;
+                }
             }
          }"
          x-show="show"
@@ -218,7 +253,7 @@
          @open-prestation.window="resetForm(); show = true"
          @open-prestation-with-cat.window="resetForm(); form.categorie_prestation_id = $event.detail.categorieId; catFixe = true; show = true"
          @edit-prestation.window="editPrestation($event.detail)"
-         @keydown.escape.window="show = false">
+         @keydown.escape.window="showNewCat ? showNewCat = false : show = false">
         <div class="modal max-w-lg" x-transition @click.stop>
             <div class="modal-header">
                 <h3 class="modal-title" x-text="isEdit ? 'Modifier la prestation' : 'Nouvelle prestation'"></h3>
@@ -242,13 +277,18 @@
                         </template>
                         <select name="categorie_prestation_id" required x-model="form.categorie_prestation_id" :disabled="catFixe" class="form-select" :class="catFixe ? 'opacity-60 cursor-not-allowed bg-gray-50' : ''">
                             <option value="">Choisir une catégorie...</option>
-                            @foreach($categories as $cat)
-                                <option value="{{ $cat->id }}">{{ $cat->nom }}</option>
-                            @endforeach
+                            <template x-for="cat in categories" :key="cat.id">
+                                <option :value="cat.id" x-text="cat.nom"></option>
+                            </template>
                         </select>
-                        @if($categories->isEmpty())
-                            <p class="text-xs text-amber-600 mt-1">Aucune catégorie. Fermez et créez-en une en bas de page.</p>
-                        @endif
+                        <button type="button" x-show="!catFixe"
+                                @click="showNewCat = true; newCatNom = ''; newCatErreur = ''; $nextTick(() => $refs.newCatInput && $refs.newCatInput.focus())"
+                                class="mt-1.5 text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            Créer une catégorie
+                        </button>
                     </div>
 
                     <div class="form-group">
@@ -293,6 +333,54 @@
                         <button type="submit" class="btn-primary flex-1 justify-center">Enregistrer</button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        {{-- Sous-modal : Créer une catégorie --}}
+        <div x-show="showNewCat"
+             x-cloak
+             class="fixed inset-0 z-[70] flex items-center justify-center px-4"
+             x-transition:enter="transition ease-out duration-150"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-100"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0">
+            <div class="absolute inset-0 bg-black/40" @click="showNewCat = false"></div>
+            <div class="relative bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-sm p-6 space-y-4"
+                 @click.stop
+                 x-transition:enter="transition ease-out duration-150"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100">
+                <div class="flex items-center justify-between">
+                    <h4 class="font-semibold text-gray-900 dark:text-gray-100">Nouvelle catégorie</h4>
+                    <button type="button" @click="showNewCat = false" class="btn-icon text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nom de la catégorie *</label>
+                    <input type="text" x-model="newCatNom"
+                           @keydown.enter.prevent="createCategorie()"
+                           x-ref="newCatInput"
+                           class="form-input" placeholder="Ex: Soins visage" maxlength="100" autocomplete="off">
+                    <p x-show="newCatErreur" x-text="newCatErreur" class="text-xs text-red-500 mt-1"></p>
+                </div>
+                <div class="flex gap-3">
+                    <button type="button" @click="showNewCat = false" class="btn btn-outline flex-1 justify-center">Annuler</button>
+                    <button type="button" @click="createCategorie()"
+                            :disabled="newCatLoading || !newCatNom.trim()"
+                            class="btn-primary flex-1 justify-center disabled:opacity-60 disabled:cursor-not-allowed">
+                        <template x-if="newCatLoading">
+                            <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                        </template>
+                        <span x-show="!newCatLoading">Créer et sélectionner</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>

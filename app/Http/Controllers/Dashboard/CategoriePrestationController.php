@@ -16,7 +16,12 @@ class CategoriePrestationController extends Controller
     public function store(Request $request)
     {
         $request->validate(['nom' => ['required', 'string', 'max:100']]);
-        CategoriePrestation::create(['nom' => $request->nom, 'ordre' => 0]);
+        $categorie = CategoriePrestation::create(['nom' => $request->nom, 'ordre' => 0]);
+
+        if ($request->wantsJson()) {
+            return response()->json(['id' => $categorie->id, 'nom' => $categorie->nom], 201);
+        }
+
         return back()->with('success', 'Catégorie créée.');
     }
 
