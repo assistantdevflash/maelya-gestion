@@ -39,11 +39,19 @@ class StockController extends Controller
     {
         $data = $request->validate([
             'quantite' => ['required', 'integer', 'min:1'],
+            'prix_unitaire' => ['nullable', 'integer', 'min:0'],
             'note' => ['nullable', 'string', 'max:200'],
         ]);
 
         DB::transaction(function () use ($produit, $data) {
             $stockAvant = $produit->stock;
+            $prixUnit = (int) ($data['prix_unitaire'] ?? $produit->prix_achat ?? 0);
+
+            // Recalcule le CMP AVANT incrément (utilise le stock courant)
+            if ($prixUnit > 0) {
+                $produit->recalculerCmp($data['quantite'], $prixUnit);
+            }
+
             $produit->increment('stock', $data['quantite']);
 
             MouvementStock::create([
@@ -52,13 +60,14 @@ class StockController extends Controller
                 'user_id' => Auth::id(),
                 'type' => 'entree',
                 'quantite' => $data['quantite'],
+                'prix_unitaire' => $prixUnit ?: null,
                 'stock_avant' => $stockAvant,
                 'stock_apres' => $stockAvant + $data['quantite'],
                 'note' => $data['note'] ?? 'Réapprovisionnement',
             ]);
         });
 
-        return back()->with('success', "Stock mis à jour : +{$data['quantite']} {$produit->unite}.");
+        return back()->with('success', "Stock mis à jour : +{$data['quantite']} {$produit->unite} (CMP recalculé).");
     }
 
     public function correction(Request $request, Produit $produit)

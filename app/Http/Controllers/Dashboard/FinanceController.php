@@ -35,6 +35,17 @@ class FinanceController extends Controller
         $benefice = $totalVentes - $totalDepenses;
         $marge = $totalVentes > 0 ? round(($benefice / $totalVentes) * 100, 1) : 0;
 
+        // Valorisation du stock + marge potentielle (basée sur CMP)
+        $produitsValorisation = \App\Models\Produit::where('actif', true)
+            ->where('stock', '>', 0)
+            ->get(['stock', 'cout_moyen_pondere', 'prix_achat', 'prix_vente']);
+        $valeurStock = $produitsValorisation->sum(fn ($p) =>
+            $p->stock * ($p->cout_moyen_pondere ?: $p->prix_achat)
+        );
+        $margePotentielleStock = $produitsValorisation->sum(fn ($p) =>
+            $p->stock * max(0, $p->prix_vente - ($p->cout_moyen_pondere ?: $p->prix_achat))
+        );
+
         // Répartition dépenses par catégorie
         $depensesParCat = Depense::whereDate('date', '>=', $debut)
             ->whereDate('date', '<=', $fin)
@@ -72,7 +83,8 @@ class FinanceController extends Controller
 
         return view('dashboard.finances.index', compact(
             'totalVentes', 'totalDepenses', 'nbVentes', 'benefice', 'marge',
-            'depensesParCat', 'depenses', 'evolutionMois', 'periode', 'debut', 'fin'
+            'depensesParCat', 'depenses', 'evolutionMois', 'periode', 'debut', 'fin',
+            'valeurStock', 'margePotentielleStock'
         ));
     }
 

@@ -55,6 +55,8 @@
                             <th class="px-4 py-3 text-left font-semibold text-gray-600 hidden md:table-cell">Référence</th>
                             <th class="px-4 py-3 text-right font-semibold text-gray-600">Stock</th>
                             <th class="px-4 py-3 text-right font-semibold text-gray-600 hidden sm:table-cell">Seuil</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-600 hidden lg:table-cell">CMP</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-600 hidden lg:table-cell">Marge</th>
                             <th class="px-4 py-3 text-right font-semibold text-gray-600">Actions</th>
                         </tr>
                     </thead>
@@ -83,6 +85,16 @@
                             </td>
                             <td class="px-4 py-3 text-right text-gray-400 hidden sm:table-cell">
                                 {{ $produit->seuil_alerte }} {{ $produit->unite }}
+                            </td>
+                            <td class="px-4 py-3 text-right text-xs text-gray-500 hidden lg:table-cell font-mono">
+                                {{ number_format($produit->cout_moyen_pondere ?: $produit->prix_achat, 0, ',', ' ') }} F
+                            </td>
+                            <td class="px-4 py-3 text-right text-xs hidden lg:table-cell">
+                                @php($mu = $produit->marge_unitaire)
+                                <span class="{{ $mu > 0 ? 'text-emerald-600' : 'text-gray-400' }} font-semibold">
+                                    {{ number_format($mu, 0, ',', ' ') }} F
+                                </span>
+                                <span class="text-gray-400 text-[10px]">({{ $produit->marge_pourcent }}%)</span>
                             </td>
                             @if(auth()->user()->isAdmin())
                             <td class="px-4 py-3">
@@ -217,6 +229,10 @@
                     <div class="form-group">
                         <label class="form-label">Quantité à ajouter *</label>
                         <input type="number" name="quantite" required min="1" class="form-input" placeholder="10">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Prix d'achat unitaire (FCFA) <span class="text-xs text-gray-400">— recalcule le CMP</span></label>
+                        <input type="number" name="prix_unitaire" min="0" class="form-input" placeholder="Ex: 1500">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Note</label>

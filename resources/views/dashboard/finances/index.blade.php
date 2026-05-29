@@ -77,6 +77,22 @@
             </div>
         </div>
 
+        {{-- Valorisation stock + marge potentielle --}}
+        @if(($valeurStock ?? 0) > 0 || ($margePotentielleStock ?? 0) > 0)
+        <div class="grid grid-cols-2 gap-4">
+            <div class="stat-card">
+                <p class="text-xs text-gray-500 mb-1">Valeur du stock (CMP)</p>
+                <p class="text-xl font-bold text-blue-600">{{ number_format($valeurStock ?? 0, 0, ',', ' ') }}</p>
+                <p class="text-xs text-gray-400">FCFA immobilisés</p>
+            </div>
+            <div class="stat-card">
+                <p class="text-xs text-gray-500 mb-1">Marge potentielle (si tout vendu)</p>
+                <p class="text-xl font-bold text-emerald-600">{{ number_format($margePotentielleStock ?? 0, 0, ',', ' ') }}</p>
+                <p class="text-xs text-gray-400">FCFA</p>
+            </div>
+        </div>
+        @endif
+
         {{-- Dépenses --}}
         <div class="card overflow-hidden">
             <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">

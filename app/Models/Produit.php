@@ -21,16 +21,53 @@ class Produit extends Model
 
     protected $fillable = [
         'institut_id', 'categorie_id', 'nom', 'reference',
-        'prix_achat', 'prix_vente', 'stock', 'seuil_alerte', 'unite', 'description', 'actif',
+        'prix_achat', 'cout_moyen_pondere', 'prix_vente', 'stock', 'seuil_alerte', 'unite', 'description', 'actif',
     ];
 
     protected $casts = [
         'actif' => 'boolean',
         'prix_achat' => 'integer',
+        'cout_moyen_pondere' => 'integer',
         'prix_vente' => 'integer',
         'stock' => 'integer',
         'seuil_alerte' => 'integer',
     ];
+
+    /**
+     * Met à jour le CMP suite à une entrée de stock.
+     * Formule : ((stock_actuel × CMP) + (quantite_entrée × prix_unitaire)) / (stock_actuel + quantite_entrée)
+     */
+    public function recalculerCmp(int $quantiteEntree, int $prixUnitaire): void
+    {
+        $stockAvant = (int) $this->stock;
+        $cmpAvant   = (int) ($this->cout_moyen_pondere ?: $this->prix_achat);
+        $nouveauStock = $stockAvant + $quantiteEntree;
+
+        if ($nouveauStock <= 0) {
+            return;
+        }
+
+        $nouveauCmp = (int) round(
+            (($stockAvant * $cmpAvant) + ($quantiteEntree * $prixUnitaire)) / $nouveauStock
+        );
+
+        $this->cout_moyen_pondere = $nouveauCmp;
+        $this->save();
+    }
+
+    /** Marge unitaire en FCFA (prix vente - CMP, fallback prix achat) */
+    public function getMargeUnitaireAttribute(): int
+    {
+        $cout = $this->cout_moyen_pondere ?: $this->prix_achat;
+        return max(0, $this->prix_vente - $cout);
+    }
+
+    /** Marge % */
+    public function getMargePourcentAttribute(): float
+    {
+        if ($this->prix_vente <= 0) return 0;
+        return round(($this->marge_unitaire / $this->prix_vente) * 100, 1);
+    }
 
     public function categorie()
     {
