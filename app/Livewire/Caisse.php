@@ -8,6 +8,7 @@ use App\Models\Client;
 use App\Models\CodeReduction;
 use App\Models\Prestation;
 use App\Models\Produit;
+use App\Models\RendezVous;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -26,9 +27,26 @@ class Caisse extends Component
     public string $newClientNaissanceJour = '';
     public string $newClientNotes = '';
 
-    public function mount(?string $client = null)
+    /** Prestations pré-remplies (depuis un RDV) à envoyer à Alpine */
+    public array $prefilledItems = [];
+
+    public function mount(?string $client = null, ?string $rdv = null)
     {
         $this->clientId = $client;
+
+        if ($rdv) {
+            $rendezVous = RendezVous::with('prestations:id,nom,prix')->find($rdv);
+            if ($rendezVous) {
+                if (! $this->clientId && $rendezVous->client_id) {
+                    $this->clientId = $rendezVous->client_id;
+                }
+                $this->prefilledItems = $rendezVous->prestations->map(fn ($p) => [
+                    'id'   => $p->id,
+                    'nom'  => $p->nom,
+                    'prix' => (int) $p->prix,
+                ])->values()->all();
+            }
+        }
     }
 
     private function institutId(): string

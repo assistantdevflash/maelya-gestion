@@ -4,6 +4,7 @@
         produits: @js($produits),
         catPrestations: @js($catPrestations),
         catProduits: @js($catProduits),
+        prefilledItems: @js($this->prefilledItems),
     })"
     class="grid lg:grid-cols-5 gap-5 h-full"
 >

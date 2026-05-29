@@ -5,13 +5,31 @@
  * côté client pour un rendu instantané. Seuls la recherche client, le code
  * promo et la validation de vente passent par Livewire (requêtes DB).
  */
-export default function caisseApp({ prestations, produits, catPrestations, catProduits }) {
+export default function caisseApp({ prestations, produits, catPrestations, catProduits, prefilledItems = [] }) {
     return {
         // ── Catalogue (chargé une seule fois) ──
         prestations,
         produits,
         catPrestations,
         catProduits,
+
+        // ── Pré-remplissage (ex: depuis un RDV) ──
+        prefilledItems,
+
+        init() {
+            if (Array.isArray(this.prefilledItems) && this.prefilledItems.length) {
+                const next = {};
+                this.prefilledItems.forEach(p => {
+                    const key = `prestation_${p.id}`;
+                    if (next[key]) {
+                        next[key].quantite++;
+                    } else {
+                        next[key] = { type: 'prestation', id: p.id, nom: p.nom, prix: p.prix, quantite: 1 };
+                    }
+                });
+                this.panier = { ...this.panier, ...next };
+            }
+        },
 
         // ── État filtres ──
         search: '',
