@@ -15,8 +15,8 @@ class LandingController extends Controller
         $plans = PlanAbonnement::where('actif', true)->orderBy('ordre')->get();
         return view('landing.index', [
             'plans' => $plans,
-            'title' => 'Logiciel de gestion pour instituts de beauté en Côte d\'Ivoire',
-            'metaDescription' => 'Maëlya Gestion : caisse, clients, stocks, employées et finances. La solution tout-en-un pour les instituts de beauté en Côte d\'Ivoire. Essai gratuit 14 jours.',
+            'title' => 'Logiciel de gestion pour salons et instituts en Côte d\'Ivoire — Maëlya',
+            'metaDescription' => 'Maëlya Gestion : caisse, clients, rendez-vous, stocks et finances. La solution tout-en-un pour les salons de coiffure, instituts de beauté, spas et bien d\'autres. Essai gratuit 14 jours.',
         ]);
     }
 
@@ -24,7 +24,7 @@ class LandingController extends Controller
     {
         return view('landing.apropos', [
             'title' => 'À propos',
-            'metaDescription' => 'Découvrez Maëlya Gestion, la solution de gestion conçue pour les instituts de beauté ivoiriens. Notre mission : simplifier votre quotidien.',
+            'metaDescription' => 'Découvrez Maëlya Gestion, la solution de gestion conçue pour les professionnels du bien-être et de la beauté en Côte d\'Ivoire. Notre mission : simplifier votre quotidien.',
         ]);
     }
 
