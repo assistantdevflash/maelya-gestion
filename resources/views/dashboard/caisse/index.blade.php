@@ -55,7 +55,7 @@
                 }
             "
         >
-            @livewire('caisse', ['client' => request('client')])
+            @livewire('caisse', ['client' => request('client'), 'rdv' => request('rdv')])
         </div>
 
         {{-- Formulaire caché pour soumettre via POST classique --}}
