@@ -106,7 +106,7 @@
                         . "Total : " . number_format($vente->total, 0, ',', ' ') . " FCFA\n"
                         . "Mode de paiement : " . ucfirst(str_replace('_', ' ', $vente->mode_paiement)) . "\n\n"
                         . "📄 Votre ticket : " . $ticketUrl . "\n\n"
-                        . "À très bientôt 💖";
+                        . "À très bientôt ❤️";
                 @endphp
                 @if($waTel && $vente->statut === 'validee')
                 <a href="https://wa.me/{{ $waTel }}?text={{ rawurlencode($waMessage) }}" target="_blank" rel="noopener"
