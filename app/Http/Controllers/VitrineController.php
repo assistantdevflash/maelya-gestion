@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\NouveauRdvVitrineClient;
+use App\Mail\NouveauRdvVitrineEtablissement;
 use App\Models\Institut;
 use App\Models\Prestation;
 use App\Models\RendezVous;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class VitrineController extends Controller
 {
@@ -30,7 +33,7 @@ class VitrineController extends Controller
             ->get()
             ->groupBy(fn($p) => $p->categorie?->nom ?? 'Autres');
 
-        $prestationsFlat = $institut->prestations()->where('actif', true)->orderBy('nom')->get(['id', 'nom', 'prix', 'duree']);
+        $prestationsFlat = $institut->prestations()->with('categorie')->where('actif', true)->orderBy('nom')->get(['id', 'nom', 'prix', 'duree', 'categorie_id']);
 
         return view('vitrine.show', compact('institut', 'prestations', 'produits', 'prestationsFlat'));
     }
@@ -46,15 +49,23 @@ class VitrineController extends Controller
             'client_nom'       => ['required', 'string', 'max:150'],
             'client_telephone' => ['required', 'string', 'max:30'],
             'client_email'     => ['nullable', 'email', 'max:255'],
-            'prestation_id'    => ['required', 'uuid'],
+            'prestations'      => ['required', 'array', 'min:1'],
+            'prestations.*'    => ['required', 'uuid'],
             'debut_le'         => ['required', 'date', 'after:now'],
             'notes'            => ['nullable', 'string', 'max:500'],
         ]);
 
-        $prestation = Prestation::where('id', $data['prestation_id'])
+        // Vérifier que toutes les prestations appartiennent bien à cet institut
+        $prestations = Prestation::whereIn('id', $data['prestations'])
             ->where('institut_id', $institut->id)
             ->where('actif', true)
-            ->firstOrFail();
+            ->get();
+
+        if ($prestations->isEmpty()) {
+            return back()->withErrors(['prestations' => 'Veuillez sélectionner au moins une prestation valide.'])->withInput();
+        }
+
+        $dureeTotal = $prestations->sum('duree') ?: 30;
 
         $rdv = RendezVous::create([
             'institut_id'      => $institut->id,
@@ -62,12 +73,23 @@ class VitrineController extends Controller
             'client_telephone' => $data['client_telephone'],
             'client_email'     => $data['client_email'] ?? null,
             'debut_le'         => $data['debut_le'],
-            'duree_minutes'    => $prestation->duree ?? 30,
+            'duree_minutes'    => $dureeTotal,
             'statut'           => 'en_attente',
             'notes'            => $data['notes'] ?? null,
         ]);
 
-        $rdv->prestations()->attach($prestation->id);
+        $rdv->prestations()->attach($prestations->pluck('id'));
+
+        // ── Email à l'admin/propriétaire du salon ─────────────────────────
+        $adminEmail = $institut->email ?? $institut->proprietaire?->email;
+        if ($adminEmail) {
+            Mail::to($adminEmail)->queue(new NouveauRdvVitrineEtablissement($rdv));
+        }
+
+        // ── Email de confirmation au client (si email fourni) ──────────────
+        if (!empty($data['client_email'])) {
+            Mail::to($data['client_email'])->queue(new NouveauRdvVitrineClient($rdv));
+        }
 
         return back()->with('success', 'Votre demande de rendez-vous a bien été enregistrée. Nous vous recontacterons pour confirmation.');
     }

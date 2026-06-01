@@ -218,7 +218,9 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('vitrine.reserver', $institut->slug) }}" class="space-y-3">
+                    <form method="POST" action="{{ route('vitrine.reserver', $institut->slug) }}"
+                          x-data="rdvVitrineForm({{ $prestationsFlat->toJson() }}, @json(old('prestations', [])))"
+                          class="space-y-3">
                         @csrf
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
@@ -243,17 +245,77 @@
                                    placeholder="votre@email.com"
                                    class="rdv-input w-full px-3 py-2.5 rounded-lg text-sm">
                         </div>
+
+                        {{-- ── Sélecteur de prestations (search + checkbox) ── --}}
                         <div>
-                            <label class="block text-xs text-gray-300 mb-1 font-medium">Prestation souhaitée *</label>
-                            <select name="prestation_id" required class="rdv-input w-full px-3 py-2.5 rounded-lg text-sm">
-                                <option value="">— Choisir une prestation —</option>
-                                @foreach($prestationsFlat as $p)
-                                    <option value="{{ $p->id }}" {{ old('prestation_id') == $p->id ? 'selected' : '' }}>
-                                        {{ $p->nom }}{{ $p->duree ? ' ('.$p->duree.' min' : '' }}{{ $p->duree && $p->prix ? ' — ' : ($p->duree ? ')' : '') }}{{ $p->prix ? number_format($p->prix, 0, ',', ' ').' F)' : '' }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <label class="block text-xs text-gray-300 mb-1 font-medium">Prestation(s) souhaitée(s) *</label>
+
+                            {{-- Hidden inputs pour soumission --}}
+                            <template x-for="id in selectedIds" :key="'hi-'+id">
+                                <input type="hidden" name="prestations[]" :value="id">
+                            </template>
+
+                            {{-- Chips sélectionnées --}}
+                            <div x-show="selectedIds.length > 0" x-cloak class="flex flex-wrap gap-1.5 mb-2">
+                                <template x-for="id in selectedIds" :key="'chip-'+id">
+                                    <span class="inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-full text-xs font-semibold"
+                                          style="background:rgba(147,51,234,0.25);color:#d8b4fe;border:1px solid rgba(147,51,234,0.4);">
+                                        <span x-text="getNom(id)"></span>
+                                        <button type="button" @click="toggle(id)"
+                                                class="p-0.5 rounded-full hover:bg-white/10 transition">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    </span>
+                                </template>
+                            </div>
+
+                            {{-- Search + dropdown --}}
+                            <div @click.outside="open = false" class="relative">
+                                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style="color:#6b7280;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                                <input type="text" x-model="search"
+                                       @focus="open = true"
+                                       @input="open = true"
+                                       placeholder="Rechercher ou choisir une prestation…"
+                                       class="rdv-input w-full pl-9 pr-3 py-2.5 rounded-lg text-sm"
+                                       autocomplete="off">
+
+                                {{-- Dropdown --}}
+                                <div x-show="open" x-cloak
+                                     class="absolute z-[60] w-full mt-1 rounded-xl shadow-2xl max-h-52 overflow-y-auto"
+                                     style="background:#1e1e2e;border:1px solid rgba(255,255,255,0.12);">
+                                    <template x-for="p in filtered" :key="p.id">
+                                        <label class="flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors border-b last:border-0"
+                                               :class="selectedIds.includes(String(p.id))
+                                                   ? 'bg-purple-900/30'
+                                                   : 'hover:bg-white/5'"
+                                               style="border-color:rgba(255,255,255,0.06);">
+                                            <input type="checkbox"
+                                                   :checked="selectedIds.includes(String(p.id))"
+                                                   @change="toggle(String(p.id))"
+                                                   class="w-4 h-4 flex-shrink-0 rounded"
+                                                   style="accent-color:#9333ea;">
+                                            <span class="flex-1 min-w-0">
+                                                <span class="block text-sm font-medium" style="color:#f9fafb;" x-text="p.nom"></span>
+                                                <span class="text-xs" style="color:#9ca3af;"
+                                                      x-text="[p.categorie?.nom, p.duree ? p.duree + ' min' : null, p.prix ? new Intl.NumberFormat('fr-CI').format(p.prix) + ' F' : null].filter(Boolean).join(' · ')"></span>
+                                            </span>
+                                            <svg x-show="selectedIds.includes(String(p.id))"
+                                                 class="w-4 h-4 flex-shrink-0" style="color:#a855f7;"
+                                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                        </label>
+                                    </template>
+                                    <p x-show="filtered.length === 0"
+                                       class="text-sm text-center py-3" style="color:#6b7280;">Aucune prestation trouvée.</p>
+                                </div>
+                            </div>
                         </div>
+
                         <div>
                             <label class="block text-xs text-gray-300 mb-1 font-medium">Date et heure *</label>
                             <input type="datetime-local" name="debut_le" required
@@ -284,6 +346,34 @@
     <footer class="mt-16 border-t border-white/5 py-6 text-center text-xs text-gray-600">
         <p>Propulsé par <a href="{{ url('/') }}" class="text-primary-400 hover:underline">Maëlya Gestion</a></p>
     </footer>
+
+<script>
+function rdvVitrineForm(prestations, selectedIds) {
+    return {
+        prestations: prestations,
+        selectedIds: (selectedIds || []).map(String),
+        search: '',
+        open: false,
+
+        get filtered() {
+            if (!this.search) return this.prestations;
+            const q = this.search.toLowerCase();
+            return this.prestations.filter(p => p.nom.toLowerCase().includes(q));
+        },
+
+        toggle(id) {
+            const sid = String(id);
+            const idx = this.selectedIds.indexOf(sid);
+            idx === -1 ? this.selectedIds.push(sid) : this.selectedIds.splice(idx, 1);
+        },
+
+        getNom(id) {
+            const p = this.prestations.find(p => String(p.id) === String(id));
+            return p ? p.nom : '';
+        },
+    }
+}
+</script>
 
 </body>
 </html>
