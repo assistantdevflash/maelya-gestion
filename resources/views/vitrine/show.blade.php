@@ -340,6 +340,32 @@
         </div>
         @endif
 
+        {{-- ── AVIS CLIENTS ──────────────────────────────────────────── --}}
+        @if($avis->count() > 0)
+        <section id="avis" class="mt-12">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold text-white">Avis clients</h2>
+                @if($noteMoyenne)
+                    <div class="text-yellow-400 font-semibold">
+                        ★ {{ number_format($noteMoyenne, 1) }} / 5
+                        <span class="text-gray-400 text-sm">({{ $nbAvis }} avis)</span>
+                    </div>
+                @endif
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                @foreach($avis as $a)
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-4">
+                        <div class="text-yellow-400 mb-1">{{ str_repeat('★', (int)$a->note) }}{{ str_repeat('☆', 5 - (int)$a->note) }}</div>
+                        @if($a->commentaire)
+                            <p class="text-gray-200 text-sm mb-2">« {{ $a->commentaire }} »</p>
+                        @endif
+                        <p class="text-xs text-gray-400">— {{ $a->client_nom_snap ?: 'Client anonyme' }} · {{ $a->repondu_le?->format('d/m/Y') }}</p>
+                    </div>
+                @endforeach
+            </div>
+        </section>
+        @endif
+
     </main>
 
     {{-- ── FOOTER ────────────────────────────────────────────────────────── --}}

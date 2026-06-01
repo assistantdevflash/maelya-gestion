@@ -58,6 +58,14 @@ Route::get('/sitemap.xml', [LandingController::class, 'sitemap'])->name('sitemap
 Route::get('/e/{slug}', [VitrineController::class, 'show'])->name('vitrine.show');
 Route::post('/e/{slug}/reserver', [VitrineController::class, 'reserver'])->name('vitrine.reserver');
 
+// ─── Avis client public (sondage post-visite) ────────────────────────────────
+Route::get('/avis/{token}', [\App\Http\Controllers\AvisPublicController::class, 'show'])
+    ->middleware('throttle:30,1')
+    ->name('public.avis.show');
+Route::post('/avis/{token}', [\App\Http\Controllers\AvisPublicController::class, 'submit'])
+    ->middleware('throttle:10,1')
+    ->name('public.avis.submit');
+
 // ─── Ticket PDF public (lien partageable, accès par UUID) ─────────────────────
 Route::get('/ticket/{id}', [VenteController::class, 'ticketPdfPublic'])
     ->middleware('throttle:30,1')
@@ -142,6 +150,11 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         // Avoirs (retours / remboursements → code de réduction)
         Route::get('avoirs', [\App\Http\Controllers\Dashboard\AvoirController::class, 'index'])->name('avoirs.index');
         Route::post('ventes/{vente}/avoirs', [\App\Http\Controllers\Dashboard\AvoirController::class, 'store'])->name('ventes.avoirs.store');
+
+        // Avis clients (modération)
+        Route::get('avis', [\App\Http\Controllers\Dashboard\AvisClientController::class, 'index'])->name('avis.index');
+        Route::post('avis/{avis}/approuver', [\App\Http\Controllers\Dashboard\AvisClientController::class, 'approuver'])->name('avis.approuver');
+        Route::post('avis/{avis}/rejeter', [\App\Http\Controllers\Dashboard\AvisClientController::class, 'rejeter'])->name('avis.rejeter');
 
         // Rendez-vous (feature: rdv)
         Route::middleware('feature:rdv')->group(function () {

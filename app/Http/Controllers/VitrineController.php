@@ -37,7 +37,18 @@ class VitrineController extends Controller
 
         $prestationsFlat = $institut->prestations()->with('categorie')->where('actif', true)->orderBy('nom')->get(['id', 'nom', 'prix', 'duree', 'categorie_id']);
 
-        return view('vitrine.show', compact('institut', 'prestations', 'produits', 'prestationsFlat'));
+        $avis = \App\Models\AvisClient::withoutGlobalScopes()
+            ->where('institut_id', $institut->id)
+            ->where('statut', 'approuve')
+            ->whereNotNull('repondu_le')
+            ->orderByDesc('repondu_le')
+            ->limit(10)
+            ->get();
+
+        $noteMoyenne = $avis->avg('note');
+        $nbAvis      = $avis->count();
+
+        return view('vitrine.show', compact('institut', 'prestations', 'produits', 'prestationsFlat', 'avis', 'noteMoyenne', 'nbAvis'));
     }
 
     public function reserver(Request $request, string $slug)

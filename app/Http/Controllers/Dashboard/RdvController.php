@@ -193,6 +193,27 @@ class RdvController extends Controller
     public function terminer(RendezVous $rdv)
     {
         $rdv->update(['statut' => 'termine']);
+
+        // Générer un avis client (sondage post-visite) si pas déjà créé pour ce RDV
+        if (! \App\Models\AvisClient::withoutGlobalScopes()->where('rdv_id', $rdv->id)->exists()) {
+            $avis = \App\Models\AvisClient::create([
+                'institut_id'     => $rdv->institut_id,
+                'client_id'       => $rdv->client_id,
+                'rdv_id'          => $rdv->id,
+                'client_nom_snap' => $rdv->client_nom,
+                'statut'          => 'en_attente',
+            ]);
+
+            if ($rdv->client_email) {
+                try {
+                    \Illuminate\Support\Facades\Mail::to($rdv->client_email)
+                        ->send(new \App\Mail\AvisDemande($avis, $rdv));
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('[Avis Mail] ' . $e->getMessage());
+                }
+            }
+        }
+
         return back()->with('success', 'Rendez-vous marqué comme terminé.');
     }
 
