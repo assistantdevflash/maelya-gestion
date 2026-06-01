@@ -89,10 +89,15 @@
                 @endif
 
                 @php
-                    $waTel = $vente->client?->telephone ? preg_replace('/[^0-9]/', '', $vente->client->telephone) : null;
-                    // Si le numéro commence par 0, on remplace par l'indicatif Sénégal (221) par défaut
-                    if ($waTel && str_starts_with($waTel, '0')) {
-                        $waTel = '221' . substr($waTel, 1);
+                    $waTel = $vente->client?->telephone ? preg_replace('/[^0-9+]/', '', $vente->client->telephone) : null;
+                    if ($waTel) {
+                        // Supprimer le + éventuel
+                        $waTel = ltrim($waTel, '+');
+                        // Numéro local ivoirien commençant par 0 → préfixe 225 (garder le 0)
+                        if (str_starts_with($waTel, '0')) {
+                            $waTel = '225' . $waTel;
+                        }
+                        // Déjà avec indicatif (225...) → OK tel quel
                     }
                     $waMessage = "Bonjour " . ($vente->client?->prenom ?? '') . ",\n\n"
                         . "Merci pour votre achat chez " . (auth()->user()->institut?->nom ?? 'notre institut') . " !\n"

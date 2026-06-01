@@ -223,7 +223,8 @@
                         <span class="spinner spinner-sm text-primary-500"></span> Recherche...
                     </div>
                     @if($this->clients->count() > 0)
-                    <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden mt-2 shadow-sm max-h-52 overflow-y-auto bg-white dark:bg-gray-800">
+                    <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden mt-2 shadow-sm max-h-52 overflow-y-auto bg-white dark:bg-gray-800"
+                         @click.stop @touchstart.stop>
                         @foreach($this->clients as $c)
                         <button wire:click="$set('clientId', '{{ $c->id }}')"
                                 class="w-full text-left px-3 py-2.5 text-sm hover:bg-primary-50/50 dark:hover:bg-gray-700 flex items-center gap-2.5 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors">
