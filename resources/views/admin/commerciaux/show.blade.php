@@ -69,9 +69,10 @@
             </form>
 
             <form method="POST" action="{{ route('admin.commerciaux.destroy', $commercial) }}"
-                  onsubmit="return confirm('Supprimer ce commercial ? Cette action est irréversible.')">
+                  id="form-del-commercial-{{ $commercial->id }}">
                 @csrf @method('DELETE')
-                <button type="submit"
+                <button type="button"
+                        onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-del-commercial-{{ $commercial->id }}',title:'Supprimer ce commercial ?',message:'Cette action est irr\u00e9versible.',confirmLabel:'Supprimer',confirmClass:'!bg-red-600 hover:!bg-red-700',danger:true}}))"
                         class="w-full px-4 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium transition-all text-left flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     Supprimer

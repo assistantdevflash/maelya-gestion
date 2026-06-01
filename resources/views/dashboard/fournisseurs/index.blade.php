@@ -32,9 +32,11 @@
                             <td class="px-4 py-3 text-xs">{{ $f->email ?? '—' }}</td>
                             <td class="px-4 py-3 text-right">
                                 <button @click="showForm = true; editing = {{ Js::from($f->toArray()) }}" class="text-primary-600 text-xs">Éditer</button>
-                                <form method="POST" action="{{ route('dashboard.fournisseurs.destroy', $f) }}" class="inline" onsubmit="return confirm('Supprimer ?')">
+                                <form method="POST" action="{{ route('dashboard.fournisseurs.destroy', $f) }}" id="form-del-fourn-{{ $f->id }}" class="inline">
                                     @csrf @method('DELETE')
-                                    <button class="text-red-600 text-xs ml-2">Suppr.</button>
+                                    <button type="button"
+                                            onclick="window.dispatchEvent(new CustomEvent('confirm-delete',{detail:{formId:'form-del-fourn-{{ $f->id }}',title:'Supprimer ce fournisseur ?',message:'Ce fournisseur sera d\u00e9finitivement supprim\u00e9.'}}))"
+                                            class="text-red-600 text-xs ml-2">Suppr.</button>
                                 </form>
                             </td>
                         </tr>

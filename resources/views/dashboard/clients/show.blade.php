@@ -344,10 +344,12 @@
                             </div>
                             @if(auth()->user()->isAdmin())
                             <form method="POST" action="{{ route('dashboard.clients.photos.destroy', [$client, $photo]) }}"
-                                  class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition"
-                                  onsubmit="return confirm('Supprimer cette photo ?')">
+                                  id="delete-photo-{{ $photo->id }}"
+                                  class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="w-6 h-6 bg-red-600 text-white rounded flex items-center justify-center hover:bg-red-700">
+                                <button type="button"
+                                        onclick="window.dispatchEvent(new CustomEvent('confirm-delete',{detail:{formId:'delete-photo-{{ $photo->id }}',title:'Supprimer cette photo ?',message:'Cette photo sera d\u00e9finitivement supprim\u00e9e.'}}))"
+                                        class="w-6 h-6 bg-red-600 text-white rounded flex items-center justify-center hover:bg-red-700">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                                 </button>
                             </form>

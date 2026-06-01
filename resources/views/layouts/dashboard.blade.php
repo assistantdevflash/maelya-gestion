@@ -709,7 +709,7 @@
         formId: null,
         processing: false,
         init() {
-            window.addEventListener('confirm-action', (e) => {
+            const open = (e) => {
                 this.title        = e.detail.title        || 'Confirmer';
                 this.message      = e.detail.message      || 'Êtes-vous sûr ?';
                 this.confirmLabel = e.detail.confirmLabel || 'Confirmer';
@@ -718,6 +718,17 @@
                 this.formId       = e.detail.formId;
                 this.processing   = false;
                 this.show = true;
+            };
+            window.addEventListener('confirm-action', open);
+            window.addEventListener('confirm-delete', (e) => {
+                open({ detail: {
+                    title:        e.detail.title   || 'Supprimer ?',
+                    message:      e.detail.message || 'Cette action est irr\u00e9versible.',
+                    confirmLabel: 'Supprimer',
+                    confirmClass: '!bg-red-600 hover:!bg-red-700',
+                    danger:       true,
+                    formId:       e.detail.formId,
+                }});
             });
         },
         proceed() {
@@ -735,8 +746,8 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                 </svg>
             </div>
-            <h3 class="text-lg font-display font-bold text-gray-900 mb-2" x-text="title"></h3>
-            <p class="text-sm text-gray-500 mb-6" x-text="message"></p>
+            <h3 class="text-lg font-display font-bold text-gray-900 dark:text-white mb-2" x-text="title"></h3>
+            <p class="text-sm text-gray-500 dark:text-slate-400 mb-6" x-text="message"></p>
             <div class="flex gap-3">
                 <button @click="show = false" :disabled="processing" class="btn btn-outline flex-1 justify-center">Annuler</button>
                 <button @click="proceed()" class="btn-primary flex-1 justify-center" :class="confirmClass" :disabled="processing">

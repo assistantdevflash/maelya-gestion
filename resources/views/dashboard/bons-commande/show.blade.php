@@ -77,9 +77,17 @@
                 <form method="POST" action="{{ route('dashboard.bons-commande.envoyer', $bon) }}">@csrf<button class="btn-outline">Marquer comme envoyé</button></form>
             @endif
             @if(!in_array($bon->statut, ['recu', 'annule']))
-                <form method="POST" action="{{ route('dashboard.bons-commande.annuler', $bon) }}" onsubmit="return confirm('Annuler ce bon ?')">@csrf<button class="btn-outline text-red-600">Annuler le bon</button></form>
+                <form method="POST" action="{{ route('dashboard.bons-commande.annuler', $bon) }}" id="form-annuler-bon-{{ $bon->id }}">@csrf
+                    <button type="button"
+                            onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-annuler-bon-{{ $bon->id }}',title:'Annuler ce bon de commande ?',message:'Le bon passera au statut annul\u00e9.',confirmLabel:'Annuler le bon',confirmClass:'!bg-amber-600 hover:!bg-amber-700',danger:true}}))"
+                            class="btn-outline text-red-600">Annuler le bon</button>
+                </form>
             @endif
-            <form method="POST" action="{{ route('dashboard.bons-commande.destroy', $bon) }}" onsubmit="return confirm('Supprimer définitivement ?')">@csrf @method('DELETE')<button class="btn-outline text-red-600">Supprimer</button></form>
+            <form method="POST" action="{{ route('dashboard.bons-commande.destroy', $bon) }}" id="form-del-bon-{{ $bon->id }}">@csrf @method('DELETE')
+                <button type="button"
+                        onclick="window.dispatchEvent(new CustomEvent('confirm-delete',{detail:{formId:'form-del-bon-{{ $bon->id }}',title:'Supprimer ce bon de commande ?',message:'Ce bon sera d\u00e9finitivement supprim\u00e9.'}}))"
+                        class="btn-outline text-red-600">Supprimer</button>
+            </form>
         </div>
     </div>
 </x-dashboard-layout>

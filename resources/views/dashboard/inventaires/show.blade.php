@@ -58,11 +58,17 @@
 
         @if($inventaire->statut === 'en_cours')
             <div class="flex gap-3">
-                <form method="POST" action="{{ route('dashboard.inventaires.valider', $inventaire) }}" onsubmit="return confirm('Valider et appliquer les écarts sur le stock ?')">
-                    @csrf<button class="btn-primary">Valider l'inventaire</button>
+                <form method="POST" action="{{ route('dashboard.inventaires.valider', $inventaire) }}" id="form-valider-inv-{{ $inventaire->id }}">
+                    @csrf
+                    <button type="button"
+                            onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-valider-inv-{{ $inventaire->id }}',title:'Valider cet inventaire ?',message:'Les écarts seront appliqués sur le stock. Action irr\u00e9versible.',confirmLabel:'Valider',confirmClass:'!bg-emerald-600 hover:!bg-emerald-700',danger:false}}))"
+                            class="btn-primary">Valider l'inventaire</button>
                 </form>
-                <form method="POST" action="{{ route('dashboard.inventaires.destroy', $inventaire) }}" onsubmit="return confirm('Supprimer ?')">
-                    @csrf @method('DELETE')<button class="btn-outline text-red-600">Supprimer</button>
+                <form method="POST" action="{{ route('dashboard.inventaires.destroy', $inventaire) }}" id="form-del-inv-{{ $inventaire->id }}">
+                    @csrf @method('DELETE')
+                    <button type="button"
+                            onclick="window.dispatchEvent(new CustomEvent('confirm-delete',{detail:{formId:'form-del-inv-{{ $inventaire->id }}',title:'Supprimer cet inventaire ?',message:'Cet inventaire sera d\u00e9finitivement supprim\u00e9.'}}))"
+                            class="btn-outline text-red-600">Supprimer</button>
                 </form>
             </div>
         @endif
