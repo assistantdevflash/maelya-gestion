@@ -213,6 +213,8 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
             Route::get('finances/export-pdf', [FinanceController::class, 'exportPdf'])->name('finances.export-pdf');
             Route::get('rapports/categories', [\App\Http\Controllers\Dashboard\RapportCategorieController::class, 'index'])
                 ->name('rapports.categories');
+            Route::get('tresorerie', [\App\Http\Controllers\Dashboard\TresorerieController::class, 'index'])
+                ->name('tresorerie.index');
         });
 
         // Employés (feature: equipe)
