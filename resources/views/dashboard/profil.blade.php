@@ -330,7 +330,123 @@
             </div>
         </form>
 
-        <div class="card overflow-hidden">
+        @php
+            $fmt = fn($v) => is_bool($v) ? ($v ? 'Oui' : 'Non')
+                : (is_null($v) ? '—'
+                : (is_array($v) ? implode(', ', $v) : $v));
+        @endphp
+
+        {{-- ── VUE MOBILE : cartes (< md) ── --}}
+        <div class="md:hidden space-y-3">
+            @forelse($logs as $log)
+                @php
+                    $actionInfo = $actionLabels[$log->action] ?? ['label' => ucfirst($log->action), 'class' => 'badge-primary'];
+                    $modelName  = $modelLabels[class_basename($log->subject_type ?? '')] ?? class_basename($log->subject_type ?? '');
+                    $changes    = $log->changes;
+                    $hasOldNew  = is_array($changes) && isset($changes['old'], $changes['new']);
+                @endphp
+                <div class="card p-4 space-y-3">
+                    {{-- Ligne 1 : date + badge action --}}
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-xs text-gray-500">
+                            {{ $log->created_at->format('d/m/Y') }}
+                            <span class="text-gray-400 ml-1">{{ $log->created_at->format('H:i') }}</span>
+                        </span>
+                        <span class="badge {{ $actionInfo['class'] }}">{{ $actionInfo['label'] }}</span>
+                    </div>
+                    {{-- Ligne 2 : utilisateur + objet --}}
+                    <div class="flex items-start justify-between gap-3 text-xs">
+                        <div>
+                            <p class="text-gray-400 text-[10px] uppercase tracking-wide font-semibold mb-0.5">Par</p>
+                            <p class="font-medium text-gray-700">
+                                @if($log->user)
+                                    {{ $log->user->prenom }} {{ $log->user->nom_famille }}
+                                @else
+                                    <span class="italic text-gray-400">Système</span>
+                                @endif
+                            </p>
+                        </div>
+                        @if($modelName)
+                        <div class="text-right">
+                            <p class="text-gray-400 text-[10px] uppercase tracking-wide font-semibold mb-0.5">Objet</p>
+                            <p class="font-medium text-gray-700">{{ $modelName }}</p>
+                            @if($log->label)
+                                <p class="text-gray-500 text-[11px]">{{ $log->label }}</p>
+                            @endif
+                        </div>
+                        @endif
+                    </div>
+                    {{-- Ligne 3 : modifications --}}
+                    @if($changes)
+                    <details class="text-xs">
+                        <summary class="cursor-pointer text-primary-600 font-medium select-none">▶ Voir les modifications</summary>
+                        <div class="mt-2 space-y-1.5 bg-gray-50 rounded-lg p-2.5 border border-gray-100">
+                            @if($hasOldNew)
+                                @php
+                                    $changedKeys = collect($changes['new'])
+                                        ->filter(fn($v, $k) => !in_array($k, $skipFields) && ($changes['old'][$k] ?? null) !== $v)
+                                        ->keys();
+                                @endphp
+                                @forelse($changedKeys as $key)
+                                    @php
+                                        $oldVal = $changes['old'][$key] ?? null;
+                                        $newVal = $changes['new'][$key] ?? null;
+                                        $label  = $fieldLabels[$key] ?? str_replace('_', ' ', ucfirst($key));
+                                    @endphp
+                                    <div class="flex items-start gap-1.5 text-[11px]">
+                                        <span class="text-gray-400 shrink-0 w-24 truncate" title="{{ $label }}">{{ $label }}</span>
+                                        <span class="text-red-400 line-through shrink-0 max-w-[70px] truncate" title="{{ $fmt($oldVal) }}">{{ $fmt($oldVal) }}</span>
+                                        <span class="text-gray-300">→</span>
+                                        <span class="text-emerald-600 font-medium shrink-0 max-w-[70px] truncate" title="{{ $fmt($newVal) }}">{{ $fmt($newVal) }}</span>
+                                    </div>
+                                @empty
+                                    <p class="text-[11px] text-gray-400 italic">Aucun champ modifié détecté</p>
+                                @endforelse
+                            @elseif(isset($changes['new']) && is_array($changes['new']))
+                                @foreach($changes['new'] as $key => $val)
+                                    @if(!in_array($key, $skipFields) && !in_array($key, ['institut_id','user_id','id']) && !is_null($val))
+                                        @php
+                                            $label   = $fieldLabels[$key] ?? str_replace('_', ' ', ucfirst($key));
+                                            $display = $fmt($val);
+                                        @endphp
+                                        <div class="flex gap-1.5 text-[11px]">
+                                            <span class="text-gray-400 shrink-0 w-24 truncate">{{ $label }}</span>
+                                            <span class="text-gray-700 font-medium truncate max-w-[140px]" title="{{ $display }}">{{ $display }}</span>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            @else
+                                @foreach($changes as $key => $val)
+                                    @if(!in_array($key, $skipFields))
+                                        @php
+                                            $label   = $fieldLabels[$key] ?? str_replace('_', ' ', ucfirst($key));
+                                            $display = $fmt($val);
+                                        @endphp
+                                        <div class="flex gap-1.5 text-[11px]">
+                                            <span class="text-gray-400 shrink-0 w-24 truncate">{{ $label }}</span>
+                                            <span class="text-gray-700 font-medium truncate max-w-[140px]" title="{{ $display }}">{{ $display }}</span>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            @endif
+                        </div>
+                    </details>
+                    @endif
+                </div>
+            @empty
+                <div class="card px-4 py-12 text-center">
+                    <div class="text-gray-300 mb-2">
+                        <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </div>
+                    <p class="text-sm text-gray-400">Aucune activité enregistrée</p>
+                </div>
+            @endforelse
+        </div>
+
+        {{-- ── VUE DESKTOP : tableau (≥ md) ── --}}
+        <div class="hidden md:block card overflow-hidden">
             <table class="w-full text-sm">
                 <thead class="bg-gray-50 text-xs uppercase text-gray-500 border-b border-gray-100">
                     <tr>
@@ -380,11 +496,6 @@
                                             ▶ Voir les détails
                                         </summary>
                                         <div class="mt-2 space-y-1.5 bg-gray-50 rounded-lg p-2.5 border border-gray-100">
-                                            @php
-                                                $fmt = fn($v) => is_bool($v) ? ($v ? 'Oui' : 'Non')
-                                                    : (is_null($v) ? '—'
-                                                    : (is_array($v) ? implode(', ', $v) : $v));
-                                            @endphp
                                             @if($hasOldNew)
                                                 @php
                                                     $changedKeys = collect($changes['new'])
