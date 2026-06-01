@@ -179,9 +179,12 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         // Clients (feature: clients)
         Route::middleware('feature:clients')->group(function () {
             Route::resource('clients', ClientController::class)->except(['show', 'edit']);
+            Route::get('clients-fidelite/recherche', [ClientController::class, 'rechercheParTokenFidelite'])->name('clients.fidelite.recherche');
             Route::get('clients/{client}', [ClientController::class, 'show'])->name('clients.show');
             Route::post('clients/{client}/archiver', [ClientController::class, 'archiver'])->name('clients.archiver');
             Route::post('clients/{client}/cadeau-anniversaire', [ClientController::class, 'cadeauAnniversaire'])->name('clients.cadeau-anniversaire');
+            Route::post('clients/{client}/fidelite/regenerer', [ClientController::class, 'regenererTokenFidelite'])->name('clients.fidelite.regenerer');
+            Route::get('clients/{client}/fidelite/pdf', [ClientController::class, 'carteFidelitePdf'])->name('clients.fidelite.pdf');
             Route::post('clients/{client}/photos', [\App\Http\Controllers\Dashboard\ClientPhotoController::class, 'store'])->name('clients.photos.store');
             Route::delete('clients/{client}/photos/{photo}', [\App\Http\Controllers\Dashboard\ClientPhotoController::class, 'destroy'])->name('clients.photos.destroy');
         });

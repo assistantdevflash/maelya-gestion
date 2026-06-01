@@ -76,7 +76,7 @@ class DetecterAnomalies extends Command
                     NotificationService::notifyUser(
                         $admin, 'anomalie_vente',
                         '⚠️ Ventes inhabituelles',
-                        $anormales->count() . ' vente(s) hier hors moyenne (' . number_format($venteMoy / 100, 0, ',', ' ') . ' F).',
+                        $anormales->count() . ' vente(s) hier hors moyenne (' . number_format($venteMoy, 0, ',', ' ') . ' F).',
                         '/dashboard/ventes'
                     );
                     $totalAlertes++;

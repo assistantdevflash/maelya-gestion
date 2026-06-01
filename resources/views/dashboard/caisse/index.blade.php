@@ -13,6 +13,45 @@
             </a>
         </div>
 
+        {{-- Scanner QR carte fidélité --}}
+        <div x-data="scannerFidelite()" x-init="init()" class="flex flex-wrap items-center gap-2">
+            <button type="button" @click="open()" class="btn-outline text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm14 0h2v2h-2v-2zm-4 0h2v2h-2v-2zm0 4h2v2h-2v-2zm4 0h2v2h-2v-2z"/>
+                </svg>
+                <span>Scanner carte fidélité</span>
+            </button>
+            <p x-show="status" x-text="status" class="text-xs"
+               :class="error ? 'text-red-600' : 'text-emerald-600'"></p>
+
+            {{-- Modal scan --}}
+            <div x-show="modalOpen" x-cloak
+                 class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+                 @keydown.escape.window="close()">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-gray-800 dark:text-slate-100">Scanner QR fidélité</h3>
+                        <button @click="close()" class="text-gray-400 hover:text-gray-600">✕</button>
+                    </div>
+                    <template x-if="hasCamera">
+                        <div>
+                            <video x-ref="video" autoplay playsinline class="w-full rounded-lg bg-black"></video>
+                            <p class="text-xs text-gray-500 mt-2">Placez le QR de la carte de fidélité face à la caméra.</p>
+                        </div>
+                    </template>
+                    <template x-if="!hasCamera">
+                        <p class="text-sm text-red-600">Votre navigateur ne supporte pas le scan de QR. Collez le lien ci-dessous.</p>
+                    </template>
+                    <div>
+                        <label class="text-xs text-gray-500 dark:text-slate-400">Ou collez le lien / token</label>
+                        <input x-model="manualInput" type="text" placeholder="https://.../carte/XXX ou token"
+                               class="form-input mt-1 w-full">
+                        <button @click="resolve(manualInput)" class="btn-primary w-full mt-2">Valider</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- Message de succès après impression --}}
         @if(request('vente_ok'))
             <div x-data="{ show: true }" x-show="show" x-transition
@@ -76,4 +115,85 @@
             <input type="hidden" id="pourboire" name="pourboire" value="0">
         </form>
     </div>
+
+    <script>
+    function scannerFidelite() {
+        return {
+            modalOpen: false,
+            hasCamera: false,
+            manualInput: '',
+            status: '',
+            error: false,
+            stream: null,
+            detector: null,
+            scanInterval: null,
+            init() {
+                this.hasCamera = 'BarcodeDetector' in window && navigator.mediaDevices?.getUserMedia;
+            },
+            async open() {
+                this.modalOpen = true;
+                this.status = '';
+                this.error = false;
+                if (!this.hasCamera) return;
+                try {
+                    this.detector = new BarcodeDetector({ formats: ['qr_code'] });
+                    this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                    await this.$nextTick();
+                    this.$refs.video.srcObject = this.stream;
+                    this.scanInterval = setInterval(() => this.scan(), 600);
+                } catch (e) {
+                    this.hasCamera = false;
+                    this.status = "Caméra inaccessible : " + e.message;
+                    this.error = true;
+                }
+            },
+            async scan() {
+                if (!this.$refs.video || this.$refs.video.readyState < 2) return;
+                try {
+                    const codes = await this.detector.detect(this.$refs.video);
+                    if (codes.length) {
+                        this.resolve(codes[0].rawValue);
+                    }
+                } catch (e) {}
+            },
+            close() {
+                this.modalOpen = false;
+                if (this.scanInterval) { clearInterval(this.scanInterval); this.scanInterval = null; }
+                if (this.stream) { this.stream.getTracks().forEach(t => t.stop()); this.stream = null; }
+            },
+            async resolve(value) {
+                value = (value || '').trim();
+                if (!value) return;
+                this.status = 'Recherche...';
+                this.error = false;
+                try {
+                    const url = "{{ route('dashboard.clients.fidelite.recherche') }}?token=" + encodeURIComponent(value);
+                    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                    if (!res.ok) {
+                        this.status = 'Aucun client trouvé pour ce QR.';
+                        this.error = true;
+                        return;
+                    }
+                    const data = await res.json();
+                    if (data.found) {
+                        this.status = 'Client : ' + data.nom + ' (' + data.points + ' pts)';
+                        this.error = false;
+                        // Pré-sélectionner dans Livewire
+                        Livewire.dispatch('selectClient', { id: String(data.id) });
+                        // Fallback : appel direct au composant Caisse
+                        const comp = Livewire.all().find(c => c.name === 'caisse');
+                        if (comp) comp.call('selectClient', String(data.id));
+                        this.close();
+                    } else {
+                        this.status = 'Aucun client trouvé.';
+                        this.error = true;
+                    }
+                } catch (e) {
+                    this.status = 'Erreur : ' + e.message;
+                    this.error = true;
+                }
+            }
+        }
+    }
+    </script>
 </x-dashboard-layout>

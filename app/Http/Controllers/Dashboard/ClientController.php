@@ -112,7 +112,7 @@ class ClientController extends Controller
             $timeline->push([
                 'type'  => 'vente',
                 'date'  => $v->created_at,
-                'titre' => 'Vente · ' . number_format($v->total / 100, 0, ',', ' ') . ' F',
+                'titre' => 'Vente · ' . number_format($v->total, 0, ',', ' ') . ' F',
                 'sous'  => $v->numero_facture ?? '#' . substr($v->id, 0, 8),
                 'url'   => route('dashboard.ventes.show', $v),
                 'icon'  => '💳',
@@ -172,6 +172,49 @@ class ClientController extends Controller
         $client->update(['actif' => !$client->actif]);
         $msg = $client->actif ? 'Client réactivé.' : 'Client archivé.';
         return back()->with('success', $msg);
+    }
+
+    /** Résout un token fidélité en client_id (pour le scan QR à la caisse) */
+    public function rechercheParTokenFidelite(Request $request)
+    {
+        $raw = trim((string) $request->input('token', ''));
+        // Si on reçoit l'URL complète, extraire la dernière segment
+        if (str_contains($raw, '/')) {
+            $raw = trim(parse_url($raw, PHP_URL_PATH) ?? '', '/');
+            $parts = explode('/', $raw);
+            $raw = end($parts);
+        }
+        $client = Client::where('fidelite_token', $raw)->where('actif', true)->first();
+        if (! $client) {
+            return response()->json(['found' => false], 404);
+        }
+        return response()->json([
+            'found'  => true,
+            'id'     => $client->id,
+            'nom'    => trim($client->prenom . ' ' . $client->nom),
+            'points' => $client->points_fidelite,
+        ]);
+    }
+
+    /** Régénère le token de la carte de fidélité (invalide l'ancien lien) */
+    public function regenererTokenFidelite(Client $client)
+    {
+        abort_unless($client->institut_id === $this->institutId(), 403);
+        $client->forceFill(['fidelite_token' => \Illuminate\Support\Str::random(40)])->save();
+        return back()->with('success', 'Token de la carte de fidélité régénéré. L\'ancien lien n\'est plus valide.');
+    }
+
+    /** PDF carte de visite fidélité */
+    public function carteFidelitePdf(Client $client)
+    {
+        abort_unless($client->institut_id === $this->institutId(), 403);
+        $institut = \App\Models\Institut::find($client->institut_id);
+        $lien = route('public.carte-fidelite', $client->fidelite_token);
+        $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . urlencode($lien);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.carte-fidelite', compact('client', 'institut', 'lien', 'qrUrl'))
+            ->setPaper([0, 0, 240, 150]); // ~85x55mm (carte de visite)
+        return $pdf->download('carte-fidelite-' . $client->id . '.pdf');
     }
 
     /**

@@ -17,23 +17,23 @@
     <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div class="card p-4">
             <p class="text-xs text-gray-500 dark:text-slate-400 uppercase">RDV à venir</p>
-            <p class="text-2xl font-bold text-emerald-600 mt-1">{{ number_format($revenusPrevu / 100, 0, ',', ' ') }} F</p>
+            <p class="text-2xl font-bold text-emerald-600 mt-1">{{ number_format($revenusPrevu, 0, ',', ' ') }} F</p>
             <p class="text-xs text-gray-400 mt-1">{{ $rdvFuturs->count() }} RDV planifiés</p>
         </div>
         <div class="card p-4">
             <p class="text-xs text-gray-500 dark:text-slate-400 uppercase">Ventes prévues</p>
-            <p class="text-2xl font-bold text-blue-600 mt-1">{{ number_format($projectionVentes / 100, 0, ',', ' ') }} F</p>
+            <p class="text-2xl font-bold text-blue-600 mt-1">{{ number_format($projectionVentes, 0, ',', ' ') }} F</p>
             <p class="text-xs text-gray-400 mt-1">Projection 30j</p>
         </div>
         <div class="card p-4">
             <p class="text-xs text-gray-500 dark:text-slate-400 uppercase">Dépenses prévues</p>
-            <p class="text-2xl font-bold text-red-600 mt-1">{{ number_format($projectionDepenses / 100, 0, ',', ' ') }} F</p>
+            <p class="text-2xl font-bold text-red-600 mt-1">{{ number_format($projectionDepenses, 0, ',', ' ') }} F</p>
             <p class="text-xs text-gray-400 mt-1">Projection 90j</p>
         </div>
         <div class="card p-4 {{ $solde >= 0 ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-red-50 dark:bg-red-900/20' }}">
             <p class="text-xs text-gray-500 dark:text-slate-400 uppercase">Solde net projeté</p>
             <p class="text-2xl font-bold mt-1 {{ $solde >= 0 ? 'text-emerald-700' : 'text-red-700' }}">
-                {{ ($solde >= 0 ? '+' : '') . number_format($solde / 100, 0, ',', ' ') }} F
+                {{ ($solde >= 0 ? '+' : '') . number_format($solde, 0, ',', ' ') }} F
             </p>
         </div>
     </div>
@@ -62,7 +62,7 @@
                                 <td class="px-3 py-2">{{ $r->debut_le->format('d/m H:i') }}</td>
                                 <td class="px-3 py-2">{{ $r->client_nom }}</td>
                                 <td class="px-3 py-2">{{ $r->prestations->pluck('nom')->implode(', ') }}</td>
-                                <td class="px-3 py-2 text-right">{{ number_format($r->prestations->sum('prix') / 100, 0, ',', ' ') }} F</td>
+                                <td class="px-3 py-2 text-right">{{ number_format($r->prestations->sum('prix'), 0, ',', ' ') }} F</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -81,8 +81,8 @@ new Chart(document.getElementById('chartTreso'), {
     data: {
         labels: @json($jourLabel),
         datasets: [
-            { label: 'Entrées (F)', data: @json(array_map(fn($v) => round($v/100), $jourEntrees)), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.3 },
-            { label: 'Sorties (F)', data: @json(array_map(fn($v) => round($v/100), $jourSorties)), borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', tension: 0.3 },
+            { label: 'Entrées (F)', data: @json($jourEntrees), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.3 },
+            { label: 'Sorties (F)', data: @json($jourSorties), borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', tension: 0.3 },
         ]
     },
     options: { responsive: true, plugins: { legend: { position: 'top' } } }

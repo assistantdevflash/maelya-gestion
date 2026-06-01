@@ -34,13 +34,45 @@
                 </a>
                 <button type="button" x-data @click="$dispatch('open-edit-show')" class="btn-outline">Modifier</button>
                 @if($client->fidelite_token)
-                    <a href="{{ route('public.carte-fidelite', $client->fidelite_token) }}" target="_blank"
-                       class="btn-outline" title="Carte de fidélité (QR)">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm14 0h2v2h-2v-2zm-4 0h2v2h-2v-2zm0 4h2v2h-2v-2zm4 0h2v2h-2v-2z"/>
-                        </svg>
-                        Carte fidélité
-                    </a>
+                    @php
+                        $carteUrl = route('public.carte-fidelite', $client->fidelite_token);
+                        $waMsg = "Bonjour {$client->prenom}, voici votre carte de fidélité personnelle : {$carteUrl}";
+                        $waPhone = preg_replace('/\D/', '', $client->telephone ?? '');
+                    @endphp
+                    <div x-data="{ open: false }" class="relative">
+                        <button type="button" @click="open = !open" class="btn-outline" title="Carte fidélité">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm14 0h2v2h-2v-2zm-4 0h2v2h-2v-2zm0 4h2v2h-2v-2zm4 0h2v2h-2v-2z"/>
+                            </svg>
+                            Carte fidélité
+                            <svg class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+                        </button>
+                        <div x-show="open" @click.away="open = false" x-cloak
+                             class="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-100 dark:border-slate-700 z-50 overflow-hidden">
+                            <a href="{{ $carteUrl }}" target="_blank"
+                               class="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-slate-700">
+                                <span>🔗</span> Ouvrir la carte (web)
+                            </a>
+                            <a href="{{ route('dashboard.clients.fidelite.pdf', $client) }}"
+                               class="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-slate-700">
+                                <span>📄</span> Télécharger PDF (format carte)
+                            </a>
+                            @if($waPhone)
+                            <a href="https://wa.me/{{ $waPhone }}?text={{ urlencode($waMsg) }}" target="_blank"
+                               class="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-slate-700 text-green-600">
+                                <span>💬</span> Envoyer par WhatsApp
+                            </a>
+                            @endif
+                            <form method="POST" action="{{ route('dashboard.clients.fidelite.regenerer', $client) }}"
+                                  onsubmit="return confirm('Régénérer le token ? L\'ancien lien et QR ne fonctionneront plus.');">
+                                @csrf
+                                <button type="submit"
+                                        class="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-slate-700 text-red-600">
+                                    <span>🔄</span> Régénérer le token
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 @endif
             </div>
         </div>

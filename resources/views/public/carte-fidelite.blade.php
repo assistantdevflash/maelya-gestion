@@ -39,7 +39,7 @@
                 @foreach($derniereVisites as $v)
                     <li class="flex justify-between text-gray-700">
                         <span>{{ $v->created_at->format('d/m/Y') }}</span>
-                        <span class="font-medium">{{ number_format($v->total / 100, 0, ',', ' ') }} F</span>
+                        <span class="font-medium">{{ number_format($v->total, 0, ',', ' ') }} F</span>
                     </li>
                 @endforeach
             </ul>
