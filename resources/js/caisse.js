@@ -46,6 +46,7 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         montantMixteCash: 0,
         montantMixteMobile: 0,
         montantMixteCartes: 0,
+        pourboire: 0,
 
         // ── Code promo ──
         codePromo: null,
@@ -297,6 +298,7 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
                     this.modePaiement === 'mixte' ? (parseInt(this.montantMixteCash) || 0) : null,
                     this.modePaiement === 'mixte' ? (parseInt(this.montantMixteMobile) || 0) : null,
                     this.modePaiement === 'mixte' ? (parseInt(this.montantMixteCartes) || 0) : null,
+                    parseInt(this.pourboire) || 0,
                 );
             } finally {
                 this.loading = false;

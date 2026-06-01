@@ -18,7 +18,7 @@ class Vente extends Model
 
     protected $fillable = [
         'institut_id', 'client_id', 'user_id', 'numero', 'total',
-        'remise', 'code_reduction_id',
+        'remise', 'pourboire', 'code_reduction_id',
         'mode_paiement', 'reference_paiement', 'montant_cash', 'montant_mobile', 'montant_carte',
         'statut', 'motif_annulation', 'annulee_le', 'annulee_par', 'notes', 'ip_address',
     ];
@@ -26,6 +26,7 @@ class Vente extends Model
     protected $casts = [
         'total'          => 'integer',
         'remise'         => 'integer',
+        'pourboire'      => 'integer',
         'montant_cash'   => 'integer',
         'montant_mobile' => 'integer',
         'montant_carte'  => 'integer',

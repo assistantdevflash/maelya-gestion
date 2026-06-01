@@ -72,10 +72,26 @@
     @endforeach
     </tbody>
     <tfoot>
+    @if($vente->remise > 0)
+    <tr>
+        <td colspan="3">Remise</td>
+        <td>- {{ number_format($vente->remise, 0, ',', ' ') }}</td>
+    </tr>
+    @endif
     <tr class="total-row">
         <td colspan="3">TOTAL</td>
         <td>{{ number_format($vente->total, 0, ',', ' ') }} FCFA</td>
     </tr>
+    @if($vente->pourboire > 0)
+    <tr>
+        <td colspan="3">Pourboire</td>
+        <td>{{ number_format($vente->pourboire, 0, ',', ' ') }}</td>
+    </tr>
+    <tr class="total-row">
+        <td colspan="3">À PAYER</td>
+        <td>{{ number_format($vente->total + $vente->pourboire, 0, ',', ' ') }} FCFA</td>
+    </tr>
+    @endif
     </tfoot>
 </table>
 

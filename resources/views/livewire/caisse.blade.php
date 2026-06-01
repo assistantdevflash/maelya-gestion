@@ -546,10 +546,10 @@
                 </div>
 
                 {{-- Résumé --}}
-                <div class="bg-gray-50 rounded-xl p-4 space-y-2">
+                <div class="bg-gray-50 dark:bg-slate-800/50 rounded-xl p-4 space-y-2">
                     <div class="flex justify-between text-sm">
-                        <span class="text-gray-500">Sous-total</span>
-                        <span class="font-semibold text-gray-700" x-text="formatNumber(totalBrut) + ' F'"></span>
+                        <span class="text-gray-500 dark:text-slate-400">Sous-total</span>
+                        <span class="font-semibold text-gray-700 dark:text-slate-200" x-text="formatNumber(totalBrut) + ' F'"></span>
                     </div>
                     <template x-if="remise > 0">
                         <div class="flex justify-between text-sm">
@@ -557,10 +557,40 @@
                             <span class="font-semibold text-emerald-600" x-text="'-' + formatNumber(remise) + ' F'"></span>
                         </div>
                     </template>
-                    <div class="flex justify-between text-base pt-2 border-t border-gray-200">
-                        <span class="font-bold text-gray-900">Total</span>
+                    <div class="flex justify-between text-base pt-2 border-t border-gray-200 dark:border-slate-700">
+                        <span class="font-bold text-gray-900 dark:text-slate-100">Total</span>
                         <span class="font-extrabold" style="background: linear-gradient(135deg, #9333ea, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;" x-text="formatNumber(total) + ' F'"></span>
                     </div>
+                    <template x-if="pourboire > 0">
+                        <div class="flex justify-between text-sm pt-1">
+                            <span class="text-amber-600 dark:text-amber-400 font-medium">💰 Pourboire</span>
+                            <span class="font-semibold text-amber-600 dark:text-amber-400" x-text="'+' + formatNumber(pourboire) + ' F'"></span>
+                        </div>
+                    </template>
+                    <template x-if="pourboire > 0">
+                        <div class="flex justify-between text-base pt-2 border-t border-gray-200 dark:border-slate-700">
+                            <span class="font-bold text-gray-900 dark:text-slate-100">À encaisser</span>
+                            <span class="font-extrabold text-primary-700 dark:text-primary-300" x-text="formatNumber(total + pourboire) + ' F'"></span>
+                        </div>
+                    </template>
+                </div>
+
+                {{-- Pourboire (optionnel) --}}
+                <div class="space-y-2">
+                    <label class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                        💰 Pourboire (optionnel)
+                    </label>
+                    <div class="flex flex-wrap gap-1.5">
+                        <template x-for="montant in [0, 500, 1000, 2000, 5000]" :key="'tip_' + montant">
+                            <button type="button" @click="pourboire = montant"
+                                    :class="pourboire === montant ? 'bg-amber-500 text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
+                                    class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
+                                    x-text="montant === 0 ? 'Aucun' : formatNumber(montant) + ' F'"></button>
+                        </template>
+                    </div>
+                    <input type="number" x-model.number="pourboire" min="0" step="100"
+                           placeholder="Autre montant..."
+                           class="form-input text-sm">
                 </div>
 
                 {{-- Mode de paiement affiché --}}

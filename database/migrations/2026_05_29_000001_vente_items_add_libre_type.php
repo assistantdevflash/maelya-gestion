@@ -7,15 +7,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Rendre item_id nullable pour les articles libres (hors catalogue)
+        // SQLite ne supporte pas ALTER COLUMN ENUM — on saute (tests en m\u00e9moire)
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
         DB::statement('ALTER TABLE vente_items MODIFY COLUMN item_id CHAR(36) NULL');
-
-        // Ajouter le type "libre" à l'enum
         DB::statement("ALTER TABLE vente_items MODIFY COLUMN type ENUM('prestation', 'produit', 'libre') NOT NULL");
     }
 
     public function down(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
         DB::statement("ALTER TABLE vente_items MODIFY COLUMN type ENUM('prestation', 'produit') NOT NULL");
         DB::statement('ALTER TABLE vente_items MODIFY COLUMN item_id CHAR(36) NOT NULL');
     }

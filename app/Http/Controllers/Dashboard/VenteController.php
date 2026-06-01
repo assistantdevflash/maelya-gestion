@@ -44,6 +44,7 @@ class VenteController extends Controller
             'montant_cash' => ['nullable', 'integer', 'min:0'],
             'montant_mobile' => ['nullable', 'integer', 'min:0'],
             'montant_carte' => ['nullable', 'integer', 'min:0'],
+            'pourboire' => ['nullable', 'integer', 'min:0', 'max:10000000'],
         ]);
 
         $items = json_decode($request->panier_json, true);
@@ -116,6 +117,7 @@ class VenteController extends Controller
                 'user_id' => Auth::id(),
                 'total' => $total,
                 'remise' => $remise,
+                'pourboire' => max(0, (int) $request->pourboire),
                 'code_reduction_id' => $codeReductionId,
                 'mode_paiement' => $request->mode_paiement,
                 'reference_paiement' => $request->reference_paiement,
