@@ -87,6 +87,13 @@ class Caisse extends Component
         return $query->orderBy('prenom')->limit(8)->get();
     }
 
+    public function selectClient(string $id): void
+    {
+        $this->clientId      = $id;
+        $this->clientSearch  = '';
+        $this->showClientList = false;
+    }
+
     public function ajouterClientRapide()
     {
         $this->validate([

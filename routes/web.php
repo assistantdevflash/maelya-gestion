@@ -58,6 +58,11 @@ Route::get('/sitemap.xml', [LandingController::class, 'sitemap'])->name('sitemap
 Route::get('/e/{slug}', [VitrineController::class, 'show'])->name('vitrine.show');
 Route::post('/e/{slug}/reserver', [VitrineController::class, 'reserver'])->name('vitrine.reserver');
 
+// ─── Ticket PDF public (lien partageable, accès par UUID) ─────────────────────
+Route::get('/ticket/{id}', [VenteController::class, 'ticketPdfPublic'])
+    ->middleware('throttle:30,1')
+    ->name('ticket.public');
+
 // ─── Inscription personnalisée (remplace Breeze) ─────────────────────────────
 Route::middleware('guest')->group(function () {
     Route::get('/inscription', [InscriptionController::class, 'index'])->name('inscription');

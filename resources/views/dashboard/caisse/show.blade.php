@@ -99,11 +99,13 @@
                         }
                         // Déjà avec indicatif (225...) → OK tel quel
                     }
-                    $waMessage = "Bonjour " . ($vente->client?->prenom ?? '') . ",\n\n"
+                    $ticketUrl = route('ticket.public', $vente->id);
+                    $waMessage = "Bonjour " . ($vente->client?->prenom ?? '') . " 👋\n\n"
                         . "Merci pour votre achat chez " . (auth()->user()->institut?->nom ?? 'notre institut') . " !\n"
                         . "Ticket n°" . $vente->numero . "\n"
                         . "Total : " . number_format($vente->total, 0, ',', ' ') . " FCFA\n"
                         . "Mode de paiement : " . ucfirst(str_replace('_', ' ', $vente->mode_paiement)) . "\n\n"
+                        . "📄 Votre ticket : " . $ticketUrl . "\n\n"
                         . "À très bientôt 💖";
                 @endphp
                 @if($waTel && $vente->statut === 'validee')

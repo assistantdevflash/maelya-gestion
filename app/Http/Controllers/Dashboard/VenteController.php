@@ -339,4 +339,17 @@ class VenteController extends Controller
             ->setPaper([0, 0, 226.77, 600], 'portrait');
         return $pdf->download("ticket-{$vente->numero}.pdf");
     }
+
+    /**
+     * Ticket PDF public (pas d'auth requise) — accès sécurisé par UUID de la vente.
+     */
+    public function ticketPdfPublic(string $id)
+    {
+        $vente = Vente::where('id', $id)->where('statut', 'validee')->firstOrFail();
+        $vente->load('items', 'client', 'institut', 'user');
+        $pdf = Pdf::loadView('pdf.ticket', compact('vente'))
+            ->setPaper([0, 0, 226.77, 600], 'portrait');
+        return $pdf->stream("ticket-{$vente->numero}.pdf");
+    }
+    }
 }

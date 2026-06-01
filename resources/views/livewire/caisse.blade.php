@@ -226,7 +226,7 @@
                     <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden mt-2 shadow-sm max-h-52 overflow-y-auto bg-white dark:bg-gray-800"
                          @click.stop @touchstart.stop>
                         @foreach($this->clients as $c)
-                        <button wire:click="$set('clientId', '{{ $c->id }}')"
+                        <button wire:click="selectClient('{{ $c->id }}')"
                                 class="w-full text-left px-3 py-2.5 text-sm hover:bg-primary-50/50 dark:hover:bg-gray-700 flex items-center gap-2.5 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors">
                             <div class="w-7 h-7 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center text-primary-700 text-xs font-bold">
                                 {{ strtoupper(substr($c->prenom, 0, 1)) }}
