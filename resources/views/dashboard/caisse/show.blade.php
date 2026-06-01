@@ -100,13 +100,13 @@
                         // Déjà avec indicatif (225...) → OK tel quel
                     }
                     $ticketUrl = route('ticket.public', $vente->id);
-                    $waMessage = "Bonjour " . ($vente->client?->prenom ?? '') . " \u{1F44B}\n\n"
+                    $waMessage = "Bonjour " . ($vente->client?->prenom ?? '') . "\n\n"
                         . "Merci pour votre achat chez " . (auth()->user()->institut?->nom ?? 'notre institut') . " !\n"
-                        . "Ticket n\u{00B0}" . $vente->numero . "\n"
+                        . "Ticket n°" . $vente->numero . "\n"
                         . "Total : " . number_format($vente->total, 0, ',', ' ') . " FCFA\n"
                         . "Mode de paiement : " . ucfirst(str_replace('_', ' ', $vente->mode_paiement)) . "\n\n"
-                        . "\u{1F4C4} Votre ticket : " . $ticketUrl . "\n\n"
-                        . "\u{00C0} tr\u{00E8}s bient\u{00F4}t \u{2764}\u{FE0F}";
+                        . "Votre ticket : " . $ticketUrl . "\n\n"
+                        . "A bientot !";
                 @endphp
                 @if($waTel && $vente->statut === 'validee')
                 <a href="https://wa.me/{{ $waTel }}?text={{ rawurlencode($waMessage) }}" target="_blank" rel="noopener"
