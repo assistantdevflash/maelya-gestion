@@ -20,7 +20,7 @@ class Produit extends Model
     }
 
     protected $fillable = [
-        'institut_id', 'categorie_id', 'nom', 'reference',
+        'institut_id', 'categorie_id', 'nom', 'reference', 'code_barre',
         'prix_achat', 'cout_moyen_pondere', 'prix_vente', 'stock', 'seuil_alerte', 'unite', 'description', 'actif',
     ];
 

@@ -36,6 +36,7 @@ class ProduitController extends Controller
             'nom' => ['required', 'string', 'max:150'],
             'categorie_id' => ['nullable', 'uuid'],
             'reference' => ['nullable', 'string', 'max:50'],
+            'code_barre' => ['nullable', 'string', 'max:50'],
             'prix_achat' => ['nullable', 'integer', 'min:0'],
             'prix_vente' => ['required', 'integer', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
@@ -68,6 +69,7 @@ class ProduitController extends Controller
             'nom' => ['required', 'string', 'max:150'],
             'categorie_id' => ['nullable', 'uuid'],
             'reference' => ['nullable', 'string', 'max:50'],
+            'code_barre' => ['nullable', 'string', 'max:50'],
             'prix_achat' => ['nullable', 'integer', 'min:0'],
             'prix_vente' => ['required', 'integer', 'min:0'],
             'seuil_alerte' => ['required', 'integer', 'min:0'],
@@ -92,5 +94,34 @@ class ProduitController extends Controller
         $produit->delete();
         return redirect()->route('dashboard.produits.index')
             ->with('success', 'Produit supprimé.');
+    }
+
+    /**
+     * Recherche d'un produit par code-barres (utilisé par le scan caméra de la caisse).
+     */
+    public function rechercheParCodeBarre(Request $request)
+    {
+        $code = trim((string) $request->query('code'));
+        abort_if($code === '', 422, 'Code-barres manquant.');
+
+        $institutId = session('current_institut_id', \Illuminate\Support\Facades\Auth::user()->institut_id);
+
+        $produit = Produit::where('institut_id', $institutId)
+            ->where('code_barre', $code)
+            ->where('actif', true)
+            ->first(['id', 'nom', 'prix_vente', 'stock', 'code_barre']);
+
+        if (! $produit) {
+            return response()->json(['found' => false], 404);
+        }
+
+        return response()->json([
+            'found'      => true,
+            'id'         => $produit->id,
+            'nom'        => $produit->nom,
+            'prix'       => (int) $produit->prix_vente,
+            'stock'      => (int) $produit->stock,
+            'code_barre' => $produit->code_barre,
+        ]);
     }
 }

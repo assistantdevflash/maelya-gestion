@@ -50,6 +50,14 @@
                            class="form-input" placeholder="SKU-001">
                 </div>
 
+                <div class="form-group">
+                    <label class="form-label">Code-barres</label>
+                    <input type="text" name="code_barre" maxlength="50"
+                           value="{{ old('code_barre', $produit->code_barre ?? '') }}"
+                           class="form-input" placeholder="EAN-13 ou code interne">
+                    <p class="text-xs text-gray-500 mt-1">Utilisé pour le scan à la caisse.</p>
+                </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="form-group">
                         <label class="form-label">Prix d'achat (FCFA)</label>

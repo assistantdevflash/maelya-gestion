@@ -176,6 +176,8 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         // Produits + Stock (feature: produits / stock)
         Route::middleware('feature:produits')->group(function () {
             Route::resource('produits', ProduitController::class)->except(['show']);
+            Route::get('produits-scan/recherche', [ProduitController::class, 'rechercheParCodeBarre'])
+                ->name('produits.scan');
             Route::resource('categories-produits', CategorieProduitController::class)->except(['show', 'create', 'edit']);
         });
         Route::middleware('feature:stock')->group(function () {
