@@ -75,6 +75,9 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
 
     // Caisse & Ventes (tous les rôles)
     Route::get('caisse', [VenteController::class, 'caisse'])->name('caisse');
+    Route::get('caisse/brouillons', [\App\Http\Controllers\Dashboard\CaisseBrouillonController::class, 'index'])->name('caisse.brouillons.index');
+    Route::post('caisse/brouillons', [\App\Http\Controllers\Dashboard\CaisseBrouillonController::class, 'store'])->name('caisse.brouillons.store');
+    Route::delete('caisse/brouillons/{brouillon}', [\App\Http\Controllers\Dashboard\CaisseBrouillonController::class, 'destroy'])->name('caisse.brouillons.destroy');
     Route::post('ventes', [VenteController::class, 'store'])->name('ventes.store');
     Route::get('ventes', [VenteController::class, 'index'])->name('ventes.index');
     Route::get('ventes/{vente}', [VenteController::class, 'show'])->name('ventes.show');

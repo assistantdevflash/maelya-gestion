@@ -5,18 +5,34 @@
  * côté client pour un rendu instantané. Seuls la recherche client, le code
  * promo et la validation de vente passent par Livewire (requêtes DB).
  */
-export default function caisseApp({ prestations, produits, catPrestations, catProduits, prefilledItems = [] }) {
+export default function caisseApp({ prestations, produits, catPrestations, catProduits, prefilledItems = [], prefilledPanier = [], routeBrouillonStore = '/dashboard/caisse/brouillons' }) {
     return {
         // ── Catalogue (chargé une seule fois) ──
         prestations,
         produits,
         catPrestations,
         catProduits,
+        routeBrouillonStore,
 
         // ── Pré-remplissage (ex: depuis un RDV) ──
         prefilledItems,
+        prefilledPanier,
 
         init() {
+            if (Array.isArray(this.prefilledPanier) && this.prefilledPanier.length) {
+                const next = {};
+                this.prefilledPanier.forEach(it => {
+                    const key = `${it.type}_${it.id}`;
+                    next[key] = {
+                        type: it.type,
+                        id: it.id,
+                        nom: it.nom,
+                        prix: parseInt(it.prix) || 0,
+                        quantite: parseInt(it.quantite) || 1,
+                    };
+                });
+                this.panier = { ...this.panier, ...next };
+            }
             if (Array.isArray(this.prefilledItems) && this.prefilledItems.length) {
                 const next = {};
                 this.prefilledItems.forEach(p => {
@@ -57,6 +73,7 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         // ── UI ──
         showConfirmation: false,
         loading: false,
+        enAttenteLoading: false,
 
         // ── Vente rapide ──
         showVenteRapide: false,
@@ -281,6 +298,41 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
 
         fermerConfirmation() {
             this.showConfirmation = false;
+        },
+
+        async mettreEnAttente() {
+            if (this.panierKeys.length === 0 || this.enAttenteLoading) return;
+            this.enAttenteLoading = true;
+            try {
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+                const res = await fetch(this.routeBrouillonStore, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrf,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        panier: Object.values(this.panier),
+                        client_id: this.$wire.clientId || null,
+                        total_indicatif: this.totalBrut,
+                    }),
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                // Reset panier and notify
+                this.panier = {};
+                this.codePromo = null;
+                this.codePromoInput = '';
+                this.pourboire = 0;
+                this.modePaiement = 'cash';
+                this.montantRemis = null;
+                this.referencePaiement = '';
+                window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'Panier mis en attente.' } }));
+            } catch (e) {
+                window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: 'Erreur lors de la mise en attente.' } }));
+            } finally {
+                this.enAttenteLoading = false;
+            }
         },
 
         async valider(imprimer = false) {

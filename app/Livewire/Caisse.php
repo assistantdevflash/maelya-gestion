@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\CaisseBrouillon;
 use App\Models\CategoriePrestation;
 use App\Models\CategorieProduit;
 use App\Models\Client;
@@ -30,7 +31,10 @@ class Caisse extends Component
     /** Prestations pré-remplies (depuis un RDV) à envoyer à Alpine */
     public array $prefilledItems = [];
 
-    public function mount(?string $client = null, ?string $rdv = null)
+    /** Panier complet pré-rempli (depuis un brouillon) */
+    public array $prefilledPanier = [];
+
+    public function mount(?string $client = null, ?string $rdv = null, ?string $brouillon = null)
     {
         $this->clientId = $client;
 
@@ -45,6 +49,18 @@ class Caisse extends Component
                     'nom'  => $p->nom,
                     'prix' => (int) $p->prix,
                 ])->values()->all();
+            }
+        }
+
+        if ($brouillon) {
+            $b = CaisseBrouillon::find($brouillon);
+            if ($b && $b->institut_id === $this->institutId()) {
+                if (! $this->clientId && $b->client_id) {
+                    $this->clientId = $b->client_id;
+                }
+                $this->prefilledPanier = is_array($b->panier) ? $b->panier : [];
+                $b->delete();
+                session()->flash('success', 'Brouillon repris.');
             }
         }
     }
