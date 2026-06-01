@@ -594,7 +594,7 @@
     </aside>
 
     {{-- ═══ CONTENU PRINCIPAL ═══ --}}
-    <div class="flex-1 flex flex-col min-w-0 lg:pl-[260px]">
+    <div class="flex-1 flex flex-col min-w-0 lg:pl-[260px] bg-gray-50 dark:bg-slate-950">
 
         {{-- Topbar mobile --}}
         <header class="lg:hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-100 dark:border-slate-700/60 px-4 h-14 flex items-center justify-between sticky top-0 z-30">

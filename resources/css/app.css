@@ -428,6 +428,72 @@
 .dark ::-webkit-scrollbar-thumb { background: #334155; }
 .dark ::-webkit-scrollbar-thumb:hover { background: #a78bfa; }
 
+/* ═══════════════════════════════════════════
+   DARK MODE — Dashboard utility overrides
+   Override les classes Tailwind sans dark:
+   dans les templates (bg-white, text-gray-900…)
+   Scoped à body.dashboard pour ne pas affecter
+   les pages publiques / landing.
+   ═══════════════════════════════════════════ */
+
+html.dark body.dashboard {
+    background-color: #0f172a;
+    color: #e2e8f0;
+}
+
+/* Backgrounds */
+html.dark body.dashboard .bg-white       { background-color: #1e293b; }
+html.dark body.dashboard .bg-gray-50     { background-color: #0f172a; }
+html.dark body.dashboard .bg-gray-100    { background-color: #1e293b; }
+html.dark body.dashboard .bg-gray-200    { background-color: #334155; }
+html.dark body.dashboard .bg-white\/80,
+html.dark body.dashboard .bg-white\/70,
+html.dark body.dashboard .bg-white\/60   { background-color: rgba(30,41,59,0.85); }
+
+/* Textes */
+html.dark body.dashboard .text-gray-900  { color: #f1f5f9; }
+html.dark body.dashboard .text-gray-800  { color: #e2e8f0; }
+html.dark body.dashboard .text-gray-700  { color: #cbd5e1; }
+html.dark body.dashboard .text-gray-600  { color: #94a3b8; }
+html.dark body.dashboard .text-gray-500  { color: #64748b; }
+html.dark body.dashboard .text-gray-400  { color: #475569; }
+
+/* Borders */
+html.dark body.dashboard .border-gray-50  { border-color: rgba(255,255,255,0.04); }
+html.dark body.dashboard .border-gray-100 { border-color: rgba(255,255,255,0.07); }
+html.dark body.dashboard .border-gray-200 { border-color: rgba(255,255,255,0.10); }
+html.dark body.dashboard .border-gray-300 { border-color: rgba(255,255,255,0.14); }
+
+/* Dividers */
+html.dark body.dashboard .divide-gray-50 > :not([hidden]) ~ :not([hidden])  { border-color: rgba(255,255,255,0.04); }
+html.dark body.dashboard .divide-gray-100 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(255,255,255,0.07); }
+html.dark body.dashboard .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(255,255,255,0.10); }
+
+/* Hover backgrounds */
+html.dark body.dashboard .hover\:bg-gray-50:hover  { background-color: rgba(255,255,255,0.04) !important; }
+html.dark body.dashboard .hover\:bg-gray-100:hover { background-color: rgba(255,255,255,0.07) !important; }
+html.dark body.dashboard .hover\:bg-white:hover    { background-color: #1e293b !important; }
+
+/* Backgrounds spécifiques fréquents */
+html.dark body.dashboard .bg-primary-50    { background-color: rgba(147,51,234,0.15) !important; }
+html.dark body.dashboard .bg-primary-100   { background-color: rgba(147,51,234,0.2)  !important; }
+html.dark body.dashboard .bg-emerald-50    { background-color: rgba(16,185,129,0.12) !important; }
+html.dark body.dashboard .bg-emerald-100   { background-color: rgba(16,185,129,0.18) !important; }
+html.dark body.dashboard .bg-red-50        { background-color: rgba(239,68,68,0.12)  !important; }
+html.dark body.dashboard .bg-amber-50      { background-color: rgba(245,158,11,0.12) !important; }
+html.dark body.dashboard .bg-blue-50       { background-color: rgba(59,130,246,0.12) !important; }
+
+/* Inputs (color d'origine Tailwind) */
+html.dark body.dashboard input:not([type=range]):not([type=checkbox]):not([type=radio]),
+html.dark body.dashboard select,
+html.dark body.dashboard textarea {
+    background-color: #0f172a;
+    border-color: #334155;
+    color: #e2e8f0;
+}
+html.dark body.dashboard input::placeholder,
+html.dark body.dashboard textarea::placeholder { color: #475569; }
+
 
 @media print {
     .no-print { display: none !important; }
