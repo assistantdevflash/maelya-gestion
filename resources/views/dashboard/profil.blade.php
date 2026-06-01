@@ -331,9 +331,19 @@
         </form>
 
         @php
-            $fmt = fn($v) => is_bool($v) ? ($v ? 'Oui' : 'Non')
-                : (is_null($v) ? '—'
-                : (is_array($v) ? implode(', ', $v) : $v));
+            // Champs dont la valeur est un UUID d'User
+            $userIdFields   = ['annulee_par', 'user_id', 'employe_id', 'valide_par', 'cree_par'];
+            // Champs dont la valeur est un UUID de Client
+            $clientIdFields = ['client_id'];
+
+            $fmt = function($v, $key = null) use ($usersMap, $clientsMap, $userIdFields, $clientIdFields) {
+                if (is_bool($v)) return $v ? 'Oui' : 'Non';
+                if (is_null($v)) return '—';
+                if (is_array($v)) return implode(', ', $v);
+                if ($key && in_array($key, $userIdFields) && isset($usersMap[$v])) return $usersMap[$v];
+                if ($key && in_array($key, $clientIdFields) && isset($clientsMap[$v])) return $clientsMap[$v];
+                return $v;
+            };
         @endphp
 
         <div class="card overflow-x-auto">
@@ -400,9 +410,9 @@
                                                     @endphp
                                                     <div class="flex items-start gap-1.5 text-[11px]">
                                                         <span class="text-gray-400 shrink-0 w-24 truncate" title="{{ $label }}">{{ $label }}</span>
-                                                        <span class="text-red-400 line-through shrink-0 max-w-[80px] truncate" title="{{ $fmt($oldVal) }}">{{ $fmt($oldVal) }}</span>
+                                                        <span class="text-red-400 line-through shrink-0 max-w-[80px] truncate" title="{{ $fmt($oldVal, $key) }}">{{ $fmt($oldVal, $key) }}</span>
                                                         <span class="text-gray-300">→</span>
-                                                        <span class="text-emerald-600 font-medium shrink-0 max-w-[80px] truncate" title="{{ $fmt($newVal) }}">{{ $fmt($newVal) }}</span>
+                                                        <span class="text-emerald-600 font-medium shrink-0 max-w-[80px] truncate" title="{{ $fmt($newVal, $key) }}">{{ $fmt($newVal, $key) }}</span>
                                                     </div>
                                                 @empty
                                                     <p class="text-[11px] text-gray-400 italic">Aucun champ modifié détecté</p>
@@ -412,7 +422,7 @@
                                                     @if(!in_array($key, $skipFields) && !in_array($key, ['institut_id','user_id','id']) && !is_null($val))
                                                         @php
                                                             $label   = $fieldLabels[$key] ?? str_replace('_', ' ', ucfirst($key));
-                                                            $display = $fmt($val);
+                                                            $display = $fmt($val, $key);
                                                         @endphp
                                                         <div class="flex gap-1.5 text-[11px]">
                                                             <span class="text-gray-400 shrink-0 w-24 truncate">{{ $label }}</span>
@@ -425,7 +435,7 @@
                                                     @if(!in_array($key, $skipFields))
                                                         @php
                                                             $label   = $fieldLabels[$key] ?? str_replace('_', ' ', ucfirst($key));
-                                                            $display = $fmt($val);
+                                                            $display = $fmt($val, $key);
                                                         @endphp
                                                         <div class="flex gap-1.5 text-[11px]">
                                                             <span class="text-gray-400 shrink-0 w-24 truncate">{{ $label }}</span>

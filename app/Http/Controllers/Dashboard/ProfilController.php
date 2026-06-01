@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
+use App\Models\Client;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -34,6 +36,17 @@ class ProfilController extends Controller
             $data['logs']        = $query->latest()->paginate(30)->withQueryString();
             $data['logActions']  = AuditLog::where('institut_id', $institutId)->select('action')->distinct()->pluck('action');
             $data['logSubjects'] = AuditLog::where('institut_id', $institutId)->select('subject_type')->whereNotNull('subject_type')->distinct()->pluck('subject_type');
+
+            // Maps id → nom pour résoudre les UUIDs dans les champs de changements
+            $data['usersMap']   = User::where('institut_id', $institutId)
+                ->get(['id', 'prenom', 'nom_famille'])
+                ->mapWithKeys(fn($u) => [$u->id => trim($u->prenom . ' ' . $u->nom_famille)])
+                ->all();
+            $data['clientsMap'] = Client::where('institut_id', $institutId)
+                ->withTrashed()
+                ->get(['id', 'prenom', 'nom'])
+                ->mapWithKeys(fn($c) => [$c->id => trim($c->prenom . ' ' . $c->nom)])
+                ->all();
         }
 
         return view('dashboard.profil', $data);
