@@ -124,6 +124,11 @@
                                 @endswitch">
                                 {{ $badge['label'] }}
                             </span>
+                            @if($rdv->source === 'vitrine')
+                            <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700" title="Demande via la vitrine publique">
+                                🌐 Vitrine
+                            </span>
+                            @endif
                         </div>
                         <p class="text-xs text-gray-400 truncate mt-0.5">{{ $rdv->label_prestations }}</p>
                         @if($rdv->employe)

@@ -214,19 +214,22 @@ class RdvController extends Controller
 
         return $q->limit(500)->get()->map(function ($r) {
             $color = match ($r->statut) {
-                'confirme' => '#10b981',
-                'en_attente' => '#f59e0b',
-                'annule'   => '#9ca3af',
-                'termine'  => '#6366f1',
-                default    => '#7c3aed',
+                'confirme'   => '#10b981',
+                'en_attente' => $r->source === 'vitrine' ? '#8b5cf6' : '#f59e0b',
+                'annule'     => '#9ca3af',
+                'termine'    => '#6366f1',
+                default      => '#7c3aed',
             };
+            $vitrinePrefix = $r->source === 'vitrine' ? '🌐 ' : '';
             return [
-                'id'    => $r->id,
-                'title' => trim(($r->client_nom ?: ($r->client->nom_complet ?? 'RDV')) . ' — ' . ($r->prestations->first()->nom ?? '')),
-                'start' => $r->debut_le->toIso8601String(),
-                'end'   => $r->debut_le->copy()->addMinutes($r->duree_minutes ?? 30)->toIso8601String(),
-                'color' => $color,
-                'url'   => route('dashboard.rdv.show', $r),
+                'id'              => $r->id,
+                'title'           => $vitrinePrefix . trim(($r->client_nom ?: ($r->client->nom_complet ?? 'RDV')) . ' — ' . ($r->prestations->first()->nom ?? '')),
+                'start'           => $r->debut_le->toIso8601String(),
+                'end'             => $r->debut_le->copy()->addMinutes($r->duree_minutes ?? 30)->toIso8601String(),
+                'color'           => $color,
+                'borderColor'     => $r->source === 'vitrine' ? '#7c3aed' : $color,
+                'url'             => route('dashboard.rdv.show', $r),
+                'extendedProps'   => ['source' => $r->source],
             ];
         });
     }

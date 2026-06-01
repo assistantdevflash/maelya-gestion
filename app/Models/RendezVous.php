@@ -30,6 +30,7 @@ class RendezVous extends Model
         'notes',
         'prestation_libre',
         'rappel_envoye',
+        'source',
     ];
 
     protected $casts = [
@@ -37,6 +38,12 @@ class RendezVous extends Model
         'duree_minutes'  => 'integer',
         'rappel_envoye'  => 'boolean',
     ];
+
+    /** true si la demande vient de la vitrine publique */
+    public function isVitrine(): bool
+    {
+        return $this->source === 'vitrine';
+    }
 
     // ── Relations ──────────────────────────────────────────────────────────
 

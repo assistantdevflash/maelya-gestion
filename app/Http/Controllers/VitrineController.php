@@ -7,6 +7,8 @@ use App\Mail\NouveauRdvVitrineEtablissement;
 use App\Models\Institut;
 use App\Models\Prestation;
 use App\Models\RendezVous;
+use App\Services\NotificationService;
+use App\Services\PushNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -76,19 +78,37 @@ class VitrineController extends Controller
             'duree_minutes'    => $dureeTotal,
             'statut'           => 'en_attente',
             'notes'            => $data['notes'] ?? null,
+            'source'           => 'vitrine',
         ]);
 
         $rdv->prestations()->attach($prestations->pluck('id'));
 
-        // ── Email à l'admin/propriétaire du salon ─────────────────────────
+        // ── Email à l'admin/propriétaire du salon (sync comme les autres mails) ──
         $adminEmail = $institut->email ?? $institut->proprietaire?->email;
         if ($adminEmail) {
-            Mail::to($adminEmail)->queue(new NouveauRdvVitrineEtablissement($rdv));
+            Mail::to($adminEmail)->send(new NouveauRdvVitrineEtablissement($rdv));
         }
 
         // ── Email de confirmation au client (si email fourni) ──────────────
         if (!empty($data['client_email'])) {
-            Mail::to($data['client_email'])->queue(new NouveauRdvVitrineClient($rdv));
+            Mail::to($data['client_email'])->send(new NouveauRdvVitrineClient($rdv));
+        }
+
+        // ── Notification in-app + push pour le propriétaire du salon ──────
+        $proprietaire = $institut->proprietaire;
+        if ($proprietaire) {
+            $rdvUrl = route('dashboard.rdv.show', $rdv);
+            $prestationsLabel = $prestations->pluck('nom')->join(', ');
+            $titre   = '📅 Nouvelle demande de RDV';
+            $message = $data['client_nom'] . ' — ' . $prestationsLabel;
+
+            NotificationService::notifyUser($proprietaire, 'nouveau_rdv_vitrine', $titre, $message, $rdvUrl);
+
+            try {
+                app(PushNotificationService::class)->sendToUser($proprietaire, $titre, $message, $rdvUrl);
+            } catch (\Throwable $e) {
+                \Log::warning('[Push vitrine] ' . $e->getMessage());
+            }
         }
 
         return back()->with('success', 'Votre demande de rendez-vous a bien été enregistrée. Nous vous recontacterons pour confirmation.');
