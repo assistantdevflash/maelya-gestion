@@ -12,11 +12,11 @@
         .header {
             background-color: #ec4899;
             color: #fff;
-            padding: 6px 10px;
+            padding: 10px 10px 8px 10px;
             text-align: center;
         }
-        .header .nom    { font-size: 9px;  letter-spacing: .04em; margin: 0; }
-        .header .titre  { font-size: 11px; font-weight: bold; margin: 1px 0 0 0; letter-spacing: .08em; }
+        .header .nom    { font-size: 8px;  letter-spacing: .12em; margin: 0 0 2px 0; opacity: .95; }
+        .header .titre  { font-size: 12px; font-weight: bold;     margin: 0; letter-spacing: .15em; }
 
         .body {
             padding: 6px 8px 4px 8px;
