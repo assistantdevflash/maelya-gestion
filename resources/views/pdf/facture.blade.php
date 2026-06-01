@@ -159,15 +159,6 @@
     @endif
 </div>
 
-<div class="mentions">
-    <div class="titre">Mentions légales</div>
-    <p>Facture acquittée à réception. Aucun escompte pour paiement anticipé.</p>
-    <p>Taux de pénalité en cas de retard de paiement : 3 fois le taux d'intérêt légal en vigueur.</p>
-    <p>Indemnité forfaitaire pour frais de recouvrement : 40 € (ou équivalent local) en cas de retard.</p>
-    <p>TVA non applicable, art. 293 B du CGI (sauf mention contraire).</p>
-    <p>Conformément à l'article L.441-9 du Code de commerce, conservez ce document pendant 10 ans.</p>
-</div>
-
 <div class="footer">
     Facture générée le {{ now()->format('d/m/Y à H:i') }} — {{ $vente->institut->nom ?? config('app.name') }}
 </div>
