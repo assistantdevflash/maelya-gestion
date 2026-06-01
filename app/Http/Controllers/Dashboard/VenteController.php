@@ -351,5 +351,4 @@ class VenteController extends Controller
             ->setPaper([0, 0, 226.77, 600], 'portrait');
         return $pdf->stream("ticket-{$vente->numero}.pdf");
     }
-    }
 }
