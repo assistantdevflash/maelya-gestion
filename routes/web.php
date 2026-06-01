@@ -139,6 +139,10 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
             Route::delete('codes-reduction/{codeReduction}', [CodeReductionController::class, 'destroy'])->name('codes-reduction.destroy');
         });
 
+        // Avoirs (retours / remboursements → code de réduction)
+        Route::get('avoirs', [\App\Http\Controllers\Dashboard\AvoirController::class, 'index'])->name('avoirs.index');
+        Route::post('ventes/{vente}/avoirs', [\App\Http\Controllers\Dashboard\AvoirController::class, 'store'])->name('ventes.avoirs.store');
+
         // Rendez-vous (feature: rdv)
         Route::middleware('feature:rdv')->group(function () {
             Route::get('rdv', [RdvController::class, 'index'])->name('rdv.index');
