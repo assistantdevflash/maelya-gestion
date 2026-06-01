@@ -1,8 +1,6 @@
-@extends('layouts.dashboard')
+<x-dashboard-layout>
+<x-slot name="title">Avoirs</x-slot>
 
-@section('title', 'Avoirs')
-
-@section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-slate-100">Avoirs</h1>
@@ -64,4 +62,4 @@
         </div>
     </div>
 </div>
-@endsection
+</x-dashboard-layout>
