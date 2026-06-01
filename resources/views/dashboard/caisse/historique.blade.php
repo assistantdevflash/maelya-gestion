@@ -401,6 +401,7 @@
                             </button>
                             <form method="POST" action="{{ route('dashboard.ventes.annuler', $vente) }}" class="flex-1">
                                 @csrf
+                                <input type="hidden" name="motif_annulation" value="Annulé par l'administrateur">
                                 <button type="submit" class="w-full btn-primary justify-center text-sm py-2.5 !bg-red-600 hover:!bg-red-700">
                                     Confirmer l'annulation
                                 </button>
