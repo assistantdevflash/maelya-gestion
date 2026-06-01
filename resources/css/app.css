@@ -480,8 +480,11 @@ html.dark body.dashboard .bg-primary-100   { background-color: rgba(147,51,234,0
 html.dark body.dashboard .bg-emerald-50    { background-color: rgba(16,185,129,0.12) !important; }
 html.dark body.dashboard .bg-emerald-100   { background-color: rgba(16,185,129,0.18) !important; }
 html.dark body.dashboard .bg-red-50        { background-color: rgba(239,68,68,0.12)  !important; }
+html.dark body.dashboard .bg-red-100       { background-color: rgba(239,68,68,0.18)  !important; }
 html.dark body.dashboard .bg-amber-50      { background-color: rgba(245,158,11,0.12) !important; }
+html.dark body.dashboard .bg-amber-100     { background-color: rgba(245,158,11,0.18) !important; }
 html.dark body.dashboard .bg-blue-50       { background-color: rgba(59,130,246,0.12) !important; }
+html.dark body.dashboard .bg-blue-100      { background-color: rgba(59,130,246,0.18) !important; }
 
 /* Inputs (color d'origine Tailwind) */
 html.dark body.dashboard input:not([type=range]):not([type=checkbox]):not([type=radio]),
