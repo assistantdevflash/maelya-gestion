@@ -356,6 +356,11 @@
                                             ▶ Voir les détails
                                         </summary>
                                         <div class="mt-2 space-y-1.5 bg-gray-50 rounded-lg p-2.5 border border-gray-100">
+                                            @php
+                                                $fmt = fn($v) => is_bool($v) ? ($v ? 'Oui' : 'Non')
+                                                    : (is_null($v) ? '—'
+                                                    : (is_array($v) ? implode(', ', $v) : $v));
+                                            @endphp
                                             @if($hasOldNew)
                                                 @php
                                                     $changedKeys = collect($changes['new'])
@@ -367,9 +372,6 @@
                                                         $oldVal = $changes['old'][$key] ?? null;
                                                         $newVal = $changes['new'][$key] ?? null;
                                                         $label  = $fieldLabels[$key] ?? str_replace('_', ' ', ucfirst($key));
-                                                        $fmt = fn($v) => is_bool($v) ? ($v ? 'Oui' : 'Non')
-                                                            : (is_null($v) ? '—'
-                                                            : (is_array($v) ? implode(', ', $v) : $v));
                                                     @endphp
                                                     <div class="flex items-start gap-1.5 text-[11px]">
                                                         <span class="text-gray-400 shrink-0 w-24 truncate" title="{{ $label }}">{{ $label }}</span>
@@ -380,14 +382,26 @@
                                                 @empty
                                                     <p class="text-[11px] text-gray-400 italic">Aucun champ modifié détecté</p>
                                                 @endforelse
+                                            @elseif(isset($changes['new']) && is_array($changes['new']))
+                                                {{-- Création : afficher les champs principaux --}}
+                                                @foreach($changes['new'] as $key => $val)
+                                                    @if(!in_array($key, $skipFields) && !in_array($key, ['institut_id','user_id','id']) && !is_null($val))
+                                                        @php
+                                                            $label   = $fieldLabels[$key] ?? str_replace('_', ' ', ucfirst($key));
+                                                            $display = $fmt($val);
+                                                        @endphp
+                                                        <div class="flex gap-1.5 text-[11px]">
+                                                            <span class="text-gray-400 shrink-0 w-24 truncate">{{ $label }}</span>
+                                                            <span class="text-gray-700 font-medium truncate max-w-[140px]" title="{{ $display }}">{{ $display }}</span>
+                                                        </div>
+                                                    @endif
+                                                @endforeach
                                             @else
                                                 @foreach($changes as $key => $val)
                                                     @if(!in_array($key, $skipFields))
                                                         @php
-                                                            $label = $fieldLabels[$key] ?? str_replace('_', ' ', ucfirst($key));
-                                                            $display = is_bool($val) ? ($val ? 'Oui' : 'Non')
-                                                                : (is_null($val) ? '—'
-                                                                : (is_array($val) ? json_encode($val, JSON_UNESCAPED_UNICODE) : $val));
+                                                            $label   = $fieldLabels[$key] ?? str_replace('_', ' ', ucfirst($key));
+                                                            $display = $fmt($val);
                                                         @endphp
                                                         <div class="flex gap-1.5 text-[11px]">
                                                             <span class="text-gray-400 shrink-0 w-24 truncate">{{ $label }}</span>
