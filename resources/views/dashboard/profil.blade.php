@@ -335,13 +335,56 @@
             $userIdFields   = ['annulee_par', 'user_id', 'employe_id', 'valide_par', 'cree_par'];
             // Champs dont la valeur est un UUID de Client
             $clientIdFields = ['client_id'];
+            // Champs contenant des dates/datetimes
+            $dateFields     = ['created_at', 'updated_at', 'deleted_at', 'debut_le', 'fin_le',
+                               'annulee_le', 'validated_at', 'expire_le', 'debut_abonnement',
+                               'date', 'date_naissance'];
+            // Traductions des valeurs de statut
+            $statutLabels = [
+                'validee'       => 'Validée',
+                'annulee'       => 'Annulée',
+                'en_attente'    => 'En attente',
+                'confirme'      => 'Confirmé',
+                'termine'       => 'Terminé',
+                'actif'         => 'Actif',
+                'inactif'       => 'Inactif',
+                'expiré'        => 'Expiré',
+                'expire'        => 'Expiré',
+                'suspendu'      => 'Suspendu',
+                'pending'       => 'En attente',
+                'paid'          => 'Payé',
+                'cancelled'     => 'Annulé',
+                'cash'          => 'Espèces',
+                'mobile_money'  => 'Mobile Money',
+                'carte'         => 'Carte bancaire',
+                'virement'      => 'Virement',
+                'mixte'         => 'Mixte',
+                'gratuit'       => 'Gratuit',
+                'pourcentage'   => 'Pourcentage',
+                'montant_fixe'  => 'Montant fixe',
+                'mensuel'       => 'Mensuel',
+                'annuel'        => 'Annuel',
+            ];
 
-            $fmt = function($v, $key = null) use ($usersMap, $clientsMap, $userIdFields, $clientIdFields) {
+            $fmt = function($v, $key = null) use ($usersMap, $clientsMap, $userIdFields, $clientIdFields, $dateFields, $statutLabels) {
                 if (is_bool($v)) return $v ? 'Oui' : 'Non';
                 if (is_null($v)) return '—';
                 if (is_array($v)) return implode(', ', $v);
+                // Résolution UUID → nom
                 if ($key && in_array($key, $userIdFields) && isset($usersMap[$v])) return $usersMap[$v];
                 if ($key && in_array($key, $clientIdFields) && isset($clientsMap[$v])) return $clientsMap[$v];
+                // Traduction statut / enum
+                if ($key === 'statut' || $key === 'mode_paiement' || $key === 'periode' || $key === 'type') {
+                    return $statutLabels[$v] ?? $v;
+                }
+                // Formatage des dates ISO
+                if ($key && in_array($key, $dateFields)) {
+                    try { return \Carbon\Carbon::parse($v)->format('d/m/Y H:i'); } catch (\Throwable $e) {}
+                }
+                // Détecter automatiquement les strings ISO datetime
+                if (is_string($v) && preg_match('/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/', $v)) {
+                    try { return \Carbon\Carbon::parse($v)->format('d/m/Y H:i'); } catch (\Throwable $e) {}
+                }
                 return $v;
             };
         @endphp
@@ -389,10 +432,10 @@
                                     <br><span class="text-gray-500">{{ Str::limit($log->label, 30) }}</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 text-xs" style="min-width:200px; max-width:320px;">
+                        <td class="px-4 py-3 text-xs" style="min-width:200px; max-width:280px; word-break:break-word; overflow-wrap:anywhere;">
                                 @if($changes)
                                     <details>
-                                        <summary class="cursor-pointer text-primary-600 hover:text-primary-700 font-medium select-none whitespace-nowrap">
+                                        <summary class="cursor-pointer text-primary-600 hover:text-primary-700 font-medium select-none">
                                             ▶ Voir les détails
                                         </summary>
                                         <div class="mt-2 space-y-1.5 bg-gray-50 rounded-lg p-2.5 border border-gray-100">
@@ -408,11 +451,11 @@
                                                         $newVal = $changes['new'][$key] ?? null;
                                                         $label  = $fieldLabels[$key] ?? str_replace('_', ' ', ucfirst($key));
                                                     @endphp
-                                                    <div class="flex items-start gap-1.5 text-[11px]">
-                                                        <span class="text-gray-400 shrink-0 w-24 truncate" title="{{ $label }}">{{ $label }}</span>
-                                                        <span class="text-red-400 line-through shrink-0 max-w-[80px] truncate" title="{{ $fmt($oldVal, $key) }}">{{ $fmt($oldVal, $key) }}</span>
-                                                        <span class="text-gray-300">→</span>
-                                                        <span class="text-emerald-600 font-medium shrink-0 max-w-[80px] truncate" title="{{ $fmt($newVal, $key) }}">{{ $fmt($newVal, $key) }}</span>
+                                                    <div class="flex items-start gap-1 text-[11px] min-w-0">
+                                                        <span class="text-gray-400 shrink-0 w-20 truncate" title="{{ $label }}">{{ $label }}</span>
+                                                        <span class="text-red-400 line-through shrink-0 max-w-[72px] truncate" title="{{ $fmt($oldVal, $key) }}">{{ $fmt($oldVal, $key) }}</span>
+                                                        <span class="text-gray-300 shrink-0">→</span>
+                                                        <span class="text-emerald-600 font-medium min-w-0 break-all" title="{{ $fmt($newVal, $key) }}">{{ $fmt($newVal, $key) }}</span>
                                                     </div>
                                                 @empty
                                                     <p class="text-[11px] text-gray-400 italic">Aucun champ modifié détecté</p>
@@ -424,9 +467,9 @@
                                                             $label   = $fieldLabels[$key] ?? str_replace('_', ' ', ucfirst($key));
                                                             $display = $fmt($val, $key);
                                                         @endphp
-                                                        <div class="flex gap-1.5 text-[11px]">
-                                                            <span class="text-gray-400 shrink-0 w-24 truncate">{{ $label }}</span>
-                                                            <span class="text-gray-700 font-medium truncate max-w-[140px]" title="{{ $display }}">{{ $display }}</span>
+                                                        <div class="flex gap-1 text-[11px] min-w-0">
+                                                            <span class="text-gray-400 shrink-0 w-20 truncate">{{ $label }}</span>
+                                                            <span class="text-gray-700 font-medium min-w-0 break-all" title="{{ $display }}">{{ $display }}</span>
                                                         </div>
                                                     @endif
                                                 @endforeach
@@ -437,9 +480,9 @@
                                                             $label   = $fieldLabels[$key] ?? str_replace('_', ' ', ucfirst($key));
                                                             $display = $fmt($val, $key);
                                                         @endphp
-                                                        <div class="flex gap-1.5 text-[11px]">
-                                                            <span class="text-gray-400 shrink-0 w-24 truncate">{{ $label }}</span>
-                                                            <span class="text-gray-700 font-medium truncate max-w-[140px]" title="{{ $display }}">{{ $display }}</span>
+                                                        <div class="flex gap-1 text-[11px] min-w-0">
+                                                            <span class="text-gray-400 shrink-0 w-20 truncate">{{ $label }}</span>
+                                                            <span class="text-gray-700 font-medium min-w-0 break-all" title="{{ $display }}">{{ $display }}</span>
                                                         </div>
                                                     @endif
                                                 @endforeach
