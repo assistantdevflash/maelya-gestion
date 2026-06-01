@@ -260,7 +260,7 @@ class VenteController extends Controller
             abort(403);
         }
 
-        $vente->load('items', 'client', 'user', 'codeReduction');
+        $vente->load('items', 'client', 'user', 'codeReduction', 'avoirs.codeReduction', 'avoirs.user');
         return view('dashboard.caisse.show', compact('vente'));
     }
 

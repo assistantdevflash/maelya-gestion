@@ -63,6 +63,11 @@ class Vente extends Model
         return $this->belongsTo(CodeReduction::class, 'code_reduction_id');
     }
 
+    public function avoirs()
+    {
+        return $this->hasMany(Avoir::class, 'vente_id');
+    }
+
     public function scopeValidee($query)
     {
         return $query->where('statut', 'validee');

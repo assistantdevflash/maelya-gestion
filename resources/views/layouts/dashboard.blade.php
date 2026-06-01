@@ -303,6 +303,14 @@
                     @endif
                 </a>
 
+                <a href="{{ route('dashboard.avoirs.index') }}"
+                   class="sidebar-link {{ request()->routeIs('dashboard.avoirs.*') ? 'active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/>
+                    </svg>
+                    Avoirs
+                </a>
+
                 @php
                     $rdvEchusBadge = 0;
                     if ($featureHas('rdv')) {

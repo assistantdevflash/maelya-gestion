@@ -128,15 +128,60 @@
                 @endif
 
                 @if($vente->statut === 'validee' && auth()->user()->isAdmin())
+                {{-- Créer un avoir --}}
+                @php($montantAvoirsDeja = $vente->avoirs->sum('montant'))
+                @php($montantDisponible = max(0, (int) $vente->total - (int) $montantAvoirsDeja))
+                @if($montantDisponible > 0)
+                <div x-data="{ showAvoir: false, montant: {{ $montantDisponible }}, motif: '' }" class="contents">
+                    <button type="button" @click="showAvoir = true" class="btn-outline w-full justify-center border-amber-300 text-amber-700 hover:bg-amber-50">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h11M9 21V3m6 18l3-3m0 0l3 3m-3-3v8"/>
+                        </svg>
+                        Créer un avoir
+                    </button>
+
+                    <div x-show="showAvoir" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center px-4" x-transition.opacity>
+                        <div class="absolute inset-0 bg-black/50" @click="showAvoir = false"></div>
+                        <div class="relative bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4" @click.stop>
+                            <h3 class="font-semibold text-gray-900 dark:text-gray-100">Créer un avoir</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                Génère un code de réduction utilisable lors d'une prochaine vente.
+                                Disponible : <strong>{{ number_format($montantDisponible, 0, ',', ' ') }} F</strong>.
+                            </p>
+                            <form method="POST" action="{{ route('dashboard.ventes.avoirs.store', $vente) }}" class="space-y-3">
+                                @csrf
+                                <div>
+                                    <label class="form-label">Montant (FCFA) <span class="text-red-500">*</span></label>
+                                    <input type="number" name="montant" x-model.number="montant" required
+                                           min="100" max="{{ $montantDisponible }}" step="100"
+                                           class="form-input">
+                                </div>
+                                <div>
+                                    <label class="form-label">Motif</label>
+                                    <select name="motif" x-model="motif" class="form-select">
+                                        <option value="Retour produit">Retour produit</option>
+                                        <option value="Prestation annulée">Prestation annulée</option>
+                                        <option value="Geste commercial">Geste commercial</option>
+                                        <option value="Autre">Autre</option>
+                                    </select>
+                                </div>
+                                <div class="flex gap-3 pt-2">
+                                    <button type="button" @click="showAvoir = false" class="btn btn-outline flex-1 justify-center">Retour</button>
+                                    <button type="submit" class="btn-primary flex-1 justify-center">Créer l'avoir</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
                 <div x-data="{ showAnnul: false, motif: '' }" class="contents">
                     <button type="button" @click="showAnnul = true" class="btn-danger w-full justify-center">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
                         Annuler la vente
-                    </button>
-
-                    {{-- Modal saisie motif --}}
+                    </button>                    {{-- Modal saisie motif --}}
                     <div x-show="showAnnul" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center px-4"
                          x-transition.opacity>
                         <div class="absolute inset-0 bg-black/50" @click="showAnnul = false"></div>
@@ -187,6 +232,41 @@
                 @endif
             </div>
         </div>
+
+        {{-- Avoirs émis sur cette vente --}}
+        @if($vente->avoirs->count() > 0)
+        <div class="card overflow-hidden">
+            <div class="px-5 py-3 border-b border-gray-100 dark:border-slate-700">
+                <h2 class="font-semibold text-gray-900 dark:text-gray-100 text-sm">Avoirs émis</h2>
+            </div>
+            <ul class="divide-y divide-gray-100 dark:divide-slate-700">
+                @foreach($vente->avoirs as $av)
+                <li class="px-5 py-3 flex items-center gap-4 text-sm">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-gray-900 dark:text-gray-100">{{ $av->numero }}</p>
+                        @if($av->motif)
+                            <p class="text-xs text-gray-500 dark:text-slate-400">{{ $av->motif }}</p>
+                        @endif
+                        @if($av->codeReduction)
+                            <p class="text-xs mt-1">
+                                Code : <span class="font-mono font-semibold text-primary-600">{{ $av->codeReduction->code }}</span>
+                                @if($av->codeReduction->nb_utilisations >= $av->codeReduction->limite_utilisation)
+                                    · <span class="text-emerald-600">utilisé</span>
+                                @else
+                                    · <span class="text-amber-600">disponible</span> (jusqu'au {{ $av->codeReduction->date_fin?->format('d/m/Y') }})
+                                @endif
+                            </p>
+                        @endif
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-gray-900 dark:text-gray-100">{{ number_format($av->montant, 0, ',', ' ') }} F</p>
+                        <p class="text-xs text-gray-400">{{ $av->created_at->format('d/m/Y') }}</p>
+                    </div>
+                </li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
 
         {{-- Détail articles --}}
         <div class="card overflow-hidden">
