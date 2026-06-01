@@ -113,6 +113,7 @@
                                         stock: {{ $produit->stock }},
                                         seuil_alerte: {{ $produit->seuil_alerte }},
                                         unite: '{{ $produit->unite }}',
+                                        code_barre: '{{ addslashes($produit->code_barre ?? '') }}',
                                         description: '{{ addslashes($produit->description ?? '') }}'
                                     })" class="btn-icon" title="Modifier">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,11 +165,11 @@
             show: false,
             isEdit: false,
             formAction: '{{ route('dashboard.produits.store') }}',
-            form: { categorie_id: '', nom: '', reference: '', prix_achat: '', prix_vente: '', stock: 0, seuil_alerte: 5, unite: 'pièce', description: '' },
+            form: { categorie_id: '', nom: '', reference: '', code_barre: '', prix_achat: '', prix_vente: '', stock: 0, seuil_alerte: 5, unite: 'pièce', description: '' },
             resetForm() {
                 this.isEdit = false;
                 this.formAction = '{{ route('dashboard.produits.store') }}';
-                this.form = { categorie_id: '', nom: '', reference: '', prix_achat: '', prix_vente: '', stock: 0, seuil_alerte: 5, unite: 'pièce', description: '' };
+                this.form = { categorie_id: '', nom: '', reference: '', code_barre: '', prix_achat: '', prix_vente: '', stock: 0, seuil_alerte: 5, unite: 'pièce', description: '' };
             },
             init() {
                 window.addEventListener('open-produit', () => { this.resetForm(); this.show = true; });
@@ -179,6 +180,7 @@
                         categorie_id: e.detail.categorie_id,
                         nom: e.detail.nom,
                         reference: e.detail.reference,
+                        code_barre: e.detail.code_barre || '',
                         prix_achat: e.detail.prix_achat || '',
                         prix_vente: e.detail.prix_vente,
                         stock: e.detail.stock,
@@ -230,10 +232,17 @@
                                placeholder="Ex: Shampooing kératine 500ml">
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Référence</label>
-                        <input type="text" name="reference" maxlength="50"
-                               x-model="form.reference" class="form-input" placeholder="SKU-001">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="form-group">
+                            <label class="form-label text-xs">Référence</label>
+                            <input type="text" name="reference" maxlength="50"
+                                   x-model="form.reference" class="form-input" placeholder="SKU-001">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label text-xs">Code-barres</label>
+                            <input type="text" name="code_barre" maxlength="50"
+                                   x-model="form.code_barre" class="form-input" placeholder="EAN-13">
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">

@@ -45,6 +45,16 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
                 });
                 this.panier = { ...this.panier, ...next };
             }
+            // Écoute le scan code-barres produit
+            this.$el.addEventListener('scanner-produit', (e) => {
+                const d = e.detail;
+                const key = `produit_${d.id}`;
+                if (this.panier[key]) {
+                    this.panier[key].quantite++;
+                } else {
+                    this.panier = { ...this.panier, [key]: { type: 'produit', id: d.id, nom: d.nom, prix: parseInt(d.prix) || 0, quantite: 1 } };
+                }
+            });
         },
 
         // ── État filtres ──

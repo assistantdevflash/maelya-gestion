@@ -73,6 +73,49 @@
                 </svg>
                 Vente rapide
             </button>
+
+            {{-- Bouton Scanner code-barres produit --}}
+            <div x-data="scannerCodeBarre()" x-init="init()" x-show="onglet === 'produits'" class="flex flex-col gap-1">
+                <button type="button" @click="ouvrir()"
+                        class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold border-2 border-blue-200 dark:border-blue-700/60 bg-blue-50/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100/70 dark:hover:bg-blue-900/40 transition-all duration-200">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h2v12H4zm3 0h1v12H7zm3 0h2v12h-2zm4 0h1v12h-1zm3 0h2v12h-2z"/>
+                    </svg>
+                    Scanner code-barres
+                </button>
+                <p x-show="statut" x-text="statut" class="text-xs text-center"
+                   :class="erreur ? 'text-red-600' : 'text-emerald-600'"></p>
+
+                {{-- Modal --}}
+                <div x-show="modalOuvert" x-cloak
+                     class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+                     @keydown.escape.window="fermer()">
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-sm w-full p-5 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-gray-800 dark:text-slate-100">Scanner un produit</h3>
+                            <button @click="fermer()" class="text-gray-400 hover:text-gray-600">✕</button>
+                        </div>
+                        <template x-if="hasCamera">
+                            <div>
+                                <video x-ref="video" autoplay playsinline class="w-full rounded-lg bg-black"></video>
+                                <p class="text-xs text-gray-500 mt-2 text-center">Placez le code-barres face à la caméra.</p>
+                            </div>
+                        </template>
+                        <template x-if="!hasCamera">
+                            <p class="text-sm text-amber-600">Caméra indisponible sur ce navigateur.</p>
+                        </template>
+                        <div class="space-y-2">
+                            <label class="text-xs text-gray-500 dark:text-slate-400">Ou saisissez le code manuellement</label>
+                            <div class="flex gap-2">
+                                <input x-model="saisie" type="text" placeholder="EAN-13 ou code interne"
+                                       @keydown.enter.prevent="resoudre(saisie)"
+                                       class="form-input flex-1" autofocus>
+                                <button @click="resoudre(saisie)" class="btn-primary px-4">OK</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         {{-- Formulaire vente rapide --}}
@@ -823,3 +866,78 @@
     </div>
     @endif
 </div>
+
+<script>
+function scannerCodeBarre() {
+    return {
+        modalOuvert: false,
+        hasCamera: false,
+        saisie: '',
+        statut: '',
+        erreur: false,
+        stream: null,
+        detector: null,
+        intervalScan: null,
+        init() {
+            this.hasCamera = 'BarcodeDetector' in window && !!navigator.mediaDevices?.getUserMedia;
+        },
+        async ouvrir() {
+            this.modalOuvert = true;
+            this.statut = '';
+            this.erreur = false;
+            this.saisie = '';
+            if (!this.hasCamera) return;
+            try {
+                this.detector = new BarcodeDetector({ formats: ['ean_13','ean_8','code_128','code_39','upc_a','upc_e','qr_code'] });
+                this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                await this.$nextTick();
+                this.$refs.video.srcObject = this.stream;
+                this.intervalScan = setInterval(() => this.scanner(), 500);
+            } catch (e) {
+                this.hasCamera = false;
+            }
+        },
+        async scanner() {
+            if (!this.$refs.video || this.$refs.video.readyState < 2) return;
+            try {
+                const codes = await this.detector.detect(this.$refs.video);
+                if (codes.length) this.resoudre(codes[0].rawValue);
+            } catch (_) {}
+        },
+        fermer() {
+            this.modalOuvert = false;
+            if (this.intervalScan) { clearInterval(this.intervalScan); this.intervalScan = null; }
+            if (this.stream) { this.stream.getTracks().forEach(t => t.stop()); this.stream = null; }
+        },
+        async resoudre(code) {
+            code = (code || '').trim();
+            if (!code) return;
+            this.statut = 'Recherche…';
+            this.erreur = false;
+            try {
+                const url = "{{ route('dashboard.produits.scan') }}?code=" + encodeURIComponent(code);
+                const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                if (!res.ok) {
+                    this.statut = 'Produit introuvable : ' + code;
+                    this.erreur = true;
+                    return;
+                }
+                const data = await res.json();
+                if (data.found) {
+                    // Ajoute au panier Alpine du composant parent caisseApp
+                    this.$dispatch('scanner-produit', { id: data.id, nom: data.nom, prix: data.prix });
+                    this.statut = data.nom + ' ajouté';
+                    this.erreur = false;
+                    this.fermer();
+                } else {
+                    this.statut = 'Produit introuvable.';
+                    this.erreur = true;
+                }
+            } catch (e) {
+                this.statut = 'Erreur : ' + e.message;
+                this.erreur = true;
+            }
+        }
+    };
+}
+</script>
