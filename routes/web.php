@@ -85,6 +85,9 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
     Route::get('ventes/{vente}/ticket-pdf', [VenteController::class, 'ticketPdf'])
         ->middleware('feature:caisse_impression')
         ->name('ventes.ticket-pdf');
+    Route::get('ventes/{vente}/facture-pdf', [VenteController::class, 'facturePdf'])
+        ->middleware('feature:caisse_impression')
+        ->name('ventes.facture-pdf');
 
     // Validation code réduction (caisse - feature: caisse_code_promo)
     Route::post('codes-reduction/valider', [CodeReductionController::class, 'valider'])

@@ -17,7 +17,7 @@ class Vente extends Model
     }
 
     protected $fillable = [
-        'institut_id', 'client_id', 'user_id', 'numero', 'total',
+        'institut_id', 'client_id', 'user_id', 'numero', 'numero_facture', 'total',
         'remise', 'pourboire', 'code_reduction_id',
         'mode_paiement', 'reference_paiement', 'montant_cash', 'montant_mobile', 'montant_carte',
         'statut', 'motif_annulation', 'annulee_le', 'annulee_par', 'notes', 'ip_address',

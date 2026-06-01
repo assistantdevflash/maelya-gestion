@@ -11,6 +11,7 @@ use App\Models\ProgrammeFidelite;
 use App\Models\Prestation;
 use App\Models\Produit;
 use App\Models\Vente;
+use App\Services\FactureNumeroService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -139,6 +140,10 @@ class VenteController extends Controller
                 'statut' => 'validee',
                 'ip_address' => request()->ip(),
             ]);
+
+            // Numérotation facture FAC-{année}-{seq} (atomique dans la transaction)
+            $vente->numero_facture = app(FactureNumeroService::class)->generate($this->institutId());
+            $vente->save();
 
             foreach ($itemsToSave as $item) {
                 $item['id'] = (string) Str::uuid();
@@ -352,5 +357,23 @@ class VenteController extends Controller
         $pdf = Pdf::loadView('pdf.ticket', compact('vente'))
             ->setPaper([0, 0, 226.77, 600], 'portrait');
         return $pdf->stream("ticket-{$vente->numero}.pdf");
+    }
+
+    public function facturePdf(Vente $vente)
+    {
+        if (Auth::user()->isEmploye() && $vente->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        if (empty($vente->numero_facture)) {
+            DB::transaction(function () use ($vente) {
+                $vente->numero_facture = app(FactureNumeroService::class)->generate($vente->institut_id);
+                $vente->save();
+            });
+        }
+
+        $vente->load('items', 'client', 'institut', 'user');
+        $pdf = Pdf::loadView('pdf.facture', compact('vente'))->setPaper('a4', 'portrait');
+        return $pdf->download("facture-{$vente->numero_facture}.pdf");
     }
 }

@@ -79,6 +79,15 @@
                     </svg>
                     Imprimer le ticket
                 </a>
+                <a href="{{ route('dashboard.ventes.facture-pdf', $vente) }}" target="_blank" class="btn-outline w-full justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    Télécharger la facture
+                    @if($vente->numero_facture)
+                        <span class="text-xs text-gray-500 ml-1">({{ $vente->numero_facture }})</span>
+                    @endif
+                </a>
                 @else
                 <a href="{{ route('abonnement.upgrade', ['feature' => 'caisse_impression']) }}" class="btn-outline w-full justify-center text-amber-600 border-amber-200 hover:bg-amber-50">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
