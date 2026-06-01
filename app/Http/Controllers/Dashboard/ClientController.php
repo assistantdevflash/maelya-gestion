@@ -106,7 +106,41 @@ class ClientController extends Controller
             ->take(10)
             ->get();
 
-        return view('dashboard.clients.show', compact('client', 'ventes', 'rdvAVenir', 'rdvPasses'));
+        // Timeline fusionnée (ventes + RDV + avis), triée DESC
+        $timeline = collect();
+        foreach ($client->ventes()->where('statut', 'validee')->latest()->take(50)->get() as $v) {
+            $timeline->push([
+                'type'  => 'vente',
+                'date'  => $v->created_at,
+                'titre' => 'Vente · ' . number_format($v->total / 100, 0, ',', ' ') . ' F',
+                'sous'  => $v->numero_facture ?? '#' . substr($v->id, 0, 8),
+                'url'   => route('dashboard.ventes.show', $v),
+                'icon'  => '💳',
+            ]);
+        }
+        foreach ($client->rendezVous()->latest('debut_le')->take(50)->get() as $r) {
+            $timeline->push([
+                'type'  => 'rdv',
+                'date'  => $r->debut_le,
+                'titre' => 'RDV · ' . ucfirst(str_replace('_', ' ', $r->statut)),
+                'sous'  => $r->prestations->pluck('nom')->implode(', ') ?: '—',
+                'url'   => route('dashboard.rdv.show', $r),
+                'icon'  => '📅',
+            ]);
+        }
+        foreach (\App\Models\AvisClient::where('client_id', $client->id)->whereNotNull('repondu_le')->get() as $a) {
+            $timeline->push([
+                'type'  => 'avis',
+                'date'  => $a->repondu_le,
+                'titre' => 'Avis ' . str_repeat('★', (int) $a->note),
+                'sous'  => $a->commentaire ? \Illuminate\Support\Str::limit($a->commentaire, 80) : '—',
+                'url'   => route('dashboard.avis.index'),
+                'icon'  => '⭐',
+            ]);
+        }
+        $timeline = $timeline->sortByDesc('date')->values();
+
+        return view('dashboard.clients.show', compact('client', 'ventes', 'rdvAVenir', 'rdvPasses', 'timeline'));
     }
 
     public function update(Request $request, Client $client)

@@ -108,6 +108,36 @@
                         <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $rdvAVenir->count() + $rdvPasses->count() }}</span>
                     </button>
                     @endif
+                    <button type="button" x-on:click="onglet = 'timeline'"
+                            class="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+                            :class="onglet === 'timeline' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
+                        🕒 Historique
+                        <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $timeline->count() }}</span>
+                    </button>
+                </div>
+
+                {{-- Onglet Timeline --}}
+                <div x-show="onglet === 'timeline'" x-cloak class="max-h-96 overflow-y-auto p-4">
+                    @if($timeline->count())
+                        <ol class="relative border-l border-gray-200 dark:border-slate-700 ml-3 space-y-4">
+                            @foreach($timeline as $event)
+                                <li class="ml-5">
+                                    <span class="absolute -left-3 flex items-center justify-center w-6 h-6 bg-white dark:bg-slate-800 rounded-full ring-2 ring-gray-200 dark:ring-slate-700 text-sm">
+                                        {{ $event['icon'] }}
+                                    </span>
+                                    <div class="flex justify-between items-start gap-2">
+                                        <div class="min-w-0">
+                                            <a href="{{ $event['url'] }}" class="font-semibold text-sm text-gray-800 dark:text-slate-100 hover:text-primary-600">{{ $event['titre'] }}</a>
+                                            <p class="text-xs text-gray-500 dark:text-slate-400 truncate">{{ $event['sous'] }}</p>
+                                        </div>
+                                        <time class="text-[11px] text-gray-400 shrink-0">{{ $event['date']?->format('d/m/Y H:i') }}</time>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ol>
+                    @else
+                        <p class="text-center text-gray-400 text-sm py-8">Aucun événement</p>
+                    @endif
                 </div>
 
                 {{-- Onglet Achats --}}
