@@ -19,7 +19,12 @@ class ClientController extends Controller
 
     public function index(Request $request)
     {
-        $search = $request->input('q');
+        $search        = $request->input('q');
+        $segment       = $request->input('segment'); // nouveau | fidele | vip | inactif
+        $pointsMin     = $request->integer('points_min');
+        $moisAnniv     = $request->input('mois_anniv'); // 01..12
+        $inactifJours  = $request->integer('inactif_jours'); // ex: 90
+
         $clients = Client::query()
             ->withCount('ventes')
             ->when($search, function ($q) use ($search) {
@@ -27,6 +32,18 @@ class ClientController extends Controller
                     $q2->where('prenom', 'like', "%{$search}%")
                        ->orWhere('nom', 'like', "%{$search}%")
                        ->orWhere('telephone', 'like', "%{$search}%");
+                });
+            })
+            ->when($pointsMin > 0, fn ($q) => $q->where('points_fidelite', '>=', $pointsMin))
+            ->when($moisAnniv, fn ($q) => $q->whereNotNull('date_naissance')
+                ->where('date_naissance', 'like', $moisAnniv . '-%'))
+            ->when($segment === 'nouveau', fn ($q) => $q->where('created_at', '>=', now()->subDays(30)))
+            ->when($segment === 'fidele', fn ($q) => $q->has('ventes', '>=', 3)->has('ventes', '<', 10))
+            ->when($segment === 'vip', fn ($q) => $q->has('ventes', '>=', 10))
+            ->when($segment === 'inactif' || $inactifJours > 0, function ($q) use ($inactifJours) {
+                $jours = $inactifJours > 0 ? $inactifJours : 90;
+                $q->whereDoesntHave('ventes', function ($q2) use ($jours) {
+                    $q2->where('created_at', '>=', now()->subDays($jours));
                 });
             })
             ->orderBy('prenom')

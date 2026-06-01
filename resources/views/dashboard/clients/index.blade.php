@@ -55,19 +55,40 @@
 
     {{-- Recherche --}}
     <div class="card p-4">
-        <form method="GET" action="{{ route('dashboard.clients.index') }}" class="flex flex-col sm:flex-row gap-3">
-            <div class="relative flex-1">
-                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-                <input type="text" name="q" value="{{ request('q') }}"
-                       placeholder="Nom, téléphone, email..."
-                       class="form-input pl-9">
+        <form method="GET" action="{{ route('dashboard.clients.index') }}" class="space-y-3">
+            <div class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-1">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" name="q" value="{{ request('q') }}"
+                           placeholder="Nom, téléphone, email..."
+                           class="form-input pl-9">
+                </div>
+                <button type="submit" class="btn-outline">Rechercher</button>
+                @if(request()->hasAny(['q','segment','points_min','mois_anniv','inactif_jours']))
+                    <a href="{{ route('dashboard.clients.index') }}" class="btn btn-ghost">Effacer</a>
+                @endif
             </div>
-            <button type="submit" class="btn-outline">Rechercher</button>
-            @if(request('q'))
-                <a href="{{ route('dashboard.clients.index') }}" class="btn btn-ghost">Effacer</a>
-            @endif
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <select name="segment" class="form-input">
+                    <option value="">Tous les segments</option>
+                    <option value="nouveau" @selected(request('segment')==='nouveau')>Nouveaux (30j)</option>
+                    <option value="fidele" @selected(request('segment')==='fidele')>Fidèles (3-9 visites)</option>
+                    <option value="vip" @selected(request('segment')==='vip')>VIP (10+ visites)</option>
+                    <option value="inactif" @selected(request('segment')==='inactif')>Inactifs (90j)</option>
+                </select>
+                <input type="number" name="points_min" min="0" value="{{ request('points_min') }}"
+                       placeholder="Points min." class="form-input">
+                <select name="mois_anniv" class="form-input">
+                    <option value="">Mois d'anniversaire</option>
+                    @foreach(['01'=>'Janvier','02'=>'Février','03'=>'Mars','04'=>'Avril','05'=>'Mai','06'=>'Juin','07'=>'Juillet','08'=>'Août','09'=>'Septembre','10'=>'Octobre','11'=>'Novembre','12'=>'Décembre'] as $v=>$l)
+                        <option value="{{ $v }}" @selected(request('mois_anniv')===$v)>{{ $l }}</option>
+                    @endforeach
+                </select>
+                <input type="number" name="inactif_jours" min="0" value="{{ request('inactif_jours') }}"
+                       placeholder="Inactif depuis (jours)" class="form-input">
+            </div>
         </form>
     </div>
 
