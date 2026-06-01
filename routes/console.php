@@ -13,3 +13,6 @@ Schedule::command('abonnements:expirer')->dailyAt('01:00');
 
 // Rappels J-1 pour les rendez-vous du lendemain
 Schedule::command('rdv:rappels')->dailyAt('08:00');
+
+// Purge hebdomadaire du journal d'activité (conserve 90 jours)
+Schedule::command('audit:purge --days=90')->weeklyOn(0, '02:00');
