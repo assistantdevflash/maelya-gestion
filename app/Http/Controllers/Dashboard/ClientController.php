@@ -210,9 +210,22 @@ class ClientController extends Controller
         abort_unless($client->institut_id === $this->institutId(), 403);
         $institut = \App\Models\Institut::find($client->institut_id);
         $lien = route('public.carte-fidelite', $client->fidelite_token);
-        $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . urlencode($lien);
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.carte-fidelite', compact('client', 'institut', 'lien', 'qrUrl'))
+        // Télécharge le QR en base64 (DomPDF n'accepte pas les images distantes par défaut)
+        $qrBase64 = null;
+        try {
+            $ctx = stream_context_create(['http' => ['timeout' => 5]]);
+            $png = @file_get_contents(
+                'https://api.qrserver.com/v1/create-qr-code/?size=300x300&format=png&margin=0&data=' . urlencode($lien),
+                false,
+                $ctx
+            );
+            if ($png !== false) {
+                $qrBase64 = 'data:image/png;base64,' . base64_encode($png);
+            }
+        } catch (\Throwable $e) {}
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.carte-fidelite', compact('client', 'institut', 'lien', 'qrBase64'))
             ->setPaper([0, 0, 240, 150]); // ~85x55mm (carte de visite)
         return $pdf->download('carte-fidelite-' . $client->id . '.pdf');
     }
