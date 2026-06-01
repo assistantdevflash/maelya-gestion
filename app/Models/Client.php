@@ -21,13 +21,22 @@ class Client extends Model
 
     protected $fillable = [
         'institut_id', 'prenom', 'nom', 'telephone', 'email',
-        'date_naissance', 'notes', 'points_fidelite', 'actif',
+        'date_naissance', 'notes', 'points_fidelite', 'fidelite_token', 'actif',
     ];
 
     protected $casts = [
         'actif' => 'boolean',
         'points_fidelite' => 'integer',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $c) {
+            if (empty($c->fidelite_token)) {
+                $c->fidelite_token = \Illuminate\Support\Str::random(40);
+            }
+        });
+    }
 
     public function ventes()
     {

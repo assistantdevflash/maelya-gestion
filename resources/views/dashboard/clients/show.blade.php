@@ -33,6 +33,15 @@
                     Nouvelle vente
                 </a>
                 <button type="button" x-data @click="$dispatch('open-edit-show')" class="btn-outline">Modifier</button>
+                @if($client->fidelite_token)
+                    <a href="{{ route('public.carte-fidelite', $client->fidelite_token) }}" target="_blank"
+                       class="btn-outline" title="Carte de fidélité (QR)">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm14 0h2v2h-2v-2zm-4 0h2v2h-2v-2zm0 4h2v2h-2v-2zm4 0h2v2h-2v-2z"/>
+                        </svg>
+                        Carte fidélité
+                    </a>
+                @endif
             </div>
         </div>
 

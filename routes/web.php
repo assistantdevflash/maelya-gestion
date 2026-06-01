@@ -66,6 +66,11 @@ Route::post('/avis/{token}', [\App\Http\Controllers\AvisPublicController::class,
     ->middleware('throttle:10,1')
     ->name('public.avis.submit');
 
+// ─── Carte fidélité publique (QR partageable) ────────────────────────────────
+Route::get('/carte/{token}', [\App\Http\Controllers\CarteFideliteController::class, 'show'])
+    ->middleware('throttle:60,1')
+    ->name('public.carte-fidelite');
+
 // ─── Ticket PDF public (lien partageable, accès par UUID) ─────────────────────
 Route::get('/ticket/{id}', [VenteController::class, 'ticketPdfPublic'])
     ->middleware('throttle:30,1')
