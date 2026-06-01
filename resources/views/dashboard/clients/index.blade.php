@@ -71,7 +71,7 @@
                 @endif
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <select name="segment" class="form-input">
+                <select name="segment" class="form-input" onchange="this.form.submit()">
                     <option value="">Tous les segments</option>
                     <option value="nouveau" @selected(request('segment')==='nouveau')>Nouveaux (30j)</option>
                     <option value="fidele" @selected(request('segment')==='fidele')>Fidèles (3-9 visites)</option>
@@ -79,15 +79,17 @@
                     <option value="inactif" @selected(request('segment')==='inactif')>Inactifs (90j)</option>
                 </select>
                 <input type="number" name="points_min" min="0" value="{{ request('points_min') }}"
-                       placeholder="Points min." class="form-input">
-                <select name="mois_anniv" class="form-input">
+                       placeholder="Points min." class="form-input"
+                       onchange="this.form.submit()">
+                <select name="mois_anniv" class="form-input" onchange="this.form.submit()">
                     <option value="">Mois d'anniversaire</option>
                     @foreach(['01'=>'Janvier','02'=>'Février','03'=>'Mars','04'=>'Avril','05'=>'Mai','06'=>'Juin','07'=>'Juillet','08'=>'Août','09'=>'Septembre','10'=>'Octobre','11'=>'Novembre','12'=>'Décembre'] as $v=>$l)
                         <option value="{{ $v }}" @selected(request('mois_anniv')===$v)>{{ $l }}</option>
                     @endforeach
                 </select>
                 <input type="number" name="inactif_jours" min="0" value="{{ request('inactif_jours') }}"
-                       placeholder="Inactif depuis (jours)" class="form-input">
+                       placeholder="Inactif depuis (jours)" class="form-input"
+                       onchange="this.form.submit()">
             </div>
         </form>
     </div>
