@@ -97,8 +97,8 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
 
     // ── Admin uniquement ──────────────────────────────────────────────
     Route::middleware('role:admin')->group(function () {
-        // Journal d'activité (audit log)
-        Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
+        // Journal d'activité — intégré dans la page profil
+        Route::get('audit', fn() => redirect()->route('dashboard.profil.edit'))->name('audit.index');
 
         // Comparatif multi-instituts (feature: multi_instituts)
         Route::get('comparatif', [\App\Http\Controllers\Dashboard\ComparatifInstitutsController::class, 'index'])

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -10,9 +11,32 @@ use Illuminate\Validation\Rules;
 
 class ProfilController extends Controller
 {
-    public function edit()
+    public function edit(Request $request)
     {
-        return view('dashboard.profil', ['user' => Auth::user()]);
+        $data = ['user' => Auth::user()];
+
+        if (Auth::user()->isAdmin()) {
+            $institutId = session('current_institut_id', Auth::user()->institut_id);
+            $query = AuditLog::with('user:id,prenom,nom_famille')
+                ->where('institut_id', $institutId);
+
+            if ($request->filled('log_action')) {
+                $query->where('action', $request->log_action);
+            }
+            if ($request->filled('log_type')) {
+                $query->where('subject_type', $request->log_type);
+            }
+            if ($request->filled('log_q')) {
+                $q = $request->log_q;
+                $query->where(fn($w) => $w->where('label', 'like', "%$q%")->orWhere('subject_id', $q));
+            }
+
+            $data['logs']        = $query->latest()->paginate(30)->withQueryString();
+            $data['logActions']  = AuditLog::where('institut_id', $institutId)->select('action')->distinct()->pluck('action');
+            $data['logSubjects'] = AuditLog::where('institut_id', $institutId)->select('subject_type')->whereNotNull('subject_type')->distinct()->pluck('subject_type');
+        }
+
+        return view('dashboard.profil', $data);
     }
 
     public function update(Request $request)
