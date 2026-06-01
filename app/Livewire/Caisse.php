@@ -11,6 +11,7 @@ use App\Models\Prestation;
 use App\Models\Produit;
 use App\Models\RendezVous;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Caisse extends Component
@@ -108,6 +109,12 @@ class Caisse extends Component
         $this->clientId      = $id;
         $this->clientSearch  = '';
         $this->showClientList = false;
+    }
+
+    #[On('client-scanne-qr')]
+    public function clientScanneQr(string $id): void
+    {
+        $this->selectClient($id);
     }
 
     public function ajouterClientRapide()

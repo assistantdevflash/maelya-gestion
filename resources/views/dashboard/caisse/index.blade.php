@@ -178,11 +178,8 @@
                     if (data.found) {
                         this.status = 'Client : ' + data.nom + ' (' + data.points + ' pts)';
                         this.error = false;
-                        // Pré-sélectionner dans Livewire
-                        Livewire.dispatch('selectClient', { id: String(data.id) });
-                        // Fallback : appel direct au composant Caisse
-                        const comp = Livewire.all().find(c => c.name === 'caisse');
-                        if (comp) comp.call('selectClient', String(data.id));
+                        // Notifie le composant Livewire Caisse
+                        Livewire.dispatch('client-scanne-qr', { id: String(data.id) });
                         this.close();
                     } else {
                         this.status = 'Aucun client trouvé.';
