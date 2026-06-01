@@ -212,38 +212,48 @@
                 </div>
                 @endif
             @else
-                <div x-data="{ focused: false }" @click.outside="focused = false; $wire.set('showClientList', false)">
+                <div x-data="{
+                        clients: {{ $allClients->toJson() }},
+                        search: '',
+                        open: false,
+                        get filtered() {
+                            if (this.search.length < 2) return this.clients.slice(0, 8);
+                            const q = this.search.toLowerCase();
+                            return this.clients.filter(c => c.search.includes(q)).slice(0, 8);
+                        },
+                        choose(id) {
+                            this.open = false;
+                            this.search = '';
+                            $wire.selectClient(id);
+                        }
+                    }" @click.outside="open = false">
                     <input
                         type="text"
-                        wire:model.live.debounce.300ms="clientSearch"
-                        @focus="focused = true; $wire.set('showClientList', true)"
-                        @blur="setTimeout(() => $wire.set('showClientList', false), 200)"
+                        x-model="search"
+                        @focus="open = true"
+                        @input="open = true"
+                        @keydown.escape="open = false"
                         placeholder="Chercher un client..."
                         class="form-input text-sm">
-                    <div wire:loading wire:target="clientSearch" class="flex items-center gap-2 mt-2 text-xs text-gray-400">
-                        <span class="spinner spinner-sm text-primary-500"></span> Recherche...
+                    <div x-show="open && filtered.length > 0" x-cloak
+                         class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden mt-2 shadow-sm max-h-52 overflow-y-auto bg-white dark:bg-gray-800">
+                        <template x-for="c in filtered" :key="c.id">
+                            <button type="button"
+                                    @mousedown.prevent
+                                    @click="choose(c.id)"
+                                    @touchend.prevent="choose(c.id)"
+                                    class="w-full text-left px-3 py-2.5 text-sm hover:bg-primary-50/50 dark:hover:bg-gray-700 flex items-center gap-2.5 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors">
+                                <div class="w-7 h-7 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center text-primary-700 text-xs font-bold"
+                                     x-text="c.initiale"></div>
+                                <span class="font-medium text-gray-900 dark:text-white" x-text="c.nom"></span>
+                                <span class="text-gray-400 text-xs ml-auto" x-text="c.telephone"></span>
+                            </button>
+                        </template>
                     </div>
-                    @if($this->clients->count() > 0)
-                    <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden mt-2 shadow-sm max-h-52 overflow-y-auto bg-white dark:bg-gray-800">
-                        @foreach($this->clients as $c)
-                        <button type="button"
-                                @mousedown.prevent
-                                @click.prevent.stop="$wire.selectClient('{{ $c->id }}')"
-                                @touchend.prevent.stop="$wire.selectClient('{{ $c->id }}')"
-                                class="w-full text-left px-3 py-2.5 text-sm hover:bg-primary-50/50 dark:hover:bg-gray-700 flex items-center gap-2.5 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors">
-                            <div class="w-7 h-7 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center text-primary-700 text-xs font-bold">
-                                {{ strtoupper(substr($c->prenom, 0, 1)) }}
-                            </div>
-                            <span class="font-medium text-gray-900 dark:text-white">{{ $c->nom_complet }}</span>
-                            <span class="text-gray-400 dark:text-gray-400 text-xs ml-auto">{{ $c->telephone }}</span>
-                        </button>
-                        @endforeach
+                    <div x-show="open && search.length >= 2 && filtered.length === 0" x-cloak
+                         class="text-xs text-gray-400 mt-2 text-center py-2">
+                        Aucun client trouvé
                     </div>
-                    @elseif($showClientList && strlen($clientSearch) === 0)
-                    <div wire:loading.remove wire:target="clientSearch" class="text-xs text-gray-400 mt-2 text-center py-2">
-                        Aucun client enregistré
-                    </div>
-                    @endif
                 </div>
 
                 {{-- Bouton + Nouveau client --}}

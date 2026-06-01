@@ -266,6 +266,18 @@ class Caisse extends Component
                 ->orderBy('nom')
                 ->get()
                 ->map(fn ($c) => ['id' => $c->id, 'nom' => $c->nom]),
+            'allClients' => Client::where('institut_id', $institutId)
+                ->where('actif', true)
+                ->orderBy('prenom')
+                ->limit(200)
+                ->get()
+                ->map(fn ($c) => [
+                    'id'        => $c->id,
+                    'nom'       => $c->nom_complet,
+                    'initiale'  => strtoupper(substr($c->prenom ?? $c->nom ?? '?', 0, 1)),
+                    'telephone' => $c->telephone ?? '',
+                    'search'    => mb_strtolower(($c->prenom ?? '') . ' ' . ($c->nom ?? '') . ' ' . ($c->telephone ?? '')),
+                ]),
         ]);
     }
 }
