@@ -1,5 +1,31 @@
 <x-dashboard-layout>
-    <div class="space-y-4">
+    <div class="space-y-4" x-data="{ confirmId: null }">
+
+        {{-- Modal de confirmation suppression --}}
+        <div x-show="confirmId !== null" x-cloak
+             class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+             @keydown.escape.window="confirmId = null">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl" @click.stop>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-900 dark:text-slate-100">Supprimer le brouillon</h3>
+                        <p class="text-sm text-gray-500 dark:text-slate-400 mt-0.5">Cette action est irréversible.</p>
+                    </div>
+                </div>
+                <div class="flex gap-2 justify-end">
+                    <button @click="confirmId = null" class="btn-outline text-sm">Annuler</button>
+                    <button @click="$refs['form-' + confirmId].submit()" class="px-4 py-2 text-sm font-semibold rounded-xl text-white bg-red-600 hover:bg-red-700 transition">
+                        Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="page-title">Brouillons de caisse</h1>
@@ -63,11 +89,13 @@
                                style="background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);">
                                 Reprendre
                             </a>
-                            <form method="POST" action="{{ route('dashboard.caisse.brouillons.destroy', $b->id) }}"
-                                  onsubmit="return confirm('Supprimer ce brouillon ?');">
+                            <form x-ref="form-{{ $b->id }}"
+                                  method="POST" action="{{ route('dashboard.caisse.brouillons.destroy', $b->id) }}">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="px-3 py-2 text-xs font-semibold rounded-lg text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition">
+                                <button type="button"
+                                        @click="confirmId = '{{ $b->id }}'"
+                                        class="px-3 py-2 text-xs font-semibold rounded-lg text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition">
                                     Supprimer
                                 </button>
                             </form>
