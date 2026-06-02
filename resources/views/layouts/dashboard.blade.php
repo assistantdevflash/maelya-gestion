@@ -613,8 +613,8 @@
         </header>
 
         {{-- Topbar desktop --}}
-        <header class="hidden lg:flex sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-200/60 dark:border-slate-700/60 px-4 sm:px-6 lg:px-8 h-16 items-center justify-between">
-            <h1 class="text-sm font-semibold text-gray-900 dark:text-white">@yield('page-title', 'Tableau de bord')</h1>
+        <header class="hidden lg:flex sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-200/60 dark:border-slate-700/60 px-4 sm:px-6 lg:px-8 h-20 items-center justify-between">
+            <h1 class="text-base font-semibold text-gray-900 dark:text-white">@yield('page-title', 'Tableau de bord')</h1>
             <x-notif-bell />
         </header>
 
