@@ -2,10 +2,13 @@
 
 namespace App\Console\Commands;
 
+use App\Mail\RappelAnniversaireAdmin;
 use App\Models\Client;
+use App\Models\Institut;
 use App\Models\User;
 use App\Services\NotificationService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Mail;
 
 class ClientsRappelAnniversaire extends Command
 {
@@ -36,6 +39,7 @@ class ClientsRappelAnniversaire extends Command
                 ->first();
             if (! $admin) continue;
 
+            $institutNom = Institut::find($institutId)?->nom ?? config('app.name');
             $noms = $liste->map(fn ($c) => trim($c->prenom . ' ' . $c->nom))->implode(', ');
 
             NotificationService::notifyUser(
@@ -45,6 +49,10 @@ class ClientsRappelAnniversaire extends Command
                 $liste->count() . ' client(s) : ' . $noms,
                 '/dashboard/clients?mois_anniv=' . now()->addDays($jours)->format('m')
             );
+
+            if ($admin->email) {
+                Mail::to($admin->email)->send(new RappelAnniversaireAdmin($liste, $jours, $institutNom));
+            }
         }
 
         $this->info('Notifications envoyées pour ' . $clients->count() . ' client(s).');
