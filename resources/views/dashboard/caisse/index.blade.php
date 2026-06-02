@@ -1,24 +1,24 @@
 <x-dashboard-layout>
     <div class="space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="min-w-0 flex-1">
+        <div>
+            <div class="flex items-center justify-between gap-2">
                 <h1 class="page-title">Caisse</h1>
-                <p class="page-subtitle">Enregistrez rapidement vos ventes.</p>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <a href="{{ route('dashboard.caisse.brouillons.index') }}" class="btn-outline text-xs sm:text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        Brouillons
+                    </a>
+                    <a href="{{ route('dashboard.ventes.index') }}" class="btn-outline text-xs sm:text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Historique
+                    </a>
+                </div>
             </div>
-            <div class="flex flex-shrink-0 items-center gap-2">
-                <a href="{{ route('dashboard.caisse.brouillons.index') }}" class="btn-outline text-xs sm:text-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                    </svg>
-                    Brouillons
-                </a>
-                <a href="{{ route('dashboard.ventes.index') }}" class="btn-outline text-xs sm:text-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    Historique
-                </a>
-            </div>
+            <p class="page-subtitle">Enregistrez rapidement vos ventes.</p>
         </div>
 
         {{-- Scanner QR carte fidélité --}}
