@@ -314,10 +314,24 @@
                             </button>
                         </div>
                         <div class="modal-body">
-                            <form method="POST" action="{{ route('dashboard.mes-instituts.update', $institut) }}" class="space-y-4">
+                            <form method="POST" action="{{ route('dashboard.mes-instituts.update', $institut) }}" enctype="multipart/form-data" class="space-y-4">
                                 @csrf
                                 @method('PUT')
                                 <div class="grid grid-cols-2 gap-3">
+                                    @if($institut->logo)
+                                    <div class="col-span-2 form-group mb-0">
+                                        <label class="form-label">Logo actuel</label>
+                                        <div class="flex items-center gap-3">
+                                            <img src="{{ $institut->logo_url }}" alt="Logo" class="w-16 h-16 rounded-lg object-cover ring-1 ring-gray-200">
+                                            <p class="text-xs text-gray-400">Choisissez une nouvelle image pour remplacer</p>
+                                        </div>
+                                    </div>
+                                    @endif
+                                    <div class="col-span-2 form-group mb-0">
+                                        <label class="form-label">{{ $institut->logo ? 'Changer le logo' : 'Logo' }}</label>
+                                        <input type="file" name="logo" accept="image/*" class="form-input">
+                                        <p class="text-xs text-gray-400 mt-1">Image carrée recommandée (max 2 Mo)</p>
+                                    </div>
                                     <div class="col-span-2 form-group mb-0">
                                         <label class="form-label">Nom de l'établissement *</label>
                                         <input type="text" name="nom" required maxlength="100" class="form-input"
@@ -395,9 +409,14 @@
                     {{ $errors->first() }}
                 </div>
                 @endif
-                <form method="POST" action="{{ route('dashboard.mes-instituts.store') }}" class="space-y-4">
+                <form method="POST" action="{{ route('dashboard.mes-instituts.store') }}" enctype="multipart/form-data" class="space-y-4">
                     @csrf
                     <div class="grid grid-cols-2 gap-3">
+                        <div class="col-span-2 form-group mb-0">
+                            <label class="form-label">Logo</label>
+                            <input type="file" name="logo" accept="image/*" class="form-input">
+                            <p class="text-xs text-gray-400 mt-1">Image carrée recommandée (max 2 Mo)</p>
+                        </div>
                         <div class="col-span-2 form-group mb-0">
                             <label class="form-label">Nom de l'établissement *</label>
                             <input type="text" name="nom" required maxlength="100" class="form-input"
