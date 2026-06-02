@@ -920,6 +920,7 @@ function scannerCodeBarre() {
                 if (!res.ok) {
                     this.statut = 'Produit introuvable : ' + code;
                     this.erreur = true;
+                    this.fermer();
                     return;
                 }
                 const data = await res.json();
@@ -932,10 +933,12 @@ function scannerCodeBarre() {
                 } else {
                     this.statut = 'Produit introuvable.';
                     this.erreur = true;
+                    this.fermer();
                 }
             } catch (e) {
                 this.statut = 'Erreur : ' + e.message;
                 this.erreur = true;
+                this.fermer();
             }
         }
     };
