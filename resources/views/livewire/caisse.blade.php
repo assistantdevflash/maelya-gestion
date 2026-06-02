@@ -186,8 +186,8 @@
             <template x-for="item in filteredItems" :key="item.id">
                 <button
                     @click="ajouterItem(item)"
-                    :class="quantiteDans(item) > 0 ? 'border-2 border-primary-400 bg-primary-50/30' : 'border border-transparent'"
-                    class="card p-4 text-left hover:border-primary-300 active:scale-[0.97] transition-all duration-200 group cursor-pointer">
+                    :class="quantiteDans(item) > 0 ? 'ring-2 ring-primary-400 bg-primary-50/30' : ''"
+                    class="card p-4 text-left hover:ring-1 hover:ring-primary-300 active:scale-[0.97] transition-all duration-200 group cursor-pointer min-w-0 overflow-hidden">
                     <div class="flex items-start justify-between mb-3">
                         <div :class="onglet === 'prestations'
                                  ? 'bg-primary-100/40 dark:bg-primary-400/25'
