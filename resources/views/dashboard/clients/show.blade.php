@@ -122,8 +122,8 @@
                 </div>
             </div>
 
-            {{-- Onglets Achats / Rendez-vous --}}
-            <div class="lg:col-span-2 card overflow-hidden" x-data="{ onglet: 'achats' }">
+            {{-- Onglets Achats / Rendez-vous / Historique / Galerie --}}
+            <div class="lg:col-span-2 card overflow-hidden" x-data="{ onglet: new URLSearchParams(window.location.search).get('onglet') || 'achats' }">
                 {{-- En-tête onglets --}}
                 <div class="p-3 border-b border-gray-100 dark:border-slate-700 flex items-center gap-1 bg-gray-50/60 dark:bg-slate-800/50">
                     <button type="button" x-on:click="onglet = 'achats'"
@@ -145,6 +145,12 @@
                             :class="onglet === 'timeline' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
                         🕒 Historique
                         <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $timeline->count() }}</span>
+                    </button>
+                    <button type="button" x-on:click="onglet = 'photos'"
+                            class="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+                            :class="onglet === 'photos' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
+                        📸 Galerie photos
+                        <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $client->photos->count() }}</span>
                     </button>
                 </div>
 
@@ -269,6 +275,164 @@
                 </div>
                 @endif
 
+                {{-- Onglet Galerie photos --}}
+                <div x-show="onglet === 'photos'" x-cloak
+                     x-data="{
+                         photos: @js($client->photos->map(fn($p) => [
+                             'url'     => $p->url,
+                             'legende' => $p->legende ?? '',
+                             'type'    => $p->type,
+                             'label'   => match($p->type) {
+                                 'avant'       => 'Avant',
+                                 'apres'       => 'Après',
+                                 'avant_apres' => 'Avant/Après',
+                                 default       => 'Autre',
+                             },
+                             'color'   => match($p->type) {
+                                 'avant'       => 'bg-amber-500',
+                                 'apres'       => 'bg-emerald-500',
+                                 'avant_apres' => 'bg-blue-500',
+                                 default       => 'bg-gray-500',
+                             },
+                         ])->values()->all()),
+                         current: 0,
+                         open: false,
+                         openAt(i) { this.current = i; this.open = true; },
+                         prev() { this.current = (this.current - 1 + this.photos.length) % this.photos.length; },
+                         next() { this.current = (this.current + 1) % this.photos.length; }
+                     }"
+                     @keydown.arrow-left.window="if(open) prev()"
+                     @keydown.arrow-right.window="if(open) next()"
+                     @keydown.escape.window="open = false"
+                     class="p-5">
+
+                    <div class="flex items-center justify-between mb-4">
+                        <p class="text-xs text-gray-500">{{ $client->photos->count() }} photo(s)</p>
+                        <button x-data type="button" @click="$dispatch('open-photos-modal')" class="btn-primary text-xs">
+                            + Ajouter
+                        </button>
+                    </div>
+
+                    @if($client->photos->count() > 0)
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                            @foreach($client->photos as $i => $photo)
+                                <div class="flex flex-col gap-1">
+                                    <div class="relative group cursor-pointer" @click="openAt({{ $i }})">
+                                        <img src="{{ $photo->url }}" alt="{{ $photo->legende }}"
+                                             class="w-full aspect-square object-cover rounded-lg hover:opacity-80 transition">
+                                        {{-- Badge type --}}
+                                        @php
+                                            $typeColor = match($photo->type) {
+                                                'avant' => 'bg-amber-500',
+                                                'apres' => 'bg-emerald-500',
+                                                'avant_apres' => 'bg-blue-500',
+                                                default => 'bg-gray-500',
+                                            };
+                                            $typeLabel = match($photo->type) {
+                                                'avant' => 'Avant',
+                                                'apres' => 'Après',
+                                                'avant_apres' => 'Avant/Après',
+                                                default => 'Autre',
+                                            };
+                                        @endphp
+                                        <div class="absolute top-1.5 left-1.5">
+                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold text-white {{ $typeColor }} uppercase shadow">
+                                                {{ $typeLabel }}
+                                            </span>
+                                        </div>
+                                        {{-- Bouton supprimer --}}
+                                        @if(auth()->user()->isAdmin())
+                                        <form method="POST" action="{{ route('dashboard.clients.photos.destroy', [$client, $photo]) }}?onglet=photos"
+                                              id="delete-photo-{{ $photo->id }}"
+                                              class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition"
+                                              @click.stop>
+                                            @csrf @method('DELETE')
+                                            <button type="button"
+                                                    onclick="window.dispatchEvent(new CustomEvent('confirm-delete',{detail:{formId:'delete-photo-{{ $photo->id }}',title:'Supprimer cette photo ?',message:'Cette photo sera définitivement supprimée.'}}))"
+                                                    class="w-6 h-6 bg-red-600 text-white rounded flex items-center justify-center hover:bg-red-700">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                            </button>
+                                        </form>
+                                        @endif
+                                        {{-- Légende overlay au survol --}}
+                                        @if($photo->legende)
+                                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent rounded-b-lg px-2 pt-6 pb-1.5
+                                                    opacity-0 group-hover:opacity-100 transition pointer-events-none">
+                                            <p class="text-white text-[10px] leading-tight truncate">{{ $photo->legende }}</p>
+                                        </div>
+                                        @endif
+                                    </div>
+                                    {{-- Légende sous la vignette (toujours visible) --}}
+                                    @if($photo->legende)
+                                    <p class="text-[10px] text-gray-500 dark:text-slate-400 truncate leading-tight px-0.5">{{ $photo->legende }}</p>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-sm text-gray-400 text-center py-8">Aucune photo. Ajoutez-en pour suivre l'évolution.</p>
+                    @endif
+
+                    {{-- ── Lightbox / Slider ── --}}
+                    <div x-show="open" x-cloak
+                         class="fixed inset-0 z-[80] bg-black/95 flex items-center justify-center"
+                         @click="open = false">
+                        <div class="relative w-full max-w-3xl mx-4 flex flex-col items-center" @click.stop>
+
+                            {{-- Bouton fermer --}}
+                            <button @click="open = false"
+                                    class="absolute -top-10 right-0 text-white/70 hover:text-white transition text-3xl leading-none">&times;</button>
+
+                            {{-- Photo --}}
+                            <img :src="photos[current].url"
+                                 :alt="photos[current].legende"
+                                 class="max-h-[72vh] w-auto max-w-full object-contain rounded-xl shadow-2xl">
+
+                            {{-- Badge + légende --}}
+                            <div class="mt-4 flex flex-col items-center gap-1.5">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase"
+                                      :class="{
+                                          'bg-amber-500':   photos[current].type === 'avant',
+                                          'bg-emerald-500': photos[current].type === 'apres',
+                                          'bg-blue-500':    photos[current].type === 'avant_apres',
+                                          'bg-gray-500':    !['avant','apres','avant_apres'].includes(photos[current].type)
+                                      }"
+                                      x-text="photos[current].label"></span>
+                                <p class="text-white/80 text-sm text-center" x-show="photos[current].legende" x-text="photos[current].legende"></p>
+                                <p class="text-gray-500 text-xs" x-text="(current + 1) + ' / ' + photos.length"></p>
+                            </div>
+
+                            {{-- Prev --}}
+                            <button x-show="photos.length > 1"
+                                    @click.stop="prev()"
+                                    class="absolute left-0 top-1/3 -translate-y-1/2 -translate-x-12 w-10 h-10 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            {{-- Next --}}
+                            <button x-show="photos.length > 1"
+                                    @click.stop="next()"
+                                    class="absolute right-0 top-1/3 -translate-y-1/2 translate-x-12 w-10 h-10 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </button>
+
+                            {{-- Miniatures --}}
+                            <div class="flex gap-2 mt-4 overflow-x-auto max-w-full pb-1" x-show="photos.length > 1">
+                                <template x-for="(p, i) in photos" :key="i">
+                                    <button @click.stop="current = i"
+                                            class="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition"
+                                            :class="i === current ? 'border-white' : 'border-transparent opacity-50 hover:opacity-80'">
+                                        <img :src="p.url" :alt="p.legende" class="w-full h-full object-cover">
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
 
@@ -381,169 +545,6 @@
             </div>
         </div>
 
-        {{-- ═══ GALERIE PHOTOS AVANT/APRÈS ═══ --}}
-        @php
-            $photosData = $client->photos->map(fn($p) => [
-                'url'     => $p->url,
-                'legende' => $p->legende ?? '',
-                'type'    => $p->type,
-                'label'   => match($p->type) {
-                    'avant'       => 'Avant',
-                    'apres'       => 'Après',
-                    'avant_apres' => 'Avant/Après',
-                    default       => 'Autre',
-                },
-                'color'   => match($p->type) {
-                    'avant'       => 'bg-amber-500',
-                    'apres'       => 'bg-emerald-500',
-                    'avant_apres' => 'bg-blue-500',
-                    default       => 'bg-gray-500',
-                },
-            ])->values()->all();
-        @endphp
-        <div class="card p-5 mt-8"
-             x-data="{
-                 photos: @js($photosData),
-                 current: 0,
-                 open: false,
-                 openAt(i) { this.current = i; this.open = true; },
-                 prev() { this.current = (this.current - 1 + this.photos.length) % this.photos.length; },
-                 next() { this.current = (this.current + 1) % this.photos.length; }
-             }"
-             @keydown.arrow-left.window="if(open) prev()"
-             @keydown.arrow-right.window="if(open) next()"
-             @keydown.escape.window="open = false">
-
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <h2 class="font-bold text-gray-900 dark:text-slate-100">Galerie photos</h2>
-                    <p class="text-xs text-gray-500 mt-0.5">{{ $client->photos->count() }} photo(s)</p>
-                </div>
-                <button x-data type="button" @click="$dispatch('open-photos-modal')" class="btn-primary text-xs">
-                    + Ajouter
-                </button>
-            </div>
-
-            @if($client->photos->count() > 0)
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                    @foreach($client->photos as $i => $photo)
-                        <div class="flex flex-col gap-1">
-                            <div class="relative group cursor-pointer" @click="openAt({{ $i }})">
-                                <img src="{{ $photo->url }}" alt="{{ $photo->legende }}"
-                                     class="w-full aspect-square object-cover rounded-lg hover:opacity-80 transition">
-                                {{-- Badge type --}}
-                                @php
-                                    $typeColor = match($photo->type) {
-                                        'avant' => 'bg-amber-500',
-                                        'apres' => 'bg-emerald-500',
-                                        'avant_apres' => 'bg-blue-500',
-                                        default => 'bg-gray-500',
-                                    };
-                                    $typeLabel = match($photo->type) {
-                                        'avant' => 'Avant',
-                                        'apres' => 'Après',
-                                        'avant_apres' => 'Avant/Après',
-                                        default => 'Autre',
-                                    };
-                                @endphp
-                                <div class="absolute top-1.5 left-1.5">
-                                    <span class="px-1.5 py-0.5 rounded text-[9px] font-bold text-white {{ $typeColor }} uppercase shadow">
-                                        {{ $typeLabel }}
-                                    </span>
-                                </div>
-                                {{-- Bouton supprimer --}}
-                                @if(auth()->user()->isAdmin())
-                                <form method="POST" action="{{ route('dashboard.clients.photos.destroy', [$client, $photo]) }}"
-                                      id="delete-photo-{{ $photo->id }}"
-                                      class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition"
-                                      @click.stop>
-                                    @csrf @method('DELETE')
-                                    <button type="button"
-                                            onclick="window.dispatchEvent(new CustomEvent('confirm-delete',{detail:{formId:'delete-photo-{{ $photo->id }}',title:'Supprimer cette photo ?',message:'Cette photo sera d\u00e9finitivement supprim\u00e9e.'}}))"
-                                            class="w-6 h-6 bg-red-600 text-white rounded flex items-center justify-center hover:bg-red-700">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                    </button>
-                                </form>
-                                @endif
-                                {{-- Légende overlay au survol --}}
-                                @if($photo->legende)
-                                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent rounded-b-lg px-2 pt-6 pb-1.5
-                                            opacity-0 group-hover:opacity-100 transition pointer-events-none">
-                                    <p class="text-white text-[10px] leading-tight truncate">{{ $photo->legende }}</p>
-                                </div>
-                                @endif
-                            </div>
-                            {{-- Légende sous la vignette (toujours visible) --}}
-                            @if($photo->legende)
-                            <p class="text-[10px] text-gray-500 dark:text-slate-400 truncate leading-tight px-0.5">{{ $photo->legende }}</p>
-                            @endif
-                        </div>
-                    @endforeach
-                </div>
-            @else
-                <p class="text-sm text-gray-400 text-center py-8">Aucune photo. Ajoutez-en pour suivre l'évolution.</p>
-            @endif
-
-            {{-- ── Lightbox / Slider ── --}}
-            <div x-show="open" x-cloak
-                 class="fixed inset-0 z-[80] bg-black/95 flex items-center justify-center"
-                 @click="open = false">
-                <div class="relative w-full max-w-3xl mx-4 flex flex-col items-center" @click.stop>
-
-                    {{-- Bouton fermer --}}
-                    <button @click="open = false"
-                            class="absolute -top-10 right-0 text-white/70 hover:text-white transition text-3xl leading-none">&times;</button>
-
-                    {{-- Photo --}}
-                    <img :src="photos[current].url"
-                         :alt="photos[current].legende"
-                         class="max-h-[72vh] w-auto max-w-full object-contain rounded-xl shadow-2xl">
-
-                    {{-- Badge + légende --}}
-                    <div class="mt-4 flex flex-col items-center gap-1.5">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase"
-                              :class="{
-                                  'bg-amber-500':   photos[current].type === 'avant',
-                                  'bg-emerald-500': photos[current].type === 'apres',
-                                  'bg-blue-500':    photos[current].type === 'avant_apres',
-                                  'bg-gray-500':    !['avant','apres','avant_apres'].includes(photos[current].type)
-                              }"
-                              x-text="photos[current].label"></span>
-                        <p class="text-white/80 text-sm text-center" x-show="photos[current].legende" x-text="photos[current].legende"></p>
-                        <p class="text-gray-500 text-xs" x-text="(current + 1) + ' / ' + photos.length"></p>
-                    </div>
-
-                    {{-- Prev --}}
-                    <button x-show="photos.length > 1"
-                            @click.stop="prev()"
-                            class="absolute left-0 top-1/3 -translate-y-1/2 -translate-x-12 w-10 h-10 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                        </svg>
-                    </button>
-                    {{-- Next --}}
-                    <button x-show="photos.length > 1"
-                            @click.stop="next()"
-                            class="absolute right-0 top-1/3 -translate-y-1/2 translate-x-12 w-10 h-10 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                        </svg>
-                    </button>
-
-                    {{-- Miniatures --}}
-                    <div class="flex gap-2 mt-4 overflow-x-auto max-w-full pb-1" x-show="photos.length > 1">
-                        <template x-for="(p, i) in photos" :key="i">
-                            <button @click.stop="current = i"
-                                    class="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition"
-                                    :class="i === current ? 'border-white' : 'border-transparent opacity-50 hover:opacity-80'">
-                                <img :src="p.url" :alt="p.legende" class="w-full h-full object-cover">
-                            </button>
-                        </template>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         {{-- Modal d'ajout photos --}}
         <div x-data="{ show: false }" x-cloak
              @open-photos-modal.window="show = true">
@@ -551,7 +552,7 @@
                 <div class="absolute inset-0 bg-black/50" @click="show = false"></div>
                 <div class="relative bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md p-6" @click.stop>
                     <h3 class="font-bold text-gray-900 dark:text-gray-100 mb-4">Ajouter des photos</h3>
-                    <form method="POST" action="{{ route('dashboard.clients.photos.store', $client) }}" enctype="multipart/form-data" class="space-y-3">
+                    <form method="POST" action="{{ route('dashboard.clients.photos.store', $client) }}?onglet=photos" enctype="multipart/form-data" class="space-y-3">
                         @csrf
                         <div>
                             <label class="form-label">Type *</label>
