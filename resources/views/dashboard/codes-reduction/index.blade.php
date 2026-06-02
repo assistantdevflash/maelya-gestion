@@ -1,13 +1,13 @@
 <x-dashboard-layout>
-    <div class="space-y-5">
+    <div class="space-y-5" x-data="{ onglet: 'codes' }">
 
         {{-- En-tête --}}
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <h1 class="text-2xl font-display font-bold text-gray-900 tracking-tight">Codes de réduction</h1>
-                <p class="text-sm text-gray-500 mt-1">Créez des codes promo applicables à la caisse.</p>
+                <h1 class="text-2xl font-display font-bold text-gray-900 tracking-tight dark:text-slate-100">Remises & Avoirs</h1>
+                <p class="text-sm text-gray-500 mt-1">Codes promo et avoirs clients.</p>
             </div>
-            <button x-data @click="$dispatch('open-code-modal')" class="btn-primary">
+            <button x-data x-show="onglet === 'codes'" @click="$dispatch('open-code-modal')" class="btn-primary">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                 </svg>
@@ -52,7 +52,25 @@
             </div>
         </div>
 
+        {{-- Onglets Codes / Avoirs --}}
+        <div class="flex gap-1 border-b border-gray-200 dark:border-slate-700">
+            <button @click="onglet = 'codes'"
+                    :class="onglet === 'codes' ? 'border-b-2 border-primary-600 text-primary-700 dark:text-primary-400 font-semibold' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700'"
+                    class="px-4 py-2 text-sm transition-colors">
+                Codes de réduction
+            </button>
+            <button @click="onglet = 'avoirs'"
+                    :class="onglet === 'avoirs' ? 'border-b-2 border-primary-600 text-primary-700 dark:text-primary-400 font-semibold' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700'"
+                    class="px-4 py-2 text-sm transition-colors">
+                Avoirs
+                @if($avoirs->total() > 0)
+                    <span class="ml-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300">{{ $avoirs->total() }}</span>
+                @endif
+            </button>
+        </div>
+
         {{-- Liste des codes --}}
+        <div x-show="onglet === 'codes'">
         @if($codes->count() > 0)
         <div class="card overflow-hidden">
             <div class="divide-y divide-gray-50">
@@ -163,6 +181,58 @@
             <button x-data @click="$dispatch('open-code-modal')" class="btn-primary">Créer un code</button>
         </div>
         @endif
+        </div>{{-- fin x-show codes --}}
+
+        {{-- Avoirs --}}
+        <div x-show="onglet === 'avoirs'" class="card overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                <thead class="bg-gray-50 dark:bg-slate-800">
+                    <tr>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-slate-300 uppercase">Numéro</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-slate-300 uppercase hidden sm:table-cell">Date</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-slate-300 uppercase">Client</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-slate-300 uppercase hidden md:table-cell">Vente</th>
+                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-600 dark:text-slate-300 uppercase">Montant</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-slate-300 uppercase hidden lg:table-cell">Code</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-slate-300 uppercase">Statut</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-slate-800">
+                    @forelse($avoirs as $avoir)
+                        <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/30">
+                            <td class="px-4 py-3 text-sm font-mono text-gray-900 dark:text-slate-100">{{ $avoir->numero }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-500 dark:text-slate-400 hidden sm:table-cell">{{ $avoir->created_at->format('d/m/Y H:i') }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-700 dark:text-slate-300">
+                                {{ $avoir->client ? $avoir->client->prenom . ' ' . $avoir->client->nom : '—' }}
+                            </td>
+                            <td class="px-4 py-3 text-sm font-mono text-gray-500 dark:text-slate-400 hidden md:table-cell">{{ $avoir->vente->numero ?? '—' }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-bold text-gray-900 dark:text-slate-100">
+                                {{ number_format($avoir->montant, 0, ',', ' ') }} FCFA
+                            </td>
+                            <td class="px-4 py-3 text-sm font-mono text-purple-700 dark:text-purple-300 hidden lg:table-cell">
+                                {{ $avoir->codeReduction->code ?? '—' }}
+                            </td>
+                            <td class="px-4 py-3 text-sm">
+                                <span class="badge badge-{{ $avoir->statut === 'emis' ? 'success' : 'gray' }}">
+                                    {{ ucfirst($avoir->statut) }}
+                                </span>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="px-4 py-10 text-center text-sm text-gray-400 dark:text-slate-500">
+                                Aucun avoir pour le moment.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+            @if($avoirs->hasPages())
+            <div class="px-4 py-3 border-t border-gray-100 dark:border-slate-800">
+                {{ $avoirs->links() }}
+            </div>
+            @endif
+        </div>
     </div>
 
     {{-- ═══ Modal création ═══ --}}

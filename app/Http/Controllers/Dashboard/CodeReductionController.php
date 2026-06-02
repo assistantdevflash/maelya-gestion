@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Avoir;
 use App\Models\Client;
 use App\Models\CodeReduction;
 use Illuminate\Http\Request;
@@ -33,7 +34,12 @@ class CodeReductionController extends Controller
             'utilisations'=> $codes->sum('nb_utilisations'),
         ];
 
-        return view('dashboard.codes-reduction.index', compact('codes', 'stats', 'clients'));
+        $avoirs = Avoir::where('institut_id', $this->institutId())
+            ->with(['vente', 'client', 'codeReduction'])
+            ->latest()
+            ->paginate(20);
+
+        return view('dashboard.codes-reduction.index', compact('codes', 'stats', 'clients', 'avoirs'));
     }
 
     public function store(Request $request)

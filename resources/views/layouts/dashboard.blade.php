@@ -293,22 +293,14 @@
 
                 @if(auth()->user()->isAdmin())
                 <a href="{{ $featureHref('codes_reduction', route('dashboard.codes-reduction.index')) }}"
-                   class="sidebar-link {{ request()->routeIs('dashboard.codes-reduction.*') ? 'active' : '' }}">
+                   class="sidebar-link {{ request()->routeIs('dashboard.codes-reduction.*') || request()->routeIs('dashboard.avoirs.*') ? 'active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                     </svg>
-                    Codes de réduction
+                    Remises &amp; Avoirs
                     @if(!$featureHas('codes_reduction'))
                         <svg class="ml-auto w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1a5 5 0 00-5 5v4H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2v-9a2 2 0 00-2-2h-2V6a5 5 0 00-5-5zm-3 9V6a3 3 0 016 0v4H9z"/></svg>
                     @endif
-                </a>
-
-                <a href="{{ route('dashboard.avoirs.index') }}"
-                   class="sidebar-link {{ request()->routeIs('dashboard.avoirs.*') ? 'active' : '' }}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/>
-                    </svg>
-                    Avoirs
                 </a>
 
                 @php
