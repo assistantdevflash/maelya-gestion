@@ -41,7 +41,8 @@ class ClientPhotoController extends Controller
             ]);
         }
 
-        return back()->with('success', count($request->file('photos')) . ' photo(s) ajoutée(s).');
+        return redirect()->route('dashboard.clients.show', ['client' => $client, 'onglet' => 'photos'])
+            ->with('success', count($request->file('photos')) . ' photo(s) ajoutée(s).');
     }
 
     public function destroy(Client $client, ClientPhoto $photo)
@@ -49,7 +50,8 @@ class ClientPhotoController extends Controller
         abort_unless($photo->client_id === $client->id, 404);
         abort_unless(Auth::user()->isAdmin(), 403);
         $photo->delete();
-        return back()->with('success', 'Photo supprimée.');
+        return redirect()->route('dashboard.clients.show', ['client' => $client, 'onglet' => 'photos'])
+            ->with('success', 'Photo supprimée.');
     }
 
     /**
