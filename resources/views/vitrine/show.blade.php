@@ -86,7 +86,7 @@
          ║  HERO                                                        ║
          ╚══════════════════════════════════════════════════════════════╝ --}}
     <section class="mt-6 rounded-2xl overflow-hidden" style="background:linear-gradient(135deg,rgba(147,51,234,0.15),rgba(236,72,153,0.1));border:1px solid rgba(147,51,234,0.2);">
-        <div class="px-6 py-7 flex flex-col sm:flex-row sm:items-center gap-5">
+        <div class="px-6 py-10 flex flex-col sm:flex-row sm:items-center gap-5">
             {{-- Avatar --}}
             @if($institut->logo)
             <img src="{{ $institut->logo_url }}" alt="Logo {{ $institut->nom }}"
