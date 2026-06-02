@@ -69,6 +69,7 @@ class ClientController extends Controller
 
         $statutAvis = $request->input('statut_avis');
         $avis = \App\Models\AvisClient::query()
+            ->with(['rdv.prestations'])
             ->whereNotNull('repondu_le')
             ->when($statutAvis, fn ($q) => $q->where('statut', $statutAvis))
             ->orderByDesc('repondu_le')

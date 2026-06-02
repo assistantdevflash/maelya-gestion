@@ -257,6 +257,18 @@
                         @if($a->commentaire)
                             <p class="text-gray-700 text-sm mb-2">« {{ $a->commentaire }} »</p>
                         @endif
+                        @if($a->rdv && $a->rdv->prestations->isNotEmpty())
+                            <div class="flex flex-wrap gap-1.5 mb-2">
+                                @foreach($a->rdv->prestations as $p)
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                        </svg>
+                                        {{ $p->nom }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        @endif
                         <span class="inline-block px-2 py-0.5 text-xs rounded-full font-medium
                             {{ $a->statut==='approuve' ? 'bg-green-100 text-green-800' :
                                ($a->statut==='rejete' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800') }}">
