@@ -8,6 +8,7 @@
     }
 @endphp
 <div x-data="{
+        onglet: '{{ request()->hasAny(['statut_avis']) ? 'avis' : 'clients' }}',
         createOpen: {{ ($errors->any() && old('_form') === 'create') ? 'true' : 'false' }},
         editOpen:   {{ ($editErrorClient ? 'true' : 'false') }},
         edit: {
@@ -32,7 +33,7 @@
             <h1 class="text-2xl font-display font-bold text-gray-900 tracking-tight">Clients</h1>
             <p class="text-sm text-gray-500 mt-1">{{ $clients->total() }} client(s) au total</p>
         </div>
-        <button @click="createOpen = true" class="btn-primary group">
+        <button @click="createOpen = true" x-show="onglet === 'clients'" class="btn-primary group">
             <svg class="w-4 h-4 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
             </svg>
@@ -49,6 +50,26 @@
         {{ session('success') }}
     </div>
     @endif
+
+    {{-- Onglets --}}
+    <div class="flex gap-1 border-b border-gray-200">
+        <button @click="onglet = 'clients'"
+                :class="onglet === 'clients' ? 'border-b-2 border-primary-600 text-primary-600 font-semibold' : 'text-gray-500 hover:text-gray-700'"
+                class="px-4 py-2 text-sm transition-colors">
+            Clients
+        </button>
+        <button @click="onglet = 'avis'"
+                :class="onglet === 'avis' ? 'border-b-2 border-primary-600 text-primary-600 font-semibold' : 'text-gray-500 hover:text-gray-700'"
+                class="px-4 py-2 text-sm transition-colors flex items-center gap-1.5">
+            Avis clients
+            @php $nbEnAttente = $avis->getCollection()->where('statut','en_attente')->count(); @endphp
+            @if($nbEnAttente > 0)
+                <span class="inline-flex items-center justify-center w-5 h-5 text-xs font-bold rounded-full bg-amber-100 text-amber-700">{{ $nbEnAttente }}</span>
+            @endif
+        </button>
+    </div>
+
+    <div x-show="onglet === 'clients'">
 
     {{-- Bannières anniversaire --}}
     <x-banniere-anniversaire :clients="$anniversairesAujourdhui" />
@@ -204,6 +225,72 @@
         <button @click="createOpen = true" class="btn-primary">Ajouter un client</button>
     </div>
     @endif
+
+    </div>{{-- end onglet clients --}}
+
+    {{-- ═══ ONGLET AVIS ═══ --}}
+    <div x-show="onglet === 'avis'">
+        <div class="flex items-center justify-between mb-4">
+            <p class="text-sm text-gray-500">Approuvez les avis pour les afficher sur votre vitrine publique.</p>
+            <form method="GET" action="{{ route('dashboard.clients.index') }}">
+                <input type="hidden" name="onglet" value="avis">
+                <select name="statut_avis" class="form-input text-sm" onchange="this.form.submit()">
+                    <option value="">Tous les statuts</option>
+                    <option value="en_attente" @selected($statutAvis==='en_attente')>En attente</option>
+                    <option value="approuve" @selected($statutAvis==='approuve')>Approuvés</option>
+                    <option value="rejete" @selected($statutAvis==='rejete')>Rejetés</option>
+                </select>
+            </form>
+        </div>
+
+        @if($avis->count())
+        <div class="space-y-3">
+            @foreach($avis as $a)
+            <div class="card p-4">
+                <div class="flex justify-between items-start gap-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-yellow-500 text-lg">{{ str_repeat('★', (int)$a->note) }}{{ str_repeat('☆', 5 - (int)$a->note) }}</span>
+                            <span class="font-semibold text-sm text-gray-800">{{ $a->client_nom_snap ?: 'Anonyme' }}</span>
+                            <span class="text-xs text-gray-400">· {{ $a->repondu_le?->format('d/m/Y') }}</span>
+                        </div>
+                        @if($a->commentaire)
+                            <p class="text-gray-700 text-sm mb-2">« {{ $a->commentaire }} »</p>
+                        @endif
+                        <span class="inline-block px-2 py-0.5 text-xs rounded-full font-medium
+                            {{ $a->statut==='approuve' ? 'bg-green-100 text-green-800' :
+                               ($a->statut==='rejete' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800') }}">
+                            {{ $a->statut === 'en_attente' ? 'En attente' : ($a->statut === 'approuve' ? 'Approuvé' : 'Rejeté') }}
+                        </span>
+                    </div>
+                    <div class="flex gap-2 shrink-0">
+                        @if($a->statut !== 'approuve')
+                        <form method="POST" action="{{ route('dashboard.avis.approuver', $a) }}">
+                            @csrf
+                            <button class="btn-primary text-xs px-3 py-1">✓ Approuver</button>
+                        </form>
+                        @endif
+                        @if($a->statut !== 'rejete')
+                        <form method="POST" action="{{ route('dashboard.avis.rejeter', $a) }}">
+                            @csrf
+                            <button class="btn-outline text-xs px-3 py-1">✕ Rejeter</button>
+                        </form>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @if($avis->hasPages())
+        <div class="mt-4">{{ $avis->links() }}</div>
+        @endif
+        @else
+        <div class="card p-12 text-center">
+            <p class="text-gray-500">Aucun avis reçu pour le moment.</p>
+            <p class="text-sm text-gray-400 mt-1">Les avis apparaissent automatiquement lorsqu'un client répond au sondage post-visite.</p>
+        </div>
+        @endif
+    </div>{{-- end onglet avis --}}
 
     {{-- ═══ MODAL CRÉATION ═══ --}}
     <div x-show="createOpen" x-cloak class="modal-backdrop" @keydown.escape.window="createOpen = false" @click.self="createOpen = false">

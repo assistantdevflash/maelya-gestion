@@ -67,7 +67,15 @@ class ClientController extends Controller
             ->whereNotIn('id', $cadeauClientIds)
             ->get();
 
-        return view('dashboard.clients.index', compact('clients', 'search', 'anniversairesAujourdhui'));
+        $statutAvis = $request->input('statut_avis');
+        $avis = \App\Models\AvisClient::query()
+            ->whereNotNull('repondu_le')
+            ->when($statutAvis, fn ($q) => $q->where('statut', $statutAvis))
+            ->orderByDesc('repondu_le')
+            ->paginate(25)
+            ->withQueryString();
+
+        return view('dashboard.clients.index', compact('clients', 'search', 'anniversairesAujourdhui', 'avis', 'statutAvis'));
     }
 
     public function create()
