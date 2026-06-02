@@ -183,6 +183,7 @@
                     if (!res.ok) {
                         this.status = 'Aucun client trouvé pour ce QR.';
                         this.error = true;
+                        this.close();
                         return;
                     }
                     const data = await res.json();
@@ -195,10 +196,12 @@
                     } else {
                         this.status = 'Aucun client trouvé.';
                         this.error = true;
+                        this.close();
                     }
                 } catch (e) {
                     this.status = 'Erreur : ' + e.message;
                     this.error = true;
+                    this.close();
                 }
             }
         }
