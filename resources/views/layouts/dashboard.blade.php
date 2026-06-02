@@ -678,7 +678,7 @@
         </div>
 
         {{-- Page content --}}
-        <main class="flex-1 px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <main class="flex-1 px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-8 sm:pb-12">
             <div class="max-w-7xl mx-auto w-full">
                 {{ $slot }}
             </div>
