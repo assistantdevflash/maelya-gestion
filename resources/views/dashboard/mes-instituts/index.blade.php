@@ -124,6 +124,7 @@
             @php $isActif = $institut->id === $currentInstitutId; @endphp
             <div x-data="{
                     editOpen: false,
+                    logoOpen: false,
                     form: {
                         nom: @js($institut->nom),
                         ville: @js($institut->ville ?? ''),
@@ -313,25 +314,44 @@
                                 </svg>
                             </button>
                         </div>
+
+                        {{-- Logo avec crayon --}}
+                        @if($institut->logo)
+                        <div class="px-6 pb-4 border-b border-gray-100">
+                            <label class="form-label mb-2">Logo</label>
+                            <div class="flex items-center gap-3">
+                                <div class="relative group">
+                                    <img src="{{ $institut->logo_url }}" alt="Logo" class="w-20 h-20 rounded-xl object-cover ring-2 ring-gray-200">
+                                    <button type="button" @click="logoOpen = true"
+                                            class="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="text-xs text-gray-400">
+                                    <p class="font-medium text-gray-600 mb-0.5">{{ $institut->nom }}</p>
+                                    <p>Cliquez sur le logo pour le modifier</p>
+                                </div>
+                            </div>
+                        </div>
+                        @else
+                        <div class="px-6 pb-4 border-b border-gray-100">
+                            <button type="button" @click="logoOpen = true"
+                                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-dashed border-gray-300 hover:border-primary-400 hover:bg-primary-50/50 transition text-sm text-gray-500 hover:text-primary-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <span class="font-medium">Ajouter un logo</span>
+                            </button>
+                        </div>
+                        @endif
+
                         <div class="modal-body">
-                            <form method="POST" action="{{ route('dashboard.mes-instituts.update', $institut) }}" enctype="multipart/form-data" class="space-y-4">
+                            <form method="POST" action="{{ route('dashboard.mes-instituts.update', $institut) }}" class="space-y-4">
                                 @csrf
                                 @method('PUT')
                                 <div class="grid grid-cols-2 gap-3">
-                                    @if($institut->logo)
-                                    <div class="col-span-2 form-group mb-0">
-                                        <label class="form-label">Logo actuel</label>
-                                        <div class="flex items-center gap-3">
-                                            <img src="{{ $institut->logo_url }}" alt="Logo" class="w-16 h-16 rounded-lg object-cover ring-1 ring-gray-200">
-                                            <p class="text-xs text-gray-400">Choisissez une nouvelle image pour remplacer</p>
-                                        </div>
-                                    </div>
-                                    @endif
-                                    <div class="col-span-2 form-group mb-0">
-                                        <label class="form-label">{{ $institut->logo ? 'Changer le logo' : 'Logo' }}</label>
-                                        <input type="file" name="logo" accept="image/*" class="form-input">
-                                        <p class="text-xs text-gray-400 mt-1">Image carrée recommandée (max 2 Mo)</p>
-                                    </div>
                                     <div class="col-span-2 form-group mb-0">
                                         <label class="form-label">Nom de l'établissement *</label>
                                         <input type="text" name="nom" required maxlength="100" class="form-input"
@@ -372,6 +392,51 @@
                                 <div class="flex gap-3 pt-1">
                                     <button type="button" @click="editOpen = false" class="btn btn-outline flex-1 justify-center">Annuler</button>
                                     <button type="submit" class="btn-primary flex-1 justify-center">Enregistrer</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ═══ Modal upload logo ═══ --}}
+                <div x-show="logoOpen" x-cloak class="modal-backdrop" @keydown.escape.window="logoOpen = false" @click.self="logoOpen = false">
+                    <div class="modal max-w-md" x-transition @click.stop>
+                        <div class="modal-header">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, rgba(147,51,234,0.1), rgba(236,72,153,0.1));">
+                                    <svg class="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <h3 class="modal-title">{{ $institut->logo ? 'Changer le logo' : 'Ajouter un logo' }}</h3>
+                            </div>
+                            <button @click="logoOpen = false" class="btn-icon">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="POST" action="{{ route('dashboard.mes-instituts.logo', $institut) }}" enctype="multipart/form-data" class="space-y-4">
+                                @csrf
+                                @if($institut->logo)
+                                <div class="flex justify-center">
+                                    <img src="{{ $institut->logo_url }}" alt="Logo actuel" class="w-32 h-32 rounded-2xl object-cover ring-2 ring-gray-200">
+                                </div>
+                                @endif
+                                <div class="form-group mb-0">
+                                    <label class="form-label">Nouvelle image *</label>
+                                    <input type="file" name="logo" accept="image/*" required class="form-input">
+                                    <p class="text-xs text-gray-400 mt-1">Image carrée recommandée · Format JPG, PNG · Max 2 Mo</p>
+                                </div>
+                                <div class="flex gap-3 pt-1">
+                                    <button type="button" @click="logoOpen = false" class="btn btn-outline flex-1 justify-center">Annuler</button>
+                                    <button type="submit" class="btn-primary flex-1 justify-center">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                        </svg>
+                                        Uploader
+                                    </button>
                                 </div>
                             </form>
                         </div>

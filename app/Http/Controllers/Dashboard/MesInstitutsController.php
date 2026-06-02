@@ -96,24 +96,34 @@ class MesInstitutsController extends Controller
             'telephone' => ['nullable', 'string', 'max:20'],
             'email'     => ['nullable', 'email', 'max:150'],
             'type'      => ['required', 'string', 'in:salon_coiffure,institut_beaute,nail_bar,spa,barbier,autre'],
-            'logo'      => ['nullable', 'image', 'max:2048'],
         ]);
-
-        // Gérer l'upload du logo
-        if ($request->hasFile('logo')) {
-            // Supprimer l'ancien logo si existe
-            if ($institut->logo && \Storage::disk('public')->exists($institut->logo)) {
-                \Storage::disk('public')->delete($institut->logo);
-            }
-            $data['logo'] = $request->file('logo')->store('logos', 'public');
-        } else {
-            unset($data['logo']);
-        }
 
         $institut->update($data);
 
         return redirect()->route('dashboard.mes-instituts.index')
             ->with('success', "Fiche de \"" . $data['nom'] . "\" mise à jour.");
+    }
+
+    public function updateLogo(Request $request, Institut $institut)
+    {
+        $user = Auth::user();
+        $aAcces = $institut->proprietaire_id === $user->id || $user->institut_id === $institut->id;
+        abort_unless($aAcces, 403, 'Accès refusé.');
+
+        $request->validate([
+            'logo' => ['required', 'image', 'max:2048'],
+        ]);
+
+        // Supprimer l'ancien logo si existe
+        if ($institut->logo && \Storage::disk('public')->exists($institut->logo)) {
+            \Storage::disk('public')->delete($institut->logo);
+        }
+
+        $logo = $request->file('logo')->store('logos', 'public');
+        $institut->update(['logo' => $logo]);
+
+        return redirect()->route('dashboard.mes-instituts.index')
+            ->with('success', "Logo de \"{$institut->nom}\" mis à jour.");
     }
 
     public function toggleVitrine(Institut $institut)

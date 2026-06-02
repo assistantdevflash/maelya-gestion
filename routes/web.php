@@ -227,6 +227,7 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         // Mes instituts : paramètres OK pour tous, création/switch = multi_instituts
         Route::get('mes-instituts', [MesInstitutsController::class, 'index'])->name('mes-instituts.index');
         Route::put('mes-instituts/{institut}', [MesInstitutsController::class, 'update'])->name('mes-instituts.update');
+        Route::post('mes-instituts/{institut}/logo', [MesInstitutsController::class, 'updateLogo'])->name('mes-instituts.logo');
         Route::patch('mes-instituts/{institut}/vitrine', [MesInstitutsController::class, 'toggleVitrine'])->name('mes-instituts.vitrine');
         Route::middleware('feature:multi_instituts')->group(function () {
             Route::post('mes-instituts', [MesInstitutsController::class, 'store'])->name('mes-instituts.store');
