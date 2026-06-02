@@ -1,5 +1,5 @@
 <x-dashboard-layout>
-    <div class="space-y-5" x-data="{ onglet: 'depenses' }">
+    <div class="space-y-5" x-data="{ onglet: new URLSearchParams(window.location.search).get('onglet') || 'depenses' }">
         {{-- Header --}}
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -23,6 +23,7 @@
                   class="flex flex-wrap gap-3 items-end"
                   x-data="{ debut: '{{ $debut->format('Y-m-d') }}', fin: '{{ $fin->format('Y-m-d') }}' }">
                 <input type="hidden" name="periode" value="custom">
+                <input type="hidden" name="onglet" :value="onglet">
                 <div class="form-group mb-0">
                     <label class="form-label text-xs">Début</label>
                     <input type="date" name="debut" x-model="debut" value="{{ $debut->format('Y-m-d') }}" class="form-input" @change="$el.form.submit()">
@@ -32,7 +33,7 @@
                     <input type="date" name="fin" x-model="fin" :min="debut" value="{{ $fin->format('Y-m-d') }}" class="form-input" @change="$el.form.submit()">
                 </div>
                 @unless($debut->isSameDay(now()->startOfMonth()) && $fin->isSameDay(now()->endOfMonth()))
-                <a href="{{ route('dashboard.finances.index') }}" class="btn-outline text-sm">
+                <a :href="'{{ route('dashboard.finances.index') }}' + (onglet !== 'depenses' ? '?onglet=' + onglet : '')" class="btn-outline text-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                     </svg>
@@ -44,7 +45,7 @@
                         ['week', 'Cette semaine'],
                         ['month', 'Ce mois'],
                     ] as [$period, $label])
-                        <a href="{{ route('dashboard.finances.index', ['periode' => $period]) }}"
+                        <a :href="'{{ route('dashboard.finances.index', ['periode' => $period]) }}' + (onglet !== 'depenses' ? '&onglet=' + onglet : '')"
                            class="btn text-xs px-3 py-1.5 {{ request('periode') === $period ? 'bg-primary-100 text-primary-700' : 'text-gray-500 hover:bg-gray-100' }}">
                             {{ $label }}
                         </a>
@@ -266,6 +267,7 @@
                     <input type="hidden" name="periode" value="{{ $periode }}">
                     @if(request('debut'))<input type="hidden" name="debut" value="{{ request('debut') }}">@endif
                     @if(request('fin'))<input type="hidden" name="fin" value="{{ request('fin') }}">@endif
+                    <input type="hidden" name="onglet" value="tresorerie">
                     <label class="text-sm text-gray-600 dark:text-slate-300">Horizon</label>
                     <select name="jours_previ" class="form-input text-sm" onchange="this.form.submit()">
                         @foreach([7, 14, 30, 60, 90] as $j)
