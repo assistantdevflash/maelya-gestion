@@ -214,8 +214,7 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
             Route::get('finances/export-ventes', [FinanceController::class, 'exportVentes'])->name('finances.export-ventes');
             Route::get('finances/export-depenses', [FinanceController::class, 'exportDepenses'])->name('finances.export-depenses');
             Route::get('finances/export-pdf', [FinanceController::class, 'exportPdf'])->name('finances.export-pdf');
-            Route::get('tresorerie', [\App\Http\Controllers\Dashboard\TresorerieController::class, 'index'])
-                ->name('tresorerie.index');
+            // Route trésorerie maintenant intégrée dans finances (onglet)
         });
 
         // Employés (feature: equipe)

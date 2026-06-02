@@ -122,11 +122,59 @@ class FinanceController extends Controller
             ->orderByDesc('chiffre_affaires')
             ->get();
 
+        // ═══ TRÉSORERIE PRÉVISIONNELLE ═══
+        $joursPrevi = (int) $request->input('jours_previ', 30);
+        $joursPrevi = max(7, min(90, $joursPrevi));
+        
+        $debutPrevi = \Carbon\Carbon::today();
+        $finPrevi = \Carbon\Carbon::today()->addDays($joursPrevi);
+        
+        // RDV confirmés ou en attente futurs
+        $rdvFuturs = \App\Models\RendezVous::with('prestations')
+            ->where('debut_le', '>=', $debutPrevi)
+            ->where('debut_le', '<=', $finPrevi)
+            ->whereIn('statut', ['confirme', 'en_attente'])
+            ->get();
+        
+        $revenusPrevu = $rdvFuturs->sum(function ($r) {
+            return $r->prestations->sum('prix');
+        });
+        
+        // Moyenne quotidienne des ventes des 30 derniers jours
+        $caRecent = Vente::where('statut', 'validee')
+            ->where('created_at', '>=', now()->subDays(30))
+            ->sum('total');
+        $caQuotidien = $caRecent / 30;
+        $projectionVentes = (int) round($caQuotidien * $joursPrevi);
+        
+        // Dépenses moyennes des 90 derniers jours
+        $depensesRecentes = Depense::where('date', '>=', now()->subDays(90))->sum('montant');
+        $depQuotidienne = $depensesRecentes / 90;
+        $projectionDepenses = (int) round($depQuotidienne * $joursPrevi);
+        
+        $soldePrevi = $revenusPrevu + $projectionVentes - $projectionDepenses;
+        
+        // Détail par jour pour graphique
+        $jourLabel = [];
+        $jourEntrees = [];
+        $jourSorties = [];
+        for ($i = 0; $i < $joursPrevi; $i++) {
+            $d = $debutPrevi->copy()->addDays($i);
+            $jourLabel[] = $d->format('d/m');
+            $entrees = $rdvFuturs->where('debut_le', '>=', $d)
+                ->where('debut_le', '<', $d->copy()->addDay())
+                ->sum(fn ($r) => $r->prestations->sum('prix'));
+            $jourEntrees[] = (int) ($entrees + $caQuotidien);
+            $jourSorties[] = (int) $depQuotidienne;
+        }
+
         return view('dashboard.finances.index', compact(
             'totalVentes', 'totalDepenses', 'nbVentes', 'benefice', 'marge',
             'depensesParCat', 'depenses', 'evolutionMois', 'periode', 'debut', 'fin',
             'valeurStock', 'margePotentielleStock',
-            'prestationsParCategorie', 'produitsParCategorie'
+            'prestationsParCategorie', 'produitsParCategorie',
+            'joursPrevi', 'revenusPrevu', 'projectionVentes', 'projectionDepenses', 
+            'soldePrevi', 'jourLabel', 'jourEntrees', 'jourSorties', 'rdvFuturs'
         ));
     }
 
