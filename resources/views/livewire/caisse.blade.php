@@ -676,11 +676,11 @@
                         </span>
                     </template>
                     <template x-if="modePaiement === 'mixte'">
-                        <span class="inline-flex items-center gap-1 text-xs font-bold text-violet-700 bg-violet-50 px-2.5 py-1 rounded-lg">
-                            💵+📱 Mixte
-                            <template x-if="montantMixteCash > 0">
-                                <span class="text-violet-500" x-text="formatNumber(montantMixteCash) + ' F espèces'"></span>
-                            </template>
+                        <span class="inline-flex items-center gap-1.5 text-xs font-bold text-violet-700 bg-violet-50 px-2.5 py-1 rounded-lg flex-wrap">
+                            <span>💵+📱 Mixte</span>
+                            <span x-show="montantMixteCash > 0" x-text="formatNumber(montantMixteCash) + ' F espèces'" class="text-violet-500"></span>
+                            <span x-show="montantMixteCartes > 0" x-text="formatNumber(montantMixteCartes) + ' F carte'" class="text-violet-500"></span>
+                            <span x-show="montantMixteMobile > 0" x-text="formatNumber(montantMixteMobile) + ' F mobile'" class="text-violet-500"></span>
                         </span>
                     </template>
                 </div>
@@ -713,24 +713,18 @@
                 <template x-if="modePaiement === 'mixte'">
                     <div class="bg-violet-50 rounded-xl p-3 space-y-2">
                         <p class="text-xs font-bold text-violet-700 uppercase tracking-wider">Paiement Mixte</p>
-                        <template x-if="montantMixteCash > 0">
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-500">💵 Espèces</span>
-                                <span class="font-bold text-gray-900" x-text="formatNumber(montantMixteCash) + ' F'"></span>
-                            </div>
-                        </template>
-                        <template x-if="montantMixteCartes > 0">
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-500">💳 Carte</span>
-                                <span class="font-bold text-gray-900" x-text="formatNumber(montantMixteCartes) + ' F'"></span>
-                            </div>
-                        </template>
-                        <template x-if="montantMixteMobile > 0">
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-500">📱 Mobile</span>
-                                <span class="font-bold text-gray-900" x-text="formatNumber(montantMixteMobile) + ' F'"></span>
-                            </div>
-                        </template>
+                        <div x-show="montantMixteCash > 0" class="flex justify-between text-sm">
+                            <span class="text-gray-500">💵 Espèces</span>
+                            <span class="font-bold text-gray-900" x-text="formatNumber(montantMixteCash) + ' F'"></span>
+                        </div>
+                        <div x-show="montantMixteCartes > 0" class="flex justify-between text-sm">
+                            <span class="text-gray-500">💳 Carte</span>
+                            <span class="font-bold text-gray-900" x-text="formatNumber(montantMixteCartes) + ' F'"></span>
+                        </div>
+                        <div x-show="montantMixteMobile > 0" class="flex justify-between text-sm">
+                            <span class="text-gray-500">📱 Mobile</span>
+                            <span class="font-bold text-gray-900" x-text="formatNumber(montantMixteMobile) + ' F'"></span>
+                        </div>
                     </div>
                 </template>
             </div>
