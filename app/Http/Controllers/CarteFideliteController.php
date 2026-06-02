@@ -15,6 +15,7 @@ class CarteFideliteController extends Controller
 
         $derniereVisites = Vente::withoutGlobalScopes()
             ->where('client_id', $client->id)
+            ->where('statut', 'validee')
             ->orderByDesc('created_at')
             ->limit(5)
             ->get(['id', 'total', 'created_at']);
