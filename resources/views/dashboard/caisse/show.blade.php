@@ -141,10 +141,10 @@
                     // Message WhatsApp sondage
                     if ($waTel && $sondageUrl) {
                         $waSondageMessage = "Bonjour " . ($vente->client->prenom ?? '') . " !\n\n"
-                            . "Merci pour votre confiance chez " . (auth()->user()->institut?->nom ?? 'notre institut') . " 😊\n\n"
-                            . "Votre avis compte beaucoup pour nous ! Pourriez-vous prendre 1 minute pour noter votre expérience ?\n\n"
+                            . "Merci pour votre confiance chez " . (auth()->user()->institut?->nom ?? 'notre institut') . "\n\n"
+                            . "Votre avis compte beaucoup pour nous ! Pourriez-vous prendre 1 minute pour noter votre experience ?\n\n"
                             . $sondageUrl . "\n\n"
-                            . "Merci d'avance ! 🙏";
+                            . "Merci d'avance !";
                     }
                 @endphp
                 
