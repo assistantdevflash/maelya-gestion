@@ -879,13 +879,14 @@ function scannerCodeBarre() {
         detector: null,
         intervalScan: null,
         init() {
-            this.hasCamera = 'BarcodeDetector' in window && !!navigator.mediaDevices?.getUserMedia;
+            // Vérification lazy — évaluée à l'ouverture
         },
         async ouvrir() {
             this.modalOuvert = true;
             this.statut = '';
             this.erreur = false;
             this.saisie = '';
+            this.hasCamera = 'BarcodeDetector' in window && !!navigator.mediaDevices?.getUserMedia;
             if (!this.hasCamera) return;
             try {
                 this.detector = new BarcodeDetector({ formats: ['ean_13','ean_8','code_128','code_39','upc_a','upc_e','qr_code'] });

@@ -136,12 +136,15 @@
             detector: null,
             scanInterval: null,
             init() {
-                this.hasCamera = 'BarcodeDetector' in window && navigator.mediaDevices?.getUserMedia;
+                // Vérification lazy — on ne bloque pas sur l'état init
             },
             async open() {
                 this.modalOpen = true;
                 this.status = '';
                 this.error = false;
+                this.manualInput = '';
+                // Vérifie la disponibilité au moment de l'ouverture
+                this.hasCamera = 'BarcodeDetector' in window && !!navigator.mediaDevices?.getUserMedia;
                 if (!this.hasCamera) return;
                 try {
                     this.detector = new BarcodeDetector({ formats: ['qr_code'] });
