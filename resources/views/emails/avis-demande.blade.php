@@ -15,18 +15,30 @@
         <td style="background:linear-gradient(135deg,#ec4899,#f43f5e);padding:36px 32px;text-align:center;">
             <div style="width:56px;height:56px;background:rgba(255,255,255,0.2);border-radius:16px;display:inline-block;text-align:center;line-height:56px;margin-bottom:16px;font-size:28px;">🌸</div>
             <h1 style="color:#fff;font-size:22px;font-weight:700;margin:0 0 6px;">Merci pour votre visite !</h1>
-            <p style="color:rgba(255,255,255,0.85);font-size:14px;margin:0 0 4px;">Bonjour {{ $rdv->client_nom }}, votre avis compte beaucoup pour nous.</p>
-            <p style="color:rgba(255,255,255,0.7);font-size:13px;margin:0;">{{ $rdv->institut?->nom ?? config('app.name') }}</p>
+            @if($rdv)
+                <p style="color:rgba(255,255,255,0.85);font-size:14px;margin:0 0 4px;">Bonjour {{ $rdv->client_nom }}, votre avis compte beaucoup pour nous.</p>
+                <p style="color:rgba(255,255,255,0.7);font-size:13px;margin:0;">{{ $rdv->institut?->nom ?? config('app.name') }}</p>
+            @elseif($vente)
+                <p style="color:rgba(255,255,255,0.85);font-size:14px;margin:0 0 4px;">Bonjour {{ $vente->client?->prenom ?? $vente->client?->nom ?? '' }}, votre avis compte beaucoup pour nous.</p>
+                <p style="color:rgba(255,255,255,0.7);font-size:13px;margin:0;">{{ $vente->institut?->nom ?? config('app.name') }}</p>
+            @endif
         </td>
     </tr>
 
     {{-- BODY --}}
     <tr>
         <td style="padding:32px;">
-            <p style="font-size:15px;color:#374151;margin:0 0 24px;">
-                Nous serions ravis de connaître votre avis sur votre dernier rendez-vous du <strong>{{ $rdv->debut_le->translatedFormat('d F Y') }}</strong>.<br>
-                Cela ne prend qu'une minute !
-            </p>
+            @if($rdv)
+                <p style="font-size:15px;color:#374151;margin:0 0 24px;">
+                    Nous serions ravis de connaître votre avis sur votre dernier rendez-vous du <strong>{{ $rdv->debut_le->translatedFormat('d F Y') }}</strong>.<br>
+                    Cela ne prend qu'une minute !
+                </p>
+            @elseif($vente)
+                <p style="font-size:15px;color:#374151;margin:0 0 24px;">
+                    Nous serions ravis de connaître votre avis sur votre achat du <strong>{{ $vente->created_at->translatedFormat('d F Y') }}</strong>.<br>
+                    Cela ne prend qu'une minute !
+                </p>
+            @endif
 
             <div style="text-align:center;margin:8px 0 28px;">
                 <a href="{{ $lien }}"
@@ -42,7 +54,11 @@
     {{-- FOOTER --}}
     <tr>
         <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 32px;text-align:center;font-size:12px;color:#9ca3af;">
-            <p style="margin:0 0 4px;"><strong>{{ $rdv->institut?->nom ?? config('app.name') }}</strong></p>
+            @if($rdv)
+                <p style="margin:0 0 4px;"><strong>{{ $rdv->institut?->nom ?? config('app.name') }}</strong></p>
+            @elseif($vente)
+                <p style="margin:0 0 4px;"><strong>{{ $vente->institut?->nom ?? config('app.name') }}</strong></p>
+            @endif
             <p style="margin:0 0 4px;color:#d1d5db;">{{ config('app.name') }} · Gestion de salon de beauté</p>
             <p style="margin:0;">Cet e-mail a été envoyé automatiquement. Ne pas répondre directement.</p>
         </td>

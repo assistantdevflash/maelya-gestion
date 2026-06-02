@@ -102,6 +102,10 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
     Route::get('ventes/{vente}/facture-pdf', [VenteController::class, 'facturePdf'])
         ->middleware('feature:caisse_impression')
         ->name('ventes.facture-pdf');
+    Route::post('ventes/{vente}/sondage/generer', [VenteController::class, 'genererSondage'])
+        ->name('ventes.sondage.generer');
+    Route::post('ventes/{vente}/sondage/envoyer-email', [VenteController::class, 'envoyerSondageEmail'])
+        ->name('ventes.sondage.envoyer-email');
 
     // Validation code réduction (caisse - feature: caisse_code_promo)
     Route::post('codes-reduction/valider', [CodeReductionController::class, 'valider'])

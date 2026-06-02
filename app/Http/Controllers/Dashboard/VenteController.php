@@ -376,4 +376,92 @@ class VenteController extends Controller
         $pdf = Pdf::loadView('pdf.facture', compact('vente'))->setPaper('a4', 'portrait');
         return $pdf->download("facture-{$vente->numero_facture}.pdf");
     }
+
+    /**
+     * Génère un lien de sondage pour une vente
+     */
+    public function genererSondage(Vente $vente)
+    {
+        // Vérifications
+        if (Auth::user()->isEmploye() && $vente->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        if ($vente->statut !== 'validee') {
+            return back()->with('error', 'Le sondage ne peut être généré que pour une vente validée.');
+        }
+
+        if (!$vente->client) {
+            return back()->with('error', 'Cette vente n\'a pas de client associé.');
+        }
+
+        // Vérifier si un avis existe déjà pour cette vente
+        $avis = \App\Models\AvisClient::withoutGlobalScopes()
+            ->where('vente_id', $vente->id)
+            ->first();
+
+        if ($avis) {
+            return back()->with('info', 'Un lien de sondage existe déjà pour cette vente.');
+        }
+
+        // Créer l'avis client
+        $avis = \App\Models\AvisClient::create([
+            'institut_id'     => $vente->institut_id,
+            'client_id'       => $vente->client_id,
+            'vente_id'        => $vente->id,
+            'client_nom_snap' => $vente->client->nom . ' ' . ($vente->client->prenom ?? ''),
+            'statut'          => 'en_attente',
+        ]);
+
+        return back()->with('success', 'Lien de sondage généré avec succès ! Vous pouvez maintenant l\'envoyer par email ou WhatsApp.');
+    }
+
+    /**
+     * Envoie le sondage par email
+     */
+    public function envoyerSondageEmail(Vente $vente)
+    {
+        // Vérifications
+        if (Auth::user()->isEmploye() && $vente->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        if ($vente->statut !== 'validee') {
+            return back()->with('error', 'Le sondage ne peut être envoyé que pour une vente validée.');
+        }
+
+        if (!$vente->client || !$vente->client->email) {
+            return back()->with('error', 'Le client n\'a pas d\'adresse email.');
+        }
+
+        // Récupérer ou créer l'avis
+        $avis = \App\Models\AvisClient::withoutGlobalScopes()
+            ->where('vente_id', $vente->id)
+            ->first();
+
+        if (!$avis) {
+            $avis = \App\Models\AvisClient::create([
+                'institut_id'     => $vente->institut_id,
+                'client_id'       => $vente->client_id,
+                'vente_id'        => $vente->id,
+                'client_nom_snap' => $vente->client->nom . ' ' . ($vente->client->prenom ?? ''),
+                'statut'          => 'en_attente',
+            ]);
+        }
+
+        if ($avis->repondu_le) {
+            return back()->with('info', 'Le client a déjà répondu au sondage.');
+        }
+
+        // Envoyer l'email
+        try {
+            \Illuminate\Support\Facades\Mail::to($vente->client->email)
+                ->send(new \App\Mail\AvisDemande($avis, null, $vente));
+            
+            return back()->with('success', 'Sondage envoyé par email à ' . $vente->client->email . ' !');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('[Sondage Email] ' . $e->getMessage());
+            return back()->with('error', 'Erreur lors de l\'envoi de l\'email : ' . $e->getMessage());
+        }
+    }
 }

@@ -127,6 +127,79 @@
                 </a>
                 @endif
 
+                {{-- Sondage satisfaction client --}}
+                @if($vente->statut === 'validee' && $vente->client)
+                @php
+                    // Récupérer ou créer l'avis client
+                    $avis = \App\Models\AvisClient::withoutGlobalScopes()
+                        ->where('vente_id', $vente->id)
+                        ->first();
+                    
+                    $sondageUrl = $avis ? route('public.avis.show', $avis->token) : null;
+                    $sondageEnvoye = $avis && $avis->repondu_le;
+                    
+                    // Message WhatsApp sondage
+                    if ($waTel && $sondageUrl) {
+                        $waSondageMessage = "Bonjour " . ($vente->client->prenom ?? '') . " !\n\n"
+                            . "Merci pour votre confiance chez " . (auth()->user()->institut?->nom ?? 'notre institut') . " 😊\n\n"
+                            . "Votre avis compte beaucoup pour nous ! Pourriez-vous prendre 1 minute pour noter votre expérience ?\n\n"
+                            . $sondageUrl . "\n\n"
+                            . "Merci d'avance ! 🙏";
+                    }
+                @endphp
+                
+                @if($sondageEnvoye)
+                    <div class="rounded-xl border border-emerald-200 dark:border-emerald-700/60 bg-emerald-50 dark:bg-emerald-900/20 p-3 text-sm text-emerald-700 dark:text-emerald-300">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span class="font-medium">Sondage déjà répondu le {{ $avis->repondu_le->format('d/m/Y') }}</span>
+                        </div>
+                        @if($avis->note)
+                            <div class="flex items-center gap-1 mt-2">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <svg class="w-4 h-4 {{ $i <= $avis->note ? 'text-yellow-400' : 'text-gray-300' }}" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                @endfor
+                            </div>
+                        @endif
+                    </div>
+                @elseif($avis && $sondageUrl)
+                    <form method="POST" action="{{ route('dashboard.ventes.sondage.envoyer-email', $vente) }}" class="contents">
+                        @csrf
+                        <button type="submit" class="btn-outline w-full justify-center text-blue-700 border-blue-200 hover:bg-blue-50"
+                                @if(!$vente->client->email) disabled title="Client sans email" @endif>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            Envoyer sondage par Email
+                        </button>
+                    </form>
+                    
+                    @if($waTel && $sondageUrl)
+                    <a href="https://wa.me/{{ $waTel }}?text={{ rawurlencode($waSondageMessage) }}" target="_blank" rel="noopener"
+                       class="btn-outline w-full justify-center text-blue-700 border-blue-200 hover:bg-blue-50">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20.52 3.48A11.94 11.94 0 0012 0C5.37 0 0 5.37 0 12a11.93 11.93 0 001.64 6.06L0 24l6.18-1.62A11.93 11.93 0 0012 24c6.63 0 12-5.37 12-12 0-3.2-1.25-6.21-3.48-8.52zM12 21.82a9.8 9.8 0 01-5-1.37l-.36-.22-3.67.96.98-3.58-.24-.37A9.82 9.82 0 1121.82 12c0 5.42-4.4 9.82-9.82 9.82zm5.39-7.36c-.29-.15-1.7-.84-1.97-.93-.26-.1-.45-.15-.64.15-.19.29-.74.93-.91 1.12-.17.19-.34.21-.62.07-.29-.15-1.22-.45-2.33-1.44-.86-.77-1.44-1.72-1.61-2.01-.17-.29-.02-.45.13-.6.13-.13.29-.34.43-.5.15-.17.19-.29.29-.48.1-.19.05-.36-.02-.5-.07-.15-.64-1.54-.88-2.11-.23-.55-.47-.48-.64-.48l-.55-.01c-.19 0-.5.07-.76.36-.26.29-1 1-1 2.43s1.02 2.82 1.17 3.02c.15.19 2.02 3.08 4.89 4.32.68.29 1.22.47 1.63.6.69.22 1.31.19 1.81.12.55-.08 1.7-.69 1.94-1.36.24-.67.24-1.25.17-1.36-.07-.12-.26-.19-.55-.34z"/>
+                        </svg>
+                        Envoyer sondage par WhatsApp
+                    </a>
+                    @endif
+                @else
+                    <form method="POST" action="{{ route('dashboard.ventes.sondage.generer', $vente) }}" class="contents">
+                        @csrf
+                        <button type="submit" class="btn-outline w-full justify-center text-blue-700 border-blue-200 hover:bg-blue-50">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                            </svg>
+                            Générer lien sondage
+                        </button>
+                    </form>
+                @endif
+                @endif
+
                 @if($vente->statut === 'validee' && auth()->user()->isAdmin())
                 {{-- Créer un avoir --}}
                 @php($montantAvoirsDeja = $vente->avoirs->sum('montant'))

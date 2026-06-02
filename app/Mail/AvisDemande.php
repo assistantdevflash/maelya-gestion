@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use App\Models\AvisClient;
 use App\Models\RendezVous;
+use App\Models\Vente;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -14,7 +15,11 @@ class AvisDemande extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public AvisClient $avis, public RendezVous $rdv) {}
+    public function __construct(
+        public AvisClient $avis, 
+        public ?RendezVous $rdv = null,
+        public ?Vente $vente = null
+    ) {}
 
     public function envelope(): Envelope
     {
@@ -28,6 +33,7 @@ class AvisDemande extends Mailable
             with: [
                 'avis' => $this->avis,
                 'rdv'  => $this->rdv,
+                'vente' => $this->vente,
                 'lien' => route('public.avis.show', $this->avis->token),
             ],
         );
