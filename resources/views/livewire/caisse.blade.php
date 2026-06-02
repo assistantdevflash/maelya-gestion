@@ -655,8 +655,8 @@
                 </div>
 
                 {{-- Mode de paiement affiché --}}
-                <div class="flex items-center gap-2 p-3 bg-gray-50 rounded-xl">
-                    <span class="text-xs font-semibold text-gray-500">Paiement :</span>
+                <div class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-slate-700/40 rounded-xl">
+                    <span class="text-xs font-semibold text-gray-500 dark:text-slate-400">Paiement :</span>
                     <template x-if="modePaiement === 'cash'">
                         <span class="inline-flex items-center gap-1 text-xs font-bold text-primary-700 bg-primary-50 px-2.5 py-1 rounded-lg">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
@@ -676,11 +676,11 @@
                         </span>
                     </template>
                     <template x-if="modePaiement === 'mixte'">
-                        <span class="inline-flex items-center gap-1.5 text-xs font-bold text-violet-700 bg-violet-50 px-2.5 py-1 rounded-lg flex-wrap">
-                            <span>💵+📱 Mixte</span>
-                            <span x-show="montantMixteCash > 0" x-text="formatNumber(montantMixteCash) + ' F espèces'" class="text-violet-500"></span>
-                            <span x-show="montantMixteCartes > 0" x-text="formatNumber(montantMixteCartes) + ' F carte'" class="text-violet-500"></span>
-                            <span x-show="montantMixteMobile > 0" x-text="formatNumber(montantMixteMobile) + ' F mobile'" class="text-violet-500"></span>
+                        <span class="inline-flex items-center gap-1.5 text-xs font-bold text-violet-700 bg-violet-50 px-2.5 py-1 rounded-lg">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                            Mixte
                         </span>
                     </template>
                 </div>
@@ -711,19 +711,19 @@
 
                 {{-- Détail paiement mixte dans modal --}}
                 <template x-if="modePaiement === 'mixte'">
-                    <div class="bg-violet-50 rounded-xl p-3 space-y-2">
-                        <p class="text-xs font-bold text-violet-700 uppercase tracking-wider">Paiement Mixte</p>
+                    <div class="bg-violet-50 dark:bg-violet-900/30 rounded-xl p-3 space-y-2">
+                        <p class="text-xs font-bold text-violet-700 dark:text-violet-300 uppercase tracking-wider">Paiement Mixte</p>
                         <div x-show="montantMixteCash > 0" class="flex justify-between text-sm">
-                            <span class="text-gray-500">💵 Espèces</span>
-                            <span class="font-bold text-gray-900" x-text="formatNumber(montantMixteCash) + ' F'"></span>
+                            <span class="text-gray-500 dark:text-slate-400">💵 Espèces</span>
+                            <span class="font-bold text-gray-900 dark:text-slate-100" x-text="formatNumber(montantMixteCash) + ' F'"></span>
                         </div>
                         <div x-show="montantMixteCartes > 0" class="flex justify-between text-sm">
-                            <span class="text-gray-500">💳 Carte</span>
-                            <span class="font-bold text-gray-900" x-text="formatNumber(montantMixteCartes) + ' F'"></span>
+                            <span class="text-gray-500 dark:text-slate-400">💳 Carte</span>
+                            <span class="font-bold text-gray-900 dark:text-slate-100" x-text="formatNumber(montantMixteCartes) + ' F'"></span>
                         </div>
                         <div x-show="montantMixteMobile > 0" class="flex justify-between text-sm">
-                            <span class="text-gray-500">📱 Mobile</span>
-                            <span class="font-bold text-gray-900" x-text="formatNumber(montantMixteMobile) + ' F'"></span>
+                            <span class="text-gray-500 dark:text-slate-400">📱 Mobile</span>
+                            <span class="font-bold text-gray-900 dark:text-slate-100" x-text="formatNumber(montantMixteMobile) + ' F'"></span>
                         </div>
                     </div>
                 </template>
