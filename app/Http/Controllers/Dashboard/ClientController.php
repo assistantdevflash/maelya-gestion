@@ -38,12 +38,16 @@ class ClientController extends Controller
             ->when($moisAnniv, fn ($q) => $q->whereNotNull('date_naissance')
                 ->where('date_naissance', 'like', $moisAnniv . '-%'))
             ->when($segment === 'nouveau', fn ($q) => $q->where('created_at', '>=', now()->subDays(30)))
-            ->when($segment === 'fidele', fn ($q) => $q->has('ventes', '>=', 3)->has('ventes', '<', 10))
-            ->when($segment === 'vip', fn ($q) => $q->has('ventes', '>=', 10))
+            ->when($segment === 'fidele', fn ($q) => $q
+                ->whereHas('ventes', fn ($q2) => $q2->where('statut', 'validee'), '>=', 3)
+                ->whereHas('ventes', fn ($q2) => $q2->where('statut', 'validee'), '<', 10))
+            ->when($segment === 'vip', fn ($q) => $q
+                ->whereHas('ventes', fn ($q2) => $q2->where('statut', 'validee'), '>=', 10))
             ->when($segment === 'inactif' || $inactifJours > 0, function ($q) use ($inactifJours) {
                 $jours = $inactifJours > 0 ? $inactifJours : 90;
                 $q->whereDoesntHave('ventes', function ($q2) use ($jours) {
-                    $q2->where('created_at', '>=', now()->subDays($jours));
+                    $q2->where('statut', 'validee')
+                       ->where('created_at', '>=', now()->subDays($jours));
                 });
             })
             ->orderBy('prenom')
