@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Depense;
 use App\Models\Vente;
+use App\Models\VenteItem;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class FinanceController extends Controller
@@ -81,10 +84,49 @@ class FinanceController extends Controller
             ];
         }
 
+        $institutId = session('current_institut_id', Auth::user()->institut_id);
+
+        $prestationsParCategorie = VenteItem::query()
+            ->select([
+                'categories_prestations.nom as categorie_nom',
+                DB::raw('SUM(vente_items.quantite) as quantite'),
+                DB::raw('SUM(vente_items.sous_total) as chiffre_affaires'),
+            ])
+            ->join('ventes', 'ventes.id', '=', 'vente_items.vente_id')
+            ->join('prestations', 'prestations.id', '=', 'vente_items.item_id')
+            ->leftJoin('categories_prestations', 'categories_prestations.id', '=', 'prestations.categorie_id')
+            ->where('vente_items.type', 'prestation')
+            ->where('ventes.institut_id', $institutId)
+            ->where('ventes.statut', 'validee')
+            ->whereDate('ventes.created_at', '>=', $debut)
+            ->whereDate('ventes.created_at', '<=', $fin)
+            ->groupBy('categories_prestations.nom')
+            ->orderByDesc('chiffre_affaires')
+            ->get();
+
+        $produitsParCategorie = VenteItem::query()
+            ->select([
+                'categories_produits.nom as categorie_nom',
+                DB::raw('SUM(vente_items.quantite) as quantite'),
+                DB::raw('SUM(vente_items.sous_total) as chiffre_affaires'),
+            ])
+            ->join('ventes', 'ventes.id', '=', 'vente_items.vente_id')
+            ->join('produits', 'produits.id', '=', 'vente_items.item_id')
+            ->leftJoin('categories_produits', 'categories_produits.id', '=', 'produits.categorie_id')
+            ->where('vente_items.type', 'produit')
+            ->where('ventes.institut_id', $institutId)
+            ->where('ventes.statut', 'validee')
+            ->whereDate('ventes.created_at', '>=', $debut)
+            ->whereDate('ventes.created_at', '<=', $fin)
+            ->groupBy('categories_produits.nom')
+            ->orderByDesc('chiffre_affaires')
+            ->get();
+
         return view('dashboard.finances.index', compact(
             'totalVentes', 'totalDepenses', 'nbVentes', 'benefice', 'marge',
             'depensesParCat', 'depenses', 'evolutionMois', 'periode', 'debut', 'fin',
-            'valeurStock', 'margePotentielleStock'
+            'valeurStock', 'margePotentielleStock',
+            'prestationsParCategorie', 'produitsParCategorie'
         ));
     }
 

@@ -1,5 +1,5 @@
 <x-dashboard-layout>
-    <div class="space-y-5">
+    <div class="space-y-5" x-data="{ onglet: 'depenses' }">
         {{-- Header --}}
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -93,8 +93,22 @@
         </div>
         @endif
 
+        {{-- Onglets Dépenses / Par catégorie --}}
+        <div class="flex gap-1 border-b border-gray-200 dark:border-slate-700">
+            <button @click="onglet = 'depenses'"
+                    :class="onglet === 'depenses' ? 'border-b-2 border-primary-600 text-primary-700 dark:text-primary-400 font-semibold' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700'"
+                    class="px-4 py-2 text-sm transition-colors">
+                Dépenses
+            </button>
+            <button @click="onglet = 'categories'"
+                    :class="onglet === 'categories' ? 'border-b-2 border-primary-600 text-primary-700 dark:text-primary-400 font-semibold' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700'"
+                    class="px-4 py-2 text-sm transition-colors">
+                Par catégorie
+            </button>
+        </div>
+
         {{-- Dépenses --}}
-        <div class="card overflow-hidden">
+        <div x-show="onglet === 'depenses'" class="card overflow-hidden">
             <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                 <h2 class="font-bold text-gray-900">Dépenses</h2>
                 <div class="flex gap-2">
@@ -161,6 +175,81 @@
                 Aucune dépense sur cette période.
             </div>
             @endif
+        </div>
+
+        {{-- Par catégorie --}}
+        <div x-show="onglet === 'categories'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {{-- Prestations par catégorie --}}
+            <div class="card overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-700">
+                    <h2 class="font-bold text-gray-900 dark:text-slate-100">Prestations par catégorie</h2>
+                </div>
+                <table class="min-w-full text-sm">
+                    <thead>
+                        <tr class="text-left text-xs uppercase text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50">
+                            <th class="px-4 py-2">Catégorie</th>
+                            <th class="px-4 py-2 text-right">Qté</th>
+                            <th class="px-4 py-2 text-right">CA (FCFA)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-slate-800">
+                        @forelse($prestationsParCategorie as $r)
+                            <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/30">
+                                <td class="px-4 py-2 text-gray-800 dark:text-slate-200">{{ $r->categorie_nom ?? 'Sans catégorie' }}</td>
+                                <td class="px-4 py-2 text-right text-gray-600 dark:text-slate-400">{{ (int) $r->quantite }}</td>
+                                <td class="px-4 py-2 text-right font-semibold text-gray-900 dark:text-slate-100">{{ number_format($r->chiffre_affaires, 0, ',', ' ') }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="3" class="px-4 py-8 text-center text-gray-400 text-sm">Aucune donnée.</td></tr>
+                        @endforelse
+                    </tbody>
+                    @if($prestationsParCategorie->count() > 0)
+                    <tfoot>
+                        <tr class="border-t-2 border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50">
+                            <td class="px-4 py-2 font-bold text-gray-700 dark:text-slate-300">Total</td>
+                            <td class="px-4 py-2 text-right font-bold text-gray-700 dark:text-slate-300">{{ (int) $prestationsParCategorie->sum('quantite') }}</td>
+                            <td class="px-4 py-2 text-right font-bold text-primary-700 dark:text-primary-400">{{ number_format($prestationsParCategorie->sum('chiffre_affaires'), 0, ',', ' ') }}</td>
+                        </tr>
+                    </tfoot>
+                    @endif
+                </table>
+            </div>
+
+            {{-- Produits par catégorie --}}
+            <div class="card overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-700">
+                    <h2 class="font-bold text-gray-900 dark:text-slate-100">Produits par catégorie</h2>
+                </div>
+                <table class="min-w-full text-sm">
+                    <thead>
+                        <tr class="text-left text-xs uppercase text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50">
+                            <th class="px-4 py-2">Catégorie</th>
+                            <th class="px-4 py-2 text-right">Qté</th>
+                            <th class="px-4 py-2 text-right">CA (FCFA)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-slate-800">
+                        @forelse($produitsParCategorie as $r)
+                            <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/30">
+                                <td class="px-4 py-2 text-gray-800 dark:text-slate-200">{{ $r->categorie_nom ?? 'Sans catégorie' }}</td>
+                                <td class="px-4 py-2 text-right text-gray-600 dark:text-slate-400">{{ (int) $r->quantite }}</td>
+                                <td class="px-4 py-2 text-right font-semibold text-gray-900 dark:text-slate-100">{{ number_format($r->chiffre_affaires, 0, ',', ' ') }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="3" class="px-4 py-8 text-center text-gray-400 text-sm">Aucune donnée.</td></tr>
+                        @endforelse
+                    </tbody>
+                    @if($produitsParCategorie->count() > 0)
+                    <tfoot>
+                        <tr class="border-t-2 border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50">
+                            <td class="px-4 py-2 font-bold text-gray-700 dark:text-slate-300">Total</td>
+                            <td class="px-4 py-2 text-right font-bold text-gray-700 dark:text-slate-300">{{ (int) $produitsParCategorie->sum('quantite') }}</td>
+                            <td class="px-4 py-2 text-right font-bold text-primary-700 dark:text-primary-400">{{ number_format($produitsParCategorie->sum('chiffre_affaires'), 0, ',', ' ') }}</td>
+                        </tr>
+                    </tfoot>
+                    @endif
+                </table>
+            </div>
         </div>
     </div>
 
