@@ -45,6 +45,7 @@ Route::get('/', [LandingController::class, 'index'])->name('home');
 Route::middleware('auth')->group(function () {
     Route::post('/push/subscribe',   [PushSubscriptionController::class, 'store'])->name('push.subscribe');
     Route::post('/push/unsubscribe', [PushSubscriptionController::class, 'destroy'])->name('push.unsubscribe');
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/tout-lire', [\App\Http\Controllers\NotificationController::class, 'toutLire'])->name('notifications.tout-lire');
 });
 Route::get('/a-propos', [LandingController::class, 'apropos'])->name('about');

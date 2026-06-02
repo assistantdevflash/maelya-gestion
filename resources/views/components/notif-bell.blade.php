@@ -125,5 +125,18 @@
             </div>
             @endforelse
         </div>
+
+        {{-- Footer: Voir toutes --}}
+        @if($notifs->isNotEmpty())
+        <div class="border-t border-gray-100 dark:border-white/10">
+            <a href="{{ route('notifications.index') }}"
+               class="flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-gray-50 dark:hover:bg-white/[0.04] transition-colors">
+                <span>Voir toutes les notifications</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+        </div>
+        @endif
     </div>
 </div>
