@@ -26,7 +26,7 @@
     </style>
 </head>
 <body class="min-h-screen"
-      x-data="{ rdvOpen: {{ (session('success') || $errors->any()) && isset($prestationsFlat) && $prestationsFlat->isNotEmpty() ? 'true' : 'false' }} }"
+      x-data="{ rdvOpen: {{ $institut->reservation_en_ligne && (session('success') || $errors->any()) && isset($prestationsFlat) && $prestationsFlat->isNotEmpty() ? 'true' : 'false' }} }"
       @keydown.escape.window="rdvOpen = false">
 
 {{-- ╔══════════════════════════════════════════════════════════════╗
@@ -66,7 +66,7 @@
                 <span class="hidden sm:inline">Appeler</span>
             </a>
             @endif
-            @if(isset($prestationsFlat) && $prestationsFlat->isNotEmpty())
+            @if($institut->reservation_en_ligne && isset($prestationsFlat) && $prestationsFlat->isNotEmpty())
             <button type="button" @click="rdvOpen = true"
                     class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl text-white transition hover:opacity-90"
                     style="background:linear-gradient(135deg,#9333ea,#ec4899);">
@@ -169,7 +169,7 @@
                         {{ $nbAvis }} avis
                     </a>
                     @endif
-                    @if(isset($prestationsFlat) && $prestationsFlat->isNotEmpty())
+                    @if($institut->reservation_en_ligne && isset($prestationsFlat) && $prestationsFlat->isNotEmpty())
                     <button type="button" @click="rdvOpen = true"
                             class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full text-white transition hover:opacity-90"
                             style="background:linear-gradient(135deg,#9333ea,#ec4899);">

@@ -58,6 +58,11 @@ class VitrineController extends Controller
             ->where('actif', true)
             ->firstOrFail();
 
+        // Vérifier que la réservation en ligne est bien activée
+        if (!$institut->reservation_en_ligne) {
+            return back()->with('error', 'La réservation en ligne n\'est pas disponible pour cet établissement.');
+        }
+
         $data = $request->validate([
             'client_nom'       => ['required', 'string', 'max:150'],
             'client_telephone' => ['required', 'string', 'max:30'],

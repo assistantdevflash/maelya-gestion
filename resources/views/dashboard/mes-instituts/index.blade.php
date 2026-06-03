@@ -241,6 +241,30 @@
                         </form>
                     </div>
 
+                    {{-- Toggle réservation en ligne --}}
+                    <div class="flex items-center justify-between gap-3 px-1 {{ !$institut->vitrine_active ? 'opacity-50' : '' }}">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Réservation en ligne</span>
+                            @if($institut->reservation_en_ligne)
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">Activée</span>
+                            @else
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-gray-100 dark:bg-gray-700 text-gray-500">Désactivée</span>
+                            @endif
+                        </div>
+                        <form method="POST" action="{{ route('dashboard.mes-instituts.reservation', $institut) }}">
+                            @csrf @method('PATCH')
+                            <button type="submit"
+                                    title="{{ $institut->reservation_en_ligne ? 'Désactiver' : 'Activer' }} la réservation en ligne"
+                                    {{ !$institut->vitrine_active ? 'disabled' : '' }}
+                                    style="position:relative; display:inline-flex; width:44px; height:24px; border-radius:9999px; border:none; {{ !$institut->vitrine_active ? 'cursor:not-allowed;' : 'cursor:pointer;' }} flex-shrink:0; transition:background .2s; background:{{ $institut->reservation_en_ligne ? '#3b82f6' : '#9ca3af' }};">
+                                <span style="position:absolute; top:3px; left:{{ $institut->reservation_en_ligne ? '23px' : '3px' }}; width:18px; height:18px; border-radius:9999px; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.3); transition:left .2s;"></span>
+                            </button>
+                        </form>
+                    </div>
+
                     {{-- Lien + QR si active --}}
                     @if($institut->vitrine_active)
                     <div x-data="{ qrOpen: false }">

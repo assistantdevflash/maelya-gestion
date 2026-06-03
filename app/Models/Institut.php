@@ -13,12 +13,13 @@ class Institut extends Model
     protected $table = 'instituts';
 
     protected $fillable = [
-        'nom', 'slug', 'email', 'telephone', 'ville', 'type', 'logo', 'actif', 'vitrine_active',
+        'nom', 'slug', 'email', 'telephone', 'ville', 'type', 'logo', 'actif', 'vitrine_active', 'reservation_en_ligne',
     ];
 
     protected $casts = [
         'actif' => 'boolean',
         'vitrine_active' => 'boolean',
+        'reservation_en_ligne' => 'boolean',
     ];
 
     protected static function boot(): void

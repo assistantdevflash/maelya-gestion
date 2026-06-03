@@ -134,9 +134,35 @@ class MesInstitutsController extends Controller
 
         $institut->update(['vitrine_active' => !$institut->vitrine_active]);
 
+        // Si on désactive la vitrine, on désactive aussi la réservation en ligne
+        if (!$institut->vitrine_active) {
+            $institut->update(['reservation_en_ligne' => false]);
+        }
+
         $msg = $institut->vitrine_active
             ? "Vitrine publique activée pour \"{$institut->nom}\"."
             : "Vitrine publique désactivée pour \"{$institut->nom}\".";
+
+        return redirect()->route('dashboard.mes-instituts.index')->with('success', $msg);
+    }
+
+    public function toggleReservation(Institut $institut)
+    {
+        $user = Auth::user();
+        $aAcces = $institut->proprietaire_id === $user->id || $user->institut_id === $institut->id;
+        abort_unless($aAcces, 403, 'Accès refusé.');
+
+        // Impossible d'activer la réservation si la vitrine est désactivée
+        if (!$institut->vitrine_active && !$institut->reservation_en_ligne) {
+            return redirect()->route('dashboard.mes-instituts.index')
+                ->with('error', 'Activez d\'abord la page vitrine avant d\'activer la réservation en ligne.');
+        }
+
+        $institut->update(['reservation_en_ligne' => !$institut->reservation_en_ligne]);
+
+        $msg = $institut->reservation_en_ligne
+            ? "Réservation en ligne activée pour \"{$institut->nom}\"."
+            : "Réservation en ligne désactivée pour \"{$institut->nom}\".";
 
         return redirect()->route('dashboard.mes-instituts.index')->with('success', $msg);
     }
