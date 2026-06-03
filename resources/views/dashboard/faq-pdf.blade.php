@@ -24,9 +24,9 @@
 
     /* Sections */
     .section { margin-bottom: 18px; page-break-inside: avoid; }
-    .section-header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; }
-    .section-num { width: 22px; height: 22px; border-radius: 6px; background: rgba(255,255,255,0.25); color: #fff; font-size: 10px; font-weight: 700; display: inline-block; text-align: center; line-height: 22px; flex-shrink: 0; }
-    .section-title { font-size: 12px; font-weight: 700; color: #ffffff; }
+    .section-header { display: block; overflow: hidden; padding: 7px 12px; border-radius: 8px; margin-bottom: 10px; }
+    .section-num { width: 22px; height: 22px; border-radius: 6px; background: rgba(255,255,255,0.25); color: #fff; font-size: 10px; font-weight: 700; display: block; text-align: center; line-height: 22px; float: left; margin-right: 9px; margin-top: 1px; }
+    .section-title { font-size: 12px; font-weight: 700; color: #ffffff; display: block; overflow: hidden; line-height: 24px; }
     .section-body { padding: 0 4px; }
 
     /* Sous-sections FAQ */
