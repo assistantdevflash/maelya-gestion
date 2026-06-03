@@ -181,7 +181,7 @@ Cocody/Riviera &rarr; Marcory/Zone 4 &rarr; Plateau/Adjam&eacute; &rarr; Yopougo
 <li><strong>Beaucoup de RDV &rarr; Agenda :</strong> &laquo;&nbsp;Email de confirmation automatique. Plus de rendez-vous oubli&eacute;s.&nbsp;&raquo;</li>
 <li><strong>Vente de produits &rarr; Stock :</strong> &laquo;&nbsp;Stock mis &agrave; jour automatiquement. Alerte quand un produit est presque &eacute;puis&eacute;.&nbsp;&raquo;</li>
 <li><strong>Fid&eacute;lisation &rarr; Fid&eacute;lit&eacute; :</strong> &laquo;&nbsp;Programme de points. Code cadeau automatique. &Ccedil;a les fait revenir.&nbsp;&raquo;</li>
-<li><strong>B&eacute;n&eacute;fices &rarr; Finances :</strong> &laquo;&nbsp;B&eacute;n&eacute;fice net calcul&eacute; automatiquement. Export PDF pour votre comptable.&nbsp;&raquo;</li>
+<li><strong>B&eacute;n&eacute;fices &rarr; Finances + Tr&eacute;sorerie :</strong> &laquo;&nbsp;B&eacute;n&eacute;fice net calcul&eacute; automatiquement. Et l\'onglet Tr&eacute;sorerie vous montre si vous serez &agrave; l\'aise dans 30 jours.&nbsp;&raquo;</li>
 <li><strong>Visibilit&eacute; &rarr; Vitrine + R&eacute;servation :</strong> &laquo;&nbsp;Activez votre page publique. QR code &agrave; coller &agrave; l\'entr&eacute;e du salon. Les clientes r&eacute;servent directement depuis la page, m&ecirc;me &agrave; 23h.&nbsp;&raquo;</li>
 <li><strong>Portfolio &rarr; Galerie photos :</strong> &laquo;&nbsp;Chaque cliente a sa galerie avant/apr&egrave;s dans son dossier. Montrez vos transformations, fid&eacute;lisez par les r&eacute;sultats.&nbsp;&raquo;</li>
 <li><strong>Agenda charg&eacute; &rarr; Calendrier interactif :</strong> &laquo;&nbsp;Tous vos RDV sur un vrai calendrier. Vous d&eacute;placez un rendez-vous en glissant avec le doigt. Professionnel, rapide.&nbsp;&raquo;</li>
@@ -216,6 +216,10 @@ Cocody/Riviera &rarr; Marcory/Zone 4 &rarr; Plateau/Adjam&eacute; &rarr; Yopougo
 <tr><td><strong>Comparatif instituts</strong></td><td>Comparer CA, clients, top prestations entre vos salons</td><td>&laquo;&nbsp;Voyez quel salon performe le mieux (plan Entreprise)&nbsp;&raquo;</td></tr>
 <tr><td><strong>Multi-&eacute;tablissements</strong></td><td>G&eacute;rer plusieurs salons</td><td>&laquo;&nbsp;Vous surveillez tout depuis votre t&eacute;l&eacute;phone&nbsp;&raquo;</td></tr>
 <tr><td><strong>Parrainage</strong></td><td>Inviter = mois gratuits</td><td>&laquo;&nbsp;Faites-vous parrainer, payez moins cher&nbsp;&raquo;</td></tr>
+<tr><td><strong>Tr&eacute;sorerie pr&eacute;visionnelle</strong></td><td>Projection entr&eacute;es/sorties sur 7 &agrave; 90 jours (onglet Finances)</td><td>&laquo;&nbsp;Voyez d\'avance si vous serez &agrave; l\'aise en fin de mois&nbsp;&raquo;</td></tr>
+<tr><td><strong>Sondage satisfaction</strong></td><td>Lien envoy&eacute; par email ou WhatsApp depuis le d&eacute;tail d\'une vente</td><td>&laquo;&nbsp;Vos clientes notent leur exp&eacute;rience, vous am&eacute;liorez&nbsp;&raquo;</td></tr>
+<tr><td><strong>Avis clients</strong></td><td>Mod&eacute;ration des avis, affichage sur vitrine</td><td>&laquo;&nbsp;Des &eacute;toiles sur votre page pour rassurer les nouvelles clientes&nbsp;&raquo;</td></tr>
+<tr><td><strong>Notifications</strong></td><td>Centre d\'alertes (stock, RDV, paiements, anniversaires)</td><td>&laquo;&nbsp;Ne ratez plus aucun &eacute;v&eacute;nement important&nbsp;&raquo;</td></tr>
 </tbody></table>
 '],
 
@@ -264,7 +268,7 @@ Cocody/Riviera &rarr; Marcory/Zone 4 &rarr; Plateau/Adjam&eacute; &rarr; Yopougo
 <li><strong>Vos employ&eacute;es encaissent, vous contr&ocirc;lez</strong> &rarr; Fini les pertes inexpliqu&eacute;es</li>
 <li><strong>R&eacute;servation en ligne 24h/24</strong> &rarr; Les clientes r&eacute;servent m&ecirc;me quand vous &ecirc;tes ferm&eacute;e</li>
 <li><strong>Essai gratuit 14 jours, paiement Wave/OM</strong> &rarr; Aucun risque, aucune complication</li>
-<li><em>Bonus :</em> galerie photos avant/apr&egrave;s, calendrier interactif, inventaire physique &mdash; tout depuis votre t&eacute;l&eacute;phone</li>
+<li><em>Bonus :</em> galerie photos avant/apr&egrave;s, calendrier interactif, inventaire physique, sondage satisfaction, tr&eacute;sorerie pr&eacute;visionnelle &mdash; tout depuis votre t&eacute;l&eacute;phone</li>
 </ol>
 '],
 
@@ -311,7 +315,7 @@ Cocody/Riviera &rarr; Marcory/Zone 4 &rarr; Plateau/Adjam&eacute; &rarr; Yopougo
 </div>
 
 <p class="mt-6 text-center text-xs text-gray-400 dark:text-gray-600 pb-safe">
-    Ma&euml;lya Gestion &middot; maelyagestion.com &middot; Support WhatsApp : r&eacute;ponse &lt; 2h &middot; Document terrain v2 &mdash; Mai 2026
+    Ma&euml;lya Gestion &middot; maelyagestion.com &middot; Support WhatsApp : r&eacute;ponse &lt; 2h &middot; Document terrain v3 &mdash; Juin 2026 &middot; 26 modules
 </p>
 
 <script>

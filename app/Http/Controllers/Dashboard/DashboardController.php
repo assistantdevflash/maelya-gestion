@@ -202,4 +202,16 @@ class DashboardController extends Controller
             'evolutionVentesJour', 'evolutionVentesMois', 'evolutionClientsJour'
         ));
     }
+
+    public function faq()
+    {
+        return view('dashboard.faq');
+    }
+
+    public function faqPdf()
+    {
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('dashboard.faq-pdf')
+            ->setPaper('a4', 'portrait');
+        return $pdf->download('documentation-maelyagestion.pdf');
+    }
 }

@@ -56,7 +56,7 @@
     <div class="header">
         <div>
             <div class="header-title">🚶 Guide Porte-à-Porte</div>
-            <div class="header-sub">Document terrain · Commerciaux Maëlya Gestion · Mai 2026</div>
+            <div class="header-sub">Document terrain · Commerciaux Maëlya Gestion · Juin 2026</div>
         </div>
         <div class="header-logo">
             <strong>Maëlya Gestion</strong>
@@ -148,6 +148,10 @@
                 <tr><td><strong>Comparatif instituts</strong></td><td>Comparer CA/clients entre salons</td><td>« Quel salon performe ? »</td></tr>
                 <tr><td><strong>Multi-établissements</strong></td><td>Gérer plusieurs salons</td><td>« Vous surveillez tout depuis votre téléphone »</td></tr>
                 <tr><td><strong>Parrainage</strong></td><td>Inviter = mois gratuits</td><td>« Faites-vous parrainer, payez moins cher »</td></tr>
+                <tr><td><strong>Trésorerie prévisionnelle</strong></td><td>Projection entrées/sorties sur 7 à 90 jours (onglet Finances)</td><td>« Voyez d'avance si vous serez à l'aise en fin de mois »</td></tr>
+                <tr><td><strong>Sondage satisfaction</strong></td><td>Lien envoyé par email ou WhatsApp depuis le détail d'une vente</td><td>« Vos clientes notent leur expérience, vous améliorez votre service »</td></tr>
+                <tr><td><strong>Avis clients</strong></td><td>Modération des avis reçus, affichage sur la vitrine</td><td>« Des étoiles sur votre page pour rassurer les nouvelles clientes »</td></tr>
+                <tr><td><strong>Notifications</strong></td><td>Centre d'alertes (stock, RDV, paiements, anniversaires)</td><td>« Ne ratez plus aucun événement important dans votre salon »</td></tr>
                 </tbody>
             </table>
         </div>
@@ -212,7 +216,7 @@
                 <li><strong>Vos employées encaissent, vous contrôlez</strong> → Fini les pertes inexpliquées</li>
                 <li><strong>Réservation en ligne 24h/24</strong> → Les clientes réservent même quand vous êtes fermée</li>
                 <li><strong>Essai gratuit 14 jours, paiement Wave/OM</strong> → Aucun risque, aucune complication</li>
-                <li><em>Bonus :</em> galerie photos avant/après, calendrier interactif, inventaire physique</li>
+                <li><em>Bonus :</em> galerie photos avant/après, calendrier interactif, inventaire physique, sondage satisfaction, trésorerie prévisionnelle</li>
             </ol>
         </div>
     </div>
@@ -236,7 +240,7 @@
     </div>
 
     <div class="footer">
-        Maëlya Gestion — maelyagestion.com — Support WhatsApp : réponse &lt; 2h — Document terrain v3 — Mai 2026 — 22 modules
+        Maëlya Gestion — maelyagestion.com — Support WhatsApp : réponse &lt; 2h — Document terrain v3 — Juin 2026 — 26 modules
     </div>
 
 </div>

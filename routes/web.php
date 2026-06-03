@@ -241,6 +241,10 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         // Parrainage (Basic + Premium)
         Route::get('parrainage', [ParrainageController::class, 'index'])->name('parrainage.index');
 
+        // FAQ & documentation
+        Route::get('faq', [DashboardController::class, 'faq'])->name('faq');
+        Route::get('faq/pdf', [DashboardController::class, 'faqPdf'])->name('faq.pdf');
+
         // Fidélité (feature: fidelite)
         Route::middleware('feature:fidelite')->group(function () {
             Route::get('fidelite', [FideliteController::class, 'index'])->name('fidelite.index');
