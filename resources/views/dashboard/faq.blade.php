@@ -1,7 +1,4 @@
-@extends('layouts.dashboard')
-@section('title', 'FAQ & Aide')
-
-@section('content')
+<x-dashboard-layout>
 
 <style>
 .faq-btn { width:100%; display:flex; align-items:center; gap:12px; padding:16px 20px; text-align:left; transition:background .15s; cursor:pointer; background:transparent; border:none; }
@@ -497,4 +494,4 @@ function filterFaq(q) {
 }
 </script>
 
-@endsection
+</x-dashboard-layout>
