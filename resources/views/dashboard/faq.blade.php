@@ -464,7 +464,7 @@ $categories = [
     </div>
     <h3 class="font-bold text-gray-900 dark:text-white mb-1">Vous n'avez pas trouvé votre réponse ?</h3>
     <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Notre équipe support répond sur WhatsApp en moins de 2h.</p>
-    <a href="https://wa.me/2250000000000?text=Bonjour+j%27ai+besoin+d%27aide+avec+Maëlya+Gestion"
+    <a href="https://wa.me/2250709874067?text=Bonjour+j%27ai+besoin+d%27aide+avec+Maëlya+Gestion"
        target="_blank" rel="noopener"
        class="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
        style="background: linear-gradient(135deg, #9333ea, #ec4899);">
