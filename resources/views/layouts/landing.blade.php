@@ -25,8 +25,8 @@
     <meta property="og:title" content="{{ isset($title) ? $title . ' — Maëlya Gestion' : 'Maëlya Gestion' }}">
     <meta property="og:description" content="{{ $metaDescription ?? 'Maëlya Gestion : logiciel de gestion tout-en-un pour salons, instituts et établissements de service en Côte d\'Ivoire. Caisse, clients, rendez-vous, stocks et finances.' }}">
     <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:image" content="{{ asset('og-image.svg') }}">
-    <meta property="og:image:type" content="image/svg+xml">
+    <meta property="og:image" content="{{ asset('og-image.png') }}">
+    <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="Maëlya Gestion — Logiciel de gestion pour établissements">
@@ -35,7 +35,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ isset($title) ? $title . ' — Maëlya Gestion' : 'Maëlya Gestion' }}">
     <meta name="twitter:description" content="{{ $metaDescription ?? 'Maëlya Gestion : logiciel de gestion tout-en-un pour salons, instituts et établissements de service en Côte d\'Ivoire. Caisse, clients, rendez-vous, stocks et finances.' }}">
-    <meta name="twitter:image" content="{{ asset('og-image.svg') }}">
+    <meta name="twitter:image" content="{{ asset('og-image.png') }}">
     <meta name="twitter:image:alt" content="Maëlya Gestion — Logiciel de gestion pour établissements">
     {{-- Anti-flash : appliquer le thème avant le rendu --}}
     <script>
