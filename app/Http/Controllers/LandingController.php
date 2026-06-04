@@ -95,11 +95,25 @@ class LandingController extends Controller
     public function sitemap()
     {
         $pages = [
-            ['url' => route('home'),     'priority' => '1.0', 'changefreq' => 'weekly'],
-            ['url' => route('about'),    'priority' => '0.8', 'changefreq' => 'monthly'],
-            ['url' => route('faq'),      'priority' => '0.8', 'changefreq' => 'monthly'],
-            ['url' => route('contact'),  'priority' => '0.7', 'changefreq' => 'monthly'],
+            ['url' => route('home'),     'priority' => '1.0', 'changefreq' => 'weekly', 'lastmod' => now()->toIso8601String()],
+            ['url' => route('about'),    'priority' => '0.8', 'changefreq' => 'monthly', 'lastmod' => now()->toIso8601String()],
+            ['url' => route('faq'),      'priority' => '0.8', 'changefreq' => 'monthly', 'lastmod' => now()->toIso8601String()],
+            ['url' => route('contact'),  'priority' => '0.7', 'changefreq' => 'monthly', 'lastmod' => now()->toIso8601String()],
         ];
+
+        // Ajouter toutes les pages vitrine actives
+        $instituts = \App\Models\Institut::where('vitrine_active', true)
+            ->where('actif', true)
+            ->get(['slug', 'updated_at']);
+
+        foreach ($instituts as $institut) {
+            $pages[] = [
+                'url' => route('vitrine.show', $institut->slug),
+                'priority' => '0.8',
+                'changefreq' => 'daily',
+                'lastmod' => $institut->updated_at->toIso8601String(),
+            ];
+        }
 
         return response()
             ->view('landing.sitemap', compact('pages'))

@@ -5,6 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $institut->nom }} — Vitrine</title>
     <meta name="description" content="Découvrez les prestations et produits de {{ $institut->nom }}{{ $institut->ville ? ', ' . $institut->ville : '' }}.">
+    
+    {{-- Open Graph --}}
+    <meta property="og:type" content="business.business">
+    <meta property="og:site_name" content="Maëlya Gestion">
+    <meta property="og:locale" content="fr_CI">
+    <meta property="og:title" content="{{ $institut->nom }}{{ $institut->ville ? ' — ' . $institut->ville : '' }}">
+    <meta property="og:description" content="Découvrez les prestations et produits de {{ $institut->nom }}{{ $institut->ville ? ', ' . $institut->ville : '' }}.">
+    <meta property="og:url" content="{{ url()->current() }}">
+    @if($institut->logo)
+    <meta property="og:image" content="{{ asset('storage/' . $institut->logo) }}">
+    <meta property="og:image:type" content="image/jpeg">
+    @else
+    <meta property="og:image" content="{{ asset('og-image.svg') }}">
+    <meta property="og:image:type" content="image/svg+xml">
+    @endif
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="{{ $institut->nom }}">
+
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $institut->nom }}{{ $institut->ville ? ' — ' . $institut->ville : '' }}">
+    <meta name="twitter:description" content="Découvrez les prestations et produits de {{ $institut->nom }}{{ $institut->ville ? ', ' . $institut->ville : '' }}.">
+    @if($institut->logo)
+    <meta name="twitter:image" content="{{ asset('storage/' . $institut->logo) }}">
+    @else
+    <meta name="twitter:image" content="{{ asset('og-image.svg') }}">
+    @endif
+    <meta name="twitter:image:alt" content="{{ $institut->nom }}">
+    
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
