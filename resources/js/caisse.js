@@ -195,6 +195,20 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
             this.venteRapideCategorieId = '';
         },
 
+        setVenteRapideType(type) {
+            if (this.venteRapideType === type) {
+                this.venteRapideType = '';
+                this.venteRapideCategorieId = '';
+            } else {
+                this.venteRapideType = type;
+                this.venteRapideCategorieId = '';
+            }
+        },
+
+        setVenteRapideCategorie(id) {
+            this.venteRapideCategorieId = this.venteRapideCategorieId === id ? '' : id;
+        },
+
         ajouterVenteRapide() {
             if (!this.venteRapideNom.trim()) {
                 this.venteRapideErreur = 'Le nom est requis.';

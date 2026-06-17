@@ -163,7 +163,7 @@
                     <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type (optionnel)</label>
                     <div class="flex gap-2 mt-1.5">
                         <button type="button"
-                                @click="venteRapideType = venteRapideType === 'prestation' ? '' : 'prestation'; venteRapideCategorieId = ''"
+                                @click="setVenteRapideType('prestation')"
                                 :class="venteRapideType === 'prestation' ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-400 text-primary-700 dark:text-primary-300' : 'border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-400 hover:border-gray-300'"
                                 class="flex-1 py-2.5 rounded-xl text-xs font-semibold border-2 transition-all duration-200 text-center">
                             <svg class="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,7 +172,7 @@
                             Prestation
                         </button>
                         <button type="button"
-                                @click="venteRapideType = venteRapideType === 'produit' ? '' : 'produit'; venteRapideCategorieId = ''"
+                                @click="setVenteRapideType('produit')"
                                 :class="venteRapideType === 'produit' ? 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-400 text-emerald-700 dark:text-emerald-300' : 'border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-400 hover:border-gray-300'"
                                 class="flex-1 py-2.5 rounded-xl text-xs font-semibold border-2 transition-all duration-200 text-center">
                             <svg class="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,7 +187,7 @@
                     <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Catégorie (optionnel)</label>
                     <div class="flex gap-2 flex-wrap mt-1.5">
                         <button type="button"
-                                @click="venteRapideCategorieId = ''"
+                                @click="setVenteRapideCategorie('')"
                                 :class="venteRapideCategorieId === '' ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
                                 :style="venteRapideCategorieId === '' ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
                                 class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150">
@@ -195,7 +195,7 @@
                         </button>
                         <template x-for="cat in venteRapideCategories" :key="cat.id">
                             <button type="button"
-                                    @click="venteRapideCategorieId = venteRapideCategorieId === cat.id ? '' : cat.id"
+                                    @click="setVenteRapideCategorie(cat.id)"
                                     :class="venteRapideCategorieId === cat.id ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
                                     :style="venteRapideCategorieId === cat.id ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
                                     class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150"
