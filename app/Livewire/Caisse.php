@@ -292,6 +292,15 @@ class Caisse extends Component
                 ->orderBy('nom')
                 ->get()
                 ->map(fn ($c) => ['id' => $c->id, 'nom' => $c->nom]),
+            // Toutes les catégories (même vides) pour le selecteur de la vente rapide
+            'allCatPrestations' => CategoriePrestation::where('institut_id', $institutId)
+                ->orderBy('ordre')->orderBy('nom')
+                ->get()
+                ->map(fn ($c) => ['id' => $c->id, 'nom' => $c->nom]),
+            'allCatProduits' => CategorieProduit::where('institut_id', $institutId)
+                ->orderBy('nom')
+                ->get()
+                ->map(fn ($c) => ['id' => $c->id, 'nom' => $c->nom]),
             'allClients' => Client::where('institut_id', $institutId)
                 ->where('actif', true)
                 ->orderBy('prenom')

@@ -4,6 +4,8 @@
         produits: @js($produits),
         catPrestations: @js($catPrestations),
         catProduits: @js($catProduits),
+        allCatPrestations: @js($allCatPrestations),
+        allCatProduits: @js($allCatProduits),
         prefilledItems: @js($this->prefilledItems),
         prefilledPanier: @js($this->prefilledPanier),
         routeBrouillonStore: @js(route('dashboard.caisse.brouillons.store')),

@@ -165,10 +165,10 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
             return this.modePaiement !== 'mixte' || this.resteMixte === 0;
         },
 
-        // Catégories pour la vente rapide (selon le type choisi)
+        // Catégories pour la vente rapide (selon le type choisi — toutes, même vides)
         get venteRapideCategories() {
-            if (this.venteRapideType === 'prestation') return this.catPrestations;
-            if (this.venteRapideType === 'produit') return this.catProduits;
+            if (this.venteRapideType === 'prestation') return this.allCatPrestations || this.catPrestations;
+            if (this.venteRapideType === 'produit') return this.allCatProduits || this.catProduits;
             return [];
         },
 
