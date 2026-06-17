@@ -86,7 +86,8 @@ class FinanceController extends Controller
 
         $institutId = session('current_institut_id', Auth::user()->institut_id);
 
-        $prestationsParCategorie = VenteItem::query()
+        // ── Prestations par catégorie (inclut les ventes rapides type_libre=prestation) ──
+        $regularPresta = VenteItem::query()
             ->select([
                 'categories_prestations.nom as categorie_nom',
                 DB::raw('SUM(vente_items.quantite) as quantite'),
@@ -101,10 +102,39 @@ class FinanceController extends Controller
             ->whereDate('ventes.created_at', '>=', $debut)
             ->whereDate('ventes.created_at', '<=', $fin)
             ->groupBy('categories_prestations.nom')
-            ->orderByDesc('chiffre_affaires')
             ->get();
 
-        $produitsParCategorie = VenteItem::query()
+        // Ventes rapides associées à une catégorie de prestation
+        $librePresta = VenteItem::query()
+            ->select([
+                'categories_prestations.nom as categorie_nom',
+                DB::raw('SUM(vente_items.quantite) as quantite'),
+                DB::raw('SUM(vente_items.sous_total) as chiffre_affaires'),
+            ])
+            ->join('ventes', 'ventes.id', '=', 'vente_items.vente_id')
+            ->join('categories_prestations', 'categories_prestations.id', '=', 'vente_items.categorie_id')
+            ->where('vente_items.type', 'libre')
+            ->where('vente_items.type_libre', 'prestation')
+            ->whereNotNull('vente_items.categorie_id')
+            ->where('ventes.institut_id', $institutId)
+            ->where('ventes.statut', 'validee')
+            ->whereDate('ventes.created_at', '>=', $debut)
+            ->whereDate('ventes.created_at', '<=', $fin)
+            ->groupBy('categories_prestations.nom')
+            ->get();
+
+        $prestationsParCategorie = $regularPresta->concat($librePresta)
+            ->groupBy('categorie_nom')
+            ->map(fn ($group) => (object) [
+                'categorie_nom'   => $group->first()->categorie_nom,
+                'quantite'         => (int) $group->sum('quantite'),
+                'chiffre_affaires' => (int) $group->sum('chiffre_affaires'),
+            ])
+            ->sortByDesc('chiffre_affaires')
+            ->values();
+
+        // ── Produits par catégorie (inclut les ventes rapides type_libre=produit) ──
+        $regularProduits = VenteItem::query()
             ->select([
                 'categories_produits.nom as categorie_nom',
                 DB::raw('SUM(vente_items.quantite) as quantite'),
@@ -119,8 +149,36 @@ class FinanceController extends Controller
             ->whereDate('ventes.created_at', '>=', $debut)
             ->whereDate('ventes.created_at', '<=', $fin)
             ->groupBy('categories_produits.nom')
-            ->orderByDesc('chiffre_affaires')
             ->get();
+
+        // Ventes rapides associées à une catégorie de produit
+        $libreProduits = VenteItem::query()
+            ->select([
+                'categories_produits.nom as categorie_nom',
+                DB::raw('SUM(vente_items.quantite) as quantite'),
+                DB::raw('SUM(vente_items.sous_total) as chiffre_affaires'),
+            ])
+            ->join('ventes', 'ventes.id', '=', 'vente_items.vente_id')
+            ->join('categories_produits', 'categories_produits.id', '=', 'vente_items.categorie_id')
+            ->where('vente_items.type', 'libre')
+            ->where('vente_items.type_libre', 'produit')
+            ->whereNotNull('vente_items.categorie_id')
+            ->where('ventes.institut_id', $institutId)
+            ->where('ventes.statut', 'validee')
+            ->whereDate('ventes.created_at', '>=', $debut)
+            ->whereDate('ventes.created_at', '<=', $fin)
+            ->groupBy('categories_produits.nom')
+            ->get();
+
+        $produitsParCategorie = $regularProduits->concat($libreProduits)
+            ->groupBy('categorie_nom')
+            ->map(fn ($group) => (object) [
+                'categorie_nom'   => $group->first()->categorie_nom,
+                'quantite'         => (int) $group->sum('quantite'),
+                'chiffre_affaires' => (int) $group->sum('chiffre_affaires'),
+            ])
+            ->sortByDesc('chiffre_affaires')
+            ->values();
 
         // ═══ TRÉSORERIE PRÉVISIONNELLE ═══
         $joursPrevi = (int) $request->input('jours_previ', 30);
