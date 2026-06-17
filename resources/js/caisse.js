@@ -5,13 +5,15 @@
  * côté client pour un rendu instantané. Seuls la recherche client, le code
  * promo et la validation de vente passent par Livewire (requêtes DB).
  */
-export default function caisseApp({ prestations, produits, catPrestations, catProduits, prefilledItems = [], prefilledPanier = [], routeBrouillonStore = '/dashboard/caisse/brouillons' }) {
+export default function caisseApp({ prestations, produits, catPrestations, catProduits, allCatPrestations = [], allCatProduits = [], prefilledItems = [], prefilledPanier = [], routeBrouillonStore = '/dashboard/caisse/brouillons' }) {
     return {
         // ── Catalogue (chargé une seule fois) ──
         prestations,
         produits,
         catPrestations,
         catProduits,
+        allCatPrestations,
+        allCatProduits,
         routeBrouillonStore,
 
         // ── Pré-remplissage (ex: depuis un RDV) ──
