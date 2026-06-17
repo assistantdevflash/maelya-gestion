@@ -12,13 +12,15 @@ class VenteItem extends Model
     protected $table = 'vente_items';
 
     protected $fillable = [
-        'vente_id', 'type', 'item_id', 'nom_snapshot', 'prix_snapshot', 'quantite', 'sous_total',
+        'vente_id', 'type', 'item_id', 'type_libre', 'categorie_id', 'nom_snapshot', 'prix_snapshot', 'quantite', 'sous_total',
     ];
 
     protected $casts = [
         'prix_snapshot' => 'integer',
         'sous_total' => 'integer',
         'quantite' => 'integer',
+        'type_libre' => 'string',
+        'categorie_id' => 'string',
     ];
 
     public function vente()

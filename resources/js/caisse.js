@@ -91,6 +91,8 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         venteRapidePrix: null,
         venteRapideErreur: '',
         venteRapideCounter: 0,
+        venteRapideType: '',
+        venteRapideCategorieId: '',
 
         // ═══════════════════════════════════════
         //  Computed (getters réactifs Alpine)
@@ -163,6 +165,13 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
             return this.modePaiement !== 'mixte' || this.resteMixte === 0;
         },
 
+        // Catégories pour la vente rapide (selon le type choisi)
+        get venteRapideCategories() {
+            if (this.venteRapideType === 'prestation') return this.catPrestations;
+            if (this.venteRapideType === 'produit') return this.catProduits;
+            return [];
+        },
+
         // ═══════════════════════════════════════
         //  Actions catalogue
         // ═══════════════════════════════════════
@@ -182,6 +191,8 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
             this.venteRapideNom = '';
             this.venteRapidePrix = null;
             this.venteRapideErreur = '';
+            this.venteRapideType = '';
+            this.venteRapideCategorieId = '';
         },
 
         ajouterVenteRapide() {
@@ -202,11 +213,15 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
                     nom: this.venteRapideNom.trim(),
                     prix: Math.round(this.venteRapidePrix),
                     quantite: 1,
+                    typeLibre: this.venteRapideType || null,
+                    categorieId: this.venteRapideCategorieId || null,
                 },
             };
             this.venteRapideNom = '';
             this.venteRapidePrix = null;
             this.venteRapideErreur = '';
+            this.venteRapideType = '';
+            this.venteRapideCategorieId = '';
             this.showVenteRapide = false;
         },
 

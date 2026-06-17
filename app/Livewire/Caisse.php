@@ -223,11 +223,13 @@ class Caisse extends Component
         $total = max(0, $totalBrut - $remise);
 
         $items = collect($panier)->values()->map(fn ($item) => [
-            'type'     => $item['type'],
-            'id'       => $item['id'],
-            'nom'      => $item['nom'],
-            'prix'     => $item['prix'],
-            'quantite' => $item['quantite'],
+            'type'        => $item['type'],
+            'id'          => $item['id'],
+            'nom'         => $item['nom'],
+            'prix'        => $item['prix'],
+            'quantite'    => $item['quantite'],
+            'typeLibre'   => $item['typeLibre'] ?? null,
+            'categorieId' => $item['categorieId'] ?? null,
         ])->toArray();
 
         $this->dispatch('valider-vente', [

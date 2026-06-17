@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\CategoriePrestation;
+use App\Models\CategorieProduit;
 use App\Models\Client;
 use App\Models\CodeReduction;
 use App\Models\MouvementStock;
@@ -76,6 +78,39 @@ class VenteController extends Controller
                     $prix = max(1, min(10_000_000, (int) ($item['prix'] ?? 0)));
                     abort_if(!$nom || $prix <= 0, 422, 'Article libre invalide.');
                     $itemId = null;
+                    $quantite = (int) ($item['quantite'] ?? 1);
+
+                    // Type et catégorie optionnels pour les stats
+                    $typeLibre = in_array($item['typeLibre'] ?? null, ['prestation', 'produit']) ? $item['typeLibre'] : null;
+                    $categorieId = null;
+                    if ($typeLibre && !empty($item['categorieId'] ?? null)) {
+                        $catId = (string) $item['categorieId'];
+                        if ($typeLibre === 'prestation') {
+                            $catExists = CategoriePrestation::where('institut_id', $this->institutId())
+                                ->where('id', $catId)->exists();
+                        } else {
+                            $catExists = CategorieProduit::where('institut_id', $this->institutId())
+                                ->where('id', $catId)->exists();
+                        }
+                        if ($catExists) {
+                            $categorieId = $catId;
+                        }
+                    }
+
+                    $sousTotal = $prix * $quantite;
+                    $totalBrut += $sousTotal;
+
+                    $itemsToSave[] = [
+                        'type' => $item['type'],
+                        'item_id' => $itemId,
+                        'type_libre' => $typeLibre,
+                        'categorie_id' => $categorieId,
+                        'nom_snapshot' => $nom,
+                        'prix_snapshot' => $prix,
+                        'quantite' => $quantite,
+                        'sous_total' => $sousTotal,
+                    ];
+                    continue;
                 } else {
                     $model = Produit::findOrFail($item['id']);
                     $prix = $model->prix_vente;
