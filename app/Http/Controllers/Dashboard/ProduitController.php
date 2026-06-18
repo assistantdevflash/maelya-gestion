@@ -43,6 +43,7 @@ class ProduitController extends Controller
             'seuil_alerte' => ['required', 'integer', 'min:0'],
             'unite' => ['required', 'string', 'max:30'],
             'description' => ['nullable', 'string', 'max:500'],
+            'photo' => ['nullable', 'image', 'max:2048'],
         ]);
 
         if (isset($data['prix_achat']) && $data['prix_vente'] < $data['prix_achat']) {
@@ -50,6 +51,11 @@ class ProduitController extends Controller
         }
 
         $data['prix_achat'] = $data['prix_achat'] ?? 0;
+
+        // Upload photo optionnelle
+        if ($request->hasFile('photo')) {
+            $data['photo'] = $request->file('photo')->store('produits', 'public');
+        }
 
         Produit::create($data);
 
@@ -75,6 +81,7 @@ class ProduitController extends Controller
             'seuil_alerte' => ['required', 'integer', 'min:0'],
             'unite' => ['required', 'string', 'max:30'],
             'description' => ['nullable', 'string', 'max:500'],
+            'photo' => ['nullable', 'image', 'max:2048'],
         ]);
 
         if (isset($data['prix_achat']) && $data['prix_vente'] < $data['prix_achat']) {
@@ -82,6 +89,19 @@ class ProduitController extends Controller
         }
 
         $data['prix_achat'] = $data['prix_achat'] ?? 0;
+
+        // Upload photo optionnelle (remplace l'ancienne si existante)
+        if ($request->hasFile('photo')) {
+            if ($produit->photo && \Storage::disk('public')->exists($produit->photo)) {
+                \Storage::disk('public')->delete($produit->photo);
+            }
+            $data['photo'] = $request->file('photo')->store('produits', 'public');
+        } elseif ($request->input('supprimer_photo')) {
+            if ($produit->photo && \Storage::disk('public')->exists($produit->photo)) {
+                \Storage::disk('public')->delete($produit->photo);
+            }
+            $data['photo'] = null;
+        }
 
         $produit->update($data);
 

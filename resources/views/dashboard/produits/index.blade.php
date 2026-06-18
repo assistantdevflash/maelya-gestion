@@ -67,11 +67,23 @@
                         @foreach($produits as $produit)
                         <tr class="hover:bg-gray-50 group transition-colors">
                             <td class="px-4 py-3">
-                                <div>
-                                    <span class="font-medium text-gray-900">{{ $produit->nom }}</span>
-                                    @if($produit->reference)
-                                        <p class="text-xs text-gray-400">Réf: {{ $produit->reference }}</p>
+                                <div class="flex items-center gap-3">
+                                    @if($produit->photo)
+                                        <img src="{{ asset('storage/' . $produit->photo) }}" alt="{{ $produit->nom }}"
+                                             class="w-10 h-10 rounded-lg object-cover border border-gray-200 dark:border-slate-700 flex-shrink-0">
+                                    @else
+                                        <div class="w-10 h-10 rounded-lg bg-emerald-100/40 dark:bg-emerald-400/25 flex items-center justify-center flex-shrink-0">
+                                            <svg class="w-[18px] h-[18px] text-emerald-600 dark:text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                            </svg>
+                                        </div>
                                     @endif
+                                    <div>
+                                        <span class="font-medium text-gray-900">{{ $produit->nom }}</span>
+                                        @if($produit->reference)
+                                            <p class="text-xs text-gray-400">Réf: {{ $produit->reference }}</p>
+                                        @endif
+                                    </div>
                                 </div>
                             </td>
                             <td class="px-4 py-3 text-gray-500 hidden md:table-cell">{{ $produit->categorie?->nom ?? '—' }}</td>

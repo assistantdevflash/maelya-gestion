@@ -237,17 +237,26 @@
                     :class="quantiteDans(item) > 0 ? 'ring-2 ring-primary-400 bg-primary-50/30' : ''"
                     class="card p-4 text-left hover:ring-1 hover:ring-primary-300 active:scale-[0.97] transition-all duration-200 group cursor-pointer min-w-0 overflow-hidden">
                     <div class="flex items-start justify-between mb-3">
-                        <div :class="onglet === 'prestations'
-                                 ? 'bg-primary-100/40 dark:bg-primary-400/25'
-                                 : 'bg-emerald-100/40 dark:bg-emerald-400/25'"
-                             class="w-9 h-9 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200 flex-shrink-0">
-                            <svg x-show="onglet === 'prestations'" class="w-[18px] h-[18px] text-primary-600 dark:text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            <svg x-show="onglet === 'produits'" class="w-[18px] h-[18px] text-emerald-600 dark:text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                            </svg>
-                        </div>
+                        {{-- Icône ou photo --}}
+                        <template x-if="onglet === 'prestations'">
+                            <div class="w-9 h-9 rounded-xl bg-primary-100/40 dark:bg-primary-400/25 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 flex-shrink-0">
+                                <svg class="w-[18px] h-[18px] text-primary-600 dark:text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                        </template>
+                        <template x-if="onglet === 'produits'">
+                            <div>
+                                <img x-show="item.photo" :src="item.photo" :alt="item.nom"
+                                     class="w-9 h-9 rounded-xl object-cover border border-gray-200 dark:border-slate-600 group-hover:scale-110 transition-transform duration-200 flex-shrink-0">
+                                <div x-show="!item.photo"
+                                     class="w-9 h-9 rounded-xl bg-emerald-100/40 dark:bg-emerald-400/25 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 flex-shrink-0">
+                                    <svg class="w-[18px] h-[18px] text-emerald-600 dark:text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </template>
                         <span x-show="quantiteDans(item) > 0"
                               x-text="quantiteDans(item)"
                               class="min-w-[22px] h-[22px] rounded-full text-white text-xs font-bold flex items-center justify-center px-1 shadow-sm flex-shrink-0"

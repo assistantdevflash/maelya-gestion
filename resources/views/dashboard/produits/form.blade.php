@@ -107,6 +107,25 @@
                               class="form-textarea">{{ old('description', $produit->description ?? '') }}</textarea>
                 </div>
 
+                {{-- Photo du produit --}}
+                <div class="form-group">
+                    <label class="form-label">Photo du produit</label>
+                    <p class="text-xs text-gray-400 mb-2">Format JPEG ou PNG, 2 Mo max. Optionnelle.</p>
+                    @if(isset($produit) && $produit->photo)
+                    <div class="flex items-start gap-3 mb-3">
+                        <img src="{{ asset('storage/' . $produit->photo) }}" alt="{{ $produit->nom }}"
+                             class="w-20 h-20 rounded-xl object-cover border border-gray-200 dark:border-slate-700">
+                        <label class="flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 cursor-pointer">
+                            <input type="checkbox" name="supprimer_photo" value="1" class="rounded">
+                            Supprimer la photo
+                        </label>
+                    </div>
+                    @endif
+                    <input type="file" name="photo" accept="image/jpeg,image/png,image/webp"
+                           class="form-input file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 file:cursor-pointer">
+                    @error('photo') <p class="form-error">{{ $message }}</p> @enderror
+                </div>
+
                 <div class="flex gap-3 pt-2">
                     <a href="{{ route('dashboard.produits.index') }}" class="btn btn-outline flex-1 justify-center">Annuler</a>
                     <button type="submit" class="btn-primary flex-1 justify-center">Enregistrer</button>

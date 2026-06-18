@@ -279,6 +279,7 @@ class Caisse extends Component
                     'nom'           => $p->nom,
                     'prix'          => (int) $p->prix_vente,
                     'stock'         => $p->stock,
+                    'photo'         => $p->photo ? asset('storage/' . $p->photo) : null,
                     'categorie_id'  => $p->categorie_id,
                     'categorie_nom' => $p->categorie?->nom,
                 ]),
