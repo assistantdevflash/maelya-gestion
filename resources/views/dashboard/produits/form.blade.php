@@ -18,6 +18,24 @@
                     </div>
                 @endif
 
+                {{-- Photo du produit --}}
+                <div class="form-group mb-0">
+                    <label class="form-label">Photo</label>
+                    @if(isset($produit) && $produit->photo)
+                    <div class="flex items-start gap-3 mb-2">
+                        <img src="{{ asset('storage/' . $produit->photo) }}" alt="{{ $produit->nom }}"
+                             class="w-20 h-20 rounded-xl object-cover ring-2 ring-gray-200">
+                        <label class="flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 cursor-pointer mt-1">
+                            <input type="checkbox" name="supprimer_photo" value="1" class="rounded">
+                            Supprimer la photo
+                        </label>
+                    </div>
+                    @endif
+                    <input type="file" name="photo" accept="image/*" class="form-input">
+                    <p class="text-xs text-gray-400 mt-1">Format JPG, PNG ou WebP · Max 2 Mo · Optionnelle</p>
+                    @error('photo') <p class="form-error">{{ $message }}</p> @enderror
+                </div>
+
                 <div class="form-group">
                     <label class="form-label">Catégorie *</label>
                     <select name="categorie_id" required class="form-select">
@@ -106,25 +124,6 @@
                     <label class="form-label">Description</label>
                     <textarea name="description" rows="2" maxlength="500"
                               class="form-textarea">{{ old('description', $produit->description ?? '') }}</textarea>
-                </div>
-
-                {{-- Photo du produit --}}
-                <div class="form-group">
-                    <label class="form-label">Photo du produit</label>
-                    <p class="text-xs text-gray-400 mb-2">Format JPEG, PNG ou WebP — 2 Mo max. Optionnelle.</p>
-                    @if(isset($produit) && $produit->photo)
-                    <div class="flex items-start gap-3 mb-3">
-                        <img src="{{ asset('storage/' . $produit->photo) }}" alt="{{ $produit->nom }}"
-                             class="w-20 h-20 rounded-xl object-cover border border-gray-200 dark:border-slate-700">
-                        <label class="flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 cursor-pointer">
-                            <input type="checkbox" name="supprimer_photo" value="1" class="rounded">
-                            Supprimer la photo
-                        </label>
-                    </div>
-                    @endif
-                    <input type="file" name="photo" accept="image/jpeg,image/png,image/webp"
-                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 file:cursor-pointer">
-                    @error('photo') <p class="form-error">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="flex gap-3 pt-2">
