@@ -227,25 +227,7 @@
                         <input type="hidden" name="_method" value="PUT">
                     </template>
 
-                    {{-- Photo --}}
-                    <div class="form-group">
-                        <label class="form-label text-xs">Photo</label>
-                        <template x-if="isEdit && form.photo_url">
-                            <div class="flex items-center gap-3 mb-2">
-                                <img :src="form.photo_url" alt="Photo actuelle"
-                                     class="w-16 h-16 rounded-xl object-cover ring-2 ring-gray-200">
-                                <div class="flex flex-col gap-1">
-                                    <span class="text-xs text-gray-400">Photo actuelle</span>
-                                    <label class="flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 cursor-pointer">
-                                        <input type="checkbox" name="supprimer_photo" value="1" class="rounded">
-                                        Supprimer la photo
-                                    </label>
-                                </div>
-                            </div>
-                        </template>
-                        <input type="file" name="photo" accept="image/*" class="form-input text-sm">
-                        <p class="text-xs text-gray-400 mt-1">JPG, PNG ou WebP · Max 2 Mo · Optionnelle</p>
-                    </div>
+                   
 
                     <div class="form-group">
                         <label class="form-label">Catégorie *</label>
@@ -327,6 +309,26 @@
                             <textarea name="description" rows="2" maxlength="500"
                                       x-model="form.description" class="form-textarea text-sm"></textarea>
                         </div>
+                    </div>
+
+                     {{-- Photo --}}
+                    <div class="form-group">
+                        <label class="form-label text-xs">Photo</label>
+                        <template x-if="isEdit && form.photo_url">
+                            <div class="flex items-center gap-3 mb-2">
+                                <img :src="form.photo_url" alt="Photo actuelle"
+                                     class="w-16 h-16 rounded-xl object-cover ring-2 ring-gray-200">
+                                <div class="flex flex-col gap-1">
+                                    <span class="text-xs text-gray-400">Photo actuelle</span>
+                                    <label class="flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 cursor-pointer">
+                                        <input type="checkbox" name="supprimer_photo" value="1" class="rounded">
+                                        Supprimer la photo
+                                    </label>
+                                </div>
+                            </div>
+                        </template>
+                        <input type="file" name="photo" accept="image/*" class="form-input text-sm">
+                        <p class="text-xs text-gray-400 mt-1">JPG, PNG ou WebP · Max 2 Mo · Optionnelle</p>
                     </div>
                 </form>
             </div>
