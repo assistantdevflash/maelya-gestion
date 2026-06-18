@@ -7,6 +7,7 @@
         <div class="card p-6">
             <form method="POST"
                   action="{{ isset($produit) ? route('dashboard.produits.update', $produit) : route('dashboard.produits.store') }}"
+                  enctype="multipart/form-data"
                   class="space-y-4">
                 @csrf
                 @if(isset($produit)) @method('PUT') @endif
