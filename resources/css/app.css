@@ -103,7 +103,7 @@
         @apply block text-sm font-medium text-gray-600 mb-1.5;
     }
     .form-input {
-        @apply w-full rounded-xl border-gray-200 bg-white text-sm
+        @apply w-full rounded-xl border border-gray-200 bg-white text-sm
                shadow-sm
                placeholder:text-gray-400
                focus:border-primary-400 focus:ring-4 focus:ring-primary-100
