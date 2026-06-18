@@ -108,7 +108,8 @@
                                         stock: '{{ $produit->stock }} {{ $produit->unite }}',
                                         seuil_alerte: '{{ $produit->seuil_alerte }} {{ $produit->unite }}',
                                         unite: '{{ $produit->unite }}',
-                                        description: '{{ addslashes($produit->description ?? '—') }}'
+                                        description: '{{ addslashes($produit->description ?? '—') }}',
+                                        photo_url: '{{ $produit->photo ? asset('storage/'.$produit->photo) : '' }}'
                                     })" class="btn-icon text-gray-400 hover:text-primary-600" title="Détails">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -126,7 +127,8 @@
                                         seuil_alerte: {{ $produit->seuil_alerte }},
                                         unite: '{{ $produit->unite }}',
                                         code_barre: '{{ addslashes($produit->code_barre ?? '') }}',
-                                        description: '{{ addslashes($produit->description ?? '') }}'
+                                        description: '{{ addslashes($produit->description ?? '') }}',
+                                        photo_url: '{{ $produit->photo ? asset('storage/'.$produit->photo) : '' }}'
                                     })" class="btn-icon" title="Modifier">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -177,11 +179,11 @@
             show: false,
             isEdit: false,
             formAction: '{{ route('dashboard.produits.store') }}',
-            form: { categorie_id: '', nom: '', reference: '', code_barre: '', prix_achat: '', prix_vente: '', stock: 0, seuil_alerte: 5, unite: 'pièce', description: '' },
+            form: { categorie_id: '', nom: '', reference: '', code_barre: '', prix_achat: '', prix_vente: '', stock: 0, seuil_alerte: 5, unite: 'pièce', description: '', photo_url: '' },
             resetForm() {
                 this.isEdit = false;
                 this.formAction = '{{ route('dashboard.produits.store') }}';
-                this.form = { categorie_id: '', nom: '', reference: '', code_barre: '', prix_achat: '', prix_vente: '', stock: 0, seuil_alerte: 5, unite: 'pièce', description: '' };
+                this.form = { categorie_id: '', nom: '', reference: '', code_barre: '', prix_achat: '', prix_vente: '', stock: 0, seuil_alerte: 5, unite: 'pièce', description: '', photo_url: '' };
             },
             init() {
                 window.addEventListener('open-produit', () => { this.resetForm(); this.show = true; });
@@ -198,7 +200,8 @@
                         stock: e.detail.stock,
                         seuil_alerte: e.detail.seuil_alerte,
                         unite: e.detail.unite,
-                        description: e.detail.description
+                        description: e.detail.description,
+                        photo_url: e.detail.photo_url || ''
                     };
                     this.show = true;
                 });
@@ -218,11 +221,31 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form id="produit-form" :action="formAction" method="POST" class="space-y-4">
+                <form id="produit-form" :action="formAction" method="POST" enctype="multipart/form-data" class="space-y-4">
                     @csrf
                     <template x-if="isEdit">
                         <input type="hidden" name="_method" value="PUT">
                     </template>
+
+                    {{-- Photo --}}
+                    <div class="form-group">
+                        <label class="form-label text-xs">Photo</label>
+                        <template x-if="isEdit && form.photo_url">
+                            <div class="flex items-center gap-3 mb-2">
+                                <img :src="form.photo_url" alt="Photo actuelle"
+                                     class="w-16 h-16 rounded-xl object-cover ring-2 ring-gray-200">
+                                <div class="flex flex-col gap-1">
+                                    <span class="text-xs text-gray-400">Photo actuelle</span>
+                                    <label class="flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 cursor-pointer">
+                                        <input type="checkbox" name="supprimer_photo" value="1" class="rounded">
+                                        Supprimer la photo
+                                    </label>
+                                </div>
+                            </div>
+                        </template>
+                        <input type="file" name="photo" accept="image/*" class="form-input text-sm">
+                        <p class="text-xs text-gray-400 mt-1">JPG, PNG ou WebP · Max 2 Mo · Optionnelle</p>
+                    </div>
 
                     <div class="form-group">
                         <label class="form-label">Catégorie *</label>
@@ -379,6 +402,7 @@
             </div>
         </div>
     </div>
+
     {{-- Modal Détails produit --}}
     <div x-data="{
             show: false,
@@ -404,6 +428,10 @@
                 </button>
             </div>
             <div class="modal-body">
+                <template x-if="produit.photo_url">
+                    <img :src="produit.photo_url" :alt="produit.nom"
+                         class="w-full h-40 object-cover rounded-xl mb-4 ring-1 ring-gray-200">
+                </template>
                 <dl class="space-y-3 text-sm">
                     <div class="flex justify-between">
                         <dt class="text-gray-500">Référence</dt>
