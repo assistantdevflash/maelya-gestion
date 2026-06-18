@@ -111,7 +111,7 @@
                 {{-- Photo du produit --}}
                 <div class="form-group">
                     <label class="form-label">Photo du produit</label>
-                    <p class="text-xs text-gray-400 mb-2">Format JPEG ou PNG, 2 Mo max. Optionnelle.</p>
+                    <p class="text-xs text-gray-400 mb-2">Format JPEG, PNG ou WebP — 2 Mo max. Optionnelle.</p>
                     @if(isset($produit) && $produit->photo)
                     <div class="flex items-start gap-3 mb-3">
                         <img src="{{ asset('storage/' . $produit->photo) }}" alt="{{ $produit->nom }}"
@@ -123,7 +123,7 @@
                     </div>
                     @endif
                     <input type="file" name="photo" accept="image/jpeg,image/png,image/webp"
-                           class="form-input file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 file:cursor-pointer">
+                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 file:cursor-pointer">
                     @error('photo') <p class="form-error">{{ $message }}</p> @enderror
                 </div>
 
