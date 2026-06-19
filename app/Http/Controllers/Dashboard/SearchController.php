@@ -37,7 +37,7 @@ class SearchController extends Controller
                 'id'         => $c->id,
                 'label'      => $c->nom_complet,
                 'sous_label' => $c->telephone ?: $c->email ?: '—',
-                'url'        => route('dashboard.clients.index', ['q' => $c->nom_complet]),
+                'url'        => route('dashboard.clients.show', $c),
                 'icone'      => 'client',
             ]);
 
@@ -75,7 +75,7 @@ class SearchController extends Controller
                 'id'         => $r->id,
                 'label'      => $r->client?->nom_complet ?? 'Inconnu',
                 'sous_label' => $r->debut_le?->translatedFormat('d/m/Y H:i') . ' — ' . ($r->statut_badge['label'] ?? $r->statut),
-                'url'        => route('dashboard.rdv.index', ['q' => $r->client?->nom_complet]),
+                'url'        => route('dashboard.rdv.show', $r),
                 'icone'      => 'rdv',
             ]);
 
