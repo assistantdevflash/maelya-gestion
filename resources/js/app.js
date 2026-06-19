@@ -5,6 +5,95 @@ import caisseApp from './caisse';
 // Expose le composant Caisse POS en global pour Alpine x-data
 window.caisseApp = caisseApp;
 
+// ═══════════════════════════════════════════════════════════════
+//  RECHERCHE GLOBALE (Cmd+K)
+// ═══════════════════════════════════════════════════════════════
+Alpine.data('globalSearch', (searchRoute) => ({
+    searchOpen: false,
+    searchQuery: '',
+    searchResults: null,
+    searchLoading: false,
+    searchIndex: -1,
+
+    openSearch() {
+        this.searchOpen = true;
+        this.searchQuery = '';
+        this.searchResults = null;
+        this.searchIndex = -1;
+        this.$nextTick(() => {
+            const el = this.$refs.searchInput;
+            if (el) { el.focus(); el.select(); }
+        });
+    },
+
+    closeSearch() {
+        this.searchOpen = false;
+        this.searchQuery = '';
+        this.searchResults = null;
+        this.searchIndex = -1;
+    },
+
+    async doSearch() {
+        const q = this.searchQuery.trim();
+        if (q.length < 2) { this.searchResults = null; return; }
+        this.searchLoading = true;
+        this.searchIndex = -1;
+        try {
+            const res = await fetch(searchRoute + '?q=' + encodeURIComponent(q), {
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '' }
+            });
+            if (res.ok) {
+                this.searchResults = await res.json();
+            } else {
+                this.searchResults = null;
+            }
+        } catch (e) {
+            this.searchResults = null;
+        } finally {
+            this.searchLoading = false;
+        }
+    },
+
+    get searchFlatResults() {
+        if (!this.searchResults || !this.searchResults.groupes) return [];
+        const flat = [];
+        this.searchResults.groupes.forEach(g => {
+            g.resultats.forEach(r => { flat.push({ ...r, groupeTitre: g.titre, groupeCle: g.cle }); });
+        });
+        return flat;
+    },
+
+    searchNavigate(ev) {
+        const flat = this.searchFlatResults;
+        if (flat.length === 0) return;
+        if (ev.key === 'ArrowDown') { ev.preventDefault(); this.searchIndex = Math.min(this.searchIndex + 1, flat.length - 1); }
+        else if (ev.key === 'ArrowUp') { ev.preventDefault(); this.searchIndex = Math.max(this.searchIndex - 1, 0); }
+        else if (ev.key === 'Enter' && this.searchIndex >= 0) {
+            ev.preventDefault();
+            const item = flat[this.searchIndex];
+            if (item && item.url) window.location = item.url;
+        }
+    },
+
+    init() {
+        const self = this;
+        // Raccourci clavier Cmd+K / Ctrl+K
+        document.addEventListener('keydown', function (ev) {
+            if ((ev.metaKey || ev.ctrlKey) && ev.key === 'k') {
+                ev.preventDefault();
+                self.openSearch();
+            }
+        });
+        // Ouverture depuis les boutons de la topbar (via event custom)
+        window.addEventListener('global-search:open', () => self.openSearch());
+    }
+}));
+
+// Fonction utilitaire pour ouvrir la recherche depuis n'importe où
+window.openGlobalSearch = function () {
+    window.dispatchEvent(new CustomEvent('global-search:open'));
+};
+
 // Expose Alpine globalement.
 // Sur les pages avec Livewire v4 : Livewire va overwrite window.Alpine avec son
 // propre bundle et le démarrer via DOMContentLoaded (en setant __fromLivewire = true).

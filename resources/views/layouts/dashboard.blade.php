@@ -38,15 +38,6 @@
     sidebarOpen: false,
     themeMenu: false,
     theme: localStorage.getItem('maelya-theme') || 'system',
-
-    // ── Recherche globale ──
-    searchOpen: false,
-    searchQuery: '',
-    searchResults: null,
-    searchLoading: false,
-    searchIndex: -1,
-    searchRoute: '{{ route('dashboard.search') }}',
-
     get isDark() { return this.theme==='dark' || (this.theme==='system' && matchMedia('(prefers-color-scheme: dark)').matches) },
     setTheme(t) {
         this.theme = t;
@@ -55,74 +46,6 @@
         else if (t === 'light') document.documentElement.classList.remove('dark');
         else document.documentElement.classList.toggle('dark', matchMedia('(prefers-color-scheme: dark)').matches);
         this.themeMenu = false;
-    },
-
-    openSearch() {
-        this.searchOpen = true;
-        this.searchQuery = '';
-        this.searchResults = null;
-        this.searchIndex = -1;
-        this.$nextTick(() => { var el = this.$refs.searchInput; if (el) { el.focus(); el.select(); } });
-    },
-    closeSearch() {
-        this.searchOpen = false;
-        this.searchQuery = '';
-        this.searchResults = null;
-        this.searchIndex = -1;
-    },
-
-    async doSearch() {
-        const q = this.searchQuery.trim();
-        if (q.length < 2) { this.searchResults = null; return; }
-        this.searchLoading = true;
-        this.searchIndex = -1;
-        try {
-            const res = await fetch(this.searchRoute + '?q=' + encodeURIComponent(q), {
-                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': window.csrfToken }
-            });
-            if (res.ok) {
-                this.searchResults = await res.json();
-            } else {
-                this.searchResults = null;
-            }
-        } catch (e) {
-            this.searchResults = null;
-        } finally {
-            this.searchLoading = false;
-        }
-    },
-
-    get searchFlatResults() {
-        if (!this.searchResults || !this.searchResults.groupes) return [];
-        const flat = [];
-        this.searchResults.groupes.forEach(g => {
-            g.resultats.forEach(r => { flat.push({ ...r, groupeTitre: g.titre, groupeCle: g.cle }); });
-        });
-        return flat;
-    },
-
-    searchNavigate(ev) {
-        const flat = this.searchFlatResults;
-        if (flat.length === 0) return;
-        if (ev.key === 'ArrowDown') { ev.preventDefault(); this.searchIndex = Math.min(this.searchIndex + 1, flat.length - 1); }
-        else if (ev.key === 'ArrowUp') { ev.preventDefault(); this.searchIndex = Math.max(this.searchIndex - 1, 0); }
-        else if (ev.key === 'Enter' && this.searchIndex >= 0) {
-            ev.preventDefault();
-            const item = flat[this.searchIndex];
-            if (item && item.url) window.location = item.url;
-        }
-    },
-
-    init() {
-        document.addEventListener('keydown', (ev) => {
-            if ((ev.metaKey || ev.ctrlKey) && ev.key === 'k') {
-                ev.preventDefault();
-                this.openSearch();
-            }
-            if (ev.key === 'Escape' && this.searchOpen) {
-                this.closeSearch();
-            }
-        });
     }
 }}">
 
@@ -684,18 +607,16 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                 </svg>
             </button>
-            <div class="flex items-center gap-2">
-                <div class="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-white text-xs shadow-sm"
-                     style="background: linear-gradient(135deg, #9333ea, #ec4899);">M</div>
-                <span class="font-display font-bold text-gray-900 dark:text-white text-sm">Maëlya Gestion</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-                <button @click="searchOpen = true; $nextTick(() => $refs.searchInput?.focus())"
-                        class="p-2 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="flex-1 flex justify-center">
+                <button @click="window.openGlobalSearch()"
+                        class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-slate-800 text-xs text-gray-400 w-full max-w-[200px]">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
+                    <span class="truncate">Rechercher...</span>
                 </button>
+            </div>
+            <div class="flex items-center gap-1.5">
                 <a href="{{ route('dashboard.caisse') }}" class="btn-primary btn-sm">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -707,23 +628,19 @@
         </header>
 
         {{-- Topbar desktop --}}
-        <header class="hidden lg:flex sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-200/60 dark:border-slate-700/60 px-4 sm:px-6 lg:px-8 h-20 items-center justify-between">
-            <h1 class="text-base font-semibold text-gray-900 dark:text-white">@yield('page-title', 'Tableau de bord')</h1>
-            <div class="flex items-center gap-3">
-                <button @click="searchOpen = true; $nextTick(() => $refs.searchInput?.focus())"
-                        class="hidden sm:flex items-center gap-2.5 px-3.5 py-2 rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-sm text-gray-400 hover:border-gray-300 dark:hover:border-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-all duration-200">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <header class="hidden lg:flex sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-200/60 dark:border-slate-700/60 px-4 sm:px-6 lg:px-8 h-20 items-center">
+            <h1 class="text-base font-semibold text-gray-900 dark:text-white flex-shrink-0 w-48">@yield('page-title', 'Tableau de bord')</h1>
+            <div class="flex-1 flex justify-center">
+                <button @click="window.openGlobalSearch()"
+                        class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-sm text-gray-400 hover:border-gray-300 dark:hover:border-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-all duration-200 w-full max-w-md">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
-                    <span>Rechercher...</span>
-                    <kbd class="hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-[10px] font-mono text-gray-400 dark:text-slate-400 ml-2">⌘K</kbd>
+                    <span class="flex-1 text-left">Rechercher un client, une vente, un RDV...</span>
+                    <kbd class="hidden md:inline-flex items-center px-1.5 py-0.5 rounded-md bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-[10px] font-mono text-gray-400 dark:text-slate-400">⌘K</kbd>
                 </button>
-                <button @click="searchOpen = true; $nextTick(() => $refs.searchInput?.focus())"
-                        class="sm:hidden p-2 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                </button>
+            </div>
+            <div class="flex items-center gap-3 flex-shrink-0 w-48 justify-end">
                 <x-notif-bell />
             </div>
         </header>
@@ -796,7 +713,7 @@
     </div>
 
     {{-- ═══ MODAL RECHERCHE GLOBALE (Cmd+K) ═══ --}}
-    <div x-show="searchOpen" x-cloak
+    <div x-data="globalSearch('{{ route('dashboard.search') }}')" x-show="searchOpen" x-cloak
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
@@ -806,7 +723,9 @@
          class="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] px-4"
          style="background: rgba(0,0,0,0.5);"
          @click.self="closeSearch()"
-         @keydown="searchNavigate($event)">
+         @keydown.escape.window="closeSearch()"
+         @keydown="searchNavigate($event)"
+         x-trap.noscroll="searchOpen">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-xl max-h-[70vh] overflow-hidden flex flex-col"
              @click.stop>
             {{-- Barre de recherche --}}
