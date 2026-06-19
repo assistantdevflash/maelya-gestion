@@ -87,6 +87,9 @@ Route::middleware('guest')->group(function () {
 Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dashboard.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('index');
 
+    // Recherche globale
+    Route::get('search', \App\Http\Controllers\Dashboard\SearchController::class)->name('search');
+
     // Caisse & Ventes (tous les rôles)
     Route::get('caisse', [VenteController::class, 'caisse'])->name('caisse');
     Route::get('caisse/brouillons', [\App\Http\Controllers\Dashboard\CaisseBrouillonController::class, 'index'])->name('caisse.brouillons.index');

@@ -38,6 +38,15 @@
     sidebarOpen: false,
     themeMenu: false,
     theme: localStorage.getItem('maelya-theme') || 'system',
+
+    // ── Recherche globale ──
+    searchOpen: false,
+    searchQuery: '',
+    searchResults: null,
+    searchLoading: false,
+    searchIndex: -1,
+    searchRoute: '{{ route('dashboard.search') }}',
+
     get isDark() { return this.theme==='dark' || (this.theme==='system' && matchMedia('(prefers-color-scheme: dark)').matches) },
     setTheme(t) {
         this.theme = t;
@@ -46,7 +55,76 @@
         else if (t === 'light') document.documentElement.classList.remove('dark');
         else document.documentElement.classList.toggle('dark', matchMedia('(prefers-color-scheme: dark)').matches);
         this.themeMenu = false;
-    }}">
+    },
+
+    openSearch() {
+        this.searchOpen = true;
+        this.searchQuery = '';
+        this.searchResults = null;
+        this.searchIndex = -1;
+        this.$nextTick(() => { var el = this.$refs.searchInput; if (el) { el.focus(); el.select(); } });
+    },
+    closeSearch() {
+        this.searchOpen = false;
+        this.searchQuery = '';
+        this.searchResults = null;
+        this.searchIndex = -1;
+    },
+
+    async doSearch() {
+        const q = this.searchQuery.trim();
+        if (q.length < 2) { this.searchResults = null; return; }
+        this.searchLoading = true;
+        this.searchIndex = -1;
+        try {
+            const res = await fetch(this.searchRoute + '?q=' + encodeURIComponent(q), {
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': window.csrfToken }
+            });
+            if (res.ok) {
+                this.searchResults = await res.json();
+            } else {
+                this.searchResults = null;
+            }
+        } catch (e) {
+            this.searchResults = null;
+        } finally {
+            this.searchLoading = false;
+        }
+    },
+
+    get searchFlatResults() {
+        if (!this.searchResults || !this.searchResults.groupes) return [];
+        const flat = [];
+        this.searchResults.groupes.forEach(g => {
+            g.resultats.forEach(r => { flat.push({ ...r, groupeTitre: g.titre, groupeCle: g.cle }); });
+        });
+        return flat;
+    },
+
+    searchNavigate(ev) {
+        const flat = this.searchFlatResults;
+        if (flat.length === 0) return;
+        if (ev.key === 'ArrowDown') { ev.preventDefault(); this.searchIndex = Math.min(this.searchIndex + 1, flat.length - 1); }
+        else if (ev.key === 'ArrowUp') { ev.preventDefault(); this.searchIndex = Math.max(this.searchIndex - 1, 0); }
+        else if (ev.key === 'Enter' && this.searchIndex >= 0) {
+            ev.preventDefault();
+            const item = flat[this.searchIndex];
+            if (item && item.url) window.location = item.url;
+        }
+    },
+
+    init() {
+        document.addEventListener('keydown', (ev) => {
+            if ((ev.metaKey || ev.ctrlKey) && ev.key === 'k') {
+                ev.preventDefault();
+                this.openSearch();
+            }
+            if (ev.key === 'Escape' && this.searchOpen) {
+                this.closeSearch();
+            }
+        });
+    }
+}}">
 
     {{-- Overlay mobile --}}
     <div x-show="sidebarOpen"
@@ -612,6 +690,12 @@
                 <span class="font-display font-bold text-gray-900 dark:text-white text-sm">Maëlya Gestion</span>
             </div>
             <div class="flex items-center gap-1.5">
+                <button @click="searchOpen = true; $nextTick(() => $refs.searchInput?.focus())"
+                        class="p-2 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </button>
                 <a href="{{ route('dashboard.caisse') }}" class="btn-primary btn-sm">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -625,7 +709,23 @@
         {{-- Topbar desktop --}}
         <header class="hidden lg:flex sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-200/60 dark:border-slate-700/60 px-4 sm:px-6 lg:px-8 h-20 items-center justify-between">
             <h1 class="text-base font-semibold text-gray-900 dark:text-white">@yield('page-title', 'Tableau de bord')</h1>
-            <x-notif-bell />
+            <div class="flex items-center gap-3">
+                <button @click="searchOpen = true; $nextTick(() => $refs.searchInput?.focus())"
+                        class="hidden sm:flex items-center gap-2.5 px-3.5 py-2 rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-sm text-gray-400 hover:border-gray-300 dark:hover:border-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-all duration-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <span>Rechercher...</span>
+                    <kbd class="hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-[10px] font-mono text-gray-400 dark:text-slate-400 ml-2">⌘K</kbd>
+                </button>
+                <button @click="searchOpen = true; $nextTick(() => $refs.searchInput?.focus())"
+                        class="sm:hidden p-2 rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </button>
+                <x-notif-bell />
+            </div>
         </header>
 
         {{-- Bannière sursis (abonnement expiré, période de grâce de 2 jours) --}}
@@ -693,6 +793,118 @@
                 {{ $slot }}
             </div>
         </main>
+    </div>
+
+    {{-- ═══ MODAL RECHERCHE GLOBALE (Cmd+K) ═══ --}}
+    <div x-show="searchOpen" x-cloak
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] px-4"
+         style="background: rgba(0,0,0,0.5);"
+         @click.self="closeSearch()"
+         @keydown="searchNavigate($event)">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-xl max-h-[70vh] overflow-hidden flex flex-col"
+             @click.stop>
+            {{-- Barre de recherche --}}
+            <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-100 dark:border-slate-700">
+                <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <input type="text" x-ref="searchInput" x-model="searchQuery"
+                       @input.debounce.200ms="doSearch()"
+                       placeholder="Rechercher un client, une vente, un RDV..."
+                       class="flex-1 bg-transparent border-0 outline-none text-sm text-gray-900 dark:text-white placeholder-gray-400"
+                       autocomplete="off">
+                <div x-show="searchLoading" class="spinner spinner-sm flex-shrink-0" aria-hidden="true"></div>
+                <button @click="closeSearch()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            {{-- Résultats --}}
+            <div class="overflow-y-auto flex-1">
+                {{-- État vide --}}
+                <div x-show="!searchResults && searchQuery.length < 2" class="py-12 text-center">
+                    <div class="w-12 h-12 bg-gray-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-6 h-6 text-gray-300 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    <p class="text-sm text-gray-400">Tapez au moins 2 caractères pour rechercher</p>
+                </div>
+
+                {{-- Aucun résultat --}}
+                <div x-show="searchResults && searchFlatResults.length === 0 && !searchLoading" class="py-12 text-center">
+                    <div class="w-12 h-12 bg-gray-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-6 h-6 text-gray-300 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <p class="text-sm text-gray-400">Aucun résultat pour « <span x-text="searchResults?.q"></span> »</p>
+                </div>
+
+                {{-- Groupes de résultats --}}
+                <template x-if="searchResults && searchFlatResults.length > 0">
+                    <div class="py-2">
+                        <template x-for="groupe in searchResults.groupes" :key="groupe.cle">
+                            <div class="mb-1">
+                                {{-- Titre du groupe --}}
+                                <div class="px-4 py-2 flex items-center gap-2">
+                                    <template x-if="groupe.cle === 'clients'">
+                                        <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                    </template>
+                                    <template x-if="groupe.cle === 'ventes'">
+                                        <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                    </template>
+                                    <template x-if="groupe.cle === 'rdvs'">
+                                        <svg class="w-3.5 h-3.5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    </template>
+                                    <template x-if="groupe.cle === 'prestations'">
+                                        <svg class="w-3.5 h-3.5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    </template>
+                                    <template x-if="groupe.cle === 'produits'">
+                                        <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                    </template>
+                                    <template x-if="groupe.cle === 'codes'">
+                                        <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                                    </template>
+                                    <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-500" x-text="groupe.titre"></span>
+                                    <span class="text-[10px] text-gray-300 dark:text-slate-600" x-text="groupe.resultats.length + '/' + groupe.resultats.length"></span>
+                                </div>
+                                {{-- Items du groupe --}}
+                                <template x-for="(item, idx) in groupe.resultats" :key="item.id">
+                                    <a :href="item.url"
+                                       @click="closeSearch()"
+                                       :class="searchIndex === (() => { let off = 0; for (let g of searchResults.groupes) { if (g.cle === groupe.cle) { return off + idx; } off += g.resultats.length; } return -1; })() ? 'bg-primary-50 dark:bg-primary-900/20' : ''"
+                                       class="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer group">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-primary-700 dark:group-hover:text-primary-400 truncate" x-text="item.label"></p>
+                                            <p class="text-xs text-gray-400 dark:text-slate-500 truncate" x-text="item.sous_label"></p>
+                                        </div>
+                                        <svg class="w-4 h-4 text-gray-300 dark:text-slate-600 ml-auto flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                        </svg>
+                                    </a>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+
+            {{-- Footer raccourcis --}}
+            <div class="px-4 py-2.5 border-t border-gray-100 dark:border-slate-700 flex items-center gap-4 text-[10px] text-gray-400 dark:text-slate-500">
+                <span class="flex items-center gap-1"><kbd class="px-1 py-0.5 rounded bg-gray-100 dark:bg-slate-700 font-mono">↑↓</kbd> Naviguer</span>
+                <span class="flex items-center gap-1"><kbd class="px-1 py-0.5 rounded bg-gray-100 dark:bg-slate-700 font-mono">↵</kbd> Ouvrir</span>
+                <span class="flex items-center gap-1"><kbd class="px-1 py-0.5 rounded bg-gray-100 dark:bg-slate-700 font-mono">Esc</kbd> Fermer</span>
+            </div>
+        </div>
     </div>
 </div>
 
