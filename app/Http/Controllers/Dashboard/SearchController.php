@@ -120,7 +120,7 @@ class SearchController extends Controller
                 'id'         => $c->id,
                 'label'      => $c->code,
                 'sous_label' => $c->description ?? ($c->type === 'pourcentage' ? $c->valeur . '%' : number_format($c->valeur, 0, ',', ' ') . ' FCFA'),
-                'url'        => route('dashboard.codes.index'),
+                'url'        => route('dashboard.codes-reduction.index'),
                 'icone'      => 'code',
             ]);
 
