@@ -713,118 +713,191 @@
     </div>
 
     {{-- ═══ MODAL RECHERCHE GLOBALE (Cmd+K) ═══ --}}
-    <div x-data="globalSearch('{{ route('dashboard.search') }}')" x-show="searchOpen" x-cloak
-         x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-150"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] px-4"
-         style="background: rgba(0,0,0,0.5);"
-         @click.self="closeSearch()"
-         @keydown.escape.window="closeSearch()"
-         @keydown="searchNavigate($event)"
-         x-trap.noscroll="searchOpen">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-xl max-h-[70vh] overflow-hidden flex flex-col"
-             @click.stop>
-            {{-- Barre de recherche --}}
+    <div id="global-search-overlay" class="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] px-4 hidden" style="background: rgba(0,0,0,0.5);">
+        <div id="global-search-modal" class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-xl max-h-[70vh] overflow-hidden flex flex-col"
+             onclick="event.stopPropagation()">
             <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-100 dark:border-slate-700">
                 <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
-                <input type="text" x-ref="searchInput" x-model="searchQuery"
-                       @input.debounce.200ms="doSearch()"
+                <input type="text" id="global-search-input"
                        placeholder="Rechercher un client, une vente, un RDV..."
                        class="flex-1 bg-transparent border-0 outline-none text-sm text-gray-900 dark:text-white placeholder-gray-400"
                        autocomplete="off">
-                <div x-show="searchLoading" class="spinner spinner-sm flex-shrink-0" aria-hidden="true"></div>
-                <button @click="closeSearch()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0">
+                <div id="global-search-spinner" class="hidden spinner spinner-sm flex-shrink-0" aria-hidden="true"></div>
+                <button id="global-search-close" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
-
-            {{-- Résultats --}}
-            <div class="overflow-y-auto flex-1">
-                {{-- État vide --}}
-                <div x-show="!searchResults && searchQuery.length < 2" class="py-12 text-center">
+            <div id="global-search-results" class="overflow-y-auto flex-1">
+                <div id="global-search-empty" class="py-12 text-center">
                     <div class="w-12 h-12 bg-gray-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                        <svg class="w-6 h-6 text-gray-300 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
+                        <svg class="w-6 h-6 text-gray-300 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     </div>
                     <p class="text-sm text-gray-400">Tapez au moins 2 caractères pour rechercher</p>
                 </div>
-
-                {{-- Aucun résultat --}}
-                <div x-show="searchResults && searchFlatResults.length === 0 && !searchLoading" class="py-12 text-center">
+                <div id="global-search-noresults" class="py-12 text-center hidden">
                     <div class="w-12 h-12 bg-gray-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                        <svg class="w-6 h-6 text-gray-300 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
+                        <svg class="w-6 h-6 text-gray-300 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </div>
-                    <p class="text-sm text-gray-400">Aucun résultat pour « <span x-text="searchResults?.q"></span> »</p>
+                    <p class="text-sm text-gray-400">Aucun résultat pour « <span id="global-search-noresults-q"></span> »</p>
                 </div>
-
-                {{-- Groupes de résultats --}}
-                <template x-if="searchResults && searchFlatResults.length > 0">
-                    <div class="py-2">
-                        <template x-for="groupe in searchResults.groupes" :key="groupe.cle">
-                            <div class="mb-1">
-                                {{-- Titre du groupe --}}
-                                <div class="px-4 py-2 flex items-center gap-2">
-                                    <template x-if="groupe.cle === 'clients'">
-                                        <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                                    </template>
-                                    <template x-if="groupe.cle === 'ventes'">
-                                        <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                                    </template>
-                                    <template x-if="groupe.cle === 'rdvs'">
-                                        <svg class="w-3.5 h-3.5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                    </template>
-                                    <template x-if="groupe.cle === 'prestations'">
-                                        <svg class="w-3.5 h-3.5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    </template>
-                                    <template x-if="groupe.cle === 'produits'">
-                                        <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                                    </template>
-                                    <template x-if="groupe.cle === 'codes'">
-                                        <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
-                                    </template>
-                                    <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-500" x-text="groupe.titre"></span>
-                                    <span class="text-[10px] text-gray-300 dark:text-slate-600" x-text="groupe.resultats.length + '/' + groupe.resultats.length"></span>
-                                </div>
-                                {{-- Items du groupe --}}
-                                <template x-for="(item, idx) in groupe.resultats" :key="item.id">
-                                    <a :href="item.url"
-                                       @click="closeSearch()"
-                                       :class="searchIndex === (() => { let off = 0; for (let g of searchResults.groupes) { if (g.cle === groupe.cle) { return off + idx; } off += g.resultats.length; } return -1; })() ? 'bg-primary-50 dark:bg-primary-900/20' : ''"
-                                       class="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer group">
-                                        <div>
-                                            <p class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-primary-700 dark:group-hover:text-primary-400 truncate" x-text="item.label"></p>
-                                            <p class="text-xs text-gray-400 dark:text-slate-500 truncate" x-text="item.sous_label"></p>
-                                        </div>
-                                        <svg class="w-4 h-4 text-gray-300 dark:text-slate-600 ml-auto flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                                        </svg>
-                                    </a>
-                                </template>
-                            </div>
-                        </template>
-                    </div>
-                </template>
+                <div id="global-search-groups" class="py-2 hidden"></div>
             </div>
-
-            {{-- Footer raccourcis --}}
             <div class="px-4 py-2.5 border-t border-gray-100 dark:border-slate-700 flex items-center gap-4 text-[10px] text-gray-400 dark:text-slate-500">
-                <span class="flex items-center gap-1"><kbd class="px-1 py-0.5 rounded bg-gray-100 dark:bg-slate-700 font-mono">↑↓</kbd> Naviguer</span>
-                <span class="flex items-center gap-1"><kbd class="px-1 py-0.5 rounded bg-gray-100 dark:bg-slate-700 font-mono">↵</kbd> Ouvrir</span>
-                <span class="flex items-center gap-1"><kbd class="px-1 py-0.5 rounded bg-gray-100 dark:bg-slate-700 font-mono">Esc</kbd> Fermer</span>
+                <span><kbd class="px-1 py-0.5 rounded bg-gray-100 dark:bg-slate-700 font-mono">↑↓</kbd> Naviguer</span>
+                <span><kbd class="px-1 py-0.5 rounded bg-gray-100 dark:bg-slate-700 font-mono">↵</kbd> Ouvrir</span>
+                <span><kbd class="px-1 py-0.5 rounded bg-gray-100 dark:bg-slate-700 font-mono">Esc</kbd> Fermer</span>
             </div>
         </div>
     </div>
+
+    <script>
+    (function() {
+        var overlay = document.getElementById('global-search-overlay');
+        var input = document.getElementById('global-search-input');
+        var spinner = document.getElementById('global-search-spinner');
+        var resultsContainer = document.getElementById('global-search-results');
+        var emptyEl = document.getElementById('global-search-empty');
+        var noResultsEl = document.getElementById('global-search-noresults');
+        var noResultsQ = document.getElementById('global-search-noresults-q');
+        var groupsEl = document.getElementById('global-search-groups');
+        var closeBtn = document.getElementById('global-search-close');
+        var searchRoute = '{{ route('dashboard.search') }}';
+        var csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        var debounceTimer = null;
+        var selectedIndex = -1;
+        var currentResults = null;
+
+        var icons = {
+            clients: '<svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>',
+            ventes: '<svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>',
+            rdvs: '<svg class="w-3.5 h-3.5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>',
+            prestations: '<svg class="w-3.5 h-3.5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+            produits: '<svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>',
+            codes: '<svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>'
+        };
+
+        function open() {
+            overlay.classList.remove('hidden');
+            input.value = '';
+            input.focus();
+            emptyEl.classList.remove('hidden');
+            noResultsEl.classList.add('hidden');
+            groupsEl.classList.add('hidden');
+            groupsEl.innerHTML = '';
+            currentResults = null;
+            selectedIndex = -1;
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function close() {
+            overlay.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
+        closeBtn.addEventListener('click', close);
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && !overlay.classList.contains('hidden')) close(); });
+
+        // Cmd+K / Ctrl+K
+        document.addEventListener('keydown', function(e) {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); open(); }
+        });
+
+        // Boutons topbar
+        window.openGlobalSearch = function() { open(); };
+
+        input.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            var q = input.value.trim();
+            if (q.length < 2) {
+                emptyEl.classList.remove('hidden');
+                noResultsEl.classList.add('hidden');
+                groupsEl.classList.add('hidden');
+                groupsEl.innerHTML = '';
+                spinner.classList.add('hidden');
+                currentResults = null;
+                return;
+            }
+            spinner.classList.remove('hidden');
+            debounceTimer = setTimeout(function() {
+                fetch(searchRoute + '?q=' + encodeURIComponent(q), {
+                    headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
+                })
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(data) {
+                    spinner.classList.add('hidden');
+                    currentResults = data;
+                    selectedIndex = -1;
+                    if (!data || !data.groupes || data.groupes.length === 0) {
+                        emptyEl.classList.add('hidden');
+                        noResultsEl.classList.remove('hidden');
+                        noResultsQ.textContent = data ? data.q : q;
+                        groupsEl.classList.add('hidden');
+                        groupsEl.innerHTML = '';
+                        return;
+                    }
+                    emptyEl.classList.add('hidden');
+                    noResultsEl.classList.add('hidden');
+                    groupsEl.classList.remove('hidden');
+                    renderResults(data);
+                })
+                .catch(function() {
+                    spinner.classList.add('hidden');
+                });
+            }, 200);
+        });
+
+        input.addEventListener('keydown', function(e) {
+            if (!currentResults || !currentResults.groupes) return;
+            var flat = [];
+            currentResults.groupes.forEach(function(g) {
+                g.resultats.forEach(function(r, idx) { flat.push({ item: r, groupe: g, idx: idx }); });
+            });
+            if (e.key === 'ArrowDown') { e.preventDefault(); selectedIndex = Math.min(selectedIndex + 1, flat.length - 1); highlightSelected(flat); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); selectedIndex = Math.max(selectedIndex - 1, 0); highlightSelected(flat); }
+            else if (e.key === 'Enter' && selectedIndex >= 0) {
+                e.preventDefault();
+                var sel = flat[selectedIndex];
+                if (sel && sel.item.url) { close(); window.location = sel.item.url; }
+            }
+        });
+
+        function highlightSelected(flat) {
+            var links = groupsEl.querySelectorAll('a');
+            links.forEach(function(a, i) { a.classList.toggle('bg-primary-50', i === selectedIndex); a.classList.toggle('dark:bg-primary-900/20', i === selectedIndex); });
+        }
+
+        function renderResults(data) {
+            var html = '';
+            data.groupes.forEach(function(groupe) {
+                html += '<div class="mb-1">';
+                html += '<div class="px-4 py-2 flex items-center gap-2">';
+                html += (icons[groupe.cle] || '');
+                html += '<span class="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-500">' + escapeHtml(groupe.titre) + '</span>';
+                html += '</div>';
+                groupe.resultats.forEach(function(item) {
+                    html += '<a href="' + escapeHtml(item.url) + '" onclick="document.getElementById(\'global-search-overlay\').classList.add(\'hidden\'); document.body.classList.remove(\'overflow-hidden\');" class="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer group">';
+                    html += '<div><p class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-primary-700 dark:group-hover:text-primary-400 truncate">' + escapeHtml(item.label) + '</p>';
+                    html += '<p class="text-xs text-gray-400 dark:text-slate-500 truncate">' + escapeHtml(item.sous_label) + '</p></div>';
+                    html += '<svg class="w-4 h-4 text-gray-300 dark:text-slate-600 ml-auto flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>';
+                    html += '</a>';
+                });
+                html += '</div>';
+            });
+            groupsEl.innerHTML = html;
+        }
+
+        function escapeHtml(str) {
+            var div = document.createElement('div');
+            div.textContent = str || '';
+            return div.innerHTML;
+        }
+    })();
+    </script>
 </div>
 
 @livewireScripts
