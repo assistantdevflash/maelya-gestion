@@ -5,27 +5,8 @@ import caisseApp from './caisse';
 // Expose le composant Caisse POS en global pour Alpine x-data
 window.caisseApp = caisseApp;
 
-// Composant Alpine pour le layout dashboard (sidebar, thème)
-Alpine.data('dashboardLayout', () => ({
-    sidebarOpen: false,
-    themeMenu: false,
-    theme: localStorage.getItem('maelya-theme') || 'system',
-    get isDark() {
-        return this.theme === 'dark' || (this.theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
-    },
-    setTheme(t) {
-        this.theme = t;
-        localStorage.setItem('maelya-theme', t);
-        if (t === 'dark') document.documentElement.classList.add('dark');
-        else if (t === 'light') document.documentElement.classList.remove('dark');
-        else document.documentElement.classList.toggle('dark', matchMedia('(prefers-color-scheme: dark)').matches);
-        this.themeMenu = false;
-    }
-}));
-
-// Livewire gère Alpine.start() via @livewireScripts.
-// La meta livewire:inject-alpine=false l'empêche d'injecter sa propre copie.
 window.Alpine = Alpine;
+Alpine.start();
 
 // ═══════════════════════════════════════════════════════════════
 //  GLOBAL FORM LOADING — disable bouton + spinner au submit

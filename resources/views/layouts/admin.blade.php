@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="livewire:inject-alpine" content="false">
     <title>@yield('title', 'Admin') — Maëlya Gestion</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -22,7 +21,20 @@
     @livewireStyles
     @stack('styles')
 </head>
-<body class="admin text-gray-900 dark:text-white overflow-x-hidden" x-data="dashboardLayout">
+<body class="admin text-gray-900 dark:text-white overflow-x-hidden" x-data='{
+    sidebarOpen: false,
+    themeMenu: false,
+    theme: localStorage.getItem("maelya-theme") || "system",
+    get isDark() { return this.theme === "dark" || (this.theme === "system" && matchMedia("(prefers-color-scheme: dark)").matches) },
+    setTheme(t) {
+        this.theme = t;
+        localStorage.setItem("maelya-theme", t);
+        if (t === "dark") document.documentElement.classList.add("dark");
+        else if (t === "light") document.documentElement.classList.remove("dark");
+        else document.documentElement.classList.toggle("dark", matchMedia("(prefers-color-scheme: dark)").matches);
+        this.themeMenu = false;
+    }
+}'>
 
     {{-- Sidebar --}}
     <aside class="fixed inset-y-0 left-0 z-50 w-[260px] bg-gray-950 flex flex-col transform transition-transform duration-300 lg:translate-x-0"

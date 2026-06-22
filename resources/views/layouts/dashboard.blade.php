@@ -16,7 +16,6 @@
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-    <meta name="livewire:inject-alpine" content="false">
     <script>
         (function() {
             try {
@@ -35,8 +34,20 @@
 </head>
 <body class="dashboard h-full font-sans">
 
-<div class="flex h-full" x-data="dashboardLayout">
-
+<div class="flex h-full" x-data='{
+    sidebarOpen: false,
+    themeMenu: false,
+    theme: localStorage.getItem("maelya-theme") || "system",
+    get isDark() { return this.theme === "dark" || (this.theme === "system" && matchMedia("(prefers-color-scheme: dark)").matches) },
+    setTheme(t) {
+        this.theme = t;
+        localStorage.setItem("maelya-theme", t);
+        if (t === "dark") document.documentElement.classList.add("dark");
+        else if (t === "light") document.documentElement.classList.remove("dark");
+        else document.documentElement.classList.toggle("dark", matchMedia("(prefers-color-scheme: dark)").matches);
+        this.themeMenu = false;
+    }
+}'>
     {{-- Overlay mobile --}}
     <div x-show="sidebarOpen"
          x-transition:enter="transition-opacity ease-out duration-300"
