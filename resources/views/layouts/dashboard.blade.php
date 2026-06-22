@@ -597,7 +597,7 @@
     </aside>
 
     {{-- ═══ CONTENU PRINCIPAL ═══ --}}
-    <div class="flex-1 flex flex-col min-w-0 lg:pl-[260px] bg-gray-50 dark:bg-slate-950 pb-28 lg:pb-0">
+    <div class="flex-1 flex flex-col min-w-0 lg:pl-[260px] bg-gray-50 dark:bg-slate-950">
 
         {{-- Topbar mobile --}}
         <header class="lg:hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-100 dark:border-slate-700/60 px-4 h-14 flex items-center justify-between sticky top-0 z-30">
@@ -704,7 +704,7 @@
         </div>
 
         {{-- Page content --}}
-        <main class="flex-1 px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-8 sm:pb-12">
+        <main class="flex-1 px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-28 sm:pb-12">
             <div class="max-w-7xl mx-auto w-full">
                 {{ $slot }}
             </div>
