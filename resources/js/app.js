@@ -5,11 +5,26 @@ import caisseApp from './caisse';
 // Expose le composant Caisse POS en global pour Alpine x-data
 window.caisseApp = caisseApp;
 
+// Composant Alpine pour le layout dashboard (sidebar, thème)
+Alpine.data('dashboardLayout', () => ({
+    sidebarOpen: false,
+    themeMenu: false,
+    theme: localStorage.getItem('maelya-theme') || 'system',
+    get isDark() {
+        return this.theme === 'dark' || (this.theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+    },
+    setTheme(t) {
+        this.theme = t;
+        localStorage.setItem('maelya-theme', t);
+        if (t === 'dark') document.documentElement.classList.add('dark');
+        else if (t === 'light') document.documentElement.classList.remove('dark');
+        else document.documentElement.classList.toggle('dark', matchMedia('(prefers-color-scheme: dark)').matches);
+        this.themeMenu = false;
+    }
+}));
+
 // On définit window.Alpine pour que Livewire le détecte et l'utilise.
-// MAIS on ne lance PAS Alpine.start() — c'est Livewire (@livewireScripts)
-// qui s'en charge sur les pages dashboard/admin.
-// Sur les pages landing/auth (sans Livewire), un script inline au bas
-// du layout landing lance Alpine.start() explicitement.
+// PAS de Alpine.start() — c'est Livewire (@livewireScripts) qui le fait.
 window.Alpine = Alpine;
 
 // ═══════════════════════════════════════════════════════════════
