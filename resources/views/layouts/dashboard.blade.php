@@ -709,6 +709,8 @@
                 {{ $slot }}
             </div>
         </main>
+        {{-- Espaceur pour la barre de navigation mobile --}}
+        <div class="lg:hidden h-16 flex-shrink-0" aria-hidden="true"></div>
     </div>
 
     {{-- ═══ BARRE DE NAVIGATION INFÉRIEURE MOBILE ═══ --}}
