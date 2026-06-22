@@ -6,19 +6,19 @@ import caisseApp from './caisse';
 window.caisseApp = caisseApp;
 
 // Expose Alpine globalement.
-
-// Expose Alpine globalement.
 // Sur les pages avec Livewire v4 : Livewire va overwrite window.Alpine avec son
-// propre bundle et le démarrer via DOMContentLoaded (en setant __fromLivewire = true).
+// propre bundle et le démarrer automatiquement.
 // Sur les pages sans Livewire (landing, auth) : on démarre Alpine manuellement.
 window.Alpine = Alpine;
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Ne pas démarrer Alpine si Livewire est présent sur la page
+    if (window.Livewire || document.querySelector('[wire\\:id], [wire\\:snapshot]')) {
+        return;
+    }
     if (!window.Alpine.__fromLivewire) {
-        // Pas de Livewire v4 sur cette page → on démarre Alpine nous-mêmes
         Alpine.start();
     }
-    // Sinon Livewire a pris la main et démarre son Alpine — on ne touche à rien
 });
 
 // ═══════════════════════════════════════════════════════════════
