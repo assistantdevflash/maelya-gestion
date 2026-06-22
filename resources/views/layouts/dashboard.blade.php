@@ -16,6 +16,7 @@
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <meta name="livewire:inject-alpine" content="false">
     <script>
         (function() {
             try {

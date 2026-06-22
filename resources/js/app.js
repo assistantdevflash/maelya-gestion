@@ -23,9 +23,11 @@ Alpine.data('dashboardLayout', () => ({
     }
 }));
 
-// On définit window.Alpine pour que Livewire le détecte et l'utilise.
-// PAS de Alpine.start() — c'est Livewire (@livewireScripts) qui le fait.
+// Livewire ne doit PAS injecter sa propre copie d'Alpine.
+// On gère Alpine nous-mêmes avec Alpine.start().
+// Le meta livewire:inject-alpine=false dans le layout l'empêche.
 window.Alpine = Alpine;
+Alpine.start();
 
 // ═══════════════════════════════════════════════════════════════
 //  GLOBAL FORM LOADING — disable bouton + spinner au submit

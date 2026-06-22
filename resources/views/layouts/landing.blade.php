@@ -432,6 +432,5 @@
         });
     })();
 </script>
-<script>document.addEventListener('DOMContentLoaded', function() { if (window.Alpine && !window.Alpine.__fromLivewire) { window.Alpine.start(); } });</script>
 </body>
 </html>
