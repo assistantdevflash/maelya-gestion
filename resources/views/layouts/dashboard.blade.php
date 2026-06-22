@@ -597,7 +597,7 @@
     </aside>
 
     {{-- ═══ CONTENU PRINCIPAL ═══ --}}
-    <div class="flex-1 flex flex-col min-w-0 lg:pl-[260px] bg-gray-50 dark:bg-slate-950">
+    <div class="flex-1 flex flex-col min-w-0 lg:pl-[260px] bg-gray-50 dark:bg-slate-950 pb-20 lg:pb-0">
 
         {{-- Topbar mobile --}}
         <header class="lg:hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-100 dark:border-slate-700/60 px-4 h-14 flex items-center justify-between sticky top-0 z-30">
@@ -710,6 +710,33 @@
             </div>
         </main>
     </div>
+
+    {{-- ═══ BARRE DE NAVIGATION INFÉRIEURE MOBILE ═══ --}}
+    @php
+    $mobileNav = [
+        ['route' => 'dashboard.index',              'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', 'label' => 'Accueil'],
+        ['route' => 'dashboard.clients.index',      'icon' => 'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 3h6a4 4 0 014 4v2a4 4 0 01-4 4H9a4 4 0 01-4-4V7a4 4 0 014-4z', 'label' => 'Clients'],
+        ['route' => 'dashboard.caisse',             'icon' => 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z', 'label' => 'Caisse'],
+        ['route' => 'dashboard.finances.index',     'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Finances'],
+        ['route' => 'dashboard.mes-instituts.index','icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z', 'label' => 'Réglages'],
+    ];
+    @endphp
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700 flex"
+         style="padding-bottom:env(safe-area-inset-bottom,0px);">
+        @foreach($mobileNav as $item)
+        <a href="{{ route($item['route']) }}"
+           class="flex-1 flex flex-col items-center justify-center py-2 gap-0.5 min-w-0 transition-colors
+                  {{ request()->routeIs($item['route']) || request()->routeIs($item['route'].'*') ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300' }}"
+           style="-webkit-tap-highlight-color:transparent;touch-action:manipulation;">
+            <svg class="w-[22px] h-[22px] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="{{ request()->routeIs($item['route']) || request()->routeIs($item['route'].'*') ? '2.2' : '1.6' }}"
+                      d="{{ $item['icon'] }}"/>
+            </svg>
+            <span class="text-[10px] font-medium leading-none">{{ $item['label'] }}</span>
+        </a>
+        @endforeach
+    </nav>
 
     {{-- ═══ MODAL RECHERCHE GLOBALE (Cmd+K) ═══ --}}
     <div id="global-search-overlay" class="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] px-4 hidden" style="background: rgba(0,0,0,0.5);">
