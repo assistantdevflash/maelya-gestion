@@ -247,7 +247,7 @@
         </div>
     </div>
 
-    @livewireScripts
+    @livewireScripts(['assets' => ['alpinejs' => false]])
     @stack('scripts')
     {{-- PWA Service Worker --}}
     <script>

@@ -900,7 +900,7 @@
     </script>
 </div>
 
-@livewireScripts
+@livewireScripts(['assets' => ['alpinejs' => false]])
 <script>
     window.csrfToken = '{{ csrf_token() }}';
 </script>
