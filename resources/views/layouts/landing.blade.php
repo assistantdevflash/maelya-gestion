@@ -432,5 +432,6 @@
         });
     })();
 </script>
+<script>document.addEventListener('DOMContentLoaded', function() { if (window.Alpine) { window.Alpine.start(); } });</script>
 </body>
 </html>

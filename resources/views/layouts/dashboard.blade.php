@@ -776,6 +776,7 @@
             noResultsEl.classList.add('hidden');
             groupsEl.classList.add('hidden');
             groupsEl.innerHTML = '';
+            spinner.classList.add('hidden');
             currentResults = null;
             selectedIndex = -1;
             document.body.classList.add('overflow-hidden');
