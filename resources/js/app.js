@@ -5,21 +5,12 @@ import caisseApp from './caisse';
 // Expose le composant Caisse POS en global pour Alpine x-data
 window.caisseApp = caisseApp;
 
-// Expose Alpine globalement.
-// Sur les pages avec Livewire v4 : Livewire va overwrite window.Alpine avec son
-// propre bundle et le démarrer automatiquement.
-// Sur les pages sans Livewire (landing, auth) : on démarre Alpine manuellement.
+// On définit window.Alpine pour que Livewire le détecte et l'utilise.
+// MAIS on ne lance PAS Alpine.start() — c'est Livewire (@livewireScripts)
+// qui s'en charge sur les pages dashboard/admin.
+// Sur les pages landing/auth (sans Livewire), un script inline au bas
+// du layout landing lance Alpine.start() explicitement.
 window.Alpine = Alpine;
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Ne pas démarrer Alpine si Livewire est présent sur la page
-    if (window.Livewire || document.querySelector('[wire\\:id], [wire\\:snapshot]')) {
-        return;
-    }
-    if (!window.Alpine.__fromLivewire) {
-        Alpine.start();
-    }
-});
 
 // ═══════════════════════════════════════════════════════════════
 //  GLOBAL FORM LOADING — disable bouton + spinner au submit
