@@ -432,6 +432,10 @@
         });
     })();
 </script>
-<script>document.addEventListener('DOMContentLoaded', function() { if (window.Alpine) { window.Alpine.start(); } });</script>
+<script type="module">
+import Alpine from 'https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/module.esm.js';
+window.Alpine = Alpine;
+Alpine.start();
+</script>
 </body>
 </html>

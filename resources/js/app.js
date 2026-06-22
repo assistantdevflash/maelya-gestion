@@ -1,12 +1,9 @@
 import './bootstrap';
-import Alpine from 'alpinejs';
 import caisseApp from './caisse';
 
 // Expose le composant Caisse POS en global pour Alpine x-data
+// Livewire gère Alpine : import, window.Alpine, et Alpine.start()
 window.caisseApp = caisseApp;
-
-window.Alpine = Alpine;
-Alpine.start();
 
 // ═══════════════════════════════════════════════════════════════
 //  GLOBAL FORM LOADING — disable bouton + spinner au submit
