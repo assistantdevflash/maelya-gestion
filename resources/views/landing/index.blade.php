@@ -18,7 +18,7 @@
                 </h1>
 
                 <p class="text-lg sm:text-xl text-white/60 mb-10 leading-relaxed max-w-xl mx-auto lg:mx-0">
-                    Caisse, rendez-vous, clients, stock — tout centralisé dans une application pensée pour les professionnels de la beauté, du bien-être, de la coiffure, de la mode et bien d'autres.
+                    Caisse, rendez-vous, clients, stocks — le mini ERP qui centralise toute votre activité, quel que soit votre secteur.
                 </p>
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
@@ -124,7 +124,7 @@
     <div class="max-w-5xl mx-auto px-4 sm:px-6">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 text-center">
             @foreach([
-                ['500+', 'Instituts inscrits', 'from-primary-500 to-primary-600'],
+                ['500+', 'Établissements', 'from-primary-500 to-primary-600'],
                 ['98%', 'Satisfaction', 'from-secondary-500 to-secondary-600'],
                 ['2M+', 'FCFA gérés / mois', 'from-emerald-500 to-emerald-600'],
                 ['24/7', 'Accès permanent', 'from-amber-500 to-amber-600'],

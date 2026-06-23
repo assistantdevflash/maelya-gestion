@@ -9,7 +9,7 @@
     <div class="relative max-w-4xl mx-auto px-4 sm:px-6 text-center animate-fade-in-up">
         <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/15 text-white/80 text-xs font-bold px-4 py-1.5 rounded-full mb-6 uppercase tracking-wider">Notre histoire</div>
         <h1 class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">À propos de <span class="shimmer-text">Maëlya Gestion</span></h1>
-        <p class="text-lg text-white/50 mt-5 max-w-2xl mx-auto leading-relaxed">Une solution née en Côte d'Ivoire, pensée par et pour les professionnels de la beauté et du bien-être africains.</p>
+        <p class="text-lg text-white/50 mt-5 max-w-2xl mx-auto leading-relaxed">Un mini ERP conçu en Côte d'Ivoire, pensé pour les entrepreneurs et établissements de service africains.</p>
     </div>
 
     <div class="hero-fade"></div>
