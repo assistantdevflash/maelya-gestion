@@ -36,7 +36,7 @@ class CodeReductionController extends Controller
             ->selectRaw("
                 COUNT(*) as total,
                 SUM(CASE WHEN actif = 1 
-                    AND (nb_utilisations_max IS NULL OR nb_utilisations < nb_utilisations_max)
+                    AND (limite_utilisation IS NULL OR nb_utilisations < limite_utilisation)
                     AND (date_fin IS NULL OR date_fin >= NOW())
                     AND (date_debut IS NULL OR date_debut <= NOW())
                     THEN 1 ELSE 0 END) as actifs,
