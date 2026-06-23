@@ -15,8 +15,8 @@ class LandingController extends Controller
         $plans = PlanAbonnement::where('actif', true)->orderBy('ordre')->get();
         return view('landing.index', [
             'plans' => $plans,
-            'title' => 'Maëlya — Le mini ERP pour gérer votre activité en Côte d\'Ivoire',
-            'metaDescription' => 'Maëlya : le mini ERP tout-en-un pour les établissements de service. Caisse, clients, rendez-vous, stocks, finances et plus. Simple, rapide, conçu pour vous. Essai gratuit 14 jours.',
+            'title' => 'Maëlya Gestion — La solution de gestion des indépendants et PME de service',
+            'metaDescription' => 'Caisse, clients, rendez-vous, stocks et finances dans une seule application. Sans engagement, sans complexité. Découvrez pourquoi +500 établissements font confiance à Maëlya Gestion.',
         ]);
     }
 
@@ -24,7 +24,7 @@ class LandingController extends Controller
     {
         return view('landing.apropos', [
             'title' => 'À propos',
-            'metaDescription' => 'Découvrez Maëlya, le mini ERP conçu pour simplifier la gestion des établissements de service en Côte d\'Ivoire. Notre mission : vous faire gagner du temps.',
+            'metaDescription' => 'Découvrez Maëlya Gestion, la solution conçue pour simplifier la gestion des établissements de service en Côte d\'Ivoire. Notre mission : vous faire gagner du temps.',
         ]);
     }
 
@@ -32,7 +32,7 @@ class LandingController extends Controller
     {
         return view('landing.faq', [
             'title' => 'Questions fréquentes',
-            'metaDescription' => 'Trouvez les réponses à vos questions sur Maëlya, le mini ERP pour établissements : inscription, abonnements, fonctionnalités et sécurité.',
+            'metaDescription' => 'Trouvez les réponses à vos questions sur Maëlya Gestion : inscription, abonnements, fonctionnalités et sécurité.',
         ]);
     }
 
@@ -40,7 +40,7 @@ class LandingController extends Controller
     {
         return view('landing.contact', [
             'title' => 'Contact',
-            'metaDescription' => 'Contactez l\'équipe Maëlya. Nous répondons sous 24h. Email, WhatsApp ou formulaire de contact.',,
+            'metaDescription' => 'Contactez l\'équipe Maëlya Gestion. Nous répondons sous 24h. Email, WhatsApp ou formulaire de contact.',,,
         ]);
     }
 
@@ -87,7 +87,7 @@ class LandingController extends Controller
     {
         return view('landing.mentions', [
             'title' => 'Mentions légales',
-            'metaDescription' => 'Mentions légales de Maëlya : éditeur, hébergement, propriété intellectuelle et protection des données.',,
+            'metaDescription' => 'Mentions légales de Maëlya Gestion : éditeur, hébergement, propriété intellectuelle et protection des données.',,,
             'noindex' => true,
         ]);
     }

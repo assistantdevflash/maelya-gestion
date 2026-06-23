@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#9333ea">
     <title>{{ isset($title) ? $title . ' — ' : '' }}Maëlya Gestion</title>
-    <meta name="description" content="{{ $metaDescription ?? 'Maëlya : le mini ERP pour les établissements de service en Côte d\'Ivoire. Caisse, clients, rendez-vous, stocks et finances.' }}">
+    <meta name="description" content="{{ $metaDescription ?? 'Caisse, clients, rendez-vous, stocks et finances dans une seule application. Sans engagement, sans complexité. Découvrez pourquoi +500 établissements font confiance à Maëlya Gestion.' }}">
     @if(!empty($noindex))
     <meta name="robots" content="noindex, nofollow">
     @endif
@@ -23,20 +23,20 @@
     <meta property="og:site_name" content="Maëlya Gestion">
     <meta property="og:locale" content="fr_CI">
     <meta property="og:title" content="{{ isset($title) ? $title . ' — Maëlya Gestion' : 'Maëlya Gestion' }}">
-    <meta property="og:description" content="{{ $metaDescription ?? 'Maëlya : le mini ERP pour les établissements de service en Côte d\'Ivoire. Caisse, clients, rendez-vous, stocks et finances.' }}">
+    <meta property="og:description" content="{{ $metaDescription ?? 'Caisse, clients, rendez-vous, stocks et finances dans une seule application. Sans engagement, sans complexité. Découvrez pourquoi +500 établissements font confiance à Maëlya Gestion.' }}">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:image" content="{{ asset('og-image.png') }}">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Maëlya — Mini ERP pour établissements">
+    <meta property="og:image:alt" content="Maëlya Gestion — La solution de gestion des indépendants et PME de service">
 
     {{-- Twitter Card --}}
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ isset($title) ? $title . ' — Maëlya Gestion' : 'Maëlya Gestion' }}">
-    <meta name="twitter:description" content="{{ $metaDescription ?? 'Maëlya : le mini ERP pour les établissements de service en Côte d\'Ivoire. Caisse, clients, rendez-vous, stocks et finances.' }}">
+    <meta name="twitter:description" content="{{ $metaDescription ?? 'Caisse, clients, rendez-vous, stocks et finances dans une seule application. Sans engagement, sans complexité. Découvrez pourquoi +500 établissements font confiance à Maëlya Gestion.' }}">
     <meta name="twitter:image" content="{{ asset('og-image.png') }}">
-    <meta name="twitter:image:alt" content="Maëlya — Mini ERP pour établissements">
+    <meta name="twitter:image:alt" content="Maëlya Gestion — La solution de gestion des indépendants et PME de service">
     {{-- Anti-flash : appliquer le thème avant le rendu --}}
     <script>
         (function() {
