@@ -48,6 +48,28 @@ class AbonnementActif
             }
         }
 
+        // ── Abonnement : vérifier le cache session en priorité ────────────
+        $aboStatus = session('abo_status');
+        if ($aboStatus !== null && $aboStatus['user_id'] === $user->id) {
+            view()->share('enSursis', $aboStatus['en_sursis']);
+            if (!empty($aboStatus['sursis_jours'])) {
+                view()->share('sursisJours', $aboStatus['sursis_jours']);
+            }
+            if (!empty($aboStatus['expire_bientot'])) {
+                session()->flash('abonnement_expire_bientot', $aboStatus['expire_bientot']);
+            }
+            // Bloquer les mutations si en sursis ou expiré
+            if ($aboStatus['en_sursis'] && !$request->routeIs('abonnement.*')) {
+                if (!in_array($request->method(), ['GET', 'HEAD'])) {
+                    if ($request->expectsJson()) {
+                        return response()->json(['message' => 'Accès restreint. Renouvelez votre abonnement.'], 403);
+                    }
+                    return back()->with('error', 'Votre abonnement a expiré.');
+                }
+            }
+            return $next($request);
+        }
+
         // Pour les employés, vérifier l'abonnement du propriétaire (via proprietaire_id de l'institut)
         $abonnementUser = $user; // utilisateur référent pour l'historique d'abonnement
         if ($user->isEmploye()) {
@@ -65,12 +87,18 @@ class AbonnementActif
             $abonnementSursis = $abonnement ? null : $user->abonnementEnSursis();
         }
 
+        // Stocker le statut en session pour les prochaines requêtes
+        $this->cacheAboStatus($aboStatusData = ['user_id' => $user->id]);
+
         // Abonnement actif valide
         if ($abonnement) {
             view()->share('enSursis', false);
+            $aboStatusData['en_sursis'] = false;
             if ($abonnement->joursRestants() <= 7) {
+                $aboStatusData['expire_bientot'] = $abonnement->joursRestants();
                 session()->flash('abonnement_expire_bientot', $abonnement->joursRestants());
             }
+            $this->cacheAboStatus($aboStatusData);
             return $next($request);
         }
 
@@ -78,6 +106,9 @@ class AbonnementActif
         if ($abonnementSursis) {
             view()->share('enSursis', true);
             view()->share('sursisJours', $abonnementSursis->joursDepuisExpiration());
+            $aboStatusData['en_sursis'] = true;
+            $aboStatusData['sursis_jours'] = $abonnementSursis->joursDepuisExpiration();
+            $this->cacheAboStatus($aboStatusData);
 
             // Les routes abonnement restent toujours accessibles (pour pouvoir renouveler)
             if ($request->routeIs('abonnement.*')) {
@@ -119,6 +150,9 @@ class AbonnementActif
 
         view()->share('enSursis', true);
         view()->share('sursisJours', $dernierAbonnement?->joursDepuisExpiration() ?? 0);
+        $aboStatusData['en_sursis'] = true;
+        $aboStatusData['sursis_jours'] = $dernierAbonnement?->joursDepuisExpiration() ?? 0;
+        $this->cacheAboStatus($aboStatusData);
 
         if ($request->routeIs('abonnement.*')) {
             return $next($request);
@@ -135,6 +169,15 @@ class AbonnementActif
         }
 
         return $next($request);
+    }
+
+    /**
+     * Stocke le statut d'abonnement en session pour éviter les requêtes DB
+     * sur les requêtes suivantes.
+     */
+    private function cacheAboStatus(array $data): void
+    {
+        session(['abo_status' => $data]);
     }
 }
 

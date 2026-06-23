@@ -27,12 +27,17 @@ class AppServiceProvider extends ServiceProvider
         // Route model binding pour le paramètre {offre}
         Route::model('offre', \App\Models\OffrePromotionnelle::class);
 
-        // Badge anniversaire dans la sidebar pour toutes les vues dashboard
+        // Badge anniversaire dans la sidebar pour toutes les vues dashboard (cache 1h)
         View::composer('layouts.dashboard', function ($view) {
             if (auth()->check()) {
-                $nb = \App\Models\Client::where('actif', true)
-                    ->where('date_naissance', now()->format('m-d'))
-                    ->count();
+                $institutId = session('current_institut_id', auth()->user()->institut_id);
+                $nb = \Illuminate\Support\Facades\Cache::remember(
+                    'anniv_count_' . $institutId,
+                    now()->addHour(),
+                    fn () => \App\Models\Client::where('actif', true)
+                        ->where('date_naissance', now()->format('m-d'))
+                        ->count()
+                );
                 $view->with('sidebarNbAnniversaires', $nb);
             }
         });
