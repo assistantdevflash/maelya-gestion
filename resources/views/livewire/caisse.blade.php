@@ -359,7 +359,7 @@
                 </div>
 
                 {{-- Bouton + Nouveau client --}}
-                <button wire:click="$toggle('showNewClientForm')" class="mt-2 flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-800 font-medium transition-colors">
+                <button @click="newClientOpen = true" class="mt-2 flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-800 font-medium transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                     </svg>
@@ -823,11 +823,10 @@
     </div>
 
     {{-- ═══ MODAL NOUVEAU CLIENT ═══ --}}
-    @if($showNewClientForm)
-    <div class="modal-backdrop" x-data x-init="document.body.classList.add('overflow-hidden')"
-         x-on:remove="document.body.classList.remove('overflow-hidden')"
-         @keydown.escape.window="$wire.set('showNewClientForm', false); document.body.classList.remove('overflow-hidden')"
-         @click.self="$wire.set('showNewClientForm', false); document.body.classList.remove('overflow-hidden')">
+    <div x-show="newClientOpen" x-cloak class="modal-backdrop"
+         x-on:keydown.escape.window="newClientOpen = false; document.body.classList.remove('overflow-hidden')"
+         x-init="$watch('newClientOpen', v => document.body.classList.toggle('overflow-hidden', v))"
+         @click.self="newClientOpen = false; document.body.classList.remove('overflow-hidden')">
         <div class="modal max-w-lg" x-transition @click.stop>
             <div class="modal-header">
                 <div class="flex items-center gap-2.5">
@@ -838,8 +837,7 @@
                     </div>
                     <h3 class="modal-title">Nouveau client</h3>
                 </div>
-                <button wire:click="$set('showNewClientForm', false)" class="btn-icon"
-                        @click="document.body.classList.remove('overflow-hidden')">
+                <button @click="newClientOpen = false; document.body.classList.remove('overflow-hidden')" class="btn-icon">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -902,8 +900,7 @@
                         </div>
                     </div>
                     <div class="flex gap-3 pt-1">
-                        <button type="button" wire:click="$set('showNewClientForm', false)" class="btn btn-outline flex-1 justify-center"
-                                @click="document.body.classList.remove('overflow-hidden')">Annuler</button>
+                        <button type="button" @click="newClientOpen = false; document.body.classList.remove('overflow-hidden')" class="btn btn-outline flex-1 justify-center">Annuler</button>
                         <button type="button" wire:click="ajouterClientRapide" class="btn-primary flex-1 justify-center">
                             <span wire:loading.remove wire:target="ajouterClientRapide">Enregistrer</span>
                             <span wire:loading wire:target="ajouterClientRapide" class="flex items-center gap-2">
@@ -915,7 +912,6 @@
             </div>
         </div>
     </div>
-    @endif
 </div>
 
 <script>

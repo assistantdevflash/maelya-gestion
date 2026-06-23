@@ -145,6 +145,7 @@ class Caisse extends Component
 
         $this->clientId = $client->id;
         $this->resetNewClientForm();
+        $this->dispatch('client-added');
     }
 
     private function resetNewClientForm(): void

@@ -57,6 +57,11 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
                     this.panier = { ...this.panier, [key]: { type: 'produit', id: d.id, nom: d.nom, prix: parseInt(d.prix) || 0, quantite: 1 } };
                 }
             });
+            // Fermer le modal nouveau client après création réussie
+            this.$wire.on('client-added', () => {
+                this.newClientOpen = false;
+                document.body.classList.remove('overflow-hidden');
+            });
         },
 
         // ── État filtres ──
@@ -86,6 +91,7 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         showConfirmation: false,
         loading: false,
         enAttenteLoading: false,
+        newClientOpen: false,
 
         // ── Vente rapide ──
         showVenteRapide: false,
