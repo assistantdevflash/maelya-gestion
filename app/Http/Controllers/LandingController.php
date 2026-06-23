@@ -40,7 +40,7 @@ class LandingController extends Controller
     {
         return view('landing.contact', [
             'title' => 'Contact',
-            'metaDescription' => 'Contactez l\'équipe Maëlya Gestion. Nous répondons sous 24h. Email, WhatsApp ou formulaire de contact.',,,
+            'metaDescription' => 'Contactez l\'équipe Maëlya Gestion. Nous répondons sous 24h. Email, WhatsApp ou formulaire de contact.',
         ]);
     }
 
@@ -87,7 +87,7 @@ class LandingController extends Controller
     {
         return view('landing.mentions', [
             'title' => 'Mentions légales',
-            'metaDescription' => 'Mentions légales de Maëlya Gestion : éditeur, hébergement, propriété intellectuelle et protection des données.',,,
+            'metaDescription' => 'Mentions légales de Maëlya Gestion : éditeur, hébergement, propriété intellectuelle et protection des données.',
             'noindex' => true,
         ]);
     }
