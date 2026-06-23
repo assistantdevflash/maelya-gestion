@@ -29,8 +29,7 @@ class VenteController extends Controller
 
     public function caisse()
     {
-        $clients = Client::where('actif', true)->orderBy('prenom')->get();
-        return view('dashboard.caisse.index', compact('clients'));
+        return view('dashboard.caisse.index');
     }
 
     public function store(Request $request)

@@ -131,7 +131,7 @@ class ClientController extends Controller
                 'icon'  => '💳',
             ]);
         }
-        foreach ($client->rendezVous()->latest('debut_le')->take(50)->get() as $r) {
+        foreach ($client->rendezVous()->with('prestations')->latest('debut_le')->take(50)->get() as $r) {
             $timeline->push([
                 'type'  => 'rdv',
                 'date'  => $r->debut_le,

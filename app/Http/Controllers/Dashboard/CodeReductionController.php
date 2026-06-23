@@ -18,21 +18,32 @@ class CodeReductionController extends Controller
 
     public function index()
     {
-        $codes = CodeReduction::where('institut_id', $this->institutId())
+        $institutId = $this->institutId();
+
+        $codes = CodeReduction::where('institut_id', $institutId)
             ->with('client')
             ->orderByDesc('created_at')
-            ->get();
+            ->paginate(30);
 
-        $clients = Client::where('institut_id', $this->institutId())
+        $clients = Client::where('institut_id', $institutId)
             ->where('actif', true)
             ->orderBy('prenom')
+            ->limit(300)
             ->get();
 
-        $stats = [
-            'total'       => $codes->count(),
-            'actifs'      => $codes->filter(fn($c) => $c->statut() === 'actif')->count(),
-            'utilisations'=> $codes->sum('nb_utilisations'),
-        ];
+        // Stats calculées en base (indépendantes de la pagination)
+        $stats = CodeReduction::where('institut_id', $institutId)
+            ->selectRaw("
+                COUNT(*) as total,
+                SUM(CASE WHEN actif = 1 
+                    AND (nb_utilisations_max IS NULL OR nb_utilisations < nb_utilisations_max)
+                    AND (date_fin IS NULL OR date_fin >= NOW())
+                    AND (date_debut IS NULL OR date_debut <= NOW())
+                    THEN 1 ELSE 0 END) as actifs,
+                COALESCE(SUM(nb_utilisations), 0) as utilisations
+            ")
+            ->first()
+            ->toArray();
 
         $avoirs = Avoir::where('institut_id', $this->institutId())
             ->with(['vente', 'client', 'codeReduction'])
@@ -125,7 +136,7 @@ class CodeReductionController extends Controller
         ]);
 
         $code = CodeReduction::where('institut_id', $this->institutId())
-            ->whereRaw('UPPER(code) = ?', [strtoupper($request->code)])
+            ->where('code', strtoupper($request->code))
             ->first();
 
         if (!$code) {

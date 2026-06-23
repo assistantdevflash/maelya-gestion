@@ -172,7 +172,7 @@ class Caisse extends Component
         }
 
         $codeObj = CodeReduction::where('institut_id', $this->institutId())
-            ->whereRaw('UPPER(code) = ?', [$input])
+            ->where('code', $input)
             ->first();
 
         if (! $codeObj) {
@@ -249,60 +249,80 @@ class Caisse extends Component
         ]);
     }
 
-    // ── Render : charge le catalogue une fois, Alpine gère le reste ──
+    // ── Render : charge le catalogue (cache 1h), Alpine gère le reste ──
 
     public function render()
     {
         $institutId = $this->institutId();
 
+        $catalog = \Illuminate\Support\Facades\Cache::remember(
+            'caisse_catalog_' . $institutId,
+            now()->addHour(),
+            function () use ($institutId) {
+                return [
+                    'prestations' => Prestation::where('institut_id', $institutId)
+                        ->where('actif', true)
+                        ->with('categorie:id,nom')
+                        ->orderBy('categorie_id')
+                        ->orderBy('nom')
+                        ->get()
+                        ->map(fn ($p) => [
+                            'id'            => $p->id,
+                            'nom'           => $p->nom,
+                            'prix'          => (int) $p->prix,
+                            'duree'         => $p->duree,
+                            'categorie_id'  => $p->categorie_id,
+                            'categorie_nom' => $p->categorie?->nom,
+                        ]),
+                    'produits' => Produit::where('institut_id', $institutId)
+                        ->where('actif', true)
+                        ->with('categorie:id,nom')
+                        ->orderBy('nom')
+                        ->get()
+                        ->map(fn ($p) => [
+                            'id'            => $p->id,
+                            'nom'           => $p->nom,
+                            'prix'          => (int) $p->prix_vente,
+                            'stock'         => $p->stock,
+                            'photo'         => $p->photo ? asset('storage/' . $p->photo) : null,
+                            'categorie_id'  => $p->categorie_id,
+                            'categorie_nom' => $p->categorie?->nom,
+                        ]),
+                    // Catégories non vides (onglets) + toutes (vente rapide) — une seule requête, dérivé en PHP
+                    'allCatPrestations' => CategoriePrestation::where('institut_id', $institutId)
+                        ->orderBy('ordre')->orderBy('nom')
+                        ->get()
+                        ->map(fn ($c) => [
+                            'id'      => $c->id,
+                            'nom'     => $c->nom,
+                            'nonVide' => $c->prestations()->where('actif', true)->exists(),
+                        ]),
+                    'allCatProduits' => CategorieProduit::where('institut_id', $institutId)
+                        ->orderBy('nom')
+                        ->get()
+                        ->map(fn ($c) => [
+                            'id'      => $c->id,
+                            'nom'     => $c->nom,
+                            'nonVide' => $c->produits()->where('actif', true)->exists(),
+                        ]),
+                ];
+            }
+        );
+
+        // Dériver les listes filtrées (onglets) depuis le cache
+        $catPrestations = collect($catalog['allCatPrestations'])->filter(fn ($c) => $c['nonVide'])->values();
+        $catProduits    = collect($catalog['allCatProduits'])->filter(fn ($c) => $c['nonVide'])->values();
+        // Nettoyer le flag nonVide avant de passer à la vue
+        $allCatPrestations = collect($catalog['allCatPrestations'])->map(fn ($c) => ['id' => $c['id'], 'nom' => $c['nom']]);
+        $allCatProduits    = collect($catalog['allCatProduits'])->map(fn ($c) => ['id' => $c['id'], 'nom' => $c['nom']]);
+
         return view('livewire.caisse', [
-            'prestations' => Prestation::where('institut_id', $institutId)
-                ->where('actif', true)
-                ->with('categorie:id,nom')
-                ->orderBy('categorie_id')
-                ->orderBy('nom')
-                ->get()
-                ->map(fn ($p) => [
-                    'id'            => $p->id,
-                    'nom'           => $p->nom,
-                    'prix'          => (int) $p->prix,
-                    'duree'         => $p->duree,
-                    'categorie_id'  => $p->categorie_id,
-                    'categorie_nom' => $p->categorie?->nom,
-                ]),
-            'produits' => Produit::where('institut_id', $institutId)
-                ->where('actif', true)
-                ->with('categorie:id,nom')
-                ->orderBy('nom')
-                ->get()
-                ->map(fn ($p) => [
-                    'id'            => $p->id,
-                    'nom'           => $p->nom,
-                    'prix'          => (int) $p->prix_vente,
-                    'stock'         => $p->stock,
-                    'photo'         => $p->photo ? asset('storage/' . $p->photo) : null,
-                    'categorie_id'  => $p->categorie_id,
-                    'categorie_nom' => $p->categorie?->nom,
-                ]),
-            'catPrestations' => CategoriePrestation::where('institut_id', $institutId)
-                ->whereHas('prestations', fn ($q) => $q->where('actif', true))
-                ->orderBy('ordre')->orderBy('nom')
-                ->get()
-                ->map(fn ($c) => ['id' => $c->id, 'nom' => $c->nom]),
-            'catProduits' => CategorieProduit::where('institut_id', $institutId)
-                ->whereHas('produits', fn ($q) => $q->where('actif', true))
-                ->orderBy('nom')
-                ->get()
-                ->map(fn ($c) => ['id' => $c->id, 'nom' => $c->nom]),
-            // Toutes les catégories (même vides) pour le selecteur de la vente rapide
-            'allCatPrestations' => CategoriePrestation::where('institut_id', $institutId)
-                ->orderBy('ordre')->orderBy('nom')
-                ->get()
-                ->map(fn ($c) => ['id' => $c->id, 'nom' => $c->nom]),
-            'allCatProduits' => CategorieProduit::where('institut_id', $institutId)
-                ->orderBy('nom')
-                ->get()
-                ->map(fn ($c) => ['id' => $c->id, 'nom' => $c->nom]),
+            'prestations'        => $catalog['prestations'],
+            'produits'           => $catalog['produits'],
+            'catPrestations'     => $catPrestations,
+            'catProduits'        => $catProduits,
+            'allCatPrestations'  => $allCatPrestations,
+            'allCatProduits'     => $allCatProduits,
             'allClients' => Client::where('institut_id', $institutId)
                 ->where('actif', true)
                 ->orderBy('prenom')
