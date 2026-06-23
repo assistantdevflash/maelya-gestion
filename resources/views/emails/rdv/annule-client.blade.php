@@ -44,7 +44,17 @@
     <tr>
         <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 32px;text-align:center;font-size:12px;color:#9ca3af;">
             <p style="margin:0 0 4px;"><strong>{{ $rdv->institut?->nom ?? config('app.name') }}</strong></p>
-            <p style="margin:0 0 4px;color:#d1d5db;">{{ config('app.name') }} · Gestion de salon de beauté</p>
+            <p style="margin:0 0 4px;">
+                @if($rdv->institut?->telephone)
+                    📞 {{ $rdv->institut->telephone }} &nbsp;·&nbsp;
+                @endif
+                @if($rdv->institut?->email)
+                    ✉️ {{ $rdv->institut->email }}
+                @endif
+                @if($rdv->institut?->ville)
+                    &nbsp;·&nbsp; 📍 {{ $rdv->institut->ville }}
+                @endif
+            </p>
             <p style="margin:0;">Cet e-mail a été envoyé automatiquement. Ne pas répondre directement.</p>
         </td>
     </tr>
