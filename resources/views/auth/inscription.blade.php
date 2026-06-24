@@ -104,14 +104,15 @@
                                         <option value="">Choisir...</option>
                                         <option value="salon_coiffure"      {{ old('type_institut') === 'salon_coiffure'      ? 'selected' : '' }}>Salon de coiffure</option>
                                         <option value="institut_beaute"     {{ old('type_institut') === 'institut_beaute'     ? 'selected' : '' }}>Institut de beauté</option>
-                                        <option value="nail_bar"            {{ old('type_institut') === 'nail_bar'            ? 'selected' : '' }}>Nail Bar / Onglerie</option>
-                                        <option value="spa"                 {{ old('type_institut') === 'spa'                 ? 'selected' : '' }}>Spa / Bien-être</option>
                                         <option value="barbier"             {{ old('type_institut') === 'barbier'             ? 'selected' : '' }}>Barbier</option>
-                                        <option value="hammam"              {{ old('type_institut') === 'hammam'              ? 'selected' : '' }}>Hammam</option>
                                         <option value="centre_esthetique"   {{ old('type_institut') === 'centre_esthetique'   ? 'selected' : '' }}>Centre esthétique</option>
-                                        <option value="soins_capillaires"   {{ old('type_institut') === 'soins_capillaires'   ? 'selected' : '' }}>Soins capillaires</option>
-                                        <option value="tatouage"            {{ old('type_institut') === 'tatouage'            ? 'selected' : '' }}>Tatouage / Piercing</option>
                                         <option value="boutique_mode"       {{ old('type_institut') === 'boutique_mode'       ? 'selected' : '' }}>Boutique de mode</option>
+                                        <option value="imprimerie"          {{ old('type_institut') === 'imprimerie'          ? 'selected' : '' }}>Imprimerie</option>
+                                        <option value="lavage_auto"         {{ old('type_institut') === 'lavage_auto'         ? 'selected' : '' }}>Lavage auto</option>
+                                        <option value="pressing"            {{ old('type_institut') === 'pressing'            ? 'selected' : '' }}>Pressing / Laverie</option>
+                                        <option value="business_center"     {{ old('type_institut') === 'business_center'     ? 'selected' : '' }}>Business center</option>
+                                        <option value="depot_gaz"           {{ old('type_institut') === 'depot_gaz'           ? 'selected' : '' }}>Dépôt de gaz</option>
+                                        <option value="commerce"            {{ old('type_institut') === 'commerce'            ? 'selected' : '' }}>Commerce / Alimentation</option>
                                         <option value="autre"               {{ old('type_institut') === 'autre'               ? 'selected' : '' }}>Autre</option>
                                     </select>
                                 </div>

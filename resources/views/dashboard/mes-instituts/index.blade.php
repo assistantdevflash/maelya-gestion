@@ -113,9 +113,15 @@
         $typeLabels = [
             'salon_coiffure'  => 'Salon de coiffure',
             'institut_beaute' => 'Institut de beauté',
-            'nail_bar'        => 'Nail bar',
-            'spa'             => 'Spa',
             'barbier'         => 'Barbier',
+            'centre_esthetique' => 'Centre esthétique',
+            'boutique_mode'   => 'Boutique de mode',
+            'imprimerie'      => 'Imprimerie',
+            'lavage_auto'     => 'Lavage auto',
+            'pressing'        => 'Pressing / Laverie',
+            'business_center' => 'Business center',
+            'depot_gaz'       => 'Dépôt de gaz',
+            'commerce'        => 'Commerce / Alimentation',
             'autre'           => 'Autre',
         ];
         @endphp
@@ -401,14 +407,15 @@
                                         <select name="type" required class="form-input" x-model="form.type">
                                             <option value="salon_coiffure">Salon de coiffure</option>
                                             <option value="institut_beaute">Institut de beauté</option>
-                                            <option value="nail_bar">Nail Bar / Onglerie</option>
-                                            <option value="spa">Spa / Bien-être</option>
                                             <option value="barbier">Barbier</option>
-                                            <option value="hammam">Hammam</option>
                                             <option value="centre_esthetique">Centre esthétique</option>
-                                            <option value="soins_capillaires">Soins capillaires</option>
-                                            <option value="tatouage">Tatouage / Piercing</option>
                                             <option value="boutique_mode">Boutique de mode</option>
+                                            <option value="imprimerie">Imprimerie</option>
+                                            <option value="lavage_auto">Lavage auto</option>
+                                            <option value="pressing">Pressing / Laverie</option>
+                                            <option value="business_center">Business center</option>
+                                            <option value="depot_gaz">Dépôt de gaz</option>
+                                            <option value="commerce">Commerce / Alimentation</option>
                                             <option value="autre">Autre</option>
                                         </select>
                                     </div>
@@ -532,14 +539,15 @@
                                 <option value="">-- Choisir un type --</option>
                                 <option value="salon_coiffure"     {{ old('type') === 'salon_coiffure'     ? 'selected' : '' }}>Salon de coiffure</option>
                                 <option value="institut_beaute"    {{ old('type') === 'institut_beaute'    ? 'selected' : '' }}>Institut de beauté</option>
-                                <option value="nail_bar"           {{ old('type') === 'nail_bar'           ? 'selected' : '' }}>Nail Bar / Onglerie</option>
-                                <option value="spa"                {{ old('type') === 'spa'                ? 'selected' : '' }}>Spa / Bien-être</option>
                                 <option value="barbier"            {{ old('type') === 'barbier'            ? 'selected' : '' }}>Barbier</option>
-                                <option value="hammam"             {{ old('type') === 'hammam'             ? 'selected' : '' }}>Hammam</option>
                                 <option value="centre_esthetique" {{ old('type') === 'centre_esthetique' ? 'selected' : '' }}>Centre esthétique</option>
-                                <option value="soins_capillaires" {{ old('type') === 'soins_capillaires' ? 'selected' : '' }}>Soins capillaires</option>
-                                <option value="tatouage"           {{ old('type') === 'tatouage'           ? 'selected' : '' }}>Tatouage / Piercing</option>
                                 <option value="boutique_mode"      {{ old('type') === 'boutique_mode'      ? 'selected' : '' }}>Boutique de mode</option>
+                                <option value="imprimerie"         {{ old('type') === 'imprimerie'         ? 'selected' : '' }}>Imprimerie</option>
+                                <option value="lavage_auto"        {{ old('type') === 'lavage_auto'        ? 'selected' : '' }}>Lavage auto</option>
+                                <option value="pressing"           {{ old('type') === 'pressing'           ? 'selected' : '' }}>Pressing / Laverie</option>
+                                <option value="business_center"    {{ old('type') === 'business_center'    ? 'selected' : '' }}>Business center</option>
+                                <option value="depot_gaz"          {{ old('type') === 'depot_gaz'          ? 'selected' : '' }}>Dépôt de gaz</option>
+                                <option value="commerce"           {{ old('type') === 'commerce'           ? 'selected' : '' }}>Commerce / Alimentation</option>
                                 <option value="autre"              {{ old('type') === 'autre'              ? 'selected' : '' }}>Autre</option>
                             </select>
                         </div>

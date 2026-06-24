@@ -37,9 +37,15 @@
         $typeLabels = [
             'salon_coiffure'  => 'Salon de coiffure',
             'institut_beaute' => 'Institut de beauté',
-            'nail_bar'        => 'Nail bar',
-            'spa'             => 'Spa',
             'barbier'         => 'Barbier',
+            'centre_esthetique' => 'Centre esthétique',
+            'boutique_mode'   => 'Boutique de mode',
+            'imprimerie'      => 'Imprimerie',
+            'lavage_auto'     => 'Lavage auto',
+            'pressing'        => 'Pressing / Laverie',
+            'business_center' => 'Business center',
+            'depot_gaz'       => 'Dépôt de gaz',
+            'commerce'        => 'Commerce / Alimentation',
             'autre'           => 'Autre',
         ];
     @endphp

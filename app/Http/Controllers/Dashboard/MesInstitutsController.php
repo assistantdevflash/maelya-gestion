@@ -60,7 +60,7 @@ class MesInstitutsController extends Controller
             'ville'     => ['nullable', 'string', 'max:100'],
             'telephone' => ['nullable', 'string', 'max:20'],
             'email'     => ['nullable', 'email', 'max:150'],
-            'type'      => ['required', 'string', 'in:salon_coiffure,institut_beaute,nail_bar,spa,barbier,autre'],
+            'type'      => ['required', 'string', 'in:salon_coiffure,institut_beaute,barbier,centre_esthetique,boutique_mode,imprimerie,lavage_auto,pressing,business_center,depot_gaz,commerce,autre'],
             'logo'      => ['nullable', 'image', 'max:2048'],
         ]);
 
@@ -95,7 +95,7 @@ class MesInstitutsController extends Controller
             'ville'     => ['nullable', 'string', 'max:100'],
             'telephone' => ['nullable', 'string', 'max:20'],
             'email'     => ['nullable', 'email', 'max:150'],
-            'type'      => ['required', 'string', 'in:salon_coiffure,institut_beaute,nail_bar,spa,barbier,autre'],
+            'type'      => ['required', 'string', 'in:salon_coiffure,institut_beaute,barbier,centre_esthetique,boutique_mode,imprimerie,lavage_auto,pressing,business_center,depot_gaz,commerce,autre'],
         ]);
 
         $institut->update($data);
