@@ -18,7 +18,7 @@
                 </h1>
 
                 <p class="text-lg sm:text-xl text-white/60 mb-10 leading-relaxed max-w-xl mx-auto lg:mx-0">
-                    Caisse, rendez-vous, clients, stocks — le mini ERP qui centralise toute votre activité, quel que soit votre secteur.
+                    Caisse, rendez-vous, clients, stocks et finances — la solution de gestion qui centralise toute votre activité, quel que soit votre secteur.
                 </p>
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
