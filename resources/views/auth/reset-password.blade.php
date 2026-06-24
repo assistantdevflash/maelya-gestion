@@ -18,6 +18,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
 </head>
 <body class="auth min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
       style="background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 35%, #831843 100%)">
