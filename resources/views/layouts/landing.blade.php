@@ -89,7 +89,7 @@
         "name": "Maëlya Gestion",
         "url": "{{ url('/') }}",
         "logo": "{{ asset('favicon.svg') }}",
-        "description": "La solution de gestion des indépendants et PME de service en Côte d'Ivoire. Caisse, clients, rendez-vous, stocks et finances.",
+        "description": "Logiciel de gestion tout-en-un pour salons, instituts et établissements de service en Côte d'Ivoire.",
         "address": {
             "@@type": "PostalAddress",
             "addressLocality": "Abidjan",
@@ -290,7 +290,7 @@
                         <span class="font-display font-bold text-white text-lg tracking-tight">Maëlya Gestion</span>
                     </div>
                     <p class="text-sm leading-relaxed max-w-sm mb-6">
-                        La solution de gestion des indépendants et PME de service en Côte d'Ivoire et en Afrique de l'Ouest.
+                        La solution de gestion tout-en-un pour les indépendants et PME de service en Côte d'Ivoire et en Afrique de l'Ouest.
                     </p>
                 </div>
 
