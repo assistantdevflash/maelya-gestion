@@ -24,13 +24,13 @@
                 <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight leading-tight">Donner aux professionnels le temps de se concentrer sur l’essentiel</h2>
                 <div class="space-y-4 text-gray-600 dark:text-gray-300 leading-relaxed">
                     <p>
-                        <strong class="text-gray-900 dark:text-white">Maëlya Gestion</strong> est né d'un constat simple : les gérants d'établissements de beauté en Côte d'Ivoire passent trop de temps à gérer leurs cahiers, leurs stocks et leurs finances à la main.
+                        <strong class="text-gray-900 dark:text-white">Maëlya Gestion</strong> est né d'un constat simple : les entrepreneurs et gérants d'établissements de service passent trop de temps sur leurs tâches administratives — cahiers, stocks, finances — au détriment de leur cœur de métier.
                     </p>
                     <p>
-                        Nous avons créé une application simple, rapide et pensée pour le contexte local. Paiements Mobile Money, interface 100% en français, conçue pour fonctionner même avec une connexion internet modeste.
+                        Nous avons créé une application simple, rapide et pensée pour le contexte local. Paiements Mobile Money, interface 100% en français, conçue pour fonctionner même avec une connexion internet modeste. Quel que soit votre secteur — beauté, mode, pressing, commerce, services — Maëlya s'adapte.
                     </p>
                     <p>
-                        Notre promesse : <strong class="text-primary-700">vous donner plus de temps pour prendre soin de vos clients</strong>.
+                        Notre promesse : <strong class="text-primary-700">vous donner plus de temps pour vous concentrer sur votre activité</strong>.
                     </p>
                 </div>
             </div>
@@ -55,7 +55,7 @@
     <div class="max-w-5xl mx-auto px-4 sm:px-6">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             @foreach([
-                ['500+', 'Instituts inscrits', 'from-primary-500 to-primary-600'],
+                ['500+', 'Établissements', 'from-primary-500 to-primary-600'],
                 ['100%', 'En français', 'from-secondary-500 to-secondary-600'],
                 ['FCFA', 'Monnaie locale', 'from-emerald-500 to-emerald-600'],
                 ['24/7', 'Disponibilité', 'from-amber-500 to-amber-600'],
