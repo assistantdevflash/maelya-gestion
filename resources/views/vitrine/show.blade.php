@@ -37,6 +37,7 @@
     
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; background: #0a0a0a; color: #f5f5f5; min-height: 100vh; color-scheme: dark; }
         .rdv-input {
