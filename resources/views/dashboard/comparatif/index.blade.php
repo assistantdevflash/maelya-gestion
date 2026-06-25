@@ -1,5 +1,5 @@
 <x-dashboard-layout>
-    <x-slot name="title">Comparatif instituts</x-slot>
+    <x-slot name="title">Comparatif établissements</x-slot>
 
     <div class="space-y-4">
         <div>

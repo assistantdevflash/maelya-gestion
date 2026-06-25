@@ -43,8 +43,8 @@ class ComparatifInstitutsController extends Controller
                 ->where('ventes.statut', '!=', 'annulee')
                 ->whereBetween('ventes.created_at', [$debutMois, $finMois])
                 ->where('vente_items.type', 'prestation')
-                ->select('vente_items.libelle', DB::raw('COUNT(*) as nb'))
-                ->groupBy('vente_items.libelle')
+                ->select('vente_items.nom_snapshot', DB::raw('COUNT(*) as nb'))
+                ->groupBy('vente_items.nom_snapshot')
                 ->orderByDesc('nb')
                 ->limit(1)
                 ->first();
@@ -56,7 +56,7 @@ class ComparatifInstitutsController extends Controller
                 'nb_clients'     => $nbClients,
                 'nb_clients_nouv'=> $nbClientsNouv,
                 'panier_moyen'   => $nbVentes > 0 ? (int) ($caMois / $nbVentes) : 0,
-                'top_presta'     => $topPresta?->libelle,
+                'top_presta'     => $topPresta?->nom_snapshot,
             ];
         }
 
