@@ -72,10 +72,10 @@ class CodeReductionController extends Controller
             'date_fin.after_or_equal' => 'La date de fin doit être après la date de début.',
         ]);
 
-        // Unicité du code pour cet institut (insensible à la casse)
+        // Unicité du code pour cet institut (code stocké en majuscules)
         $codeUp = strtoupper($data['code']);
         $exists = CodeReduction::where('institut_id', $this->institutId())
-            ->whereRaw('UPPER(code) = ?', [$codeUp])
+            ->where('code', $codeUp)
             ->exists();
 
         if ($exists) {
