@@ -138,23 +138,9 @@ class User extends Authenticatable
      */
     public function planActuelSlug(): ?string
     {
-        // Cache session pour éviter les requêtes DB répétées
-        $cacheKey = 'plan_slug_' . $this->id;
-        $cached = session($cacheKey);
-        if ($cached !== null) {
-            return $cached ?: null;
-        }
-
-        $result = $this->computePlanSlug();
-        session([$cacheKey => $result ?? '']);
-        return $result;
-    }
-
-    private function computePlanSlug(): ?string
-    {
         if ($this->isEmploye()) {
             $owner = $this->institut?->proprietaire_id
-                ? static::find($this->institut->proprietaire_id)
+                ? static::with('abonnementActif.plan')->find($this->institut->proprietaire_id)
                 : null;
             return $owner?->planActuelSlug();
         }
