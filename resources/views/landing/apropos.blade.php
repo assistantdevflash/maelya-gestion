@@ -27,7 +27,7 @@
                         <strong class="text-gray-900 dark:text-white">Maëlya Gestion</strong> est né d'un constat simple : les entrepreneurs et gérants d'établissements de service passent trop de temps sur leurs tâches administratives — cahiers, stocks, finances — au détriment de leur cœur de métier.
                     </p>
                     <p>
-                        Nous avons créé une application simple, rapide et pensée pour le contexte local. Paiements Mobile Money, interface 100% en français, conçue pour fonctionner même avec une connexion internet modeste. Quel que soit votre secteur — beauté, mode, pressing, commerce, services — Maëlya s'adapte.
+                        Nous avons créé une application simple, rapide et pensée pour le contexte local. Paiements Mobile Money, interface 100% en français, conçue pour fonctionner même avec une connexion internet modeste. Quel que soit votre secteur — beauté, mode, pressing, commerce, services — Maëlya Gestion s'adapte.
                     </p>
                     <p>
                         Notre promesse : <strong class="text-primary-700">vous donner plus de temps pour vous concentrer sur votre activité</strong>.
