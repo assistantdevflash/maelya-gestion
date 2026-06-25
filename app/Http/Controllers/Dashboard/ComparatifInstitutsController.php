@@ -21,19 +21,23 @@ class ComparatifInstitutsController extends Controller
 
         $stats = [];
         foreach ($instituts as $i) {
-            $caMois = Vente::where('institut_id', $i->id)
+            $caMois = Vente::withoutGlobalScopes()
+                ->where('institut_id', $i->id)
                 ->where('statut', '!=', 'annulee')
                 ->whereBetween('created_at', [$debutMois, $finMois])
                 ->sum('total');
 
-            $nbVentes = Vente::where('institut_id', $i->id)
+            $nbVentes = Vente::withoutGlobalScopes()
+                ->where('institut_id', $i->id)
                 ->where('statut', '!=', 'annulee')
                 ->whereBetween('created_at', [$debutMois, $finMois])
                 ->count();
 
-            $nbClients = Client::where('institut_id', $i->id)->count();
+            $nbClients = Client::withoutGlobalScopes()
+                ->where('institut_id', $i->id)->count();
 
-            $nbClientsNouv = Client::where('institut_id', $i->id)
+            $nbClientsNouv = Client::withoutGlobalScopes()
+                ->where('institut_id', $i->id)
                 ->whereBetween('created_at', [$debutMois, $finMois])
                 ->count();
 
