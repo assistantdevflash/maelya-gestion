@@ -19,6 +19,7 @@
         })();
     </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
 </head>
 <body class="text-gray-900 dark:text-white overflow-x-hidden" x-data="{
     sidebarOpen: false,
