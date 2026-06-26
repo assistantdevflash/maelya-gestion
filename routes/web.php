@@ -77,6 +77,11 @@ Route::get('/ticket/{id}', [VenteController::class, 'ticketPdfPublic'])
     ->middleware('throttle:30,1')
     ->name('ticket.public');
 
+// ─── Fiche crédit PDF publique (lien partageable, accès par UUID) ────────────
+Route::get('/fiche-credit/{id}', [\App\Http\Controllers\Dashboard\CreditController::class, 'fichePdfPublic'])
+    ->middleware('throttle:30,1')
+    ->name('credit.fiche.public');
+
 // ─── Inscription personnalisée (remplace Breeze) ─────────────────────────────
 Route::middleware('guest')->group(function () {
     Route::get('/inscription', [InscriptionController::class, 'index'])->name('inscription');
@@ -120,7 +125,7 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
 
     // Crédits clients & échéanciers
     Route::get('credits', [\App\Http\Controllers\Dashboard\CreditController::class, 'index'])->name('credits.index');
-    Route::get('credits/{credit}/print', [\App\Http\Controllers\Dashboard\CreditController::class, 'print'])->name('credits.print');
+    Route::get('credits/{credit}/fiche-pdf', [\App\Http\Controllers\Dashboard\CreditController::class, 'fichePdf'])->name('credits.fiche-pdf');
     Route::get('credits/{credit}', [\App\Http\Controllers\Dashboard\CreditController::class, 'show'])->name('credits.show');
     Route::post('credits/{credit}/payer', [\App\Http\Controllers\Dashboard\CreditController::class, 'payer'])->name('credits.payer');
 

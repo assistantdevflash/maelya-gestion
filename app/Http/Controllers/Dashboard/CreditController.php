@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Credit;
 use App\Models\Echeance;
+use App\Models\Institut;
 use App\Models\PaiementCredit;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -52,31 +54,27 @@ class CreditController extends Controller
         return view('dashboard.credits.show', compact('credit'));
     }
 
-    public function print(Credit $credit)
+    public function fichePdf(Credit $credit)
     {
         $credit->load(['client', 'vente.items', 'echeances', 'paiements.encaisseur']);
-        $institut = \App\Models\Institut::find($this->institutId());
+        $institut = Institut::find($this->institutId());
 
-        // WhatsApp URL
-        $waUrl = null;
-        if ($credit->client?->telephone) {
-            $waPhone = preg_replace('/[^0-9+]/', '', $credit->client->telephone);
-            $waPhone = ltrim($waPhone, '+');
-            if (str_starts_with($waPhone, '0')) {
-                $waPhone = '225' . $waPhone;
-            }
-            $printUrl = route('dashboard.credits.print', $credit);
-            $msg = "Bonjour " . ($credit->client->prenom ?? '') . ",\n\n"
-                 . "Voici votre fiche de credit chez " . ($institut?->nom ?? 'notre etablissement') . " :\n"
-                 . "Montant total : " . number_format($credit->montant_total, 0, ',', ' ') . " FCFA\n"
-                 . "Reste a payer : " . number_format($credit->reste_a_payer, 0, ',', ' ') . " FCFA\n"
-                 . "Prochaine echeance : " . ($credit->echeances->where('statut', 'en_attente')->first()?->date_prevue ? \Carbon\Carbon::parse($credit->echeances->where('statut', 'en_attente')->first()->date_prevue)->format('d/m/Y') : '—') . "\n\n"
-                 . "Fiche complete : {$printUrl}\n\n"
-                 . "Merci de votre confiance !";
-            $waUrl = "https://wa.me/{$waPhone}?text=" . rawurlencode($msg);
-        }
+        $pdf = Pdf::loadView('pdf.credit', compact('credit', 'institut'))
+            ->setPaper('a4', 'portrait');
 
-        return view('dashboard.credits.print', compact('credit', 'institut', 'waUrl'));
+        return $pdf->download("fiche-credit-" . substr($credit->id, 0, 8) . ".pdf");
+    }
+
+    public function fichePdfPublic(string $id)
+    {
+        $credit = Credit::where('id', $id)->firstOrFail();
+        $credit->load(['client', 'vente.items', 'echeances', 'paiements.encaisseur']);
+        $institut = Institut::find($credit->institut_id);
+
+        $pdf = Pdf::loadView('pdf.credit', compact('credit', 'institut'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->stream("fiche-credit-" . substr($credit->id, 0, 8) . ".pdf");
     }
 
     public function payer(Request $request, Credit $credit)

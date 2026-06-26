@@ -21,7 +21,7 @@
                 @else
                     <span class="badge badge-info">En cours</span>
                 @endif
-                <a href="{{ route('dashboard.credits.print', $credit) }}" target="_blank" class="btn-outline text-xs py-1.5 px-3" title="Imprimer la fiche">
+                <a href="{{ route('dashboard.credits.fiche-pdf', $credit) }}" class="btn-outline text-xs py-1.5 px-3" title="Telecharger la fiche PDF">
                     🖨️ Imprimer
                 </a>
                 @php
@@ -32,13 +32,13 @@
                             $waPhonePrint = '225' . $waPhonePrint;
                         }
                     }
-                    $printUrl = route('dashboard.credits.print', $credit);
+                    $ficheUrl = route('credit.fiche.public', $credit->id);
                     $waMsgPrint = $waPhonePrint ? rawurlencode(
                         "Bonjour " . ($credit->client->prenom ?? '') . ",\n\n"
                         . "Voici votre fiche de credit :\n"
                         . "Montant total : " . number_format($credit->montant_total, 0, ',', ' ') . " FCFA\n"
                         . "Reste a payer : " . number_format($credit->reste_a_payer, 0, ',', ' ') . " FCFA\n"
-                        . "Fiche : " . $printUrl . "\n\n"
+                        . "Fiche : " . $ficheUrl . "\n\n"
                         . "Merci de votre confiance !"
                     ) : null;
                 @endphp
