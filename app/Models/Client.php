@@ -43,6 +43,11 @@ class Client extends Model
         return $this->hasMany(Vente::class, 'client_id');
     }
 
+    public function credits()
+    {
+        return $this->hasMany(Credit::class);
+    }
+
     public function photos()
     {
         return $this->hasMany(ClientPhoto::class)->latest('date_prise');
@@ -116,5 +121,14 @@ class Client extends Model
     {
         return $this->hasMany(CodeReduction::class, 'client_id')
             ->where('code', 'like', 'FID-%');
+    }
+
+    public function getScoreCreditsAttribute(): int
+    {
+        $credits = $this->credits;
+        if ($credits->isEmpty()) return 0;
+        $total   = $credits->count();
+        $retards = $credits->where('statut', 'retard')->count();
+        return max(1, min(5, (int) round((($total - $retards) / max($total, 1)) * 5)));
     }
 }
