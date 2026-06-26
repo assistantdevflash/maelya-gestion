@@ -10,6 +10,8 @@ class PaiementCredit extends Model
 {
     use HasUuids, BelongsToInstitut;
 
+    protected $table = 'paiements_credit';
+
     public $timestamps = false;
 
     protected $fillable = [
