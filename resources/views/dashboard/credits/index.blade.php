@@ -31,28 +31,35 @@
 
         {{-- Filtres --}}
         <div class="card p-4">
-            <form method="GET" action="{{ route('dashboard.credits.index') }}" class="flex flex-wrap items-end gap-3">
+            <div class="flex flex-wrap items-end gap-3">
+                {{-- Boutons de filtre statut --}}
                 <div class="flex gap-1">
                     @foreach(['tous' => 'Tous', 'en_cours' => 'En cours', 'retard' => 'En retard', 'solde' => 'Soldés'] as $val => $label)
-                    <button type="submit" name="statut" value="{{ $val }}"
-                            class="px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ $filtre === $val ? 'bg-primary-600 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                    <a href="{{ route('dashboard.credits.index', ['statut' => $val, 'q' => request('q')]) }}"
+                       class="px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ $filtre === $val ? 'bg-primary-600 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
                         {{ $label }}
-                    </button>
+                    </a>
                     @endforeach
                 </div>
-                <div class="relative flex-1 min-w-[200px]">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                    <input type="search" name="q" value="{{ request('q') }}"
-                           placeholder="Nom, prénom ou téléphone..."
-                           class="form-input pl-9">
-                </div>
-                <button type="submit" class="btn-outline">Rechercher</button>
-                @if(request()->hasAny(['q','statut']))
-                    <a href="{{ route('dashboard.credits.index') }}" class="btn btn-ghost">Effacer</a>
-                @endif
-            </form>
+                {{-- Recherche --}}
+                <form method="GET" action="{{ route('dashboard.credits.index') }}" class="flex flex-1 gap-2 min-w-[200px]">
+                    @if($filtre !== 'tous')
+                        <input type="hidden" name="statut" value="{{ $filtre }}">
+                    @endif
+                    <div class="relative flex-1">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input type="search" name="q" value="{{ request('q') }}"
+                               placeholder="Nom, prénom ou téléphone..."
+                               class="form-input pl-9">
+                    </div>
+                    <button type="submit" class="btn-outline">Rechercher</button>
+                    @if(request()->hasAny(['q','statut']))
+                        <a href="{{ route('dashboard.credits.index') }}" class="btn btn-ghost">Effacer</a>
+                    @endif
+                </form>
+            </div>
         </div>
 
         {{-- Liste --}}
