@@ -586,11 +586,24 @@
                                 </select>
                             </div>
                         </div>
-                        {{-- Bouton validation --}}
-                        <div x-show="$wire.clientId" class="text-xs space-y-1 bg-gray-50 dark:bg-slate-700/50 rounded-lg p-2.5">
-                            <p><span class="text-gray-400">Tél :</span> <span x-text="$wire.selectedClientTel || '—'"></span></p>
-                            <p><span class="text-gray-400">Adresse :</span> <span x-text="$wire.selectedClientAdresse || 'Non renseignée'"></span></p>
-                            <p><span class="text-gray-400">Pièce ID :</span> <span x-text="$wire.selectedClientPieceId || 'Non renseignée'"></span></p>
+                        {{-- Infos client crédit --}}
+                        <div x-show="$wire.clientId" class="space-y-2 bg-gray-50 dark:bg-slate-700/50 rounded-lg p-2.5 text-xs">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400">Tél :</span>
+                                <span class="font-medium text-gray-900 dark:text-white">{{ $this->selectedClientTel ?? '—' }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-gray-400 flex-shrink-0">Adresse :</span>
+                                <input type="text" wire:model.blur="selectedClientAdresse" wire:change="updateClientInfosCredit"
+                                       class="flex-1 bg-transparent border-0 border-b border-gray-300 dark:border-slate-600 px-1 py-0.5 text-xs focus:border-emerald-500 focus:ring-0 dark:text-white"
+                                       placeholder="Adresse du client">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-gray-400 flex-shrink-0">Pièce ID :</span>
+                                <input type="text" wire:model.blur="selectedClientPieceId" wire:change="updateClientInfosCredit"
+                                       class="flex-1 bg-transparent border-0 border-b border-gray-300 dark:border-slate-600 px-1 py-0.5 text-xs focus:border-emerald-500 focus:ring-0 dark:text-white"
+                                       placeholder="N° CNI, Passeport...">
+                            </div>
                         </div>
                         <button @click="validerVenteCredit()"
                                 :disabled="!$wire.clientId || (total-(parseInt(creditApport)||0)) <= 0"

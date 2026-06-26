@@ -130,6 +130,18 @@ class Caisse extends Component
         $this->selectedClientPieceId  = $client?->piece_identite;
     }
 
+    public function updateClientInfosCredit(): void
+    {
+        if (!$this->clientId) return;
+        $client = Client::find($this->clientId);
+        if ($client) {
+            $client->update([
+                'adresse'        => $this->selectedClientAdresse,
+                'piece_identite' => $this->selectedClientPieceId,
+            ]);
+        }
+    }
+
     #[On('client-scanne-qr')]
     public function clientScanneQr(string $id): void
     {

@@ -146,6 +146,12 @@
                         🕒 Historique
                         <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $timeline->count() }}</span>
                     </button>
+                    <button type="button" x-on:click="onglet = 'credits'"
+                            class="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+                            :class="onglet === 'credits' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
+                        🕐 Crédits
+                        <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $credits->count() }}</span>
+                    </button>
                     <button type="button" x-on:click="onglet = 'photos'"
                             class="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
                             :class="onglet === 'photos' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
@@ -274,6 +280,32 @@
                     </div>
                 </div>
                 @endif
+
+                {{-- Onglet Crédits --}}
+                <div x-show="onglet === 'credits'" x-cloak class="divide-y divide-gray-50 dark:divide-slate-700 max-h-96 overflow-y-auto">
+                    @if($credits->count())
+                        @foreach($credits as $credit)
+                        <a href="{{ route('dashboard.credits.show', $credit) }}" class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                    {{ $credit->vente->items->pluck('nom_snapshot')->implode(', ') ?: 'Crédit #' . substr($credit->id, 0, 8) }}
+                                </p>
+                                <p class="text-xs text-gray-500">{{ $credit->date_debut->format('d/m/Y') }} · {{ $credit->nb_echeances }} éch.</p>
+                            </div>
+                            <div class="text-right flex-shrink-0 ml-3">
+                                <p class="text-sm font-bold {{ $credit->reste_a_payer > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400' }}">
+                                    {{ number_format($credit->reste_a_payer, 0, ',', ' ') }} F
+                                </p>
+                                <span class="text-[10px] {{ $credit->statut === 'solde' ? 'badge badge-success' : ($credit->statut === 'retard' ? 'badge badge-danger' : 'badge badge-info') }}">
+                                    {{ $credit->statut === 'solde' ? 'Soldé' : ($credit->statut === 'retard' ? 'Retard' : 'En cours') }}
+                                </span>
+                            </div>
+                        </a>
+                        @endforeach
+                    @else
+                        <p class="text-center text-gray-400 text-sm py-8">Aucun crédit pour ce client.</p>
+                    @endif
+                </div>
 
                 {{-- Onglet Galerie photos --}}
                 <div x-show="onglet === 'photos'" x-cloak

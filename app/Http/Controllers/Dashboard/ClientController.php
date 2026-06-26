@@ -153,7 +153,10 @@ class ClientController extends Controller
         }
         $timeline = $timeline->sortByDesc('date')->values();
 
-        return view('dashboard.clients.show', compact('client', 'ventes', 'rdvAVenir', 'rdvPasses', 'timeline'));
+        // Crédits du client
+        $credits = $client->credits()->with(['vente.items'])->latest()->take(20)->get();
+
+        return view('dashboard.clients.show', compact('client', 'ventes', 'rdvAVenir', 'rdvPasses', 'timeline', 'credits'));
     }
 
     public function update(Request $request, Client $client)
