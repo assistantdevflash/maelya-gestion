@@ -554,21 +554,21 @@
 
                 {{-- Panneau Crédit --}}
                 <template x-if="modePaiement === 'credit'">
-                    <div class="space-y-3 p-4 bg-emerald-50/50 rounded-xl border border-emerald-200">
+                    <div class="space-y-3 p-4 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800/50">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Client</span>
-                            <span x-show="$wire.clientId" class="text-sm font-bold text-emerald-700" x-text="$wire.selectedClientNom || ''"></span>
-                            <span x-show="!$wire.clientId" class="text-xs text-red-500 font-medium">⚠️ Client obligatoire</span>
+                            <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Client</span>
+                            <span x-show="$wire.clientId" class="text-sm font-bold text-emerald-700 dark:text-emerald-400" x-text="$wire.selectedClientNom || ''"></span>
+                            <span x-show="!$wire.clientId" class="text-xs text-red-500 dark:text-red-400 font-medium">⚠️ Client obligatoire</span>
                         </div>
                         <div>
-                            <label class="text-xs text-gray-500">Apport initial (optionnel)</label>
+                            <label class="text-xs text-gray-500 dark:text-gray-400">Apport initial (optionnel)</label>
                             <input type="number" x-model.number="creditApport" min="0" :max="total"
                                    class="form-input text-sm mt-1" placeholder="0">
                         </div>
-                        <div class="bg-white rounded-lg p-3 text-sm space-y-1">
-                            <div class="flex justify-between"><span>Total vente</span><strong x-text="formatNumber(total) + ' FCFA'"></strong></div>
-                            <div class="flex justify-between text-emerald-600"><span>Apport</span><strong x-text="formatNumber(parseInt(creditApport)||0) + ' FCFA'"></strong></div>
-                            <div class="flex justify-between text-red-600 font-bold pt-1 border-t"><span>Reste à payer</span><strong x-text="formatNumber(Math.max(0, total-(parseInt(creditApport)||0))) + ' FCFA'"></strong></div>
+                        <div class="bg-white dark:bg-slate-800 rounded-lg p-3 text-sm space-y-1">
+                            <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-300">Total vente</span><strong class="text-gray-900 dark:text-white" x-text="formatNumber(total) + ' FCFA'"></strong></div>
+                            <div class="flex justify-between text-emerald-600 dark:text-emerald-400"><span>Apport</span><strong x-text="formatNumber(parseInt(creditApport)||0) + ' FCFA'"></strong></div>
+                            <div class="flex justify-between text-red-600 dark:text-red-400 font-bold pt-1 border-t dark:border-slate-700"><span>Reste à payer</span><strong x-text="formatNumber(Math.max(0, total-(parseInt(creditApport)||0))) + ' FCFA'"></strong></div>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
@@ -599,22 +599,22 @@
                 <template x-if="showCreditConfirmation">
                     <div class="fixed inset-0 z-[60] flex items-center justify-center p-4" style="background: rgba(0,0,0,0.5);"
                          @click.self="showCreditConfirmation = false">
-                        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+                        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
                              x-transition:enter="transition ease-out duration-200"
                              x-transition:enter-start="opacity-0 scale-95"
                              x-transition:enter-end="opacity-100 scale-100">
                             {{-- Header --}}
-                            <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+                            <div class="p-5 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-                                        <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                         </svg>
                                     </div>
-                                    <h3 class="text-sm font-bold text-gray-900">Confirmer la vente à crédit</h3>
+                                    <h3 class="text-sm font-bold text-gray-900 dark:text-white">Confirmer la vente à crédit</h3>
                                 </div>
-                                <button @click="showCreditConfirmation = false" class="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center">
-                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <button @click="showCreditConfirmation = false" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                     </svg>
                                 </button>
@@ -622,24 +622,24 @@
                             {{-- Body --}}
                             <div class="p-5 space-y-3 text-sm">
                                 <div class="flex justify-between">
-                                    <span class="text-gray-500">Total vente</span>
-                                    <strong x-text="formatNumber(total) + ' FCFA'"></strong>
+                                    <span class="text-gray-500 dark:text-gray-400">Total vente</span>
+                                    <strong class="text-gray-900 dark:text-white" x-text="formatNumber(total) + ' FCFA'"></strong>
                                 </div>
-                                <div class="flex justify-between text-emerald-600">
+                                <div class="flex justify-between text-emerald-600 dark:text-emerald-400">
                                     <span>Apport initial</span>
                                     <strong x-text="formatNumber(parseInt(creditApport)||0) + ' FCFA'"></strong>
                                 </div>
-                                <div class="flex justify-between text-red-600 font-bold pt-2 border-t">
+                                <div class="flex justify-between text-red-600 dark:text-red-400 font-bold pt-2 border-t dark:border-slate-700">
                                     <span>Reste à payer</span>
                                     <strong x-text="formatNumber(Math.max(0, total-(parseInt(creditApport)||0))) + ' FCFA'"></strong>
                                 </div>
-                                <div class="flex justify-between text-gray-500">
+                                <div class="flex justify-between text-gray-500 dark:text-gray-400">
                                     <span>Échéancier</span>
                                     <span x-text="creditNbEcheances + ' × ' + (creditFrequence === 'mensuelle' ? 'mois' : 'semaines')"></span>
                                 </div>
-                                <div x-show="$wire.clientId" class="bg-gray-50 rounded-lg p-2.5 flex justify-between">
-                                    <span class="text-gray-500">Client</span>
-                                    <span class="font-semibold" x-text="$wire.selectedClientNom || ''"></span>
+                                <div x-show="$wire.clientId" class="bg-gray-50 dark:bg-slate-700/50 rounded-lg p-2.5 flex justify-between">
+                                    <span class="text-gray-500 dark:text-gray-400">Client</span>
+                                    <span class="font-semibold text-gray-900 dark:text-white" x-text="$wire.selectedClientNom || ''"></span>
                                 </div>
                             </div>
                             {{-- Footer --}}
