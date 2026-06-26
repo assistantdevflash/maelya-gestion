@@ -413,6 +413,19 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         creditFrequence: 'mensuelle',
         showCreditConfirmation: false,
 
+        // Écoute le reset après vente à crédit
+        $wire: null,
+        init() {
+            this.$wire = this.$wire; // capture référence
+            this.$wire.on('reset-caisse-credit', () => {
+                this.panier = {};
+                this.search = '';
+                this.creditApport = 0;
+                this.modePaiement = 'cash';
+                this.showCreditConfirmation = false;
+            });
+        },
+
         async validerVenteCredit() {
             if (this.panierVide || this.loading) return;
             if (!this.$wire.clientId) {

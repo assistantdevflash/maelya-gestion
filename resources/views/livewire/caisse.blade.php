@@ -12,6 +12,16 @@
     })"
     class="grid lg:grid-cols-5 gap-5 h-full"
 >
+    {{-- Succès vente crédit --}}
+    @if($creditSuccess)
+    <div class="lg:col-span-5 flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-sm text-emerald-700">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        {{ $creditSuccess }}
+        <a href="{{ route('dashboard.credits.index') }}" class="ml-auto text-xs font-semibold text-emerald-600 hover:underline">Voir les crédits →</a>
+    </div>
+    @endif
 
     {{-- ═══ Catalogue gauche (100 % Alpine – zéro requête serveur) ═══ --}}
     <div class="lg:col-span-3 space-y-4" wire:ignore>
@@ -693,6 +703,10 @@
                     <a href="{{ route('dashboard.caisse.brouillons.index') }}"
                        class="px-3 py-2 text-xs font-semibold rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition">
                         Brouillons
+                    </a>
+                    <a href="{{ route('dashboard.credits.index') }}"
+                       class="px-3 py-2 text-xs font-semibold rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition">
+                        Crédits
                     </a>
                 </div>
             </div>

@@ -43,6 +43,9 @@ class Caisse extends Component
     /** Nom du client sélectionné (exposé à Alpine sans computed property) */
     public ?string $selectedClientNom = null;
 
+    /** Message succès après vente crédit */
+    public ?string $creditSuccess = null;
+
     public function mount(?string $client = null, ?string $rdv = null, ?string $brouillon = null)
     {
         $this->clientId = $client;
@@ -351,9 +354,9 @@ class Caisse extends Component
             ]);
         }
 
-        // Réinitialiser Alpine
-        $this->dispatch('reset-caisse');
-        session()->flash('success', 'Vente à crédit enregistrée — reste : ' . number_format($reste, 0, ',', ' ') . ' FCFA');
+        // Réinitialiser Alpine + message succès
+        $this->creditSuccess = 'Vente à crédit enregistrée — reste : ' . number_format($reste, 0, ',', ' ') . ' FCFA';
+        $this->dispatch('reset-caisse-credit');
     }
 
     private function calculerDateFinCredit($date, int $nb, string $freq): string
