@@ -118,6 +118,11 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
     // Stock consultation (tous les rôles)
     Route::get('stock', [StockController::class, 'index'])->name('stock.index');
 
+    // Crédits clients & échéanciers
+    Route::get('credits', [\App\Http\Controllers\Dashboard\CreditController::class, 'index'])->name('credits.index');
+    Route::get('credits/{credit}', [\App\Http\Controllers\Dashboard\CreditController::class, 'show'])->name('credits.show');
+    Route::post('credits/{credit}/payer', [\App\Http\Controllers\Dashboard\CreditController::class, 'payer'])->name('credits.payer');
+
     // Profil (tous les rôles)
     Route::get('profil', [ProfilController::class, 'edit'])->name('profil.edit');
     Route::put('profil', [ProfilController::class, 'update'])->name('profil.update');

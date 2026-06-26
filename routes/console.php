@@ -20,5 +20,8 @@ Schedule::command('clients:rappel-anniversaire')->dailyAt('09:00');
 // Détection quotidienne des anomalies (stock, RDV doublons, ventes inhabituelles)
 Schedule::command('maelya:anomalies')->dailyAt('07:00');
 
+// Détection quotidienne des crédits en retard (8h)
+Schedule::command('credits:detecter-retards')->dailyAt('08:00');
+
 // Purge hebdomadaire du journal d'activité (conserve 90 jours)
 Schedule::command('audit:purge --days=90')->weeklyOn(0, '02:00');
