@@ -23,5 +23,8 @@ Schedule::command('maelya:anomalies')->dailyAt('07:00');
 // Détection quotidienne des crédits en retard (8h)
 Schedule::command('credits:detecter-retards')->dailyAt('08:00');
 
+// Rappels J-1 pour les échéances de crédit du lendemain
+Schedule::command('credits:rappels-echeances')->dailyAt('08:00');
+
 // Purge hebdomadaire du journal d'activité (conserve 90 jours)
 Schedule::command('audit:purge --days=90')->weeklyOn(0, '02:00');
