@@ -588,6 +588,66 @@
                     </div>
                 </template>
 
+                {{-- Modal confirmation crédit --}}
+                <template x-if="showCreditConfirmation">
+                    <div class="fixed inset-0 z-[60] flex items-center justify-center p-4" style="background: rgba(0,0,0,0.5);"
+                         @click.self="showCreditConfirmation = false">
+                        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100">
+                            {{-- Header --}}
+                            <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-sm font-bold text-gray-900">Confirmer la vente à crédit</h3>
+                                </div>
+                                <button @click="showCreditConfirmation = false" class="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            {{-- Body --}}
+                            <div class="p-5 space-y-3 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Total vente</span>
+                                    <strong x-text="formatNumber(total) + ' FCFA'"></strong>
+                                </div>
+                                <div class="flex justify-between text-emerald-600">
+                                    <span>Apport initial</span>
+                                    <strong x-text="formatNumber(parseInt(creditApport)||0) + ' FCFA'"></strong>
+                                </div>
+                                <div class="flex justify-between text-red-600 font-bold pt-2 border-t">
+                                    <span>Reste à payer</span>
+                                    <strong x-text="formatNumber(Math.max(0, total-(parseInt(creditApport)||0))) + ' FCFA'"></strong>
+                                </div>
+                                <div class="flex justify-between text-gray-500">
+                                    <span>Échéancier</span>
+                                    <span x-text="creditNbEcheances + ' × ' + (creditFrequence === 'mensuelle' ? 'mois' : 'semaines')"></span>
+                                </div>
+                                @if($clientId && $this->selectedClient)
+                                <div class="bg-gray-50 rounded-lg p-2.5 flex justify-between">
+                                    <span class="text-gray-500">Client</span>
+                                    <span class="font-semibold">{{ $this->selectedClient->nom_complet }}</span>
+                                </div>
+                                @endif
+                            </div>
+                            {{-- Footer --}}
+                            <div class="px-5 pb-5 flex gap-2">
+                                <button @click="showCreditConfirmation = false" class="flex-1 btn-outline justify-center text-sm py-2.5">Annuler</button>
+                                <button @click="confirmerVenteCredit()" class="flex-1 py-2.5 text-sm font-bold rounded-xl text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:brightness-110">
+                                    Confirmer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
                 {{-- Montant remis (Espèces) --}}
                 <template x-if="modePaiement === 'cash'">
                     <div class="space-y-2">

@@ -411,6 +411,7 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         creditApport: 0,
         creditNbEcheances: 3,
         creditFrequence: 'mensuelle',
+        showCreditConfirmation: false,
 
         async validerVenteCredit() {
             if (this.panierVide || this.loading) return;
@@ -424,16 +425,13 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
                 alert("Le reste à payer doit être supérieur à 0 pour un crédit.");
                 return;
             }
-            const ok = confirm(
-                `Confirmer la vente à crédit ?\n\n` +
-                `Total : ${this.formatNumber(this.total)} FCFA\n` +
-                `Apport : ${this.formatNumber(apport)} FCFA\n` +
-                `Reste : ${this.formatNumber(reste)} FCFA\n` +
-                `${this.creditNbEcheances} échéances ${this.creditFrequence === 'mensuelle' ? 'mensuelles' : 'hebdomadaires'}`
-            );
-            if (!ok) return;
+            this.showCreditConfirmation = true;
+        },
+
+        async confirmerVenteCredit() {
+            this.showCreditConfirmation = false;
             this.loading = true;
-            this.showConfirmation = false;
+            const apport = parseInt(this.creditApport) || 0;
             try {
                 await this.$wire.validerVenteCredit(
                     Object.values(this.panier),
