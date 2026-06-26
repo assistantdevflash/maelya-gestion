@@ -90,7 +90,7 @@ $categories = [
                 <ul>
                     <li><strong>Basic</strong> (2 000 FCFA/mois) : caisse, clients, RDV, prestations</li>
                     <li><strong>Premium</strong> (4 900 FCFA/mois) : tout Basic + stock, fidélité, finances, équipe</li>
-                    <li><strong>Premium+</strong> (9 900 FCFA/mois) : tout + multi-établissements, comparatif</li>
+                    <li><strong>Premium+</strong> (9 900 FCFA/mois) : tout + multi-établissements, vente à crédit, comparatif</li>
                 </ul>'
             ],
         ]

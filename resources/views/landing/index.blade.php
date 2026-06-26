@@ -268,6 +268,7 @@
                                         'Caisse illimitée', 'Agenda & Rendez-vous', 'Gestion stock & clients', 'Rapports financiers',
                                     ];
                                     if ($plan->mis_en_avant) $features[] = 'Support prioritaire';
+                                    if ($plan->mis_en_avant) $features[] = 'Vente à crédit & échéanciers';
                                 }
                             @endphp
                             @foreach($features as $feature)
