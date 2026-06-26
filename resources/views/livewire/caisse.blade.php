@@ -547,7 +547,7 @@
                     <div class="space-y-3 p-4 bg-emerald-50/50 rounded-xl border border-emerald-200">
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Client</span>
-                            <span x-show="$wire.clientId && $wire.selectedClient" class="text-sm font-bold text-emerald-700" x-text="$wire.selectedClient?.nom_complet || ''"></span>
+                            <span x-show="$wire.clientId" class="text-sm font-bold text-emerald-700" x-text="$wire.selectedClientNom || ''"></span>
                             <span x-show="!$wire.clientId" class="text-xs text-red-500 font-medium">⚠️ Client obligatoire</span>
                         </div>
                         <div>
@@ -629,7 +629,7 @@
                                 </div>
                                 <div x-show="$wire.clientId" class="bg-gray-50 rounded-lg p-2.5 flex justify-between">
                                     <span class="text-gray-500">Client</span>
-                                    <span class="font-semibold" x-text="$wire.selectedClient?.nom_complet || ''"></span>
+                                    <span class="font-semibold" x-text="$wire.selectedClientNom || ''"></span>
                                 </div>
                             </div>
                             {{-- Footer --}}

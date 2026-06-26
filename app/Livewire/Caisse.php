@@ -40,6 +40,9 @@ class Caisse extends Component
     public int $creditNbEcheances = 3;
     public string $creditFrequence = 'mensuelle';
 
+    /** Nom du client sélectionné (exposé à Alpine sans computed property) */
+    public ?string $selectedClientNom = null;
+
     public function mount(?string $client = null, ?string $rdv = null, ?string $brouillon = null)
     {
         $this->clientId = $client;
@@ -114,6 +117,8 @@ class Caisse extends Component
         $this->clientId      = $id;
         $this->clientSearch  = '';
         $this->showClientList = false;
+        $client = Client::find($id);
+        $this->selectedClientNom = $client?->nom_complet;
     }
 
     #[On('client-scanne-qr')]
