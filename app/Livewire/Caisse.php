@@ -42,6 +42,9 @@ class Caisse extends Component
 
     /** Nom du client sélectionné (exposé à Alpine sans computed property) */
     public ?string $selectedClientNom = null;
+    public ?string $selectedClientTel = null;
+    public ?string $selectedClientAdresse = null;
+    public ?string $selectedClientPieceId = null;
 
     /** Message succès après vente crédit */
     public ?string $creditSuccess = null;
@@ -121,7 +124,10 @@ class Caisse extends Component
         $this->clientSearch  = '';
         $this->showClientList = false;
         $client = Client::find($id);
-        $this->selectedClientNom = $client?->nom_complet;
+        $this->selectedClientNom      = $client?->nom_complet;
+        $this->selectedClientTel      = $client?->telephone;
+        $this->selectedClientAdresse  = $client?->adresse;
+        $this->selectedClientPieceId  = $client?->piece_identite;
     }
 
     #[On('client-scanne-qr')]

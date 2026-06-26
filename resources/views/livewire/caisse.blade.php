@@ -587,6 +587,11 @@
                             </div>
                         </div>
                         {{-- Bouton validation --}}
+                        <div x-show="$wire.clientId && $wire.selectedClient" class="text-xs space-y-1 bg-gray-50 dark:bg-slate-700/50 rounded-lg p-2.5">
+                            <p><span class="text-gray-400">Tél :</span> <span x-text="$wire.selectedClient?.telephone || '—'"></span></p>
+                            <p><span class="text-gray-400">Adresse :</span> <span x-text="$wire.selectedClient?.adresse || 'Non renseignée'"></span></p>
+                            <p><span class="text-gray-400">Pièce ID :</span> <span x-text="$wire.selectedClient?.piece_identite || 'Non renseignée'"></span></p>
+                        </div>
                         <button @click="validerVenteCredit()"
                                 :disabled="!$wire.clientId || (total-(parseInt(creditApport)||0)) <= 0"
                                 class="w-full py-2.5 rounded-xl text-white text-sm font-bold bg-gradient-to-r from-emerald-500 to-teal-600 disabled:opacity-50">
