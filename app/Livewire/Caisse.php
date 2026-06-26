@@ -28,6 +28,8 @@ class Caisse extends Component
     public string $newClientNaissanceMois = '';
     public string $newClientNaissanceJour = '';
     public string $newClientNotes = '';
+    public string $newClientAdresse = '';
+    public string $newClientPieceIdentite = '';
 
     /** Prestations pré-remplies (depuis un RDV) à envoyer à Alpine */
     public array $prefilledItems = [];
@@ -158,6 +160,8 @@ class Caisse extends Component
             'newClientNaissanceMois' => ['nullable', 'string', 'in:,01,02,03,04,05,06,07,08,09,10,11,12'],
             'newClientNaissanceJour' => ['nullable', 'string'],
             'newClientNotes'     => ['nullable', 'string', 'max:1000'],
+            'newClientAdresse'   => ['nullable', 'string', 'max:255'],
+            'newClientPieceIdentite' => ['nullable', 'string', 'max:100'],
         ]);
 
         $dateNaissance = null;
@@ -172,6 +176,8 @@ class Caisse extends Component
             'email'          => $this->newClientEmail ?: null,
             'date_naissance' => $dateNaissance,
             'notes'          => $this->newClientNotes ?: null,
+            'adresse'        => $this->newClientAdresse ?: null,
+            'piece_identite' => $this->newClientPieceIdentite ?: null,
         ]);
 
         $this->clientId = $client->id;
@@ -188,6 +194,8 @@ class Caisse extends Component
         $this->newClientNaissanceMois = '';
         $this->newClientNaissanceJour = '';
         $this->newClientNotes = '';
+        $this->newClientAdresse = '';
+        $this->newClientPieceIdentite = '';
         $this->showNewClientForm = false;
         $this->showClientList = false;
         $this->clientSearch = '';

@@ -1025,6 +1025,26 @@
                             <textarea wire:model="newClientNotes" rows="2" maxlength="1000" class="form-input resize-none"
                                       placeholder="Allergies, préférences..."></textarea>
                         </div>
+                        {{-- Informations supplémentaires (collapsible) --}}
+                        <div class="col-span-2" x-data="{ showExtraCaisse: false }">
+                            <button type="button" @click="showExtraCaisse = !showExtraCaisse"
+                                    class="flex items-center gap-2 text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors">
+                                <svg class="w-3.5 h-3.5 transition-transform" :class="showExtraCaisse ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                                Informations supplémentaires
+                            </button>
+                            <div x-show="showExtraCaisse" x-collapse class="mt-3 space-y-3">
+                                <div class="form-group mb-0">
+                                    <label class="form-label">Adresse</label>
+                                    <input type="text" wire:model="newClientAdresse" maxlength="255" class="form-input" placeholder="Abidjan, Cocody...">
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label class="form-label">Pièce d'identité</label>
+                                    <input type="text" wire:model="newClientPieceIdentite" maxlength="100" class="form-input" placeholder="N° CNI, Passeport...">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="flex gap-3 pt-1">
                         <button type="button" @click="newClientOpen = false; document.body.classList.remove('overflow-hidden')" class="btn btn-outline flex-1 justify-center">Annuler</button>

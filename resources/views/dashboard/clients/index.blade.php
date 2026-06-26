@@ -20,6 +20,8 @@
             email:          @js(old('email',          $editErrorClient?->email ?? '')),
             date_naissance: @js(old('date_naissance', $editErrorClient?->date_naissance ?? '')),
             notes:          @js(old('notes',          $editErrorClient?->notes ?? '')),
+            adresse:        @js(old('adresse',        $editErrorClient?->adresse ?? '')),
+            piece_identite: @js(old('piece_identite', $editErrorClient?->piece_identite ?? '')),
         },
         openEdit(client) {
             this.edit = client;
@@ -173,7 +175,9 @@
                                             telephone:      @js($client->telephone ?? ''),
                                             email:          @js($client->email ?? ''),
                                             date_naissance: @js($client->date_naissance ?? ''),
-                                            notes:          @js($client->notes ?? '')
+                                            notes:          @js($client->notes ?? ''),
+                                            adresse:        @js($client->adresse ?? ''),
+                                            piece_identite: @js($client->piece_identite ?? '')
                                         })"
                                         class="btn-icon">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -361,6 +365,28 @@
                             <textarea name="notes" rows="2" maxlength="1000" class="form-input resize-none"
                                       placeholder="Allergies, préférences...">{{ old('_form') === 'create' ? old('notes') : '' }}</textarea>
                         </div>
+                        {{-- Informations supplémentaires (collapsible) --}}
+                        <div class="col-span-2" x-data="{ showExtra: false }">
+                            <button type="button" @click="showExtra = !showExtra"
+                                    class="flex items-center gap-2 text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors">
+                                <svg class="w-3.5 h-3.5 transition-transform" :class="showExtra ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                                Informations supplémentaires
+                            </button>
+                            <div x-show="showExtra" x-collapse class="mt-3 space-y-3">
+                                <div class="form-group mb-0">
+                                    <label class="form-label">Adresse</label>
+                                    <input type="text" name="adresse" maxlength="255" class="form-input"
+                                           value="{{ old('_form') === 'create' ? old('adresse') : '' }}" placeholder="Abidjan, Cocody...">
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label class="form-label">Pièce d'identité</label>
+                                    <input type="text" name="piece_identite" maxlength="100" class="form-input"
+                                           value="{{ old('_form') === 'create' ? old('piece_identite') : '' }}" placeholder="N° CNI, Passeport...">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="flex gap-3 pt-1">
                         <button type="button" @click="createOpen = false" class="btn btn-outline flex-1 justify-center">Annuler</button>
@@ -442,6 +468,28 @@
                             <label class="form-label">Notes</label>
                             <textarea name="notes" rows="2" maxlength="1000" class="form-input resize-none"
                                       x-model="edit.notes" placeholder="Allergies, préférences..."></textarea>
+                        </div>
+                        {{-- Informations supplémentaires (collapsible) --}}
+                        <div class="col-span-2" x-data="{ showExtraEdit: false }">
+                            <button type="button" @click="showExtraEdit = !showExtraEdit"
+                                    class="flex items-center gap-2 text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors">
+                                <svg class="w-3.5 h-3.5 transition-transform" :class="showExtraEdit ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                                Informations supplémentaires
+                            </button>
+                            <div x-show="showExtraEdit" x-collapse class="mt-3 space-y-3">
+                                <div class="form-group mb-0">
+                                    <label class="form-label">Adresse</label>
+                                    <input type="text" name="adresse" maxlength="255" class="form-input" x-model="edit.adresse"
+                                           placeholder="Abidjan, Cocody...">
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label class="form-label">Pièce d'identité</label>
+                                    <input type="text" name="piece_identite" maxlength="100" class="form-input" x-model="edit.piece_identite"
+                                           placeholder="N° CNI, Passeport...">
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="flex gap-3 pt-1">
