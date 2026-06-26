@@ -23,6 +23,7 @@ class RappelsEcheances extends Command
         $echeances = Echeance::with(['credit.client', 'credit.vente.items', 'credit.institut'])
             ->whereDate('date_prevue', $demain)
             ->where('statut', 'en_attente')
+            ->whereColumn('montant_paye', '<', 'montant') // sécurité : déjà payée = pas de rappel
             ->get();
 
         if ($echeances->isEmpty()) {

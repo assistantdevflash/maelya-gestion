@@ -59,7 +59,7 @@
             @endforeach
 
             <div style="text-align:center;margin:32px 0 8px;">
-                <a href="{{ route('credit.fiche.public', $credit->id) }}"
+                <a href="{{ url('/fiche-credit/' . $credit->id) }}"
                    style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;">
                     Voir ma fiche de credit
                 </a>
