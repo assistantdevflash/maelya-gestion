@@ -334,7 +334,7 @@ class Caisse extends Component
                     'credit_id'   => $credit->id,
                     'institut_id' => $this->institutId(),
                     'numero'      => $i + 1,
-                    'date_prevue' => $date->toDateString(),
+                    'date_prevue' => $date->copy(),
                     'montant'     => max(0, $montant),
                     'statut'      => 'en_attente',
                 ]);
@@ -359,13 +359,13 @@ class Caisse extends Component
         $this->dispatch('reset-caisse-credit');
     }
 
-    private function calculerDateFinCredit($date, int $nb, string $freq): string
+    private function calculerDateFinCredit($date, int $nb, string $freq): \Carbon\Carbon
     {
         $d = $date->copy();
         for ($i = 0; $i < $nb; $i++) {
             $d = $freq === 'hebdomadaire' ? $d->addWeek() : $d->addMonth();
         }
-        return $d->toDateString();
+        return $d;
     }
 
     // ── Render : charge le catalogue (cache 1h), Alpine gère le reste ──

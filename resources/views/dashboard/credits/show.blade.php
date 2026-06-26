@@ -60,8 +60,8 @@
             <div class="card p-5">
                 <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Conditions</p>
                 <p class="text-sm"><strong>{{ $credit->nb_echeances }} échéances</strong> {{ $credit->frequence === 'mensuelle' ? 'mensuelles' : 'hebdomadaires' }}</p>
-                <p class="text-xs text-gray-500 mt-1">Début : {{ $credit->date_debut->format('d/m/Y') }}</p>
-                <p class="text-xs text-gray-500">Fin prévue : {{ $credit->date_fin_prevue?->format('d/m/Y') ?? '—' }}</p>
+                <p class="text-xs text-gray-500 mt-1">Début : {{ \Carbon\Carbon::parse($credit->date_debut)->format('d/m/Y') }}</p>
+                <p class="text-xs text-gray-500">Fin prévue : {{ $credit->date_fin_prevue ? \Carbon\Carbon::parse($credit->date_fin_prevue)->format('d/m/Y') : '—' }}</p>
             </div>
         </div>
 
@@ -103,7 +103,7 @@
                     <tr class="{{ $echeance->statut === 'retard' ? 'bg-red-50' : '' }}">
                         <td class="px-4 py-3 font-mono text-xs">{{ $echeance->numero }}/{{ $credit->nb_echeances }}</td>
                         <td class="px-4 py-3 {{ $echeance->statut === 'retard' ? 'text-red-600 font-semibold' : '' }}">
-                            {{ $echeance->date_prevue->format('d/m/Y') }}
+                            {{ \Carbon\Carbon::parse($echeance->date_prevue)->format('d/m/Y') }}
                         </td>
                         <td class="px-4 py-3 text-right font-mono">{{ number_format($echeance->montant, 0, ',', ' ') }} F</td>
                         <td class="px-4 py-3 text-right font-mono text-emerald-600 hidden sm:table-cell">
@@ -181,7 +181,7 @@
                 <tbody class="divide-y divide-gray-50">
                     @foreach($credit->paiements as $p)
                     <tr>
-                        <td class="px-4 py-2 text-xs">{{ $p->created_at->format('d/m/Y H:i') }}</td>
+                        <td class="px-4 py-2 text-xs">{{ \Carbon\Carbon::parse($p->created_at)->format('d/m/Y H:i') }}</td>
                         <td class="px-4 py-2 text-right font-mono text-xs font-semibold">{{ number_format($p->montant, 0, ',', ' ') }} F</td>
                         <td class="px-4 py-2 text-xs">
                             @if($p->mode_paiement === 'cash') 💵 Espèces
