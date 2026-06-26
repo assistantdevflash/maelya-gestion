@@ -119,6 +119,23 @@
                         {{ $client->notes }}
                     </div>
                     @endif
+                    @if($client->adresse)
+                    <div class="flex items-start gap-2 text-gray-600">
+                        <svg class="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <span class="text-xs">{{ $client->adresse }}</span>
+                    </div>
+                    @endif
+                    @if($client->piece_identite)
+                    <div class="flex items-start gap-2 text-gray-600">
+                        <svg class="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a1 1 0 011-1h2a1 1 0 011 1v1m-4 0h4M9 14l2 2 4-4"/>
+                        </svg>
+                        <span class="text-xs">{{ $client->piece_identite }}</span>
+                    </div>
+                    @endif
                 </div>
             </div>
 
@@ -566,6 +583,28 @@
                                 <label class="form-label">Notes</label>
                                 <textarea name="notes" rows="2" maxlength="1000" class="form-input resize-none"
                                           placeholder="Allergies, préférences...">{{ old('notes', $client->notes) }}</textarea>
+                            </div>
+                            {{-- Informations supplémentaires (collapsible) --}}
+                            <div class="col-span-2" x-data="{ showExtraShowEdit: false }">
+                                <button type="button" @click="showExtraShowEdit = !showExtraShowEdit"
+                                        class="flex items-center gap-2 text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors">
+                                    <svg class="w-3.5 h-3.5 transition-transform" :class="showExtraShowEdit ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                    Informations supplémentaires
+                                </button>
+                                <div x-show="showExtraShowEdit" x-collapse class="mt-3 space-y-3">
+                                    <div class="form-group mb-0">
+                                        <label class="form-label">Adresse</label>
+                                        <input type="text" name="adresse" maxlength="255" class="form-input"
+                                               value="{{ old('adresse', $client->adresse) }}" placeholder="Abidjan, Cocody...">
+                                    </div>
+                                    <div class="form-group mb-0">
+                                        <label class="form-label">Pièce d'identité</label>
+                                        <input type="text" name="piece_identite" maxlength="100" class="form-input"
+                                               value="{{ old('piece_identite', $client->piece_identite) }}" placeholder="N° CNI, Passeport...">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="flex gap-3 pt-1">
