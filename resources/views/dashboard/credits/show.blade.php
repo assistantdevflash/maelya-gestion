@@ -25,13 +25,20 @@
                     🖨️ Imprimer
                 </a>
                 @php
-                    $waPhonePrint = $credit->client?->telephone ? preg_replace('/\D/', '', $credit->client->telephone) : null;
-                    $waMsgPrint = $waPhonePrint ? urlencode(
-                        "Bonjour {$credit->client->prenom},\n\n"
-                        . "Voici votre fiche de crédit :\n"
-                        . "📋 Montant total : " . number_format($credit->montant_total, 0, ',', ' ') . " F\n"
-                        . "💳 Reste à payer : " . number_format($credit->reste_a_payer, 0, ',', ' ') . " F\n"
-                        . "📄 Fiche : " . route('dashboard.credits.print', $credit) . "\n\n"
+                    $waPhonePrint = $credit->client?->telephone ? preg_replace('/[^0-9+]/', '', $credit->client->telephone) : null;
+                    if ($waPhonePrint) {
+                        $waPhonePrint = ltrim($waPhonePrint, '+');
+                        if (str_starts_with($waPhonePrint, '0')) {
+                            $waPhonePrint = '225' . $waPhonePrint;
+                        }
+                    }
+                    $printUrl = route('dashboard.credits.print', $credit);
+                    $waMsgPrint = $waPhonePrint ? rawurlencode(
+                        "Bonjour " . ($credit->client->prenom ?? '') . ",\n\n"
+                        . "Voici votre fiche de credit :\n"
+                        . "Montant total : " . number_format($credit->montant_total, 0, ',', ' ') . " FCFA\n"
+                        . "Reste a payer : " . number_format($credit->reste_a_payer, 0, ',', ' ') . " FCFA\n"
+                        . "Fiche : " . $printUrl . "\n\n"
                         . "Merci de votre confiance !"
                     ) : null;
                 @endphp

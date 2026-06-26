@@ -60,16 +60,20 @@ class CreditController extends Controller
         // WhatsApp URL
         $waUrl = null;
         if ($credit->client?->telephone) {
-            $waPhone = preg_replace('/\D/', '', $credit->client->telephone);
+            $waPhone = preg_replace('/[^0-9+]/', '', $credit->client->telephone);
+            $waPhone = ltrim($waPhone, '+');
+            if (str_starts_with($waPhone, '0')) {
+                $waPhone = '225' . $waPhone;
+            }
             $printUrl = route('dashboard.credits.print', $credit);
-            $msg = "Bonjour {$credit->client->prenom},\n\n"
-                 . "Voici votre fiche de crédit chez {$institut?->nom} :\n"
-                 . "📋 Montant total : " . number_format($credit->montant_total, 0, ',', ' ') . " F\n"
-                 . "💳 Reste à payer : " . number_format($credit->reste_a_payer, 0, ',', ' ') . " F\n"
-                 . "📅 Prochaine échéance : " . ($credit->echeances->where('statut', 'en_attente')->first()?->date_prevue ? \Carbon\Carbon::parse($credit->echeances->where('statut', 'en_attente')->first()->date_prevue)->format('d/m/Y') : '—') . "\n\n"
-                 . "📄 Fiche complète : {$printUrl}\n\n"
+            $msg = "Bonjour " . ($credit->client->prenom ?? '') . ",\n\n"
+                 . "Voici votre fiche de credit chez " . ($institut?->nom ?? 'notre etablissement') . " :\n"
+                 . "Montant total : " . number_format($credit->montant_total, 0, ',', ' ') . " FCFA\n"
+                 . "Reste a payer : " . number_format($credit->reste_a_payer, 0, ',', ' ') . " FCFA\n"
+                 . "Prochaine echeance : " . ($credit->echeances->where('statut', 'en_attente')->first()?->date_prevue ? \Carbon\Carbon::parse($credit->echeances->where('statut', 'en_attente')->first()->date_prevue)->format('d/m/Y') : '—') . "\n\n"
+                 . "Fiche complete : {$printUrl}\n\n"
                  . "Merci de votre confiance !";
-            $waUrl = "https://wa.me/{$waPhone}?text=" . urlencode($msg);
+            $waUrl = "https://wa.me/{$waPhone}?text=" . rawurlencode($msg);
         }
 
         return view('dashboard.credits.print', compact('credit', 'institut', 'waUrl'));
