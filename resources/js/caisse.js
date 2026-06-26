@@ -405,6 +405,49 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         },
 
         // ═══════════════════════════════════════
+        //  Crédit
+        // ═══════════════════════════════════════
+
+        creditApport: 0,
+        creditNbEcheances: 3,
+        creditFrequence: 'mensuelle',
+
+        async validerVenteCredit() {
+            if (this.panierVide || this.loading) return;
+            if (!this.clientId) {
+                alert('Veuillez sélectionner un client pour la vente à crédit.');
+                return;
+            }
+            const apport = parseInt(this.creditApport) || 0;
+            const reste = this.total - apport;
+            if (reste <= 0) {
+                alert("Le reste à payer doit être supérieur à 0 pour un crédit.");
+                return;
+            }
+            const ok = confirm(
+                `Confirmer la vente à crédit ?\n\n` +
+                `Total : ${this.formatNumber(this.total)} FCFA\n` +
+                `Apport : ${this.formatNumber(apport)} FCFA\n` +
+                `Reste : ${this.formatNumber(reste)} FCFA\n` +
+                `${this.creditNbEcheances} échéances ${this.creditFrequence === 'mensuelle' ? 'mensuelles' : 'hebdomadaires'}`
+            );
+            if (!ok) return;
+            this.loading = true;
+            this.showConfirmation = false;
+            try {
+                await this.$wire.validerVenteCredit(
+                    Object.values(this.panier),
+                    apport,
+                    this.creditNbEcheances,
+                    this.creditFrequence,
+                    this.codePromo?.id ?? null,
+                );
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        // ═══════════════════════════════════════
         //  Helpers
         // ═══════════════════════════════════════
 

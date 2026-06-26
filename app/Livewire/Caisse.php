@@ -35,6 +35,11 @@ class Caisse extends Component
     /** Panier complet pré-rempli (depuis un brouillon) */
     public array $prefilledPanier = [];
 
+    /** Crédit */
+    public int $creditApport = 0;
+    public int $creditNbEcheances = 3;
+    public string $creditFrequence = 'mensuelle';
+
     public function mount(?string $client = null, ?string $rdv = null, ?string $brouillon = null)
     {
         $this->clientId = $client;
@@ -247,6 +252,112 @@ class Caisse extends Component
             'montant_mobile'      => $montantMobile,
             'montant_carte'       => $montantCarte,
         ]);
+    }
+
+    // ── Validation vente à crédit ──
+
+    public function validerVenteCredit(array $panier, int $apport, int $nbEcheances, string $frequence, ?string $codeReductionId = null)
+    {
+        if (empty($panier)) return;
+
+        if (! $this->clientId) {
+            session()->flash('error', 'Un client est obligatoire pour une vente à crédit.');
+            return;
+        }
+
+        $totalBrut = (int) array_sum(array_map(fn($i) => $i['prix'] * $i['quantite'], $panier));
+        $remise = 0;
+        if ($codeReductionId) {
+            $code = CodeReduction::find($codeReductionId);
+            if ($code) $remise = $code->calculerRemise($totalBrut);
+        }
+        $total = max(0, $totalBrut - $remise);
+        $reste = max(0, $total - $apport);
+
+        $vente = \App\Models\Vente::create([
+            'institut_id'     => $this->institutId(),
+            'client_id'       => $this->clientId,
+            'user_id'         => auth()->id(),
+            'total'           => $total,
+            'montant_paye'    => $apport,
+            'remise'          => $remise,
+            'code_reduction_id' => $codeReductionId,
+            'mode_paiement'   => 'credit',
+            'credit_statut'   => $reste > 0 ? 'en_cours' : 'solde',
+            'statut'          => 'validee',
+            'ip_address'      => request()->ip(),
+        ]);
+
+        foreach ($panier as $item) {
+            $vente->items()->create([
+                'type'          => $item['type'] ?? 'produit',
+                'item_id'       => $item['id'] ?? \Illuminate\Support\Str::uuid(),
+                'nom_snapshot'  => $item['nom'] ?? 'Article',
+                'prix_snapshot' => $item['prix'] ?? 0,
+                'quantite'      => $item['quantite'] ?? 1,
+                'sous_total'    => ($item['prix'] ?? 0) * ($item['quantite'] ?? 1),
+            ]);
+        }
+
+        $credit = \App\Models\Credit::create([
+            'vente_id'       => $vente->id,
+            'institut_id'    => $this->institutId(),
+            'client_id'      => $this->clientId,
+            'montant_total'  => $total,
+            'apport_initial' => $apport,
+            'reste_a_payer'  => $reste,
+            'nb_echeances'   => $nbEcheances,
+            'frequence'      => $frequence,
+            'date_debut'     => now(),
+            'date_fin_prevue'=> $this->calculerDateFinCredit(now(), $nbEcheances, $frequence),
+            'statut'         => $reste > 0 ? 'en_cours' : 'solde',
+        ]);
+
+        // Générer les échéances
+        if ($reste > 0) {
+            $parEcheance = (int) round($reste / $nbEcheances);
+            $date = now()->copy();
+            for ($i = 0; $i < $nbEcheances; $i++) {
+                $date = $frequence === 'hebdomadaire' ? $date->addWeek() : $date->addMonth();
+                $montant = ($i === $nbEcheances - 1)
+                    ? $reste - ($parEcheance * ($nbEcheances - 1))
+                    : $parEcheance;
+                \App\Models\Echeance::create([
+                    'credit_id'   => $credit->id,
+                    'institut_id' => $this->institutId(),
+                    'numero'      => $i + 1,
+                    'date_prevue' => $date->toDateString(),
+                    'montant'     => max(0, $montant),
+                    'statut'      => 'en_attente',
+                ]);
+            }
+        }
+
+        // Enregistrer l'apport comme paiement
+        if ($apport > 0) {
+            \App\Models\PaiementCredit::create([
+                'credit_id'     => $credit->id,
+                'institut_id'   => $this->institutId(),
+                'montant'       => $apport,
+                'mode_paiement' => 'cash',
+                'encaisse_par'  => auth()->id(),
+                'notes'         => 'Apport initial',
+                'created_at'    => now(),
+            ]);
+        }
+
+        // Réinitialiser Alpine
+        $this->dispatch('reset-caisse');
+        session()->flash('success', 'Vente à crédit enregistrée — reste : ' . number_format($reste, 0, ',', ' ') . ' FCFA');
+    }
+
+    private function calculerDateFinCredit($date, int $nb, string $freq): string
+    {
+        $d = $date->copy();
+        for ($i = 0; $i < $nb; $i++) {
+            $d = $freq === 'hebdomadaire' ? $d->addWeek() : $d->addMonth();
+        }
+        return $d->toDateString();
     }
 
     // ── Render : charge le catalogue (cache 1h), Alpine gère le reste ──

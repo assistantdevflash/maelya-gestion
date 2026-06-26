@@ -471,39 +471,32 @@
                 </template>
                 @endif
 
-                {{-- 4 modes de paiement (2×2) --}}
-                <div class="grid grid-cols-2 gap-2">
+                {{-- Modes de paiement (5 modes) --}}
+                <div class="grid grid-cols-3 sm:grid-cols-5 gap-2">
                     <button @click="modePaiement = 'cash'"
                             :class="modePaiement === 'cash' ? 'border-primary-500 bg-primary-50 text-primary-700 shadow-sm' : 'border-gray-200 text-gray-500 hover:border-gray-300'"
-                            class="py-2 px-2 rounded-xl text-xs font-semibold border-2 transition-all duration-200 text-center">
-                        <svg class="w-4 h-4 mx-auto mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
-                        Espèces
+                            class="py-2 px-1 rounded-xl text-[11px] font-semibold border-2 transition-all duration-200 text-center">
+                        💵 Espèces
                     </button>
                     <button @click="modePaiement = 'carte'"
                             :class="modePaiement === 'carte' ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm' : 'border-gray-200 text-gray-500 hover:border-gray-300'"
-                            class="py-2 px-2 rounded-xl text-xs font-semibold border-2 transition-all duration-200 text-center">
-                        <svg class="w-4 h-4 mx-auto mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                        </svg>
-                        Carte
+                            class="py-2 px-1 rounded-xl text-[11px] font-semibold border-2 transition-all duration-200 text-center">
+                        💳 Carte
                     </button>
                     <button @click="modePaiement = 'mobile_money'"
                             :class="modePaiement === 'mobile_money' ? 'border-orange-500 bg-orange-50 text-orange-700 shadow-sm' : 'border-gray-200 text-gray-500 hover:border-gray-300'"
-                            class="py-2 px-2 rounded-xl text-xs font-semibold border-2 transition-all duration-200 text-center">
-                        <svg class="w-4 h-4 mx-auto mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                        </svg>
-                        Mobile
+                            class="py-2 px-1 rounded-xl text-[11px] font-semibold border-2 transition-all duration-200 text-center">
+                        📱 Mobile
                     </button>
                     <button @click="modePaiement = 'mixte'"
                             :class="modePaiement === 'mixte' ? 'border-violet-500 bg-violet-50 text-violet-700 shadow-sm' : 'border-gray-200 text-gray-500 hover:border-gray-300'"
-                            class="py-2 px-2 rounded-xl text-xs font-semibold border-2 transition-all duration-200 text-center">
-                        <svg class="w-4 h-4 mx-auto mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-                        </svg>
-                        Mixte
+                            class="py-2 px-1 rounded-xl text-[11px] font-semibold border-2 transition-all duration-200 text-center">
+                        🔀 Mixte
+                    </button>
+                    <button @click="modePaiement = 'credit'"
+                            :class="modePaiement === 'credit' ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm' : 'border-gray-200 text-gray-500 hover:border-gray-300'"
+                            class="py-2 px-1 rounded-xl text-[11px] font-semibold border-2 transition-all duration-200 text-center">
+                        🕐 Crédit
                     </button>
                 </div>
 
@@ -546,6 +539,52 @@
                         <input type="text" x-model="referencePaiement"
                                placeholder="Référence mobile / carte (optionnel)"
                                class="form-input text-sm">
+                    </div>
+                </template>
+
+                {{-- Panneau Crédit --}}
+                <template x-if="modePaiement === 'credit'">
+                    <div class="space-y-3 p-4 bg-emerald-50/50 rounded-xl border border-emerald-200">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Client</span>
+                            @if($clientId && $this->selectedClient)
+                                <span class="text-sm font-bold text-emerald-700">{{ $this->selectedClient->nom_complet }}</span>
+                            @else
+                                <span class="text-xs text-red-500 font-medium">⚠️ Client obligatoire</span>
+                            @endif
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500">Apport initial (optionnel)</label>
+                            <input type="number" x-model.number="creditApport" min="0" :max="total"
+                                   class="form-input text-sm mt-1" placeholder="0">
+                        </div>
+                        <div class="bg-white rounded-lg p-3 text-sm space-y-1">
+                            <div class="flex justify-between"><span>Total vente</span><strong x-text="formatNumber(total) + ' FCFA'"></strong></div>
+                            <div class="flex justify-between text-emerald-600"><span>Apport</span><strong x-text="formatNumber(parseInt(creditApport)||0) + ' FCFA'"></strong></div>
+                            <div class="flex justify-between text-red-600 font-bold pt-1 border-t"><span>Reste à payer</span><strong x-text="formatNumber(Math.max(0, total-(parseInt(creditApport)||0))) + ' FCFA'"></strong></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-gray-500">Échéances</label>
+                                <select x-model.number="creditNbEcheances" class="form-input text-sm mt-1">
+                                    <option value="2">2</option><option value="3">3</option><option value="4">4</option>
+                                    <option value="6">6</option><option value="12">12</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">Fréquence</label>
+                                <select x-model="creditFrequence" class="form-input text-sm mt-1">
+                                    <option value="mensuelle">Mensuelle</option>
+                                    <option value="hebdomadaire">Hebdomadaire</option>
+                                </select>
+                            </div>
+                        </div>
+                        {{-- Bouton validation --}}
+                        <button @click="validerVenteCredit()"
+                                :disabled="!clientId || (total-(parseInt(creditApport)||0)) <= 0"
+                                class="w-full py-2.5 rounded-xl text-white text-sm font-bold bg-gradient-to-r from-emerald-500 to-teal-600 disabled:opacity-50">
+                            Enregistrer la vente à crédit
+                        </button>
                     </div>
                 </template>
 
@@ -786,8 +825,8 @@
                 </template>
             </div>
 
-            {{-- Actions --}}
-            <div class="p-5 border-t border-gray-100 flex flex-col gap-2">
+            {{-- Actions (masquées en mode crédit — le panneau crédit a son propre bouton) --}}
+            <div class="p-5 border-t border-gray-100 flex flex-col gap-2" x-show="modePaiement !== 'credit'">
                 <div class="grid grid-cols-2 gap-2">
                     <button @click="fermerConfirmation" class="btn-secondary justify-center py-3">
                         Annuler
