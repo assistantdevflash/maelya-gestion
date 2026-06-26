@@ -13,13 +13,32 @@
                 <h1 class="text-2xl font-display font-bold text-gray-900">Crédit {{ $credit->client?->nom_complet ?? '—' }}</h1>
                 <p class="text-sm text-gray-500">Vente #{{ $credit->vente?->numero ?? substr($credit->vente_id, 0, 8) }}</p>
             </div>
-            <div class="ml-auto">
+            <div class="ml-auto flex items-center gap-2">
                 @if($credit->statut === 'solde')
                     <span class="badge badge-success">Soldé</span>
                 @elseif($credit->statut === 'retard')
                     <span class="badge badge-danger">En retard</span>
                 @else
                     <span class="badge badge-info">En cours</span>
+                @endif
+                <a href="{{ route('dashboard.credits.print', $credit) }}" target="_blank" class="btn-outline text-xs py-1.5 px-3" title="Imprimer la fiche">
+                    🖨️ Imprimer
+                </a>
+                @php
+                    $waPhonePrint = $credit->client?->telephone ? preg_replace('/\D/', '', $credit->client->telephone) : null;
+                    $waMsgPrint = $waPhonePrint ? urlencode(
+                        "Bonjour {$credit->client->prenom},\n\n"
+                        . "Voici votre fiche de crédit :\n"
+                        . "📋 Montant total : " . number_format($credit->montant_total, 0, ',', ' ') . " F\n"
+                        . "💳 Reste à payer : " . number_format($credit->reste_a_payer, 0, ',', ' ') . " F\n"
+                        . "📄 Fiche : " . route('dashboard.credits.print', $credit) . "\n\n"
+                        . "Merci de votre confiance !"
+                    ) : null;
+                @endphp
+                @if($waPhonePrint)
+                <a href="https://wa.me/{{ $waPhonePrint }}?text={{ $waMsgPrint }}" target="_blank" class="btn-outline text-xs py-1.5 px-3 text-green-600 border-green-200 hover:bg-green-50" title="Partager par WhatsApp">
+                    💬 WhatsApp
+                </a>
                 @endif
             </div>
         </div>

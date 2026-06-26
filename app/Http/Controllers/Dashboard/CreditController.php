@@ -52,6 +52,29 @@ class CreditController extends Controller
         return view('dashboard.credits.show', compact('credit'));
     }
 
+    public function print(Credit $credit)
+    {
+        $credit->load(['client', 'vente.items', 'echeances', 'paiements.encaisseur']);
+        $institut = \App\Models\Institut::find($this->institutId());
+
+        // WhatsApp URL
+        $waUrl = null;
+        if ($credit->client?->telephone) {
+            $waPhone = preg_replace('/\D/', '', $credit->client->telephone);
+            $printUrl = route('dashboard.credits.print', $credit);
+            $msg = "Bonjour {$credit->client->prenom},\n\n"
+                 . "Voici votre fiche de crédit chez {$institut?->nom} :\n"
+                 . "📋 Montant total : " . number_format($credit->montant_total, 0, ',', ' ') . " F\n"
+                 . "💳 Reste à payer : " . number_format($credit->reste_a_payer, 0, ',', ' ') . " F\n"
+                 . "📅 Prochaine échéance : " . ($credit->echeances->where('statut', 'en_attente')->first()?->date_prevue ? \Carbon\Carbon::parse($credit->echeances->where('statut', 'en_attente')->first()->date_prevue)->format('d/m/Y') : '—') . "\n\n"
+                 . "📄 Fiche complète : {$printUrl}\n\n"
+                 . "Merci de votre confiance !";
+            $waUrl = "https://wa.me/{$waPhone}?text=" . urlencode($msg);
+        }
+
+        return view('dashboard.credits.print', compact('credit', 'institut', 'waUrl'));
+    }
+
     public function payer(Request $request, Credit $credit)
     {
         $data = $request->validate([

@@ -120,6 +120,7 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
 
     // Crédits clients & échéanciers
     Route::get('credits', [\App\Http\Controllers\Dashboard\CreditController::class, 'index'])->name('credits.index');
+    Route::get('credits/{credit}/print', [\App\Http\Controllers\Dashboard\CreditController::class, 'print'])->name('credits.print');
     Route::get('credits/{credit}', [\App\Http\Controllers\Dashboard\CreditController::class, 'show'])->name('credits.show');
     Route::post('credits/{credit}/payer', [\App\Http\Controllers\Dashboard\CreditController::class, 'payer'])->name('credits.payer');
 
