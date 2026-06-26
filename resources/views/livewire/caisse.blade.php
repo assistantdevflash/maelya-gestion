@@ -12,8 +12,9 @@
     })"
     class="grid lg:grid-cols-5 gap-5 h-full"
 >
+    @php $hasCredits = auth()->user()->aFonctionnalite('credits'); @endphp
     {{-- Succès vente crédit --}}
-    @if($creditSuccess)
+    @if($hasCredits && $creditSuccess)
     <div class="lg:col-span-5 flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-sm text-emerald-700">
         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -482,7 +483,7 @@
                 @endif
 
                 {{-- Modes de paiement (5 modes) --}}
-                <div class="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                <div class="grid grid-cols-3 {{ $hasCredits ? 'sm:grid-cols-5' : 'sm:grid-cols-4' }} gap-2">
                     <button @click="modePaiement = 'cash'"
                             :class="modePaiement === 'cash' ? 'border-primary-500 bg-primary-50 text-primary-700 shadow-sm' : 'border-gray-200 text-gray-500 hover:border-gray-300'"
                             class="py-2 px-1 rounded-xl text-[11px] font-semibold border-2 transition-all duration-200 text-center">
@@ -503,11 +504,13 @@
                             class="py-2 px-1 rounded-xl text-[11px] font-semibold border-2 transition-all duration-200 text-center">
                         🔀 Mixte
                     </button>
+                    @if($hasCredits)
                     <button @click="modePaiement = 'credit'"
                             :class="modePaiement === 'credit' ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm' : 'border-gray-200 text-gray-500 hover:border-gray-300'"
                             class="py-2 px-1 rounded-xl text-[11px] font-semibold border-2 transition-all duration-200 text-center">
                         🕐 Crédit
                     </button>
+                    @endif
                 </div>
 
                 {{-- Référence Mobile Money --}}
@@ -553,6 +556,7 @@
                 </template>
 
                 {{-- Panneau Crédit --}}
+                @if($hasCredits)
                 <template x-if="modePaiement === 'credit'">
                     <div class="space-y-3 p-4 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800/50">
                         <div class="flex items-center justify-between">
@@ -612,8 +616,10 @@
                         </button>
                     </div>
                 </template>
+                @endif
 
                 {{-- Modal confirmation crédit --}}
+                @if($hasCredits)
                 <template x-if="showCreditConfirmation">
                     <div class="fixed inset-0 z-[60] flex items-center justify-center p-4" style="background: rgba(0,0,0,0.5);"
                          @click.self="showCreditConfirmation = false">
@@ -670,6 +676,7 @@
                         </div>
                     </div>
                 </template>
+                @endif
 
                 {{-- Montant remis (Espèces) --}}
                 <template x-if="modePaiement === 'cash'">
@@ -723,10 +730,12 @@
                        class="px-3 py-2 text-xs font-semibold rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition">
                         Brouillons
                     </a>
+                    @if($hasCredits)
                     <a href="{{ route('dashboard.credits.index') }}"
                        class="px-3 py-2 text-xs font-semibold rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition">
                         Crédits
                     </a>
+                    @endif
                 </div>
             </div>
         </div>

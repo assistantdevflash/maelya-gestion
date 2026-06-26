@@ -292,6 +292,11 @@ class Caisse extends Component
 
     public function validerVenteCredit(array $panier, int $apport, int $nbEcheances, string $frequence, ?string $codeReductionId = null)
     {
+        if (! auth()->user()->aFonctionnalite('credits')) {
+            session()->flash('error', 'Les ventes à crédit nécessitent le plan Premium+.');
+            return;
+        }
+
         if (empty($panier)) return;
 
         if (! $this->clientId) {

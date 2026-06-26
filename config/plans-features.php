@@ -235,5 +235,21 @@ return [
                 'Confirmation email envoyée à la cliente',
             ],
         ],
+
+        'credits' => [
+            'titre' => 'Ventes à crédit',
+            'plan_requis' => 'premium-plus',
+            'icon' => 'calendar-check',
+            'accroche' => 'Proposez des paiements échelonnés à vos clients',
+            'description' => 'Vendez à crédit avec échéancier personnalisé. Suivez les paiements, recevez des rappels automatiques et partagez la fiche de crédit par WhatsApp.',
+            'avantages' => [
+                'Vente à crédit en caisse avec apport initial',
+                'Échéancier hebdomadaire ou mensuel',
+                'Suivi des encaissements et historique',
+                'Rappels automatiques J-1 par email et notification push',
+                'Fiche PDF partageable par WhatsApp au client',
+                'Détection automatique des retards de paiement',
+            ],
+        ],
     ],
 ];

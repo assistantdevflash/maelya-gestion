@@ -291,6 +291,7 @@
                     Historique
                 </a>
 
+                @if(auth()->user()->aFonctionnalite('credits'))
                 <a href="{{ route('dashboard.credits.index') }}"
                    class="sidebar-link {{ request()->routeIs('dashboard.credits.*') ? 'active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -298,6 +299,7 @@
                     </svg>
                     Crédits clients
                 </a>
+                @endif
 
                 @if(auth()->user()->isAdmin())
                 <a href="{{ $featureHref('codes_reduction', route('dashboard.codes-reduction.index')) }}"

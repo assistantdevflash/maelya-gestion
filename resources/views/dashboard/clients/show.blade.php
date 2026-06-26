@@ -163,12 +163,14 @@
                         🕒 Historique
                         <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $timeline->count() }}</span>
                     </button>
+                    @if(auth()->user()->aFonctionnalite('credits'))
                     <button type="button" x-on:click="onglet = 'credits'"
                             class="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
                             :class="onglet === 'credits' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
                         🕐 Crédits
                         <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $credits->count() }}</span>
                     </button>
+                    @endif
                     <button type="button" x-on:click="onglet = 'photos'"
                             class="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
                             :class="onglet === 'photos' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
@@ -299,6 +301,7 @@
                 @endif
 
                 {{-- Onglet Crédits --}}
+                @if(auth()->user()->aFonctionnalite('credits'))
                 <div x-show="onglet === 'credits'" x-cloak class="divide-y divide-gray-50 dark:divide-slate-700 max-h-96 overflow-y-auto">
                     @if($credits->count())
                         @foreach($credits as $credit)
@@ -323,6 +326,7 @@
                         <p class="text-center text-gray-400 text-sm py-8">Aucun crédit pour ce client.</p>
                     @endif
                 </div>
+                @endif
 
                 {{-- Onglet Galerie photos --}}
                 <div x-show="onglet === 'photos'" x-cloak
