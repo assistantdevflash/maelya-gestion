@@ -166,7 +166,7 @@
                 <tr><td><strong>Calendrier RDV</strong></td><td>Vue calendrier interactive. Déplacement des RDV par glissement (drag & drop).</td><td>Basic</td></tr>
                 <tr><td><strong>Réservation en ligne</strong></td><td>Les clients réservent depuis la vitrine 24h/24. Validation admin requise.</td><td>Premium</td></tr>
                 <tr><td><strong>Prestations</strong></td><td>Catalogue des services avec prix. Catégorisation possible.</td><td>Basic</td></tr>
-                <tr><td><strong>Produits</strong></td><td>Catalogue des produits vendables en salon. Prix, stock, catégorie.</td><td>Basic</td></tr>
+                <tr><td><strong>Produits</strong></td><td>Catalogue des produits vendables. Prix, stock, categorie.</td><td>Basic</td></tr>
                 <tr><td><strong>Stock</strong></td><td>Suivi automatique. Mise à jour à chaque vente. Alerte rupture.</td><td>Premium</td></tr>
                 <tr><td><strong>Fournisseurs</strong></td><td>Carnet de fournisseurs avec contacts et historique des commandes.</td><td>Premium</td></tr>
                 <tr><td><strong>Bons de commande</strong></td><td>Commander chez les fournisseurs. Réceptionner = stock mis à jour auto.</td><td>Premium</td></tr>
@@ -179,7 +179,7 @@
                 <tr><td><strong>Avis clients</strong></td><td>Modération des avis post-sondage. Les avis approuvés s'affichent sur la vitrine.</td><td>Basic</td></tr>
                 <tr><td><strong>Notifications</strong></td><td>Centre d'alertes : RDV, stock, paiements, anniversaires, avis. Cloche en temps réel.</td><td>Basic</td></tr>
                 <tr><td><strong>Mon équipe</strong></td><td>Comptes séparés pour les employées avec permissions limitées.</td><td>Premium</td></tr>
-                <tr><td><strong>Multi-établissements</strong></td><td>Gérer plusieurs salons depuis un seul compte. Basculer entre les établissements.</td><td>Premium+</td></tr>
+                <tr><td><strong>Multi-etablissements</strong></td><td>Gerer plusieurs etablissements depuis un seul compte. Basculer entre eux.</td><td>Premium+</td></tr>
                 <tr><td><strong>Comparatif instituts</strong></td><td>Comparer CA, clients, top prestations entre ses établissements.</td><td>Premium+</td></tr>
                 <tr><td><strong>Parrainage</strong></td><td>Lien unique pour inviter d'autres gérantes. 1 filleul payant = 1 mois gratuit.</td><td>Basic</td></tr>
             </tbody>
@@ -200,7 +200,7 @@
                 <tr><td>Essai gratuit</td><td>0 FCFA (14 jours)</td><td>1</td><td>Accès complet à tout — sans carte bancaire</td></tr>
                 <tr><td>Basic</td><td>2 000 FCFA</td><td>1</td><td>Caisse, clients, RDV, prestations, avis, notifications</td></tr>
                 <tr><td>Premium</td><td>4 900 FCFA</td><td>1</td><td>Basic + stock, fidélité, finances, équipe, vitrine, réservation</td></tr>
-                <tr><td>Premium+</td><td>9 900 FCFA</td><td>Illimité</td><td>Premium + multi-établissements, comparatif</td></tr>
+                <tr><td>Premium+</td><td>9 900 FCFA</td><td>Illimite</td><td>Premium + multi-etablissements, vente a credit, comparatif</td></tr>
             </tbody>
         </table>
         <p style="margin-top:6px;"><strong>Paiement :</strong> Orange Money ou Wave. Pas de carte bancaire ni de compte bancaire requis.</p>
@@ -396,7 +396,7 @@
     <div class="section-body">
         <div class="faq-item">
             <div class="faq-q">Gérer plusieurs salons</div>
-            <div class="faq-a">Avec le plan Premium+, créez autant d'établissements que vous voulez depuis "Mes établissements". Basculez entre les salons via le sélecteur en haut de la barre latérale. Chaque salon a ses propres données.</div>
+            <div class="faq-a">Avec le plan Premium+, creez autant d'etablissements que vous voulez depuis "Mes etablissements". Basculez entre les etablissements via le selecteur en haut de la barre laterale. Chaque etablissement a ses propres donnees.</div>
         </div>
         <div class="faq-item">
             <div class="faq-q">Comparatif entre établissements</div>

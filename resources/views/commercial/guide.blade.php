@@ -229,8 +229,8 @@ Cocody/Riviera &rarr; Marcory/Zone 4 &rarr; Plateau/Adjam&eacute; &rarr; Yopougo
 <tbody>
 <tr><td><strong>Essai</strong></td><td>Gratuit 14j</td><td>Tout le monde</td><td>&laquo;&nbsp;Vous testez tout, sans rien payer&nbsp;&raquo;</td></tr>
 <tr><td><strong>Basic</strong></td><td>2 000 FCFA</td><td>Solo, sans employ&eacute;es</td><td>&laquo;&nbsp;Moins cher qu\'un caf&eacute; par jour&nbsp;&raquo;</td></tr>
-<tr><td><strong>Premium</strong></td><td>4 900 FCFA</td><td>Salon avec 1-3 employ&eacute;es</td><td>&laquo;&nbsp;Tout inclus : clients, stock, fid&eacute;lit&eacute;, finances&nbsp;&raquo;</td></tr>
-<tr><td><strong>Premium+</strong></td><td>9 900 FCFA</td><td>Multi-salons</td><td>&laquo;&nbsp;Pour les propri&eacute;taires de plusieurs &eacute;tablissements&nbsp;&raquo;</td></tr>
+<tr><td><strong>Premium</strong></td><td>4 900 FCFA</td><td>Etablissement avec 1-3 employes</td><td>&laquo;&nbsp;Tout inclus : clients, stock, fidelite, finances&nbsp;&raquo;</td></tr>
+<tr><td><strong>Premium+</strong></td><td>9 900 FCFA</td><td>Multi-etablissements</td><td>&laquo;&nbsp;Pour les proprietaires de plusieurs etablissements&nbsp;&raquo;</td></tr>
 </tbody></table>
 <p><strong>Paiement :</strong> Orange Money ou Wave &mdash; Pas de carte bancaire, pas de compte bancaire n&eacute;cessaire.</p>
 '],

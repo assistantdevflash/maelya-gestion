@@ -41,7 +41,7 @@
             ['Technique & Sécurité', 'from-amber-500 to-orange-600', 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z', [
                 ['Mes données sont-elles en sécurité ?', 'Absolument. Toutes les communications sont <strong>chiffrées en HTTPS</strong>. Vos données sont hébergées sur des serveurs sécurisés et ne sont <strong>jamais partagées avec des tiers</strong>. Des sauvegardes automatiques protègent vos informations.'],
                 ['L\'application fonctionne-t-elle sans internet ?', 'Une connexion internet est nécessaire pour utiliser Maëlya Gestion. Cependant, l\'application est <strong>optimisée pour les connexions modestes</strong> courantes en Côte d\'Ivoire. Les pages sont légères et rapides à charger.'],
-                ['Dans quelle langue est l\'application ?', 'L\'application est <strong>100% en français</strong>. Tous les menus, messages, rapports et documents sont en français pour faciliter l\'utilisation par les professionnels de la beauté en Côte d\'Ivoire.'],
+                ['Dans quelle langue est l\'application ?', 'L\'application est <strong>100% en francais</strong>. Tous les menus, messages, rapports et documents sont en francais pour faciliter l\'utilisation par les etablissements de service en Cote d\'Ivoire.'],
             ]],
         ];
         @endphp

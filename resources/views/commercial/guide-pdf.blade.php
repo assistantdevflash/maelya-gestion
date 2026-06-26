@@ -166,8 +166,8 @@
                 <tbody>
                 <tr><td><strong>Essai</strong></td><td>Gratuit 14j</td><td>Tout le monde</td><td>« Vous testez tout, sans rien payer »</td></tr>
                 <tr><td><strong>Basic</strong></td><td>2 000 FCFA</td><td>Solo, sans employées</td><td>« Moins cher qu'un café par jour »</td></tr>
-                <tr><td><strong>Premium</strong></td><td>4 900 FCFA</td><td>Salon avec 1-3 employées</td><td>« Tout inclus : clients, stock, fidélité, finances »</td></tr>
-                <tr><td><strong>Premium+</strong></td><td>9 900 FCFA</td><td>Multi-salons</td><td>« Pour les propriétaires de plusieurs établissements »</td></tr>
+                <tr><td><strong>Premium</strong></td><td>4 900 FCFA</td><td>Etablissement avec 1-3 employes</td><td>« Tout inclus : clients, stock, fidelite, finances »</td></tr>
+                <tr><td><strong>Premium+</strong></td><td>9 900 FCFA</td><td>Multi-etablissements</td><td>« Pour les proprietaires de plusieurs etablissements »</td></tr>
                 </tbody>
             </table>
             <p style="margin-top:6px;"><strong>Paiement :</strong> Orange Money ou Wave. Pas de carte bancaire, pas de compte bancaire nécessaire.</p>

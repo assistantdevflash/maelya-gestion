@@ -18,7 +18,7 @@ return [
         // Essai gratuit : accès complet pendant 14 jours
         'essai' => ['*'],
 
-        // Basic : petit salon de coiffure / onglerie individuelle
+        // Basic : etablissement individuel, caisse simple
         'basic' => [
             'dashboard',
             'mon_institut',
@@ -31,7 +31,7 @@ return [
             'parrainage',
         ],
 
-        // Premium : institut complet
+        // Premium : etablissement avec equipe, stock et finances
         'premium' => [
             'dashboard',
             'dashboard_complet',
@@ -56,7 +56,7 @@ return [
             'parrainage',
         ],
 
-        // Premium+ : tout + multi-instituts
+        // Premium+ : tout + multi-etablissements
         'premium-plus' => ['*'],
 
         // Ancien alias "entreprise" (rétrocompatibilité)

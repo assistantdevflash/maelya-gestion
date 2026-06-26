@@ -89,7 +89,7 @@
         "name": "Maëlya Gestion",
         "url": "{{ url('/') }}",
         "logo": "{{ asset('favicon.svg') }}",
-        "description": "Logiciel de gestion tout-en-un pour salons, instituts et établissements de service en Côte d'Ivoire.",
+        "description": "Logiciel de gestion tout-en-un pour etablissements de service en Cote d'Ivoire.",
         "address": {
             "@@type": "PostalAddress",
             "addressLocality": "Abidjan",
