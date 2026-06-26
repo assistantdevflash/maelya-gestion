@@ -695,10 +695,11 @@
                     </div>
                 </template>
 
-                {{-- Bouton Encaisser --}}
+                {{-- Bouton Encaisser (masqué en mode crédit) --}}
                 <button @click="ouvrirConfirmation"
                         :disabled="!mixtePret || loading"
                         :class="(!mixtePret || loading) ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl active:scale-[0.98]'"
+                        x-show="modePaiement !== 'credit'"
                         class="w-full justify-center py-3.5 text-base font-bold rounded-xl text-white shadow-lg transition-all duration-200 flex items-center gap-2"
                         style="background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);">
                     <span x-show="loading" class="spinner" aria-hidden="true"></span>
@@ -708,8 +709,8 @@
                     <span x-text="loading ? 'Traitement...' : 'Encaisser ' + formatNumber(total) + ' F'"></span>
                 </button>
 
-                {{-- Mettre en attente / Lien brouillons --}}
-                <div class="flex items-center justify-between gap-2 mt-2">
+                {{-- Mettre en attente / Liens (masqués en mode crédit) --}}
+                <div class="flex items-center justify-between gap-2 mt-2" x-show="modePaiement !== 'credit'">
                     <button type="button"
                             @click="mettreEnAttente()"
                             :disabled="panierKeys.length === 0 || enAttenteLoading"
