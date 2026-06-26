@@ -27,6 +27,7 @@
                         <span class="font-medium">
                             @if($vente->mode_paiement === 'mobile_money') 📱 Mobile Money
                             @elseif($vente->mode_paiement === 'carte') 💳 Carte bancaire
+                            @elseif($vente->mode_paiement === 'credit') 📅 Crédit
                             @else 💵 Espèces
                             @endif
                         </span>

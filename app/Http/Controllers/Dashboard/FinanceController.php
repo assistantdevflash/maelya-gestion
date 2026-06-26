@@ -24,7 +24,8 @@ class FinanceController extends Controller
         $totalVentes = Vente::where('statut', 'validee')
             ->whereDate('created_at', '>=', $debut)
             ->whereDate('created_at', '<=', $fin)
-            ->sum('total');
+            ->selectRaw("SUM(CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END) as total_reel")
+            ->value('total_reel') ?? 0;
 
         $nbVentes = Vente::where('statut', 'validee')
             ->whereDate('created_at', '>=', $debut)
@@ -70,7 +71,7 @@ class FinanceController extends Controller
             : "DATE_FORMAT(created_at, '%Y-%m') as mois_key";
         $ventesParMois = Vente::where('statut', 'validee')
             ->where('created_at', '>=', $debut12)
-            ->selectRaw("$moisExpr, SUM(total) as ca")
+            ->selectRaw("$moisExpr, SUM(CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END) as ca")
             ->groupBy('mois_key')
             ->pluck('ca', 'mois_key');
 

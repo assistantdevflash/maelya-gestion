@@ -266,7 +266,7 @@ class VenteController extends Controller
 
             // Stats agrégées par vendeur sur la période filtrée (hors pagination)
             $statsParEmploye = Vente::with('user:id,prenom,nom_famille,role')
-                ->selectRaw("user_id, COUNT(*) as nb_ventes, SUM(CASE WHEN statut != 'annulee' THEN total ELSE 0 END) as total_ventes")
+                ->selectRaw("user_id, COUNT(*) as nb_ventes, SUM(CASE WHEN statut != 'annulee' THEN CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END ELSE 0 END) as total_ventes")
                 ->when($request->debut, fn($q) => $q->whereDate('created_at', '>=', $request->debut))
                 ->when($request->fin, fn($q) => $q->whereDate('created_at', '<=', $request->fin))
                 ->when($request->mode, fn($q) => $q->where('mode_paiement', $request->mode))

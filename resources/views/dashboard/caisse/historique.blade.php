@@ -26,10 +26,11 @@
                 </div>
                 <select name="mode" class="form-select w-auto self-end">
                     <option value="">Tous modes</option>
-                    <option value="cash" {{ request('mode') === 'cash' ? 'selected' : '' }}>Espèces</option>
+                    <option value="cash" {{ request('mode') === 'cash' ? 'selected' : '' }}>Especes</option>
                     <option value="carte" {{ request('mode') === 'carte' ? 'selected' : '' }}>Carte</option>
                     <option value="mobile_money" {{ request('mode') === 'mobile_money' ? 'selected' : '' }}>Mobile Money</option>
                     <option value="mixte" {{ request('mode') === 'mixte' ? 'selected' : '' }}>Mixte</option>
+                    <option value="credit" {{ request('mode') === 'credit' ? 'selected' : '' }}>Credit</option>
                 </select>
                 @if(!Auth::user()->isEmploye() && $membres->count() > 1)
                 <select name="employe_id" class="form-select w-auto self-end">
@@ -104,8 +105,10 @@
                                     <span class="badge badge-info text-xs">💳 Carte</span>
                                 @elseif($vente->mode_paiement === 'mixte')
                                     <span class="badge badge-secondary text-xs">💵+📱 Mixte</span>
+                                @elseif($vente->mode_paiement === 'credit')
+                                    <span class="badge text-xs" style="background:#f3e8ff;color:#7c3aed;">📅 Credit</span>
                                 @else
-                                    <span class="badge badge-secondary text-xs">💵 Espèces</span>
+                                    <span class="badge badge-secondary text-xs">💵 Especes</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3 hidden md:table-cell text-gray-500 text-xs">
@@ -113,13 +116,29 @@
                             </td>
                             <td class="px-4 py-3 text-center">
                                 @if($vente->statut === 'annulee')
-                                    <span class="badge badge-danger text-xs">Annulée</span>
+                                    <span class="badge badge-danger text-xs">Annulee</span>
+                                @elseif($vente->mode_paiement === 'credit')
+                                    @if($vente->credit_statut === 'solde')
+                                        <span class="badge badge-success text-xs">Solde</span>
+                                    @elseif($vente->credit_statut === 'retard')
+                                        <span class="badge badge-danger text-xs">Retard</span>
+                                    @else
+                                        <span class="badge text-xs" style="background:#ede9fe;color:#7c3aed;">En cours</span>
+                                    @endif
                                 @else
-                                    <span class="badge badge-success text-xs">Payée</span>
+                                    <span class="badge badge-success text-xs">Payee</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-right font-bold {{ $vente->statut === 'annulee' ? 'line-through text-gray-400' : 'text-gray-900' }}">
-                                {{ number_format($vente->total, 0, ',', ' ') }} FCFA
+                                @if($vente->mode_paiement === 'credit')
+                                    <div>
+                                        <span class="text-emerald-600">{{ number_format($vente->montant_paye ?? 0, 0, ',', ' ') }}</span>
+                                        <span class="text-gray-400"> / </span>
+                                        <span>{{ number_format($vente->total, 0, ',', ' ') }}</span>
+                                    </div>
+                                @else
+                                    {{ number_format($vente->total, 0, ',', ' ') }} FCFA
+                                @endif
                             </td>
                         </tr>
                         @endforeach
@@ -128,7 +147,7 @@
             </div>
             <div class="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
                 <p class="text-xs text-gray-400">
-                    Total période : <strong class="text-gray-900">{{ number_format($ventes->sum('total'), 0, ',', ' ') }} FCFA</strong>
+                    Total periode : <strong class="text-gray-900">{{ number_format($ventes->sum(fn($v) => $v->mode_paiement === 'credit' ? ($v->montant_paye ?? 0) : $v->total), 0, ',', ' ') }} FCFA</strong>
                 </p>
                 {{ $ventes->withQueryString()->links() }}
             </div>
@@ -228,9 +247,17 @@
                         </div>
                         <div class="flex items-center gap-2">
                             @if($vente->statut === 'annulee')
-                                <span class="badge badge-danger text-xs">Annulée</span>
+                                <span class="badge badge-danger text-xs">Annulee</span>
+                            @elseif($vente->mode_paiement === 'credit')
+                                @if($vente->credit_statut === 'solde')
+                                    <span class="badge badge-success text-xs">Solde</span>
+                                @elseif($vente->credit_statut === 'retard')
+                                    <span class="badge badge-danger text-xs">Retard</span>
+                                @else
+                                    <span class="badge text-xs" style="background:#ede9fe;color:#7c3aed;">En cours</span>
+                                @endif
                             @else
-                                <span class="badge badge-success text-xs">Payée</span>
+                                <span class="badge badge-success text-xs">Payee</span>
                             @endif
                             <button @click="showVente = null" class="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -276,9 +303,14 @@
                                     @endphp
                                     @if($parts) &mdash; {{ implode(' / ', $parts) }} @endif
                                 </span>
+                            @elseif($vente->mode_paiement === 'credit')
+                                <span class="inline-flex items-center gap-1 text-xs font-bold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-lg">
+                                    📅 Credit
+                                    &mdash; Apport {{ number_format($vente->montant_paye ?? 0, 0, ',', ' ') }} F / {{ number_format($vente->total, 0, ',', ' ') }} F
+                                </span>
                             @else
                                 <span class="inline-flex items-center gap-1 text-xs font-bold text-primary-700 bg-primary-50 px-2.5 py-1 rounded-lg">
-                                    💵 Espèces
+                                    💵 Especes
                                 </span>
                             @endif
                             @if($vente->client)

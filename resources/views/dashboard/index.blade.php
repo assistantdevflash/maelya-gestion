@@ -267,11 +267,12 @@
                     <h3 class="font-semibold text-gray-900 text-sm">Paiements ce mois</h3>
                 </div>
                 @php
-                    $totalPaiements = ($paiementsCash ?? 0) + ($paiementsMobile ?? 0) + ($paiementsCarte ?? 0) + ($paiementsMixte ?? 0);
+                    $totalPaiements = ($paiementsCash ?? 0) + ($paiementsMobile ?? 0) + ($paiementsCarte ?? 0) + ($paiementsMixte ?? 0) + ($paiementsCredit ?? 0);
                     $pctCash   = $totalPaiements > 0 ? round(($paiementsCash   ?? 0) / $totalPaiements * 100) : 0;
                     $pctMobile = $totalPaiements > 0 ? round(($paiementsMobile ?? 0) / $totalPaiements * 100) : 0;
                     $pctCarte  = $totalPaiements > 0 ? round(($paiementsCarte  ?? 0) / $totalPaiements * 100) : 0;
-                    $pctMixte  = $totalPaiements > 0 ? (100 - $pctCash - $pctMobile - $pctCarte) : 0;
+                    $pctCredit = $totalPaiements > 0 ? round(($paiementsCredit ?? 0) / $totalPaiements * 100) : 0;
+                    $pctMixte  = $totalPaiements > 0 ? (100 - $pctCash - $pctMobile - $pctCarte - $pctCredit) : 0;
                 @endphp
                 <div class="space-y-3">
                     @if($pctCash > 0)
@@ -315,6 +316,17 @@
                         </div>
                         <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
                             <div class="h-full rounded-full transition-all duration-700" style="width: {{ $pctMixte }}%; background: linear-gradient(90deg, #7c3aed, #ec4899);"></div>
+                        </div>
+                    </div>
+                    @endif
+                    @if($pctCredit > 0)
+                    <div>
+                        <div class="flex justify-between text-xs mb-1.5">
+                            <span class="text-gray-600 font-medium">📅 Credit</span>
+                            <span class="font-bold text-gray-900">{{ $pctCredit }}%</span>
+                        </div>
+                        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-700" style="width: {{ $pctCredit }}%; background: linear-gradient(90deg, #7c3aed, #a78bfa);"></div>
                         </div>
                     </div>
                     @endif

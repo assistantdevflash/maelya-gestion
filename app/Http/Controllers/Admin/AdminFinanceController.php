@@ -84,7 +84,7 @@ class AdminFinanceController extends Controller
             ->withCount(['ventes as ca_total' => function ($q) use ($annee, $moisFiltre) {
                 $q->where('statut', 'validee')->whereYear('created_at', $annee);
                 if ($moisFiltre) $q->whereMonth('created_at', $moisFiltre);
-                $q->select(DB::raw('COALESCE(SUM(total), 0)'));
+                $q->select(DB::raw("COALESCE(SUM(CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END), 0)"));
             }])
             ->withCount(['ventes as nb_ventes' => function ($q) use ($annee, $moisFiltre) {
                 $q->where('statut', 'validee')->whereYear('created_at', $annee);
@@ -94,7 +94,7 @@ class AdminFinanceController extends Controller
                 $q->where('statut', 'validee')
                     ->whereYear('created_at', now()->year)
                     ->whereMonth('created_at', now()->month)
-                    ->select(DB::raw('COALESCE(SUM(total), 0)'));
+                    ->select(DB::raw("COALESCE(SUM(CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END), 0)"));
             }])
             ->get()
             ->sortByDesc('ca_total');
@@ -111,7 +111,7 @@ class AdminFinanceController extends Controller
         $caMoisPrecedent = Vente::where('statut', 'validee')
             ->whereYear('created_at', now()->subMonth()->year)
             ->whereMonth('created_at', now()->subMonth()->month)
-            ->selectRaw('institut_id, SUM(total) as total')
+            ->selectRaw("institut_id, SUM(CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END) as total")
             ->groupBy('institut_id')
             ->pluck('total', 'institut_id');
 
@@ -120,7 +120,7 @@ class AdminFinanceController extends Controller
             ->whereYear('created_at', $annee);
         if ($moisFiltre) $constantsQuery->whereMonth('created_at', $moisFiltre);
         $constantsRaw = $constantsQuery
-            ->selectRaw('institut_id, COUNT(DISTINCT ' . $monthExpr('created_at') . ') as mois_actifs, SUM(total) as ca')
+            ->selectRaw("institut_id, COUNT(DISTINCT " . $monthExpr('created_at') . ") as mois_actifs, SUM(CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END) as ca")
             ->groupBy('institut_id')
             ->orderByDesc('mois_actifs')
             ->limit(5)
