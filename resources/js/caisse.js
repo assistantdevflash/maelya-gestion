@@ -62,6 +62,14 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
                 this.newClientOpen = false;
                 document.body.classList.remove('overflow-hidden');
             });
+            // Réinitialiser après vente à crédit
+            this.$wire.on('reset-caisse-credit', () => {
+                this.panier = {};
+                this.search = '';
+                this.creditApport = 0;
+                this.modePaiement = 'cash';
+                this.showCreditConfirmation = false;
+            });
         },
 
         // ── État filtres ──
@@ -412,19 +420,6 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         creditNbEcheances: 3,
         creditFrequence: 'mensuelle',
         showCreditConfirmation: false,
-
-        // Écoute le reset après vente à crédit
-        $wire: null,
-        init() {
-            this.$wire = this.$wire; // capture référence
-            this.$wire.on('reset-caisse-credit', () => {
-                this.panier = {};
-                this.search = '';
-                this.creditApport = 0;
-                this.modePaiement = 'cash';
-                this.showCreditConfirmation = false;
-            });
-        },
 
         async validerVenteCredit() {
             if (this.panierVide || this.loading) return;
