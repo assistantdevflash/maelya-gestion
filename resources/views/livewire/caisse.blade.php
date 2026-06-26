@@ -547,11 +547,8 @@
                     <div class="space-y-3 p-4 bg-emerald-50/50 rounded-xl border border-emerald-200">
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Client</span>
-                            @if($clientId && $this->selectedClient)
-                                <span class="text-sm font-bold text-emerald-700">{{ $this->selectedClient->nom_complet }}</span>
-                            @else
-                                <span class="text-xs text-red-500 font-medium">⚠️ Client obligatoire</span>
-                            @endif
+                            <span x-show="$wire.clientId && $wire.selectedClient" class="text-sm font-bold text-emerald-700" x-text="$wire.selectedClient?.nom_complet || ''"></span>
+                            <span x-show="!$wire.clientId" class="text-xs text-red-500 font-medium">⚠️ Client obligatoire</span>
                         </div>
                         <div>
                             <label class="text-xs text-gray-500">Apport initial (optionnel)</label>
@@ -581,7 +578,7 @@
                         </div>
                         {{-- Bouton validation --}}
                         <button @click="validerVenteCredit()"
-                                :disabled="!clientId || (total-(parseInt(creditApport)||0)) <= 0"
+                                :disabled="!$wire.clientId || (total-(parseInt(creditApport)||0)) <= 0"
                                 class="w-full py-2.5 rounded-xl text-white text-sm font-bold bg-gradient-to-r from-emerald-500 to-teal-600 disabled:opacity-50">
                             Enregistrer la vente à crédit
                         </button>
@@ -630,12 +627,10 @@
                                     <span>Échéancier</span>
                                     <span x-text="creditNbEcheances + ' × ' + (creditFrequence === 'mensuelle' ? 'mois' : 'semaines')"></span>
                                 </div>
-                                @if($clientId && $this->selectedClient)
-                                <div class="bg-gray-50 rounded-lg p-2.5 flex justify-between">
+                                <div x-show="$wire.clientId" class="bg-gray-50 rounded-lg p-2.5 flex justify-between">
                                     <span class="text-gray-500">Client</span>
-                                    <span class="font-semibold">{{ $this->selectedClient->nom_complet }}</span>
+                                    <span class="font-semibold" x-text="$wire.selectedClient?.nom_complet || ''"></span>
                                 </div>
-                                @endif
                             </div>
                             {{-- Footer --}}
                             <div class="px-5 pb-5 flex gap-2">

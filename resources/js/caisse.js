@@ -415,7 +415,7 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
 
         async validerVenteCredit() {
             if (this.panierVide || this.loading) return;
-            if (!this.clientId) {
+            if (!this.$wire.clientId) {
                 alert('Veuillez sélectionner un client pour la vente à crédit.');
                 return;
             }
