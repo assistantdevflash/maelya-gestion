@@ -270,6 +270,10 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
     // ── Bons de commande & Inventaires (accessibles aux employés) ──────────
     Route::resource('bons-commande', \App\Http\Controllers\Dashboard\BonCommandeController::class)
         ->except(['edit', 'update']);
+    Route::get('bons-commande/{bonsCommande}/pdf', [\App\Http\Controllers\Dashboard\BonCommandeController::class, 'pdf'])
+        ->name('bons-commande.pdf');
+    Route::post('bons-commande/{bonsCommande}/envoyer-email', [\App\Http\Controllers\Dashboard\BonCommandeController::class, 'envoyerEmail'])
+        ->name('bons-commande.envoyer-email');
     Route::post('bons-commande/{bonsCommande}/recevoir', [\App\Http\Controllers\Dashboard\BonCommandeController::class, 'recevoir'])
         ->name('bons-commande.recevoir');
 

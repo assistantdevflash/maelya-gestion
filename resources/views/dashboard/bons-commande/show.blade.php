@@ -13,7 +13,36 @@
                     </span>
                 </p>
             </div>
-            <a href="{{ route('dashboard.bons-commande.index') }}" class="btn-outline">← Retour</a>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('dashboard.bons-commande.pdf', $bon) }}" class="btn-outline text-xs py-1.5 px-3" title="Telecharger PDF">
+                    🖨️ PDF
+                </a>
+                @if($bon->fournisseur?->email)
+                <form method="POST" action="{{ route('dashboard.bons-commande.envoyer-email', $bon) }}" class="inline">
+                    @csrf
+                    <button type="submit" class="btn-outline text-xs py-1.5 px-3" title="Envoyer par email au fournisseur">
+                        📧 Email
+                    </button>
+                </form>
+                @endif
+                @if($bon->fournisseur?->telephone)
+                @php
+                    $waTel = preg_replace('/[^0-9+]/', '', $bon->fournisseur->telephone);
+                    $waTel = ltrim($waTel, '+');
+                    if (str_starts_with($waTel, '0')) $waTel = '225' . $waTel;
+                    $pdfUrl = route('dashboard.bons-commande.pdf', $bon);
+                    $waMsg = rawurlencode("Bonjour " . ($bon->fournisseur->contact_principal ?: $bon->fournisseur->nom) . ",\n\n"
+                        . "Veuillez trouver notre bon de commande " . $bon->numero . " du " . $bon->date_commande->format('d/m/Y') . " :\n"
+                        . "Montant : " . number_format($bon->total_ht, 0, ',', ' ') . " FCFA\n\n"
+                        . "Telecharger le PDF : " . $pdfUrl . "\n\n"
+                        . "Merci,\n" . ($bon->institut?->nom ?? 'Maelya Gestion'));
+                @endphp
+                <a href="https://wa.me/{{ $waTel }}?text={{ $waMsg }}" target="_blank" class="btn-outline text-xs py-1.5 px-3 text-green-600 border-green-200 hover:bg-green-50" title="Partager par WhatsApp">
+                    💬 WhatsApp
+                </a>
+                @endif
+                <a href="{{ route('dashboard.bons-commande.index') }}" class="btn-outline text-xs py-1.5 px-3">← Retour</a>
+            </div>
         </div>
 
         @if(session('success'))<div class="alert-success">{{ session('success') }}</div>@endif

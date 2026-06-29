@@ -8,9 +8,11 @@ use App\Models\BonCommandeLigne;
 use App\Models\Fournisseur;
 use App\Models\MouvementStock;
 use App\Models\Produit;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class BonCommandeController extends Controller
 {
@@ -146,5 +148,41 @@ class BonCommandeController extends Controller
     {
         $bonsCommande->update(['statut' => 'annule']);
         return back()->with('success', 'Bon de commande annulé.');
+    }
+
+    /** Télécharger le bon de commande en PDF */
+    public function pdf(BonCommande $bonsCommande)
+    {
+        $bonsCommande->load('fournisseur', 'lignes.produit', 'user', 'institut');
+        $pdf = Pdf::loadView('pdf.bon-commande', ['bon' => $bonsCommande])
+            ->setPaper('a4', 'portrait');
+        return $pdf->download("bon-commande-{$bonsCommande->numero}.pdf");
+    }
+
+    /** Envoyer le bon de commande par email au fournisseur */
+    public function envoyerEmail(BonCommande $bonsCommande)
+    {
+        if (!$bonsCommande->fournisseur?->email) {
+            return back()->with('error', 'Ce fournisseur n\'a pas d\'adresse email.');
+        }
+
+        $bonsCommande->load('fournisseur', 'lignes.produit', 'user', 'institut');
+
+        $institut = $bonsCommande->institut;
+        $pdf = Pdf::loadView('pdf.bon-commande', ['bon' => $bonsCommande])
+            ->setPaper('a4', 'portrait');
+
+        Mail::send('emails.bon-commande', ['bon' => $bonsCommande], function ($message) use ($bonsCommande, $institut, $pdf) {
+            $message->to($bonsCommande->fournisseur->email, $bonsCommande->fournisseur->contact_principal ?: $bonsCommande->fournisseur->nom)
+                    ->subject('Bon de commande ' . $bonsCommande->numero . ' — ' . ($institut?->nom ?? 'Maelya Gestion'))
+                    ->attachData($pdf->output(), "bon-commande-{$bonsCommande->numero}.pdf", ['mime' => 'application/pdf']);
+        });
+
+        // Si encore en brouillon, passer à envoyé
+        if ($bonsCommande->statut === 'brouillon') {
+            $bonsCommande->update(['statut' => 'envoye']);
+        }
+
+        return back()->with('success', 'Bon de commande envoyé par email à ' . $bonsCommande->fournisseur->nom . '.');
     }
 }
