@@ -94,7 +94,7 @@
                                     <input type="text" name="nom_institut" required maxlength="150"
                                            value="{{ old('nom_institut') }}"
                                            class="w-full px-4 py-3.5 rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white text-base placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900 transition-all @error('nom_institut') border-red-400 @enderror"
-                                           placeholder="Institut Beauté Prestige">
+                                           placeholder="Nom de votre établissement">
                                 </div>
 
                                 <div>

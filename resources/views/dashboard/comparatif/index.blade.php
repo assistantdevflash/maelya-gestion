@@ -3,8 +3,8 @@
 
     <div class="space-y-4">
         <div>
-            <h1 class="text-2xl font-display font-bold text-gray-900">Comparatif multi-instituts</h1>
-            <p class="text-sm text-gray-500 mt-1">{{ now()->translatedFormat('F Y') }} — {{ count($stats) }} institut(s) actif(s)</p>
+            <h1 class="text-2xl font-display font-bold text-gray-900">Comparatif multi-établissements</h1>
+            <p class="text-sm text-gray-500 mt-1">{{ now()->translatedFormat('F Y') }} — {{ count($stats) }} établissement(s) actif(s)</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -22,7 +22,7 @@
             <table class="w-full text-sm">
                 <thead class="bg-gray-50 text-xs uppercase text-gray-500">
                     <tr>
-                        <th class="px-4 py-3 text-left">Institut</th>
+                        <th class="px-4 py-3 text-left">Établissement</th>
                         <th class="px-4 py-3 text-right">CA mois</th>
                         <th class="px-4 py-3 text-right">% du total</th>
                         <th class="px-4 py-3 text-right">Ventes</th>
