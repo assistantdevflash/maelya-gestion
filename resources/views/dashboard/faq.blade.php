@@ -62,13 +62,13 @@ $categories = [
         'faqs'   => [
             [
                 'q' => 'Comment démarrer rapidement avec Maëlya ?',
-                'a' => '<p>Voici les 5 étapes pour être opérationnel en 10 minutes :</p>
+                'a' => '<p>Voici les 5 étapes pour être opérationnel en quelques minutes :</p>
                 <ol>
-                    <li><strong>Configurez votre établissement</strong> → Mes établissements → Modifier (nom, logo, adresse, téléphone)</li>
+                    <li><strong>Configurez votre établissement</strong> → Mes établissements → Modifier (nom, logo, adresse, téléphone, horaires)</li>
                     <li><strong>Ajoutez vos prestations</strong> → Prestations → Nouvelle prestation (nom + prix)</li>
-                    <li><strong>Ajoutez vos produits</strong> (optionnel) → Produits → Nouveau produit</li>
+                    <li><strong>Ajoutez vos produits</strong> (optionnel) → Produits → Nouveau produit (nom, prix de vente, stock initial)</li>
                     <li><strong>Faites votre première vente</strong> → Caisse → sélectionnez les articles → choisissez le mode de paiement → Valider</li>
-                    <li><strong>Invitez vos employées</strong> (si applicable) → Mon équipe → Inviter</li>
+                    <li><strong>Ajoutez votre équipe</strong> (si applicable) → Mon équipe → Inviter</li>
                 </ol>
                 <div class="tip">Commencez par la Caisse — c\'est le cœur de l\'application !</div>'
             ],
@@ -76,21 +76,22 @@ $categories = [
                 'q' => 'Comment configurer mon établissement (logo, nom, adresse) ?',
                 'a' => '<p>Allez dans <strong>Mes établissements</strong> depuis le menu. Cliquez sur votre établissement puis <strong>Modifier</strong>. Vous pouvez y renseigner :</p>
                 <ul>
-                    <li>Nom du salon et description</li>
+                    <li>Nom de l\'établissement et description</li>
                     <li>Logo (cliquez sur l\'icône d\'upload)</li>
                     <li>Adresse, téléphone, email</li>
                     <li>Horaires d\'ouverture</li>
-                    <li>Activer/désactiver la page vitrine et la réservation en ligne</li>
+                    <li>Activer/désactiver la page vitrine publique et la réservation en ligne</li>
                 </ul>
                 <div class="tip">Votre logo et vos informations apparaissent sur les tickets, factures et votre page vitrine publique.</div>'
             ],
             [
                 'q' => 'Comment changer de plan / m\'abonner ?',
-                'a' => '<p>Allez dans <strong>Abonnement</strong> dans le menu. Choisissez votre plan (Basic, Premium, Premium+) et réglez par <strong>Orange Money ou Wave</strong>. Aucune carte bancaire nécessaire.</p>
+                'a' => '<p>Allez dans <strong>Abonnement</strong> dans le menu. Choisissez votre plan et réglez par <strong>Orange Money ou Wave</strong>. Aucune carte bancaire nécessaire.</p>
                 <ul>
-                    <li><strong>Basic</strong> (2 000 FCFA/mois) : caisse, clients, RDV, prestations</li>
-                    <li><strong>Premium</strong> (4 900 FCFA/mois) : tout Basic + stock, fidélité, finances, équipe</li>
-                    <li><strong>Premium+</strong> (9 900 FCFA/mois) : tout + multi-établissements, vente à crédit, comparatif</li>
+                    <li><strong>Essai gratuit</strong> (14 jours) : accès complet à toutes les fonctionnalités, sans engagement</li>
+                    <li><strong>Basic</strong> (2 000 FCFA/mois) : caisse, clients, RDV, prestations, parrainage, notifications</li>
+                    <li><strong>Premium</strong> (4 900 FCFA/mois) : tout Basic + stock, produits, fidélité, finances, équipe, vitrine, réservation en ligne, codes de réduction</li>
+                    <li><strong>Premium+</strong> (9 900 FCFA/mois) : tout Premium + multi-établissements, vente à crédit, comparatif</li>
                 </ul>'
             ],
         ]
@@ -103,48 +104,59 @@ $categories = [
         'label'  => 'Caisse & Ventes',
         'faqs'   => [
             [
-                'q' => 'Comment enregistrer une vente (caisse) ?',
+                'q' => 'Comment enregistrer une vente ?',
                 'a' => '<p>Allez dans <strong>Caisse</strong> :</p>
                 <ol>
-                    <li>Sélectionnez les prestations ou produits</li>
-                    <li>Choisissez ou saisissez un client (optionnel)</li>
+                    <li>Sélectionnez les prestations ou produits dans le catalogue</li>
+                    <li>Associez un client (optionnel — recherche rapide ou création à la volée)</li>
                     <li>Appliquez un code de réduction si besoin</li>
-                    <li>Choisissez le mode de paiement (Cash, Wave, Orange Money, Mixte)</li>
+                    <li>Choisissez le mode de paiement : <strong>Espèces, Wave, Orange Money, Carte, Mixte</strong> ou <strong>Crédit</strong></li>
                     <li>Cliquez <strong>Valider la vente</strong></li>
                 </ol>
-                <div class="tip">Un ticket est généré automatiquement. Vous pouvez l\'envoyer par WhatsApp depuis le détail de la vente.</div>'
+                <div class="tip">Un numéro de vente unique est généré automatiquement (format V-XXXXXXXX). Le ticket est partageable par WhatsApp.</div>'
             ],
             [
                 'q' => 'Comment envoyer un ticket de caisse au client ?',
                 'a' => '<p>Depuis le <strong>détail d\'une vente</strong> (Ventes → cliquer sur une vente) :</p>
                 <ul>
                     <li><strong>Par WhatsApp</strong> : le bouton "Envoyer ticket par WhatsApp" crée un message pré-rempli avec le lien du ticket. Disponible si le client a un numéro de téléphone.</li>
-                    <li><strong>PDF imprimable</strong> : bouton "Télécharger le ticket" (fonctionnalité Premium).</li>
+                    <li><strong>Ticket PDF imprimable</strong> : bouton "Télécharger le ticket" — format A4 avec logo et détail du panier (disponible avec le plan Premium).</li>
                     <li><strong>Facture PDF</strong> : bouton "Télécharger la facture" avec numéro de facture auto-généré (Premium).</li>
                 </ul>'
             ],
             [
                 'q' => 'Comment annuler une vente ?',
-                'a' => '<p>Dans le <strong>détail de la vente</strong>, cliquez sur <strong>Annuler la vente</strong> (bouton rouge, réservé aux admins). Vous devez choisir un motif d\'annulation. Le stock est restauré automatiquement et les points de fidélité sont reversés.</p>
-                <div class="warn">Cette action est irréversible. Préférez créer un avoir si la cliente veut un remboursement partiel.</div>'
+                'a' => '<p>Dans le <strong>détail de la vente</strong>, cliquez sur <strong>Annuler la vente</strong> (bouton rouge, réservé aux administrateurs). Vous devez choisir un motif d\'annulation. Le stock des produits est restauré automatiquement et les points de fidélité sont reversés.</p>
+                <div class="warn">Cette action est irréversible. Préférez créer un avoir si vous souhaitez un remboursement partiel.</div>'
             ],
             [
                 'q' => 'Comment créer un avoir (remboursement partiel) ?',
-                'a' => '<p>Dans le <strong>détail d\'une vente validée</strong>, cliquez sur <strong>Créer un avoir</strong>. Saisissez le montant et le motif. Un code de réduction est généré automatiquement, utilisable lors d\'une prochaine vente.</p>'
+                'a' => '<p>Dans le <strong>détail d\'une vente validée</strong>, cliquez sur <strong>Créer un avoir</strong>. Saisissez le montant et le motif. Un code de réduction est généré automatiquement, utilisable par le client lors d\'une prochaine vente.</p>'
             ],
             [
                 'q' => 'Comment envoyer un sondage de satisfaction après une vente ?',
                 'a' => '<p>Dans le <strong>détail d\'une vente validée</strong>, section "Sondage satisfaction" :</p>
                 <ul>
                     <li>Si aucun lien n\'existe : cliquez <strong>Générer lien sondage</strong></li>
-                    <li>Puis envoyez par <strong>Email</strong> (si le client a une adresse) ou par <strong>WhatsApp</strong></li>
-                    <li>Le client reçoit un lien unique pour noter son expérience de 1 à 5 étoiles</li>
+                    <li>Puis envoyez par <strong>Email</strong> (si le client a une adresse email) ou par <strong>WhatsApp</strong></li>
+                    <li>Le client reçoit un lien unique pour noter son expérience de 1 à 5 étoiles et laisser un commentaire</li>
                 </ul>
-                <div class="tip">Pour les rendez-vous, le sondage est envoyé automatiquement quand vous marquez le RDV comme "Terminé".</div>'
+                <div class="tip">Pour les rendez-vous, le sondage est créé et envoyé automatiquement quand vous marquez le RDV comme "Terminé".</div>'
             ],
             [
                 'q' => 'Comment utiliser les brouillons de caisse ?',
-                'a' => '<p>Sur la page <strong>Caisse</strong>, cliquez sur <strong>Brouillons</strong>. Vous pouvez sauvegarder une vente en cours et la reprendre plus tard — utile si vous devez interrompre une transaction.</p>'
+                'a' => '<p>Sur la page <strong>Caisse</strong>, cliquez sur <strong>Brouillons</strong>. Vous pouvez sauvegarder une vente en cours et la reprendre plus tard — utile si vous devez interrompre une transaction ou si un client hésite.</p>'
+            ],
+            [
+                'q' => 'Quels modes de paiement sont disponibles ?',
+                'a' => '<p>La caisse accepte 5 modes de paiement :</p>
+                <ul>
+                    <li><strong>Espèces</strong> : paiement en cash</li>
+                    <li><strong>Mobile Money</strong> : Wave ou Orange Money</li>
+                    <li><strong>Carte bancaire</strong> : paiement par carte</li>
+                    <li><strong>Mixte</strong> : combinaison espèces + mobile money + carte</li>
+                    <li><strong>Crédit</strong> : vente à crédit avec apport initial et échéancier (Premium+)</li>
+                </ul>'
             ],
         ]
     ],
@@ -159,29 +171,32 @@ $categories = [
                 'q' => 'Comment créer un rendez-vous ?',
                 'a' => '<p>Allez dans <strong>Rendez-vous</strong> → <strong>Nouveau RDV</strong>. Renseignez :</p>
                 <ul>
-                    <li>Client (existant ou à créer)</li>
-                    <li>Date et heure</li>
+                    <li>Client (existant dans la liste ou à créer)</li>
+                    <li>Date et heure de début</li>
+                    <li>Durée estimée</li>
                     <li>Prestations prévues</li>
+                    <li>Employé assigné (optionnel)</li>
                     <li>Notes éventuelles</li>
                 </ul>
-                <div class="tip">Un email de confirmation est envoyé automatiquement au client si il a une adresse email.</div>'
+                <div class="tip">Un email de confirmation est envoyé automatiquement au client s\'il a une adresse email renseignée.</div>'
             ],
             [
                 'q' => 'Comment utiliser le calendrier interactif ?',
-                'a' => '<p>Dans <strong>Rendez-vous</strong>, cliquez sur l\'onglet <strong>Calendrier</strong>. Vous voyez tous vos RDV en vue semaine ou mois. Vous pouvez <strong>déplacer un rendez-vous en le glissant</strong> avec le doigt (drag & drop).</p>'
+                'a' => '<p>Dans <strong>Rendez-vous</strong>, cliquez sur l\'onglet <strong>Calendrier</strong>. Vous visualisez tous vos RDV en vue semaine, mois, jour ou liste. Vous pouvez <strong>déplacer un rendez-vous en le glissant-déposant</strong> (drag & drop) vers un autre créneau. Cliquez sur un RDV pour voir ou modifier son détail.</p>'
             ],
             [
-                'q' => 'Comment marquer un RDV comme terminé et générer le sondage ?',
-                'a' => '<p>Dans la liste des rendez-vous, cliquez sur le bouton <strong>Terminé</strong>. Cela :</p>
+                'q' => 'Comment marquer un RDV comme terminé ?',
+                'a' => '<p>Dans la liste des rendez-vous ou dans le détail d\'un RDV, cliquez sur le bouton <strong>Terminé</strong>. Cela :</p>
                 <ol>
                     <li>Marque le RDV comme terminé dans le planning</li>
-                    <li>Crée automatiquement un lien de sondage</li>
-                    <li>Envoie automatiquement l\'email de sondage au client (si il a un email)</li>
-                </ol>'
+                    <li>Crée automatiquement un lien de sondage de satisfaction</li>
+                    <li>Envoie automatiquement l\'email de sondage au client (s\'il a un email)</li>
+                </ol>
+                <div class="tip">Vous pouvez aussi <strong>encaisser directement</strong> depuis un RDV : le panier est pré-rempli avec les prestations du rendez-vous.</div>'
             ],
             [
-                'q' => 'Les réservations en ligne — comment ça fonctionne ?',
-                'a' => '<p>Les clients peuvent réserver depuis votre <strong>page vitrine publique</strong>. La réservation apparaît dans votre agenda avec le statut "En attente de confirmation". Vous recevez une notification et pouvez <strong>confirmer ou refuser</strong> la réservation depuis Rendez-vous.</p>'
+                'q' => 'Comment fonctionnent les réservations en ligne ?',
+                'a' => '<p>Les clients peuvent réserver depuis votre <strong>page vitrine publique</strong> (si activée). La réservation arrive dans votre agenda avec le statut "En attente de confirmation". Vous recevez une notification et pouvez <strong>confirmer ou refuser</strong> la réservation. Un email est envoyé automatiquement au client à chaque changement de statut.</p>'
             ],
         ]
     ],
@@ -194,30 +209,46 @@ $categories = [
         'faqs'   => [
             [
                 'q' => 'Comment ajouter un client ?',
-                'a' => '<p>Allez dans <strong>Clients</strong> → <strong>Nouveau client</strong>. Renseignez le nom, prénom, téléphone, email et date d\'anniversaire. La date d\'anniversaire permet d\'envoyer automatiquement un code cadeau le jour J.</p>'
+                'a' => '<p>Allez dans <strong>Clients</strong> → <strong>Nouveau client</strong>. Renseignez le prénom, nom, téléphone, email et date d\'anniversaire. La date d\'anniversaire permet d\'envoyer automatiquement un code cadeau le jour J.</p>'
+            ],
+            [
+                'q' => 'Que contient la fiche d\'un client ?',
+                'a' => '<p>Chaque client possède une fiche complète avec :</p>
+                <ul>
+                    <li>Informations de contact (nom, téléphone, email, adresse)</li>
+                    <li>Historique complet des ventes et rendez-vous</li>
+                    <li>Points de fidélité accumulés et historique détaillé</li>
+                    <li>Codes cadeaux reçus et utilisés</li>
+                    <li>Galerie photos avant/après</li>
+                    <li>Crédits en cours (si applicable)</li>
+                </ul>'
             ],
             [
                 'q' => 'Comment fonctionne le programme de fidélité ?',
-                'a' => '<p>Chaque vente accumule des <strong>points de fidélité</strong> pour la cliente. Depuis <strong>Fidélité</strong>, vous pouvez :</p>
+                'a' => '<p>Chaque vente génère automatiquement des <strong>points de fidélité</strong> pour le client. Depuis <strong>Fidélité</strong>, vous configurez :</p>
                 <ul>
-                    <li>Voir les points de chaque cliente</li>
-                    <li>Définir les paliers de récompense</li>
-                    <li>Générer des codes cadeaux manuellement</li>
+                    <li><strong>La tranche FCFA</strong> : montant de vente qui donne droit à des points (ex: 1 000 FCFA = X points)</li>
+                    <li><strong>Le seuil de récompense</strong> : nombre de points pour déclencher un cadeau</li>
+                    <li><strong>Le type et la valeur de la récompense</strong> : pourcentage de réduction ou montant fixe</li>
                 </ul>
-                <div class="tip">Un code cadeau est généré automatiquement quand une cliente atteint un palier, et pour son anniversaire !</div>'
+                <div class="tip">Un code cadeau est généré automatiquement quand un client atteint un palier, et aussi le jour de son anniversaire !</div>'
             ],
             [
                 'q' => 'Comment utiliser la galerie photos avant/après ?',
-                'a' => '<p>Dans la <strong>fiche d\'un client</strong>, cliquez sur l\'onglet <strong>Galerie photos</strong>. Vous pouvez télécharger des photos avant/après pour chaque prestation réalisée. C\'est votre portfolio personnel pour montrer vos transformations.</p>'
+                'a' => '<p>Dans la <strong>fiche d\'un client</strong>, cliquez sur l\'onglet <strong>Galerie photos</strong>. Vous pouvez télécharger des photos avant/après pour chaque prestation réalisée. Les photos sont classées par date et vous pouvez les visualiser en plein écran. C\'est votre portfolio pour montrer vos résultats.</p>'
             ],
             [
                 'q' => 'Comment gérer les avis clients ?',
-                'a' => '<p>Dans <strong>Avis clients</strong> (menu administration), vous voyez tous les avis soumis via sondage. Vous pouvez :</p>
+                'a' => '<p>Dans <strong>Avis clients</strong> (menu accessible aux administrateurs), vous voyez tous les avis soumis via les sondages de satisfaction. Vous pouvez :</p>
                 <ul>
-                    <li><strong>Approuver</strong> : l\'avis apparaît sur votre page vitrine publique</li>
+                    <li><strong>Approuver</strong> : l\'avis et sa note en étoiles apparaissent sur votre page vitrine publique</li>
                     <li><strong>Rejeter</strong> : l\'avis n\'est pas publié</li>
                 </ul>
-                <div class="tip">Les avis approuvés avec les étoiles apparaissent sur votre page publique et rassurent les nouvelles clientes.</div>'
+                <div class="tip">Les avis approuvés avec les étoiles rassurent les nouveaux clients qui visitent votre page publique.</div>'
+            ],
+            [
+                'q' => 'Comment partager la carte de fidélité d\'un client ?',
+                'a' => '<p>Chaque client possède un <strong>token de fidélité unique</strong> (lien partageable). Depuis la fiche client, vous pouvez télécharger la carte au format PDF ou copier le lien public. Le client peut scanner un QR code pour consulter son solde de points.</p>'
             ],
         ]
     ],
@@ -230,23 +261,23 @@ $categories = [
         'faqs'   => [
             [
                 'q' => 'Comment suivre mes dépenses et mon bénéfice net ?',
-                'a' => '<p>Allez dans <strong>Finances</strong>. L\'onglet <strong>Dépenses</strong> vous permet d\'enregistrer toutes vos charges (loyer, matériel, salaires, etc.). Le tableau de bord calcule automatiquement votre <strong>bénéfice net = CA - dépenses</strong>.</p>
-                <div class="tip">Vous pouvez exporter un rapport PDF pour votre comptable depuis la page Finances.</div>'
+                'a' => '<p>Allez dans <strong>Finances</strong>. L\'onglet <strong>Dépenses</strong> vous permet d\'enregistrer toutes vos charges (loyer, électricité, salaires, matériel, etc.) par catégorie et par date. Le tableau de bord financier calcule automatiquement votre <strong>bénéfice net = chiffre d\'affaires encaissé − total des dépenses</strong>.</p>
+                <div class="tip">Vous pouvez exporter un rapport PDF mensuel ou annuel pour votre comptable, ainsi que des exports CSV des ventes et des dépenses.</div>'
             ],
             [
                 'q' => 'Comment fonctionne la Trésorerie prévisionnelle ?',
-                'a' => '<p>Dans <strong>Finances</strong>, cliquez sur l\'onglet <strong>Trésorerie prévisionnelle</strong>. Vous choisissez un horizon (7, 14, 30, 60 ou 90 jours) et l\'application calcule :</p>
+                'a' => '<p>Dans <strong>Finances</strong>, cliquez sur l\'onglet <strong>Trésorerie prévisionnelle</strong>. Choisissez un horizon (7, 14, 30, 60 ou 90 jours) :</p>
                 <ul>
-                    <li><strong>Entrées prévues</strong> : basées sur vos rendez-vous confirmés à venir</li>
-                    <li><strong>Sorties prévues</strong> : basées sur votre moyenne de dépenses sur 90 jours</li>
-                    <li><strong>Solde prévisionnel</strong> : entrées - sorties attendues</li>
+                    <li><strong>Entrées prévues</strong> : basées sur vos rendez-vous confirmés et en attente à venir, avec le montant estimé des prestations</li>
+                    <li><strong>Sorties prévues</strong> : basées sur la moyenne quotidienne de vos dépenses des 90 derniers jours</li>
+                    <li><strong>Solde prévisionnel</strong> : différence entre les entrées et les sorties attendues, jour par jour</li>
                 </ul>
-                <p>Un graphique en courbes montre l\'évolution jour par jour. Le tableau liste tous les RDV futurs avec leur montant estimé.</p>
+                <p>Un graphique en courbes montre l\'évolution projetée et un tableau liste tous les RDV futurs avec leur montant estimé.</p>
                 <div class="tip">Utilisez cet onglet en début de mois pour anticiper vos besoins de trésorerie !</div>'
             ],
             [
                 'q' => 'Comment analyser mes ventes par catégorie ?',
-                'a' => '<p>Allez dans <strong>Finances</strong>, onglet <strong>Par catégorie</strong>. Vous voyez quelles catégories de prestations génèrent le plus de chiffre d\'affaires. Utile pour orienter votre stratégie commerciale.</p>'
+                'a' => '<p>Allez dans <strong>Finances</strong>, onglet <strong>Par catégorie</strong>. Vous visualisez quelles catégories de prestations génèrent le plus de chiffre d\'affaires sur la période choisie. Utile pour orienter votre stratégie commerciale et identifier vos services les plus rentables.</p>'
             ],
         ]
     ],
@@ -259,15 +290,20 @@ $categories = [
         'faqs'   => [
             [
                 'q' => 'Comment gérer mon stock de produits ?',
-                'a' => '<p>Dans <strong>Stock & Produits</strong> → <strong>Stock</strong>, vous voyez le stock actuel de chaque produit. Le stock est <strong>mis à jour automatiquement</strong> à chaque vente. Vous recevez une alerte quand un produit atteint le seuil d\'alerte.</p>'
+                'a' => '<p>Dans <strong>Stock</strong>, vous visualisez le stock actuel de chaque produit. Le stock est <strong>mis à jour automatiquement</strong> à chaque vente (sortie) et à chaque réception de commande (entrée). Chaque produit a un <strong>seuil d\'alerte</strong> configurable : vous recevez une notification quand le stock passe sous ce seuil.</p>'
             ],
             [
                 'q' => 'Comment faire un inventaire physique ?',
-                'a' => '<p>Dans <strong>Stock</strong> → <strong>Inventaires</strong> → <strong>Nouvel inventaire</strong>. Vous saisissez les quantités réelles que vous comptez physiquement. L\'application compare avec le stock théorique et signale les <strong>écarts</strong> (pertes, vols, erreurs).</p>'
+                'a' => '<p>Dans <strong>Stock</strong> → <strong>Inventaires</strong> → <strong>Nouvel inventaire</strong>. Saisissez les quantités réelles que vous comptez physiquement pour chaque produit. L\'application compare automatiquement avec le stock théorique et affiche les <strong>écarts</strong> (positifs ou négatifs), ainsi que leur valeur. Vous pouvez ensuite valider l\'inventaire pour mettre à jour les stocks.</p>
+                <div class="tip">Les écarts négatifs peuvent indiquer des pertes, vols, erreurs de caisse ou produits périmés.</div>'
             ],
             [
                 'q' => 'Comment commander chez mes fournisseurs ?',
-                'a' => '<p>Dans <strong>Stock</strong> → <strong>Bons de commande</strong> → <strong>Nouveau bon</strong>. Sélectionnez le fournisseur et les produits à commander. Quand la livraison arrive, cliquez <strong>Réceptionner</strong> : le stock est mis à jour automatiquement.</p>'
+                'a' => '<p>Dans <strong>Bons de commande</strong> → <strong>Nouveau bon</strong>. Sélectionnez le fournisseur (préalablement enregistré dans la liste des fournisseurs), puis ajoutez les produits et quantités à commander. Le bon passe par les statuts : Brouillon → Envoyé → Reçu partiel → Reçu. Quand la livraison arrive, cliquez <strong>Réceptionner</strong> : le stock est mis à jour automatiquement et le coût moyen pondéré (CMP) est recalculé.</p>'
+            ],
+            [
+                'q' => 'Comment fonctionne le coût moyen pondéré (CMP) ?',
+                'a' => '<p>À chaque entrée de stock, le <strong>coût moyen pondéré</strong> du produit est recalculé automatiquement : ((stock actuel × CMP actuel) + (quantité entrée × prix unitaire)) ÷ (stock actuel + quantité entrée). Cela permet de toujours avoir une valorisation précise de votre stock et de calculer vos marges réelles. La marge unitaire et le pourcentage de marge sont affichés dans la fiche produit.</p>'
             ],
         ]
     ],
@@ -279,17 +315,17 @@ $categories = [
         'label'  => 'Vitrine & Réservation',
         'faqs'   => [
             [
-                'q' => 'Comment activer ma page publique ?',
-                'a' => '<p>Dans <strong>Mes établissements</strong> → Modifier → activez <strong>"Page vitrine visible"</strong>. Votre page est accessible à l\'adresse <strong>maelyagestion.com/salon/votre-slug</strong>. Elle affiche vos prestations, photos, horaires et les avis approuvés.</p>
-                <div class="tip">Téléchargez le QR code de votre vitrine depuis la page de configuration et collez-le à l\'entrée de votre salon !</div>'
+                'q' => 'Comment activer ma page vitrine publique ?',
+                'a' => '<p>Dans <strong>Mes établissements</strong> → Modifier → activez <strong>"Page vitrine visible"</strong>. Votre page est accessible à l\'adresse <strong>maelyagestion.com/e/votre-slug</strong>. Elle affiche automatiquement vos prestations, photos, horaires et les avis clients approuvés.</p>
+                <div class="tip">Téléchargez le QR code de votre vitrine depuis la page de configuration et affichez-le à l\'entrée de votre établissement pour que les clients scannent et découvrent vos services.</div>'
             ],
             [
                 'q' => 'Comment télécharger le QR code de ma vitrine ?',
-                'a' => '<p>Dans <strong>Mes établissements</strong> → Modifier → section Vitrine. Cliquez sur <strong>Télécharger le QR code</strong>. C\'est une image PNG à imprimer et afficher dans votre salon.</p>'
+                'a' => '<p>Dans <strong>Mes établissements</strong> → Modifier → section Vitrine, cliquez sur <strong>Télécharger le QR code</strong>. C\'est une image PNG à imprimer et afficher dans votre établissement.</p>'
             ],
             [
                 'q' => 'Comment activer la réservation en ligne ?',
-                'a' => '<p>Dans <strong>Mes établissements</strong> → Modifier → activez <strong>"Réservation en ligne"</strong>. Les clients peuvent alors prendre rendez-vous directement depuis votre page vitrine, même à minuit. Vous recevez une notification et validez la réservation depuis l\'agenda.</p>'
+                'a' => '<p>Dans <strong>Mes établissements</strong> → Modifier → activez <strong>"Réservation en ligne"</strong>. Les clients peuvent alors prendre rendez-vous directement depuis votre page vitrine, 24h/24. Ils choisissent une prestation et un créneau disponible. Vous recevez une notification pour chaque nouvelle réservation et pouvez la confirmer ou la refuser depuis l\'agenda.</p>'
             ],
         ]
     ],
@@ -301,20 +337,23 @@ $categories = [
         'label'  => 'Équipe & Accès',
         'faqs'   => [
             [
-                'q' => 'Comment ajouter une employée ?',
-                'a' => '<p>Dans <strong>Mon équipe</strong> → <strong>Inviter une employée</strong>. Saisissez son email. Elle reçoit un lien pour créer son compte. Elle pourra encaisser des ventes, mais ne verra pas les données financières globales ni ne pourra modifier les paramètres.</p>
-                <div class="tip">Chaque employée a ses propres identifiants. Vous voyez leurs ventes séparément dans le tableau de bord.</div>'
+                'q' => 'Comment ajouter un employé ?',
+                'a' => '<p>Dans <strong>Mon équipe</strong> → <strong>Inviter</strong>. Saisissez l\'email de la personne. Elle reçoit un lien pour créer son compte avec ses propres identifiants. Elle pourra encaisser des ventes et accéder aux clients et RDV, mais ne verra pas les données financières globales ni ne pourra modifier les paramètres de l\'établissement.</p>
+                <div class="tip">Chaque employé a ses propres identifiants. Vous voyez leurs ventes séparément dans l\'historique et le tableau de bord.</div>'
             ],
             [
-                'q' => 'Quelle est la différence entre Admin et Employée ?',
+                'q' => 'Quelle est la différence entre Admin et Employé ?',
                 'a' => '<table style="font-size:.8rem;margin:8px 0;">
-                    <thead><tr><th style="padding:6px 10px;background:#f3f4f6;">Fonctionnalité</th><th style="padding:6px 10px;background:#f3f4f6;">Admin</th><th style="padding:6px 10px;background:#f3f4f6;">Employée</th></tr></thead>
+                    <thead><tr><th style="padding:6px 10px;background:#f3f4f6;">Fonctionnalité</th><th style="padding:6px 10px;background:#f3f4f6;">Admin</th><th style="padding:6px 10px;background:#f3f4f6;">Employé</th></tr></thead>
                     <tbody>
                         <tr><td style="padding:5px 10px;border:1px solid #e5e7eb;">Encaisser des ventes</td><td style="padding:5px 10px;border:1px solid #e5e7eb;">✅</td><td style="padding:5px 10px;border:1px solid #e5e7eb;">✅</td></tr>
                         <tr><td style="padding:5px 10px;border:1px solid #e5e7eb;">Voir toutes les ventes</td><td style="padding:5px 10px;border:1px solid #e5e7eb;">✅</td><td style="padding:5px 10px;border:1px solid #e5e7eb;">Ses ventes uniquement</td></tr>
+                        <tr><td style="padding:5px 10px;border:1px solid #e5e7eb;">Accéder aux clients et RDV</td><td style="padding:5px 10px;border:1px solid #e5e7eb;">✅</td><td style="padding:5px 10px;border:1px solid #e5e7eb;">✅</td></tr>
+                        <tr><td style="padding:5px 10px;border:1px solid #e5e7eb;">Gérer le stock (entrées, corrections)</td><td style="padding:5px 10px;border:1px solid #e5e7eb;">✅</td><td style="padding:5px 10px;border:1px solid #e5e7eb;">✅</td></tr>
                         <tr><td style="padding:5px 10px;border:1px solid #e5e7eb;">Finances & dépenses</td><td style="padding:5px 10px;border:1px solid #e5e7eb;">✅</td><td style="padding:5px 10px;border:1px solid #e5e7eb;">❌</td></tr>
-                        <tr><td style="padding:5px 10px;border:1px solid #e5e7eb;">Annuler une vente</td><td style="padding:5px 10px;border:1px solid #e5e7eb;">✅</td><td style="padding:5px 10px;border:1px solid #e5e7eb;">❌</td></tr>
-                        <tr><td style="padding:5px 10px;border:1px solid #e5e7eb;">Paramètres salon</td><td style="padding:5px 10px;border:1px solid #e5e7eb;">✅</td><td style="padding:5px 10px;border:1px solid #e5e7eb;">❌</td></tr>
+                        <tr><td style="padding:5px 10px;border:1px solid #e5e7eb;">Annuler une vente / Créer un avoir</td><td style="padding:5px 10px;border:1px solid #e5e7eb;">✅</td><td style="padding:5px 10px;border:1px solid #e5e7eb;">❌</td></tr>
+                        <tr><td style="padding:5px 10px;border:1px solid #e5e7eb;">Modifier les paramètres établissement</td><td style="padding:5px 10px;border:1px solid #e5e7eb;">✅</td><td style="padding:5px 10px;border:1px solid #e5e7eb;">❌</td></tr>
+                        <tr><td style="padding:5px 10px;border:1px solid #e5e7eb;">Gérer les codes de réduction et avoirs</td><td style="padding:5px 10px;border:1px solid #e5e7eb;">✅</td><td style="padding:5px 10px;border:1px solid #e5e7eb;">❌</td></tr>
                     </tbody>
                 </table>'
             ],
@@ -333,16 +372,21 @@ $categories = [
                 <ul>
                     <li>Nouvelle réservation en ligne reçue</li>
                     <li>RDV confirmé, annulé ou reprogrammé</li>
-                    <li>Stock en rupture ou sous le seuil d\'alerte</li>
+                    <li>Stock sous le seuil d\'alerte</li>
                     <li>Paiement d\'abonnement reçu ou en retard</li>
-                    <li>Anniversaire d\'une cliente (J-1)</li>
+                    <li>Anniversaire d\'un client (la veille)</li>
                     <li>Nouvel avis client reçu</li>
                     <li>Bon de commande livré</li>
-                </ul>'
+                </ul>
+                <p>Les notifications sont disponibles <strong>en temps réel dans l\'application</strong> (cloche en haut à droite) et par <strong>email</strong>.</p>'
             ],
             [
                 'q' => 'Comment accéder à toutes mes notifications ?',
-                'a' => '<p>Cliquez sur la <strong>cloche en haut à droite</strong> de votre tableau de bord. Un dropdown affiche les 20 dernières. En bas du dropdown, cliquez <strong>"Voir toutes les notifications"</strong> pour accéder à la page complète avec pagination.</p>'
+                'a' => '<p>Cliquez sur l\'icône <strong>cloche en haut à droite</strong> de votre tableau de bord. Un panneau latéral affiche les 20 notifications les plus récentes. En bas, cliquez <strong>"Voir toutes les notifications"</strong> pour accéder à la page complète avec pagination et un bouton "Tout marquer comme lu".</p>'
+            ],
+            [
+                'q' => 'Comment fonctionnent les notifications push ?',
+                'a' => '<p>Les notifications push web vous alertent même lorsque vous n\'êtes pas sur l\'application. Lors de votre première connexion, votre navigateur vous demande l\'autorisation d\'afficher des notifications. Vous pouvez vous désabonner à tout moment depuis votre profil.</p>'
             ],
         ]
     ],
@@ -354,18 +398,42 @@ $categories = [
         'label'  => 'Multi-établissements',
         'faqs'   => [
             [
-                'q' => 'Comment gérer plusieurs salons avec un seul compte ?',
-                'a' => '<p>Avec le plan <strong>Premium+</strong>, vous pouvez créer plusieurs établissements. Dans <strong>Mes établissements</strong>, chaque salon a ses propres données (ventes, clients, stock). Basculez entre les salons depuis le sélecteur en haut de la sidebar.</p>'
+                'q' => 'Comment gérer plusieurs établissements avec un seul compte ?',
+                'a' => '<p>Avec le plan <strong>Premium+</strong>, vous pouvez créer plusieurs établissements depuis <strong>Mes établissements</strong> → <strong>Nouvel établissement</strong>. Chaque établissement a ses propres données (ventes, clients, stock, prestations, équipe). Basculez entre les établissements depuis le sélecteur en haut de la barre latérale. Les données sont totalement indépendantes.</p>'
             ],
             [
-                'q' => 'Comment comparer les performances de mes salons ?',
-                'a' => '<p>Dans <strong>Comparatif instituts</strong> (menu Compte, réservé aux plans Entreprise). Vous comparez sur la même période :</p>
+                'q' => 'Comment comparer les performances de mes établissements ?',
+                'a' => '<p>Dans <strong>Comparatif</strong> (menu accessible uniquement si vous avez plusieurs établissements en Premium+), vous pouvez comparer sur une même période :</p>
                 <ul>
-                    <li>Chiffre d\'affaires par salon</li>
+                    <li>Chiffre d\'affaires par établissement</li>
                     <li>Nombre de clients et de ventes</li>
                     <li>Top prestations par établissement</li>
                     <li>Évolution mois par mois</li>
                 </ul>'
+            ],
+        ]
+    ],
+    [
+        'id'     => 'credits',
+        'icon'   => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
+        'color'  => '#0891b2',
+        'bg'     => '#ecfeff',
+        'label'  => 'Vente à crédit',
+        'faqs'   => [
+            [
+                'q' => 'Comment faire une vente à crédit ?',
+                'a' => '<p>Disponible avec le plan <strong>Premium+</strong>. Dans la caisse, sélectionnez le mode de paiement <strong>Crédit</strong>. Saisissez l\'apport initial (optionnel), le nombre d\'échéances et la fréquence (hebdomadaire ou mensuelle). Le système génère automatiquement un échéancier avec les dates et montants de chaque versement.</p>'
+            ],
+            [
+                'q' => 'Comment suivre les crédits en cours ?',
+                'a' => '<p>Dans <strong>Crédits</strong>, vous visualisez tous les crédits avec leur statut (en cours, terminé, en retard). Pour chaque crédit, vous pouvez :</p>
+                <ul>
+                    <li>Voir l\'échéancier complet avec les dates de paiement</li>
+                    <li>Enregistrer un paiement partiel</li>
+                    <li>Télécharger la fiche de crédit en PDF (partageable par WhatsApp)</li>
+                    <li>Recevoir des rappels automatiques J-1 avant chaque échéance</li>
+                </ul>
+                <div class="tip">Les crédits en retard sont détectés automatiquement et signalés dans le tableau de bord.</div>'
             ],
         ]
     ],
@@ -378,12 +446,37 @@ $categories = [
         'faqs'   => [
             [
                 'q' => 'Comment fonctionne le parrainage ?',
-                'a' => '<p>Dans <strong>Parrainage</strong>, vous trouvez votre <strong>lien de parrainage unique</strong>. Quand quelqu\'un s\'inscrit avec votre lien :</p>
+                'a' => '<p>Dans <strong>Parrainage</strong>, vous trouvez votre <strong>lien de parrainage unique</strong>. Quand quelqu\'un s\'inscrit avec votre lien et souscrit un plan payant :</p>
                 <ul>
-                    <li>Vous gagnez <strong>1 mois gratuit</strong> sur votre abonnement dès que la personne souscrit un plan payant</li>
-                    <li>Le filleul bénéficie d\'une période d\'essai prolongée</li>
+                    <li>Vous gagnez <strong>des jours gratuits</strong> sur votre abonnement</li>
+                    <li>Le filleul bénéficie également de jours offerts sur son abonnement</li>
                 </ul>
-                <div class="tip">Partagez votre lien sur WhatsApp, Instagram ou en personne à d\'autres gérantes de salon !</div>'
+                <div class="tip">Partagez votre lien sur WhatsApp, les réseaux sociaux ou en personne à d\'autres propriétaires d\'établissement !</div>'
+            ],
+        ]
+    ],
+    [
+        'id'     => 'recherche',
+        'icon'   => 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z',
+        'color'  => '#84cc16',
+        'bg'     => '#f7fee7',
+        'label'  => 'Recherche & Codes promo',
+        'faqs'   => [
+            [
+                'q' => 'Comment utiliser la recherche globale ?',
+                'a' => '<p>Depuis le tableau de bord, utilisez la <strong>barre de recherche globale</strong>. Elle recherche simultanément dans vos clients, ventes, prestations, produits et rendez-vous. Idéal pour retrouver rapidement une information sans naviguer dans les menus.</p>'
+            ],
+            [
+                'q' => 'Comment créer un code de réduction ?',
+                'a' => '<p>Dans <strong>Codes de réduction</strong> (menu accessible aux administrateurs avec le plan Premium) :</p>
+                <ul>
+                    <li><strong>Type</strong> : pourcentage (%) ou montant fixe (FCFA)</li>
+                    <li><strong>Code</strong> : personnalisé ou généré automatiquement</li>
+                    <li><strong>Validité</strong> : dates de début et de fin</li>
+                    <li><strong>Limite</strong> : nombre maximum d\'utilisations (illimité si non défini)</li>
+                    <li><strong>Client</strong> : nominatif (lié à un client) ou global (utilisable par tous)</li>
+                </ul>
+                <div class="tip">Les codes sont validés en temps réel à la caisse : périmés, épuisés ou inactifs sont automatiquement refusés.</div>'
             ],
         ]
     ],

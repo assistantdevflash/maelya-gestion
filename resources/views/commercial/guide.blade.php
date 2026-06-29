@@ -84,7 +84,7 @@
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
     <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">🚶 Guide Porte-à-Porte</h1>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Votre guide terrain complet pour prospecter les salons</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Votre guide terrain complet pour prospecter les établissements</p>
     </div>
     <a href="{{ route('commercial.guide.pdf') }}"
        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white shadow-lg transition-opacity hover:opacity-90 flex-shrink-0"
@@ -133,154 +133,156 @@
 @php
 $sections = [
 
-['num'=>1, 'titre'=>'AVANT DE PARTIR &mdash; Pr&eacute;parer sa journ&eacute;e', 'html'=>'
+['num'=>1, 'titre'=>'AVANT DE PARTIR &mdash; Préparer sa journée', 'html'=>'
 <p><strong>Ce qu\'il faut avoir avec soi :</strong></p>
 <ul>
-<li>T&eacute;l&eacute;phone charg&eacute; avec un <strong>compte d&eacute;mo Ma&euml;lya actif</strong> (3 prestations, 2 produits, 5 clients)</li>
+<li>Téléphone chargé avec un <strong>compte démo Maëlya actif</strong> (3 prestations, 2 produits, 5 clients)</li>
 <li>Flyers A5 avec QR code vers maelyagestion.com</li>
-<li>Cartes de visite avec votre num&eacute;ro WhatsApp et votre code parrainage</li>
-<li>Google Sheet pour noter les contacts du jour</li>
+<li>Cartes de visite avec votre numéro WhatsApp et votre code parrainage</li>
+<li>Fichier de suivi pour noter les contacts du jour</li>
 </ul>
-<p><strong>Meilleur moment pour visiter :</strong> 09h30&ndash;11h30 | 15h00&ndash;17h00 | &Eacute;viter vendredi et samedi</p>
+<p><strong>Meilleur moment pour visiter :</strong> 09h30–11h30 | 15h00–17h00 | Éviter vendredi et samedi (jours d\'affluence)</p>
 <p><strong>Ciblage par quartier (tourner chaque semaine) :</strong><br>
-Cocody/Riviera &rarr; Marcory/Zone 4 &rarr; Plateau/Adjam&eacute; &rarr; Yopougon &rarr; Treichville</p>
+Cocody/Riviera → Marcory/Zone 4 → Plateau/Adjamé → Yopougon → Treichville</p>
 '],
 
-['num'=>2, 'titre'=>'APPROCHE &mdash; Comment entrer dans le salon', 'html'=>'
-<p><strong>Les 3 r&egrave;gles d\'or :</strong></p>
+['num'=>2, 'titre'=>'APPROCHE &mdash; Comment entrer dans l\'établissement', 'html'=>'
+<p><strong>Les 3 règles d\'or :</strong></p>
 <ol>
-<li>Sourire et se pr&eacute;senter imm&eacute;diatement &mdash; pas de myst&egrave;re</li>
-<li>Ne jamais interrompre une cliente en service &mdash; attendre ou revenir</li>
-<li>Poser une question, ne pas r&eacute;citer un discours &mdash; cr&eacute;er le dialogue</li>
+<li>Sourire et se présenter immédiatement — pas de mystère</li>
+<li>Ne jamais interrompre un client en service — attendre ou revenir</li>
+<li>Poser une question, ne pas réciter un discours — créer le dialogue</li>
 </ol>
-<p><strong>Script d\'entr&eacute;e (30 secondes) :</strong></p>
-<blockquote>&laquo;&nbsp;Bonjour Madame&nbsp;! Je m\'appelle [Pr&eacute;nom], je travaille pour Ma&euml;lya Gestion &mdash; c\'est une application ivoirienne pour aider les salons &agrave; g&eacute;rer leurs ventes et leurs clientes depuis le t&eacute;l&eacute;phone. Est-ce que vous avez 2 petites minutes pour que je vous montre comment &ccedil;a marche&nbsp;?&nbsp;&raquo;</blockquote>
-<p><strong>Si elle dit &laquo;&nbsp;je suis occup&eacute;e&nbsp;&raquo; :</strong></p>
-<blockquote>&laquo;&nbsp;Pas de souci&nbsp;! Je peux repasser dans 30 minutes ou demain matin &mdash; &ccedil;a vous arrange mieux quand&nbsp;?&nbsp;&raquo;</blockquote>
-<p><strong>Si elle dit &laquo;&nbsp;j\'ai pas besoin&nbsp;&raquo; :</strong></p>
-<blockquote>&laquo;&nbsp;Pas de probl&egrave;me. Juste une curiosit&eacute;&nbsp;: vous suivez comment vos ventes en ce moment&nbsp;? Cahier, t&eacute;l&eacute;phone, ou de t&ecirc;te&nbsp;?&nbsp;&raquo; &mdash; Cette question relance presque toujours la conversation.</blockquote>
+<p><strong>Script d\'entrée (30 secondes) :</strong></p>
+<blockquote>«&nbsp;Bonjour ! Je m\'appelle [Prénom], je travaille pour Maëlya Gestion — c\'est une application ivoirienne pour aider les établissements à gérer leurs ventes et leurs clients depuis le téléphone. Est-ce que vous avez 2 petites minutes pour que je vous montre comment ça marche ?&nbsp;»</blockquote>
+<p><strong>Si la personne dit «&nbsp;je suis occupé(e)&nbsp;» :</strong></p>
+<blockquote>«&nbsp;Pas de souci ! Je peux repasser dans 30 minutes ou demain matin — ça vous arrange mieux quand ?&nbsp;»</blockquote>
+<p><strong>Si la personne dit «&nbsp;j\'ai pas besoin&nbsp;» :</strong></p>
+<blockquote>«&nbsp;Pas de problème. Juste une curiosité : vous suivez comment vos ventes en ce moment ? Cahier, téléphone, ou de tête ?&nbsp;» — Cette question relance presque toujours la conversation.</blockquote>
 '],
 
-['num'=>3, 'titre'=>'PITCH PRINCIPAL &mdash; La d&eacute;monstration en 5 minutes', 'html'=>'
-<p><em>Sortir le t&eacute;l&eacute;phone et montrer en direct. Ne pas parler dans le vide.</em></p>
-<p><strong>&Eacute;tape 1 &mdash; Identifier la douleur (1 min)</strong></p>
-<table><thead><tr><th>Si elle a des employ&eacute;es</th><th>Si elle est seule</th><th>Si elle a plusieurs salons</th></tr></thead>
+['num'=>3, 'titre'=>'PITCH PRINCIPAL &mdash; La démonstration en 5 minutes', 'html'=>'
+<p><em>Sortir le téléphone et montrer en direct. Ne pas parler dans le vide.</em></p>
+<p><strong>Étape 1 — Identifier le besoin (1 min)</strong></p>
+<table><thead><tr><th>Si l\'établissement a des employés</th><th>Si le gérant est seul</th><th>S\'il a plusieurs établissements</th></tr></thead>
 <tbody><tr>
-<td>&laquo;&nbsp;Vous savez combien chaque employ&eacute;e a encaiss&eacute; aujourd\'hui&nbsp;?&nbsp;&raquo;</td>
-<td>&laquo;&nbsp;Vous notez vos ventes comment en ce moment&nbsp;?&nbsp;&raquo;</td>
-<td>&laquo;&nbsp;Vous &ecirc;tes sur place tout le temps pour surveiller&nbsp;?&nbsp;&raquo;</td>
+<td>«&nbsp;Vous savez combien chaque employé a encaissé aujourd\'hui ?&nbsp;»</td>
+<td>«&nbsp;Vous notez vos ventes comment en ce moment ?&nbsp;»</td>
+<td>«&nbsp;Vous êtes sur place tout le temps pour surveiller ?&nbsp;»</td>
 </tr></tbody></table>
-<blockquote>Laisser r&eacute;pondre. &Eacute;couter. Puis : <strong>&laquo;&nbsp;C\'est exactement pour &ccedil;a que Ma&euml;lya a &eacute;t&eacute; cr&eacute;&eacute;. Laissez-moi vous montrer.&nbsp;&raquo;</strong></blockquote>
-<p><strong>&Eacute;tape 2 &mdash; Montrer la Caisse (1 min)</strong></p>
-<blockquote>&laquo;&nbsp;Chaque vente est enregistr&eacute;e en 10 secondes. Plus de cahier, plus de calculatrice. Le t&eacute;l&eacute;phone fait tout.&nbsp;&raquo;</blockquote>
-<p><strong>&Eacute;tape 3 &mdash; Montrer le Tableau de bord (30 sec)</strong></p>
-<blockquote>&laquo;&nbsp;L&agrave; vous voyez en temps r&eacute;el combien vous avez fait aujourd\'hui, ce mois-ci. M&ecirc;me si vous &ecirc;tes &agrave; la maison, vous savez ce qui se passe dans votre salon.&nbsp;&raquo;</blockquote>
-<p><strong>&Eacute;tape 4 &mdash; Montrer 1 ou 2 fonctionnalit&eacute;s selon son profil (2 min)</strong></p>
+<blockquote>Laisser répondre. Écouter. Puis : <strong>«&nbsp;C\'est exactement pour ça que Maëlya a été créé. Laissez-moi vous montrer.&nbsp;»</strong></blockquote>
+<p><strong>Étape 2 — Montrer la Caisse (1 min)</strong></p>
+<blockquote>«&nbsp;Chaque vente est enregistrée en 10 secondes. Plus de cahier, plus de calculatrice. Le téléphone fait tout : sélection des prestations, prix automatique, mode de paiement (espèces, Wave, Orange Money, mixte), validation.&nbsp;»</blockquote>
+<p><strong>Étape 3 — Montrer le Tableau de bord (30 sec)</strong></p>
+<blockquote>«&nbsp;Là vous voyez en temps réel combien vous avez fait aujourd\'hui, ce mois-ci. Même si vous êtes à la maison, vous savez ce qui se passe dans votre établissement.&nbsp;»</blockquote>
+<p><strong>Étape 4 — Montrer 1 ou 2 fonctionnalités selon le profil (2 min)</strong></p>
 <ul>
-<li><strong>Employ&eacute;es &rarr; &Eacute;quipe :</strong> &laquo;&nbsp;Chaque employ&eacute;e a ses identifiants. Vous voyez combien elle a fait. Fini les disputes sur les recettes.&nbsp;&raquo;</li>
-<li><strong>Beaucoup de RDV &rarr; Agenda :</strong> &laquo;&nbsp;Email de confirmation automatique. Plus de rendez-vous oubli&eacute;s.&nbsp;&raquo;</li>
-<li><strong>Vente de produits &rarr; Stock :</strong> &laquo;&nbsp;Stock mis &agrave; jour automatiquement. Alerte quand un produit est presque &eacute;puis&eacute;.&nbsp;&raquo;</li>
-<li><strong>Fid&eacute;lisation &rarr; Fid&eacute;lit&eacute; :</strong> &laquo;&nbsp;Programme de points. Code cadeau automatique. &Ccedil;a les fait revenir.&nbsp;&raquo;</li>
-<li><strong>B&eacute;n&eacute;fices &rarr; Finances + Tr&eacute;sorerie :</strong> &laquo;&nbsp;B&eacute;n&eacute;fice net calcul&eacute; automatiquement. Et l\'onglet Tr&eacute;sorerie vous montre si vous serez &agrave; l\'aise dans 30 jours.&nbsp;&raquo;</li>
-<li><strong>Visibilit&eacute; &rarr; Vitrine + R&eacute;servation :</strong> &laquo;&nbsp;Activez votre page publique. QR code &agrave; coller &agrave; l\'entr&eacute;e du salon. Les clientes r&eacute;servent directement depuis la page, m&ecirc;me &agrave; 23h.&nbsp;&raquo;</li>
-<li><strong>Portfolio &rarr; Galerie photos :</strong> &laquo;&nbsp;Chaque cliente a sa galerie avant/apr&egrave;s dans son dossier. Montrez vos transformations, fid&eacute;lisez par les r&eacute;sultats.&nbsp;&raquo;</li>
-<li><strong>Agenda charg&eacute; &rarr; Calendrier interactif :</strong> &laquo;&nbsp;Tous vos RDV sur un vrai calendrier. Vous d&eacute;placez un rendez-vous en glissant avec le doigt. Professionnel, rapide.&nbsp;&raquo;</li>
-<li><strong>Contr&ocirc;le stock &rarr; Inventaire :</strong> &laquo;&nbsp;Faites un inventaire physique en 5 minutes. L\'application d&eacute;tecte les &eacute;carts &mdash; vous saurez si des produits disparaissent.&nbsp;&raquo;</li>
+<li><strong>Avec employés → Équipe :</strong> «&nbsp;Chaque employé a ses identifiants. Vous voyez combien chacun a fait. Fini les discussions sur les recettes.&nbsp;»</li>
+<li><strong>Beaucoup de RDV → Agenda & Calendrier :</strong> «&nbsp;Email de confirmation automatique. Planning visuel avec calendrier. Déplacez un RDV en le glissant. Encaissement direct depuis le RDV.&nbsp;»</li>
+<li><strong>Vente de produits → Stock :</strong> «&nbsp;Stock mis à jour automatiquement. Alerte quand un produit est presque épuisé. Commandes fournisseurs et inventaires physiques.&nbsp;»</li>
+<li><strong>Fidélisation → Fidélité :</strong> «&nbsp;Programme de points automatique. Code cadeau quand le client atteint un palier. Anniversaires automatiques.&nbsp;»</li>
+<li><strong>Rentabilité → Finances :</strong> «&nbsp;Bénéfice net calculé automatiquement (CA − dépenses). Trésorerie prévisionnelle sur 90 jours basée sur les RDV.&nbsp;»</li>
+<li><strong>Visibilité → Vitrine + Réservation :</strong> «&nbsp;Page web publique. QR code à coller à l\'entrée. Les clients réservent directement depuis la page, même quand vous êtes fermé.&nbsp;»</li>
+<li><strong>Portfolio → Galerie photos :</strong> «&nbsp;Chaque client a sa galerie avant/après dans son dossier. Montrez vos résultats, attirez de nouveaux clients.&nbsp;»</li>
 </ul>
-<p><strong>&Eacute;tape 5 &mdash; Cl&ocirc;turer et proposer l\'essai (30 sec)</strong></p>
-<blockquote>&laquo;&nbsp;C\'est tout. Simple, rapide, depuis votre t&eacute;l&eacute;phone. L\'essai est gratuit pendant 14 jours &mdash; vous avez acc&egrave;s &agrave; tout, sans carte bancaire. Est-ce que je peux vous aider &agrave; cr&eacute;er votre compte l&agrave; maintenant&nbsp;? &Ccedil;a prend 2 minutes.&nbsp;&raquo;</blockquote>
+<p><strong>Étape 5 — Clôturer et proposer l\'essai (30 sec)</strong></p>
+<blockquote>«&nbsp;C\'est tout. Simple, rapide, depuis votre téléphone. L\'essai est gratuit pendant 14 jours — vous avez accès à tout, sans carte bancaire. Est-ce que je peux vous aider à créer votre compte là maintenant ? Ça prend 2 minutes.&nbsp;»</blockquote>
 '],
 
-['num'=>4, 'titre'=>'LES FONCTIONNALIT&Eacute;S &mdash; M&eacute;mo complet', 'html'=>'
-<table><thead><tr><th>Module</th><th>Ce que &ccedil;a fait</th><th>Argument cl&eacute;</th></tr></thead>
+['num'=>4, 'titre'=>'LES FONCTIONNALITÉS &mdash; Mémo complet', 'html'=>'
+<table><thead><tr><th>Module</th><th>Ce que ça fait</th><th>Argument clé</th></tr></thead>
 <tbody>
-<tr><td><strong>Caisse</strong></td><td>Ventes en 10s, cash/Wave/OM/mixte</td><td>&laquo;&nbsp;Plus jamais de calcul &agrave; la main&nbsp;&raquo;</td></tr>
-<tr><td><strong>Ticket de caisse</strong></td><td>Num&eacute;rique ou imprimable</td><td>&laquo;&nbsp;Professionnel comme une vraie caisse&nbsp;&raquo;</td></tr>
-<tr><td><strong>Tableau de bord</strong></td><td>CA jour/mois, alertes stocks</td><td>&laquo;&nbsp;Tout d\'un coup d\'&oelig;il&nbsp;&raquo;</td></tr>
-<tr><td><strong>Clients</strong></td><td>Fiche + historique visites</td><td>&laquo;&nbsp;Vous connaissez vos clientes mieux qu\'elles-m&ecirc;mes&nbsp;&raquo;</td></tr>
-<tr><td><strong>Anniversaires</strong></td><td>Alerte + code cadeau automatique</td><td>&laquo;&nbsp;Vos clientes se sentent choy&eacute;es&nbsp;&raquo;</td></tr>
-<tr><td><strong>Agenda / RDV</strong></td><td>Planning + email confirmation automatique</td><td>&laquo;&nbsp;Fini les oublis et les no-shows&nbsp;&raquo;</td></tr>
-<tr><td><strong>Calendrier RDV</strong></td><td>Vue calendrier, d&eacute;placer les RDV en glissant (drag &amp; drop)</td><td>&laquo;&nbsp;G&eacute;rez votre agenda comme un vrai cabinet&nbsp;&raquo;</td></tr>
-<tr><td><strong>Prestations</strong></td><td>Catalogue services avec prix</td><td>&laquo;&nbsp;Plus d\'erreur de prix&nbsp;&raquo;</td></tr>
-<tr><td><strong>Produits</strong></td><td>Catalogue produits vendables</td><td>&laquo;&nbsp;Vous vendez aussi les produits&nbsp;&raquo;</td></tr>
-<tr><td><strong>Stocks</strong></td><td>Mise &agrave; jour auto + alerte rupture</td><td>&laquo;&nbsp;Ne tombez plus en rupture&nbsp;&raquo;</td></tr>
-<tr><td><strong>Fid&eacute;lit&eacute;</strong></td><td>Points + code cadeau automatique</td><td>&laquo;&nbsp;Vos clientes reviennent&nbsp;&raquo;</td></tr>
-<tr><td><strong>Codes de r&eacute;duction</strong></td><td>Promos % ou montant fixe</td><td>&laquo;&nbsp;Boostez les ventes&nbsp;&raquo;</td></tr>
-<tr><td><strong>Finances</strong></td><td>D&eacute;penses, b&eacute;n&eacute;fice net, export PDF</td><td>&laquo;&nbsp;Vous savez enfin combien vous gagnez vraiment&nbsp;&raquo;</td></tr>
-<tr><td><strong>Mon &eacute;quipe</strong></td><td>Comptes s&eacute;par&eacute;s employ&eacute;es</td><td>&laquo;&nbsp;Chacune encaisse, vous contr&ocirc;lez&nbsp;&raquo;</td></tr>
-<tr><td><strong>Page vitrine</strong></td><td>Page web publique + QR code t&eacute;l&eacute;chargeable</td><td>&laquo;&nbsp;Vos clientes trouvent vos prix avant d\'appeler&nbsp;&raquo;</td></tr>
-<tr><td><strong>R&eacute;servation en ligne</strong></td><td>Les clientes r&eacute;servent depuis la vitrine, 24h/24</td><td>&laquo;&nbsp;Recevez des r&eacute;servations m&ecirc;me quand vous dormez&nbsp;&raquo;</td></tr>
-<tr><td><strong>Galerie photos</strong></td><td>Photos avant/apr&egrave;s par cliente dans son dossier</td><td>&laquo;&nbsp;Montrez vos transformations, fid&eacute;lisez par les r&eacute;sultats&nbsp;&raquo;</td></tr>
-<tr><td><strong>Bons de commande</strong></td><td>Commander chez vos fournisseurs, suivre la r&eacute;ception</td><td>&laquo;&nbsp;Z&eacute;ro paperasse pour vos achats de produits&nbsp;&raquo;</td></tr>
-<tr><td><strong>Inventaire physique</strong></td><td>Compter votre stock, d&eacute;tecter les &eacute;carts et les pertes</td><td>&laquo;&nbsp;Savoir exactement ce que vous avez, d&eacute;tecter les vols&nbsp;&raquo;</td></tr>
-<tr><td><strong>Comparatif instituts</strong></td><td>Comparer CA, clients, top prestations entre vos salons</td><td>&laquo;&nbsp;Voyez quel salon performe le mieux (plan Entreprise)&nbsp;&raquo;</td></tr>
-<tr><td><strong>Multi-&eacute;tablissements</strong></td><td>G&eacute;rer plusieurs salons</td><td>&laquo;&nbsp;Vous surveillez tout depuis votre t&eacute;l&eacute;phone&nbsp;&raquo;</td></tr>
-<tr><td><strong>Parrainage</strong></td><td>Inviter = mois gratuits</td><td>&laquo;&nbsp;Faites-vous parrainer, payez moins cher&nbsp;&raquo;</td></tr>
-<tr><td><strong>Tr&eacute;sorerie pr&eacute;visionnelle</strong></td><td>Projection entr&eacute;es/sorties sur 7 &agrave; 90 jours (onglet Finances)</td><td>&laquo;&nbsp;Voyez d\'avance si vous serez &agrave; l\'aise en fin de mois&nbsp;&raquo;</td></tr>
-<tr><td><strong>Sondage satisfaction</strong></td><td>Lien envoy&eacute; par email ou WhatsApp depuis le d&eacute;tail d\'une vente</td><td>&laquo;&nbsp;Vos clientes notent leur exp&eacute;rience, vous am&eacute;liorez&nbsp;&raquo;</td></tr>
-<tr><td><strong>Avis clients</strong></td><td>Mod&eacute;ration des avis, affichage sur vitrine</td><td>&laquo;&nbsp;Des &eacute;toiles sur votre page pour rassurer les nouvelles clientes&nbsp;&raquo;</td></tr>
-<tr><td><strong>Notifications</strong></td><td>Centre d\'alertes (stock, RDV, paiements, anniversaires)</td><td>&laquo;&nbsp;Ne ratez plus aucun &eacute;v&eacute;nement important&nbsp;&raquo;</td></tr>
+<tr><td><strong>Caisse</strong></td><td>Ventes en 10s, espèces/Wave/OM/carte/mixte/crédit</td><td>«&nbsp;Plus jamais de calcul à la main&nbsp;»</td></tr>
+<tr><td><strong>Ticket de caisse</strong></td><td>Numérique (WhatsApp) ou PDF imprimable</td><td>«&nbsp;Professionnel comme une caisse de supermarché&nbsp;»</td></tr>
+<tr><td><strong>Facture PDF</strong></td><td>Facture numérotée pour chaque vente</td><td>«&nbsp;Vos clients ont une vraie facture&nbsp;»</td></tr>
+<tr><td><strong>Brouillons caisse</strong></td><td>Sauvegarder une vente en cours</td><td>«&nbsp;Reprenez où vous en étiez&nbsp;»</td></tr>
+<tr><td><strong>Tableau de bord</strong></td><td>CA jour/mois, alertes stocks, anniversaires</td><td>«&nbsp;Tout d\'un coup d\'œil&nbsp;»</td></tr>
+<tr><td><strong>Clients</strong></td><td>Fiche + historique complet</td><td>«&nbsp;Vous connaissez vos clients mieux qu\'eux-mêmes&nbsp;»</td></tr>
+<tr><td><strong>Anniversaires</strong></td><td>Alerte J-1 + code cadeau automatique</td><td>«&nbsp;Vos clients se sentent valorisés&nbsp;»</td></tr>
+<tr><td><strong>Agenda / RDV</strong></td><td>Planning + email confirmation automatique + encaissement</td><td>«&nbsp;Fini les oublis et les no-shows&nbsp;»</td></tr>
+<tr><td><strong>Calendrier RDV</strong></td><td>Vue calendrier, déplacer les RDV en glissant (drag & drop)</td><td>«&nbsp;Gérez votre agenda comme un pro&nbsp;»</td></tr>
+<tr><td><strong>Réservation en ligne</strong></td><td>Les clients réservent 24h/24 depuis votre vitrine</td><td>«&nbsp;Recevez des réservations même quand vous dormez&nbsp;»</td></tr>
+<tr><td><strong>Prestations</strong></td><td>Catalogue services avec prix et durée</td><td>«&nbsp;Plus d\'erreur de prix&nbsp;»</td></tr>
+<tr><td><strong>Produits</strong></td><td>Catalogue produits vendables avec stock</td><td>«&nbsp;Vendez aussi vos produits&nbsp;»</td></tr>
+<tr><td><strong>Stocks</strong></td><td>Mise à jour auto + alerte seuil + CMP</td><td>«&nbsp;Ne tombez plus en rupture&nbsp;»</td></tr>
+<tr><td><strong>Fidélité</strong></td><td>Points automatiques + codes cadeaux aux paliers</td><td>«&nbsp;Vos clients reviennent plus souvent&nbsp;»</td></tr>
+<tr><td><strong>Codes de réduction</strong></td><td>Promos % ou montant fixe, validité, limites</td><td>«&nbsp;Boostez vos ventes&nbsp;»</td></tr>
+<tr><td><strong>Avoirs</strong></td><td>Remboursement partiel → code réutilisable</td><td>«&nbsp;Gardez le client, même après un problème&nbsp;»</td></tr>
+<tr><td><strong>Finances</strong></td><td>Dépenses, bénéfice net, export PDF, graphiques</td><td>«&nbsp;Vous savez enfin combien vous gagnez vraiment&nbsp;»</td></tr>
+<tr><td><strong>Trésorerie prévisionnelle</strong></td><td>Projection entrées/sorties sur 7 à 90 jours</td><td>«&nbsp;Anticipez vos fins de mois difficiles&nbsp;»</td></tr>
+<tr><td><strong>Mon équipe</strong></td><td>Comptes séparés par employé, permissions limitées</td><td>«&nbsp;Chacun encaisse, vous contrôlez&nbsp;»</td></tr>
+<tr><td><strong>Page vitrine</strong></td><td>Page web publique + QR code téléchargeable</td><td>«&nbsp;Vos clients voient vos prix avant d\'appeler&nbsp;»</td></tr>
+<tr><td><strong>Galerie photos</strong></td><td>Photos avant/après par client dans son dossier</td><td>«&nbsp;Montrez vos résultats, attirez de nouveaux clients&nbsp;»</td></tr>
+<tr><td><strong>Bons de commande</strong></td><td>Commander chez vos fournisseurs, suivre la réception</td><td>«&nbsp;Zéro paperasse pour vos achats&nbsp;»</td></tr>
+<tr><td><strong>Inventaire physique</strong></td><td>Compter votre stock, détecter les écarts et pertes</td><td>«&nbsp;Détectez les vols et les erreurs&nbsp;»</td></tr>
+<tr><td><strong>Sondage satisfaction</strong></td><td>Lien envoyé par email ou WhatsApp après vente</td><td>«&nbsp;Vos clients notent, vous progressez&nbsp;»</td></tr>
+<tr><td><strong>Avis clients</strong></td><td>Modération, affichage des étoiles sur la vitrine</td><td>«&nbsp;Les avis rassurent les nouveaux clients&nbsp;»</td></tr>
+<tr><td><strong>Notifications</strong></td><td>Alertes stock, RDV, paiements, anniversaires, push</td><td>«&nbsp;Ne ratez plus aucun événement important&nbsp;»</td></tr>
+<tr><td><strong>Multi-établissements</strong></td><td>Gérer plusieurs établissements, bascule instantanée</td><td>«&nbsp;Surveillez tout depuis votre téléphone&nbsp;»</td></tr>
+<tr><td><strong>Comparatif</strong></td><td>Comparer CA, clients, top prestations entre établissements</td><td>«&nbsp;Quel établissement performe le mieux ?&nbsp;»</td></tr>
+<tr><td><strong>Vente à crédit</strong></td><td>Échéancier, suivi paiements, rappels auto, fiche PDF</td><td>«&nbsp;Vendez même à ceux qui n\'ont pas tout de suite&nbsp;»</td></tr>
+<tr><td><strong>Parrainage</strong></td><td>Inviter = jours gratuits pour les deux parties</td><td>«&nbsp;Faites-vous parrainer, payez moins cher&nbsp;»</td></tr>
 </tbody></table>
 '],
 
 ['num'=>5, 'titre'=>'LES TARIFS &mdash; Quoi dire', 'html'=>'
-<blockquote>&laquo;&nbsp;Ma&euml;lya a 4 formules. Tout le monde commence par l\'essai gratuit de 14 jours.&nbsp;&raquo;</blockquote>
+<blockquote>«&nbsp;Maëlya a 4 formules. Tout le monde commence par l\'essai gratuit de 14 jours.&nbsp;»</blockquote>
 <table><thead><tr><th>Plan</th><th>Prix/mois</th><th>Pour qui</th><th>Ce qu\'on dit</th></tr></thead>
 <tbody>
-<tr><td><strong>Essai</strong></td><td>Gratuit 14j</td><td>Tout le monde</td><td>&laquo;&nbsp;Vous testez tout, sans rien payer&nbsp;&raquo;</td></tr>
-<tr><td><strong>Basic</strong></td><td>2 000 FCFA</td><td>Solo, sans employ&eacute;es</td><td>&laquo;&nbsp;Moins cher qu\'un caf&eacute; par jour&nbsp;&raquo;</td></tr>
-<tr><td><strong>Premium</strong></td><td>4 900 FCFA</td><td>Etablissement avec 1-3 employes</td><td>&laquo;&nbsp;Tout inclus : clients, stock, fidelite, finances&nbsp;&raquo;</td></tr>
-<tr><td><strong>Premium+</strong></td><td>9 900 FCFA</td><td>Multi-etablissements</td><td>&laquo;&nbsp;Pour les proprietaires de plusieurs etablissements&nbsp;&raquo;</td></tr>
+<tr><td><strong>Essai</strong></td><td>Gratuit 14j</td><td>Tout le monde</td><td>«&nbsp;Vous testez tout, sans rien payer, sans engagement&nbsp;»</td></tr>
+<tr><td><strong>Basic</strong></td><td>2 000 FCFA</td><td>Indépendant, sans employé</td><td>«&nbsp;C\'est 67 FCFA par jour — moins qu\'un café&nbsp;»</td></tr>
+<tr><td><strong>Premium</strong></td><td>4 900 FCFA</td><td>Établissement avec 1 à 3 employés</td><td>«&nbsp;Tout inclus : stock, fidélité, finances, équipe, vitrine&nbsp;»</td></tr>
+<tr><td><strong>Premium+</strong></td><td>9 900 FCFA</td><td>Multi-établissements</td><td>«&nbsp;Pour les propriétaires de plusieurs établissements&nbsp;»</td></tr>
 </tbody></table>
-<p><strong>Paiement :</strong> Orange Money ou Wave &mdash; Pas de carte bancaire, pas de compte bancaire n&eacute;cessaire.</p>
+<p><strong>Paiement :</strong> Orange Money ou Wave — Pas de carte bancaire, pas de compte bancaire nécessaire.</p>
 '],
 
-['num'=>6, 'titre'=>'R&Eacute;PONSES AUX OBJECTIONS', 'html'=>'
-<p><strong>&laquo;&nbsp;C\'est trop cher&nbsp;&raquo;</strong></p>
-<blockquote>&laquo;&nbsp;2 000 FCFA par mois, c\'est 67 FCFA par jour &mdash; moins qu\'un caf&eacute;. Et si &ccedil;a vous fait encaisser ne serait-ce qu\'une prestation de plus par semaine, c\'est rentable. Commencez par l\'essai gratuit 14 jours, vous d&eacute;cidez apr&egrave;s.&nbsp;&raquo;</blockquote>
-<p><strong>&laquo;&nbsp;Je ne suis pas forte en technologie&nbsp;&raquo;</strong></p>
-<blockquote>&laquo;&nbsp;Si vous savez utiliser WhatsApp, vous saurez utiliser Ma&euml;lya. On vous aide &agrave; configurer le compte ici maintenant, et notre support WhatsApp r&eacute;pond en moins de 2h.&nbsp;&raquo;</blockquote>
-<p><strong>&laquo;&nbsp;J\'ai d&eacute;j&agrave; un cahier, &ccedil;a marche&nbsp;&raquo;</strong></p>
-<blockquote>&laquo;&nbsp;Un cahier ne vous dit pas combien vous avez fait ce mois-ci d\'un coup d\'&oelig;il. Il ne vous alerte pas quand un produit est &eacute;puis&eacute;. Il ne retient pas les anniversaires de vos clientes. Ma&euml;lya fait tout &ccedil;a automatiquement.&nbsp;&raquo;</blockquote>
-<p><strong>&laquo;&nbsp;Je vais en parler &agrave; mon mari / associ&eacute;e&nbsp;&raquo;</strong></p>
-<blockquote>&laquo;&nbsp;Je peux vous envoyer une vid&eacute;o de pr&eacute;sentation de 2 minutes sur WhatsApp maintenant &mdash; vous la lui montrez ce soir. Vous avez votre num&eacute;ro disponible&nbsp;?&nbsp;&raquo;</blockquote>
-<p><strong>&laquo;&nbsp;C\'est quoi Ma&euml;lya, c\'est ivoirien&nbsp;?&nbsp;&raquo;</strong></p>
-<blockquote>&laquo;&nbsp;Oui, cr&eacute;&eacute;e en C&ocirc;te d\'Ivoire, pour les salons ivoiriens. Support en fran&ccedil;ais, paiement Orange Money et Wave, prix en FCFA.&nbsp;&raquo;</blockquote>
-<p><strong>&laquo;&nbsp;Je vais r&eacute;fl&eacute;chir&nbsp;&raquo;</strong></p>
-<blockquote>&laquo;&nbsp;L\'essai est gratuit, vous ne risquez rien. Je vous cr&eacute;e le compte maintenant et vous avez 14 jours &mdash; si non, z&eacute;ro engagement. On le fait maintenant&nbsp;?&nbsp;&raquo;</blockquote>
+['num'=>6, 'titre'=>'RÉPONSES AUX OBJECTIONS', 'html'=>'
+<p><strong>«&nbsp;C\'est trop cher&nbsp;»</strong></p>
+<blockquote>«&nbsp;2 000 FCFA par mois, c\'est 67 FCFA par jour — moins qu\'un café. Et si ça vous fait encaisser ne serait-ce qu\'une prestation de plus par semaine, c\'est rentable. Commencez par l\'essai gratuit 14 jours, vous décidez après.&nbsp;»</blockquote>
+<p><strong>«&nbsp;Je ne suis pas fort(e) en technologie&nbsp;»</strong></p>
+<blockquote>«&nbsp;Si vous savez utiliser WhatsApp, vous saurez utiliser Maëlya. On vous aide à configurer le compte ici maintenant, et notre support WhatsApp répond en moins de 2h.&nbsp;»</blockquote>
+<p><strong>«&nbsp;J\'ai déjà un cahier, ça marche&nbsp;»</strong></p>
+<blockquote>«&nbsp;Un cahier ne vous dit pas combien vous avez fait ce mois-ci d\'un coup d\'œil. Il ne vous alerte pas quand un produit est épuisé. Il ne retient pas les anniversaires de vos clients. Il ne vous montre pas votre bénéfice net. Maëlya fait tout ça automatiquement.&nbsp;»</blockquote>
+<p><strong>«&nbsp;Je vais en parler à mon associé(e)&nbsp;»</strong></p>
+<blockquote>«&nbsp;Je peux vous envoyer une vidéo de présentation de 2 minutes sur WhatsApp maintenant — vous la lui montrez ce soir. Vous avez votre numéro disponible ?&nbsp;»</blockquote>
+<p><strong>«&nbsp;C\'est quoi Maëlya, c\'est ivoirien ?&nbsp;»</strong></p>
+<blockquote>«&nbsp;Oui, créé en Côte d\'Ivoire, pour les établissements ivoiriens. Support en français, paiement Orange Money et Wave, prix en FCFA.&nbsp;»</blockquote>
+<p><strong>«&nbsp;Je vais réfléchir&nbsp;»</strong></p>
+<blockquote>«&nbsp;L\'essai est gratuit, vous ne risquez rien. Je vous crée le compte maintenant et vous avez 14 jours — si ça ne vous convient pas, zéro engagement. On le fait maintenant ?&nbsp;»</blockquote>
 '],
 
-['num'=>7, 'titre'=>'SUIVI &mdash; Ce qu\'on fait apr&egrave;s la visite', 'html'=>'
-<p><strong>Noter dans le Google Sheet :</strong> Nom du salon &middot; Nom de la g&eacute;rante &middot; Num&eacute;ro WhatsApp &middot; &#x1F525; Chaud / &#x1F7E0; Ti&egrave;de / &#x274C; Froid &middot; Date de la visite.</p>
-<p><strong>Message WhatsApp J+1 (si pas inscrite) :</strong></p>
-<blockquote>&laquo;&nbsp;Bonjour [Pr&eacute;nom] &#x1F44B; C\'est [Votre pr&eacute;nom] de Ma&euml;lya Gestion. On s\'est rencontr&eacute; hier au salon. Voici le lien : maelyagestion.com &mdash; &ccedil;a prend 2 minutes. Je reste disponible si vous avez une question &#x1F60A;&nbsp;&raquo;</blockquote>
-<p><strong>Relance J+4 (si pas de r&eacute;ponse) :</strong></p>
-<blockquote>&laquo;&nbsp;Bonjour&nbsp;! Vous avez eu le temps de jeter un &oelig;il &agrave; Ma&euml;lya&nbsp;? Je peux passer faire une d&eacute;mo rapide de 5 min &agrave; votre convenance cette semaine.&nbsp;&raquo;</blockquote>
+['num'=>7, 'titre'=>'SUIVI &mdash; Ce qu\'on fait après la visite', 'html'=>'
+<p><strong>Noter dans votre fichier de suivi :</strong> Nom de l\'établissement · Nom du responsable · Numéro WhatsApp · 🔥 Chaud / 🟠 Tiède / ❄️ Froid · Date de la visite.</p>
+<p><strong>Message WhatsApp J+1 (si pas inscrit) :</strong></p>
+<blockquote>«&nbsp;Bonjour [Prénom] 👋 C\'est [Votre prénom] de Maëlya Gestion. On s\'est rencontré hier à votre établissement. Voici le lien : maelyagestion.com — ça prend 2 minutes. Je reste disponible si vous avez une question 😊&nbsp;»</blockquote>
+<p><strong>Relance J+4 (si pas de réponse) :</strong></p>
+<blockquote>«&nbsp;Bonjour ! Vous avez eu le temps de jeter un œil à Maëlya ? Je peux passer faire une démo rapide de 5 min à votre convenance cette semaine.&nbsp;»</blockquote>
 <p><strong>Relance J+10 (si toujours rien) :</strong></p>
-<blockquote>&laquo;&nbsp;Bonjour [Pr&eacute;nom]&nbsp;! On offre l\'essai gratuit 14 jours &mdash; sans carte bancaire, sans engagement. C\'est le bon moment pour tester avant le week-end &#x1F60A;&nbsp;&raquo;</blockquote>
-<p>Apr&egrave;s J+14 sans r&eacute;ponse &rarr; Marquer &#x274C; Froid, revenir dans 1 mois.</p>
+<blockquote>«&nbsp;Bonjour [Prénom] ! On offre l\'essai gratuit 14 jours — sans carte bancaire, sans engagement. C\'est le bon moment pour tester avant le week-end 😊&nbsp;»</blockquote>
+<p>Après J+14 sans réponse → Marquer ❄️ Froid, revenir dans 1 mois.</p>
 '],
 
-['num'=>8, 'titre'=>'TOP 5 ARGUMENTS &mdash; &Agrave; retenir absolument', 'html'=>'
+['num'=>8, 'titre'=>'TOP 5 ARGUMENTS &mdash; À retenir absolument', 'html'=>'
 <ol>
-<li><strong>Caisse en 10 secondes</strong> &rarr; Plus rapide que noter sur un cahier</li>
-<li><strong>Ventes en temps r&eacute;el</strong> &rarr; M&ecirc;me quand vous n\'&ecirc;tes pas l&agrave;</li>
-<li><strong>Vos employ&eacute;es encaissent, vous contr&ocirc;lez</strong> &rarr; Fini les pertes inexpliqu&eacute;es</li>
-<li><strong>R&eacute;servation en ligne 24h/24</strong> &rarr; Les clientes r&eacute;servent m&ecirc;me quand vous &ecirc;tes ferm&eacute;e</li>
-<li><strong>Essai gratuit 14 jours, paiement Wave/OM</strong> &rarr; Aucun risque, aucune complication</li>
-<li><em>Bonus :</em> galerie photos avant/apr&egrave;s, calendrier interactif, inventaire physique, sondage satisfaction, tr&eacute;sorerie pr&eacute;visionnelle &mdash; tout depuis votre t&eacute;l&eacute;phone</li>
+<li><strong>Caisse en 10 secondes</strong> → Plus rapide que noter sur un cahier</li>
+<li><strong>Ventes en temps réel</strong> → Même quand vous n\'êtes pas sur place</li>
+<li><strong>Vos employés encaissent, vous contrôlez</strong> → Fini les pertes inexpliquées</li>
+<li><strong>Réservation en ligne 24h/24</strong> → Les clients réservent même quand vous êtes fermé</li>
+<li><strong>Essai gratuit 14 jours, paiement Wave/OM</strong> → Aucun risque, aucune complication</li>
+<li><em>Bonus :</em> galerie photos avant/après, calendrier interactif, inventaire physique, sondage satisfaction, trésorerie prévisionnelle — tout depuis votre téléphone</li>
 </ol>
 '],
 
 ['num'=>9, 'titre'=>'PROFILS ET ARGUMENTS PRIORITAIRES', 'html'=>'
-<table><thead><tr><th>Type de salon</th><th>Argument n&deg;1</th><th>Argument n&deg;2</th><th>Module &agrave; montrer</th></tr></thead>
+<table><thead><tr><th>Type d\'établissement</th><th>Argument n°1</th><th>Argument n°2</th><th>Module à montrer</th></tr></thead>
 <tbody>
-<tr><td>Salon de coiffure avec employ&eacute;es</td><td>Contr&ocirc;le des ventes par employ&eacute;e</td><td>Calendrier RDV drag &amp; drop</td><td>&Eacute;quipe + Calendrier</td></tr>
-<tr><td>Nail bar solo</td><td>R&eacute;servation en ligne 24h/24</td><td>Galerie photos avant/apr&egrave;s</td><td>Vitrine + Galerie</td></tr>
-<tr><td>Institut de beaut&eacute;</td><td>Galerie avant/apr&egrave;s + r&eacute;servation</td><td>Agenda calendrier + fid&eacute;lit&eacute;</td><td>Galerie + Vitrine + RDV</td></tr>
-<tr><td>Barbershop</td><td>Caisse professionnelle + &eacute;quipe</td><td>Tickets imprimables</td><td>Caisse + Tickets</td></tr>
-<tr><td>Spa / multi-salons</td><td>Comparatif multi-salons (Entreprise)</td><td>Contr&ocirc;le &agrave; distance temps r&eacute;el</td><td>Comparatif + Dashboard</td></tr>
-<tr><td>Salon avec boutique</td><td>Inventaire physique + bons commande</td><td>Alertes rupture stock</td><td>Inventaire + Fournisseurs</td></tr>
+<tr><td>Coiffure avec employés</td><td>Contrôle des ventes par employé</td><td>Calendrier RDV drag & drop</td><td>Équipe + Calendrier</td></tr>
+<tr><td>Onglerie / Nail bar solo</td><td>Réservation en ligne 24h/24</td><td>Galerie photos avant/après</td><td>Vitrine + Galerie</td></tr>
+<tr><td>Institut de beauté</td><td>Galerie avant/après + réservation</td><td>Agenda calendrier + fidélité</td><td>Galerie + Vitrine + RDV</td></tr>
+<tr><td>Barbershop</td><td>Caisse professionnelle + équipe</td><td>Tickets imprimables</td><td>Caisse + Tickets</td></tr>
+<tr><td>Spa / Multi-établissements</td><td>Comparatif multi-établissements (Premium+)</td><td>Contrôle à distance temps réel</td><td>Comparatif + Dashboard</td></tr>
+<tr><td>Établissement avec boutique</td><td>Inventaire physique + bons commande</td><td>Alertes rupture stock</td><td>Inventaire + Fournisseurs</td></tr>
 </tbody></table>
 '],
 
@@ -315,7 +317,7 @@ Cocody/Riviera &rarr; Marcory/Zone 4 &rarr; Plateau/Adjam&eacute; &rarr; Yopougo
 </div>
 
 <p class="mt-6 text-center text-xs text-gray-400 dark:text-gray-600 pb-safe">
-    Ma&euml;lya Gestion &middot; maelyagestion.com &middot; Support WhatsApp : r&eacute;ponse &lt; 2h &middot; Document terrain v3 &mdash; Juin 2026 &middot; 26 modules
+    Maëlya Gestion · maelyagestion.com · Support WhatsApp : réponse &lt; 2h · Document terrain v4 — Juin 2026 · 26 modules
 </p>
 
 <script>
