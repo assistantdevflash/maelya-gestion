@@ -229,6 +229,27 @@
                     {{ isset($__sidebarNbInstituts) && $__sidebarNbInstituts > 1 ? 'Mes établissements' : 'Paramètres' }}
                 </a>
 
+                <a href="{{ route('dashboard.prestations.index') }}"
+                   class="sidebar-link {{ request()->routeIs('dashboard.prestations.*') || request()->routeIs('dashboard.categories-prestations.*') ? 'active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                    Prestations
+                </a>
+                @endif
+
+                {{-- ── CLIENTS & RDV (tous les rôles) ───────────────────────── --}}
+                @php
+                    $rdvEchusBadge = 0;
+                    if ($featureHas('rdv')) {
+                        $rdvEchusBadge = \App\Models\RendezVous::where('institut_id', session('current_institut_id', auth()->user()->institut_id))
+                            ->where('statut', 'en_attente')
+                            ->where('debut_le', '<', now())
+                            ->count();
+                    }
+                @endphp
+                <p class="px-3 mt-14 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">Clients &amp; RDV</p>
+
                 <a href="{{ $featureHref('clients', route('dashboard.clients.index')) }}"
                    class="sidebar-link {{ request()->routeIs('dashboard.clients.*') ? 'active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -260,15 +281,6 @@
                     <span class="ml-auto inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold leading-none">{{ $rdvEchusBadge }}</span>
                     @endif
                 </a>
-
-                <a href="{{ route('dashboard.prestations.index') }}"
-                   class="sidebar-link {{ request()->routeIs('dashboard.prestations.*') || request()->routeIs('dashboard.categories-prestations.*') ? 'active' : '' }}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                    </svg>
-                    Prestations
-                </a>
-                @endif
 
                 {{-- ── COMMERCE ─────────────────────────────────────────────── --}}
                 <p class="px-3 mt-14 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">Commerce</p>
@@ -314,15 +326,6 @@
                     @endif
                 </a>
 
-                @php
-                    $rdvEchusBadge = 0;
-                    if ($featureHas('rdv')) {
-                        $rdvEchusBadge = \App\Models\RendezVous::where('institut_id', session('current_institut_id', auth()->user()->institut_id))
-                            ->where('statut', 'en_attente')
-                            ->where('debut_le', '<', now())
-                            ->count();
-                    }
-                @endphp
                 @php
                     $fideliteBadge = 0;
                     $fideliteProgramme = \App\Models\ProgrammeFidelite::where('institut_id', session('current_institut_id', auth()->user()->institut_id))->first();
