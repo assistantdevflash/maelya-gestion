@@ -247,6 +247,8 @@ class FinanceController extends Controller
             'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
+        $data['user_id'] = Auth::id();
+
         Depense::create($data);
 
         return back()->with('success', 'Dépense enregistrée.');
@@ -270,6 +272,23 @@ class FinanceController extends Controller
     {
         $depense->delete();
         return back()->with('success', 'Dépense supprimée.');
+    }
+
+    /** Page depenses pour les employes (depenses personnelles uniquement) */
+    public function depenses(Request $request)
+    {
+        $user = Auth::user();
+
+        $depenses = Depense::orderBy('date', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->when($user->isEmploye(), fn($q) => $q->where('user_id', $user->id))
+            ->paginate(30);
+
+        $totalPeriode = Depense::orderBy('date', 'desc')
+            ->when($user->isEmploye(), fn($q) => $q->where('user_id', $user->id))
+            ->sum('montant');
+
+        return view('dashboard.finances.depenses', compact('depenses', 'totalPeriode'));
     }
 
     public function rapport(Request $request)

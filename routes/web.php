@@ -189,15 +189,13 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
             Route::resource('categories-produits', CategorieProduitController::class)->except(['show', 'create', 'edit']);
         });
 
-        // Finances (feature: finances)
+        // Finances (feature: finances) — dashboard complet admin
         Route::middleware('feature:finances')->group(function () {
             Route::get('finances', [FinanceController::class, 'index'])->name('finances.index');
-            Route::resource('depenses', FinanceController::class)->only(['store', 'update', 'destroy']);
             Route::get('finances/rapport', [FinanceController::class, 'rapport'])->name('finances.rapport');
             Route::get('finances/export-ventes', [FinanceController::class, 'exportVentes'])->name('finances.export-ventes');
             Route::get('finances/export-depenses', [FinanceController::class, 'exportDepenses'])->name('finances.export-depenses');
             Route::get('finances/export-pdf', [FinanceController::class, 'exportPdf'])->name('finances.export-pdf');
-            // Route trésorerie maintenant intégrée dans finances (onglet)
         });
 
         // Employés (feature: equipe)
@@ -265,6 +263,12 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
     Route::middleware('feature:stock')->group(function () {
         Route::post('stock/{produit}/entree', [StockController::class, 'entree'])->name('stock.entree');
         Route::post('stock/{produit}/correction', [StockController::class, 'correction'])->name('stock.correction');
+    });
+
+    // ── Dépenses (accessibles aux employés, feature: finances) ────────────
+    Route::middleware('feature:finances')->group(function () {
+        Route::get('depenses', [FinanceController::class, 'depenses'])->name('depenses.index');
+        Route::resource('depenses', FinanceController::class)->only(['store', 'update', 'destroy']);
     });
 
     // ── Bons de commande & Inventaires (accessibles aux employés) ──────────
