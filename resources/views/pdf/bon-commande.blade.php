@@ -49,7 +49,7 @@
 
     <div class="grid grid-2" style="margin-bottom:12px;">
         <div class="section">
-            <div class="section-title">Fournisseur</div>
+            <div class="section-title">FOURNISSEUR</div>
             <div class="section-body">
                 @if($bon->fournisseur)
                     <p class="font-bold" style="font-size:13px;">{{ $bon->fournisseur->nom }}</p>
@@ -71,7 +71,7 @@
             </div>
         </div>
         <div class="section">
-            <div class="section-title">Informations</div>
+            <div class="section-title">INFORMATIONS</div>
             <div class="section-body">
                 <p style="font-size:10px;">Date de commande : <strong>{{ $bon->date_commande->format('d/m/Y') }}</strong></p>
                 @if($bon->date_livraison_prevue)
@@ -97,6 +97,7 @@
                     <th>Designation</th>
                     <th class="text-center">Qte cmd.</th>
                     <th class="text-center">Qte recue</th>
+                    <th class="text-center">A recevoir</th>
                     <th class="text-right">Prix HT</th>
                     <th class="text-right">Sous-total</th>
                 </tr>
@@ -112,6 +113,7 @@
                     </td>
                     <td class="text-center font-mono">{{ $ligne->quantite_commandee }}</td>
                     <td class="text-center font-mono">{{ $ligne->quantite_recue }}</td>
+                    <td class="text-center" style="color:#cbd5e1;">..........</td>
                     <td class="text-right font-mono">{{ number_format($ligne->prix_unitaire, 0, ',', ' ') }} F</td>
                     <td class="text-right font-mono font-bold">{{ number_format($ligne->sous_total, 0, ',', ' ') }} F</td>
                 </tr>
@@ -119,7 +121,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="4" class="text-right font-bold" style="font-size:13px;">Total HT</td>
+                    <td colspan="5" class="text-right font-bold" style="font-size:13px;">Total HT</td>
                     <td class="text-right font-mono font-bold" style="font-size:14px;">{{ number_format($bon->total_ht, 0, ',', ' ') }} FCFA</td>
                 </tr>
             </tfoot>
