@@ -196,13 +196,14 @@
             {{-- Navigation --}}
             <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
 
-                {{-- ── VUE D'ENSEMBLE ──────────────────────────────────────── --}}
-                @if(auth()->user()->isAdmin())
                 @php
-                    // Helpers feature-gating sidebar
+                    // Helpers feature-gating sidebar (disponible pour tous les roles)
                     $featureHas = fn($f) => auth()->user()->aFonctionnalite($f);
                     $featureHref = fn($f, $route) => $featureHas($f) ? $route : route('abonnement.upgrade', ['feature' => $f]);
                 @endphp
+
+                {{-- ── VUE D'ENSEMBLE ──────────────────────────────────────── --}}
+                @if(auth()->user()->isAdmin())
 
                 <p class="px-3 mt-6 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">Vue d'ensemble</p>
 
