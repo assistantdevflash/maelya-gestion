@@ -426,6 +426,7 @@
                             </svg>
                             <span class="flex-1">Fournisseurs</span>
                         </a>
+                        @endif
                         <a href="{{ route('dashboard.bons-commande.index') }}"
                            class="sidebar-link text-sm {{ request()->routeIs('dashboard.bons-commande.*') ? 'active' : '' }}">
                             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -440,7 +441,6 @@
                             </svg>
                             <span class="flex-1">Inventaires</span>
                         </a>
-                        @endif
                     </div>
                 </div>
                 @endif

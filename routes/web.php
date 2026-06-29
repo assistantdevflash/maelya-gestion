@@ -144,23 +144,17 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         Route::get('comparatif', [\App\Http\Controllers\Dashboard\ComparatifInstitutsController::class, 'index'])
             ->middleware('feature:multi_instituts')->name('comparatif.index');
 
-        // Fournisseurs
+        // Fournisseurs (admin)
         Route::resource('fournisseurs', \App\Http\Controllers\Dashboard\FournisseurController::class)
             ->except(['create', 'show', 'edit']);
 
-        // Bons de commande
-        Route::resource('bons-commande', \App\Http\Controllers\Dashboard\BonCommandeController::class)
-            ->except(['edit', 'update']);
+        // Bons de commande — actions sensibles (admin)
         Route::post('bons-commande/{bonsCommande}/envoyer', [\App\Http\Controllers\Dashboard\BonCommandeController::class, 'envoyer'])
             ->name('bons-commande.envoyer');
-        Route::post('bons-commande/{bonsCommande}/recevoir', [\App\Http\Controllers\Dashboard\BonCommandeController::class, 'recevoir'])
-            ->name('bons-commande.recevoir');
         Route::post('bons-commande/{bonsCommande}/annuler', [\App\Http\Controllers\Dashboard\BonCommandeController::class, 'annuler'])
             ->name('bons-commande.annuler');
 
-        // Inventaires
-        Route::resource('inventaires', \App\Http\Controllers\Dashboard\InventaireController::class)
-            ->except(['edit', 'update']);
+        // Inventaires — validation (admin)
         Route::post('inventaires/{inventaire}/valider', [\App\Http\Controllers\Dashboard\InventaireController::class, 'valider'])
             ->name('inventaires.valider');
 
@@ -270,6 +264,15 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         Route::post('rdv/{rdv}/annuler', [RdvController::class, 'annuler'])->name('rdv.annuler');
         Route::post('rdv/{rdv}/terminer', [RdvController::class, 'terminer'])->name('rdv.terminer');
     });
+
+    // ── Bons de commande & Inventaires (accessibles aux employés) ──────────
+    Route::resource('bons-commande', \App\Http\Controllers\Dashboard\BonCommandeController::class)
+        ->except(['edit', 'update']);
+    Route::post('bons-commande/{bonsCommande}/recevoir', [\App\Http\Controllers\Dashboard\BonCommandeController::class, 'recevoir'])
+        ->name('bons-commande.recevoir');
+
+    Route::resource('inventaires', \App\Http\Controllers\Dashboard\InventaireController::class)
+        ->except(['edit', 'update']);
 });
 
 // ─── Abonnement (accessible même sans abonnement actif) ───────────────────────
