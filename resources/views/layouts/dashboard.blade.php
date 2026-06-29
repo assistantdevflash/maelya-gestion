@@ -360,7 +360,11 @@
                         <svg class="ml-auto w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1a5 5 0 00-5 5v4H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2v-9a2 2 0 00-2-2h-2V6a5 5 0 00-5-5zm-3 9V6a3 3 0 016 0v4H9z"/></svg>
                     @endif
                 </a>
-                @else
+                @endif
+                @endif
+
+                {{-- Depenses (employes) --}}
+                @if(!auth()->user()->isAdmin())
                 <a href="{{ $featureHref('finances', route('dashboard.depenses.index')) }}"
                    class="sidebar-link {{ request()->routeIs('dashboard.depenses.*') ? 'active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -371,7 +375,6 @@
                         <svg class="ml-auto w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1a5 5 0 00-5 5v4H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2v-9a2 2 0 00-2-2h-2V6a5 5 0 00-5-5zm-3 9V6a3 3 0 016 0v4H9z"/></svg>
                     @endif
                 </a>
-                @endif
                 @endif
 
                 @php $alertesStock = \App\Models\Produit::where('actif', true)->whereColumn('stock', '<=', 'seuil_alerte')->count(); @endphp
