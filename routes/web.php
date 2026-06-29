@@ -182,34 +182,6 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         Route::post('avis/{avis}/approuver', [\App\Http\Controllers\Dashboard\AvisClientController::class, 'approuver'])->name('avis.approuver');
         Route::post('avis/{avis}/rejeter', [\App\Http\Controllers\Dashboard\AvisClientController::class, 'rejeter'])->name('avis.rejeter');
 
-        // Rendez-vous (feature: rdv)
-        Route::middleware('feature:rdv')->group(function () {
-            Route::get('rdv', [RdvController::class, 'index'])->name('rdv.index');
-            Route::get('rdv/calendrier', [RdvController::class, 'calendrier'])->name('rdv.calendrier');
-            Route::get('rdv/calendrier/events', [RdvController::class, 'events'])->name('rdv.events');
-            Route::post('rdv/{rdv}/move', [RdvController::class, 'move'])->name('rdv.move');
-            Route::get('rdv/create', [RdvController::class, 'create'])->name('rdv.create');
-            Route::post('rdv', [RdvController::class, 'store'])->name('rdv.store');
-            Route::get('rdv/{rdv}', [RdvController::class, 'show'])->name('rdv.show');
-            Route::get('rdv/{rdv}/edit', [RdvController::class, 'edit'])->name('rdv.edit');
-            Route::patch('rdv/{rdv}', [RdvController::class, 'update'])->name('rdv.update');
-            Route::post('rdv/{rdv}/annuler', [RdvController::class, 'annuler'])->name('rdv.annuler');
-            Route::post('rdv/{rdv}/terminer', [RdvController::class, 'terminer'])->name('rdv.terminer');
-        });
-
-        // Clients (feature: clients)
-        Route::middleware('feature:clients')->group(function () {
-            Route::resource('clients', ClientController::class)->except(['show', 'edit']);
-            Route::get('clients-fidelite/recherche', [ClientController::class, 'rechercheParTokenFidelite'])->name('clients.fidelite.recherche');
-            Route::get('clients/{client}', [ClientController::class, 'show'])->name('clients.show');
-            Route::post('clients/{client}/archiver', [ClientController::class, 'archiver'])->name('clients.archiver');
-            Route::post('clients/{client}/cadeau-anniversaire', [ClientController::class, 'cadeauAnniversaire'])->name('clients.cadeau-anniversaire');
-            Route::post('clients/{client}/fidelite/regenerer', [ClientController::class, 'regenererTokenFidelite'])->name('clients.fidelite.regenerer');
-            Route::get('clients/{client}/fidelite/pdf', [ClientController::class, 'carteFidelitePdf'])->name('clients.fidelite.pdf');
-            Route::post('clients/{client}/photos', [\App\Http\Controllers\Dashboard\ClientPhotoController::class, 'store'])->name('clients.photos.store');
-            Route::delete('clients/{client}/photos/{photo}', [\App\Http\Controllers\Dashboard\ClientPhotoController::class, 'destroy'])->name('clients.photos.destroy');
-        });
-
         // Prestations (Basic + Premium)
         Route::resource('prestations', PrestationController::class)->except(['show']);
         Route::resource('categories-prestations', CategoriePrestationController::class)->except(['show', 'edit']);
@@ -270,6 +242,33 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
             Route::post('fidelite/{client}/ajuster', [FideliteController::class, 'ajuster'])->name('fidelite.ajuster');
             Route::get('fidelite/imprimer-code/{codeReduction}', [FideliteController::class, 'imprimerCode'])->name('fidelite.imprimer-code');
         });
+    });
+    
+    // ── Clients & RDV (accessibles aux employés) ──────────────────────────
+    Route::middleware('feature:clients')->group(function () {
+        Route::resource('clients', ClientController::class)->except(['show', 'edit']);
+        Route::get('clients-fidelite/recherche', [ClientController::class, 'rechercheParTokenFidelite'])->name('clients.fidelite.recherche');
+        Route::get('clients/{client}', [ClientController::class, 'show'])->name('clients.show');
+        Route::post('clients/{client}/archiver', [ClientController::class, 'archiver'])->name('clients.archiver');
+        Route::post('clients/{client}/cadeau-anniversaire', [ClientController::class, 'cadeauAnniversaire'])->name('clients.cadeau-anniversaire');
+        Route::post('clients/{client}/fidelite/regenerer', [ClientController::class, 'regenererTokenFidelite'])->name('clients.fidelite.regenerer');
+        Route::get('clients/{client}/fidelite/pdf', [ClientController::class, 'carteFidelitePdf'])->name('clients.fidelite.pdf');
+        Route::post('clients/{client}/photos', [\App\Http\Controllers\Dashboard\ClientPhotoController::class, 'store'])->name('clients.photos.store');
+        Route::delete('clients/{client}/photos/{photo}', [\App\Http\Controllers\Dashboard\ClientPhotoController::class, 'destroy'])->name('clients.photos.destroy');
+    });
+
+    Route::middleware('feature:rdv')->group(function () {
+        Route::get('rdv', [RdvController::class, 'index'])->name('rdv.index');
+        Route::get('rdv/calendrier', [RdvController::class, 'calendrier'])->name('rdv.calendrier');
+        Route::get('rdv/calendrier/events', [RdvController::class, 'events'])->name('rdv.events');
+        Route::post('rdv/{rdv}/move', [RdvController::class, 'move'])->name('rdv.move');
+        Route::get('rdv/create', [RdvController::class, 'create'])->name('rdv.create');
+        Route::post('rdv', [RdvController::class, 'store'])->name('rdv.store');
+        Route::get('rdv/{rdv}', [RdvController::class, 'show'])->name('rdv.show');
+        Route::get('rdv/{rdv}/edit', [RdvController::class, 'edit'])->name('rdv.edit');
+        Route::patch('rdv/{rdv}', [RdvController::class, 'update'])->name('rdv.update');
+        Route::post('rdv/{rdv}/annuler', [RdvController::class, 'annuler'])->name('rdv.annuler');
+        Route::post('rdv/{rdv}/terminer', [RdvController::class, 'terminer'])->name('rdv.terminer');
     });
 });
 
