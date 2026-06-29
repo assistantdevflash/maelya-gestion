@@ -188,10 +188,6 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
                 ->name('produits.scan');
             Route::resource('categories-produits', CategorieProduitController::class)->except(['show', 'create', 'edit']);
         });
-        Route::middleware('feature:stock')->group(function () {
-            Route::post('stock/{produit}/entree', [StockController::class, 'entree'])->name('stock.entree');
-            Route::post('stock/{produit}/correction', [StockController::class, 'correction'])->name('stock.correction');
-        });
 
         // Finances (feature: finances)
         Route::middleware('feature:finances')->group(function () {
@@ -263,6 +259,12 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         Route::patch('rdv/{rdv}', [RdvController::class, 'update'])->name('rdv.update');
         Route::post('rdv/{rdv}/annuler', [RdvController::class, 'annuler'])->name('rdv.annuler');
         Route::post('rdv/{rdv}/terminer', [RdvController::class, 'terminer'])->name('rdv.terminer');
+    });
+
+    // ── Stock (accessibles aux employés) ──────────────────────────────────
+    Route::middleware('feature:stock')->group(function () {
+        Route::post('stock/{produit}/entree', [StockController::class, 'entree'])->name('stock.entree');
+        Route::post('stock/{produit}/correction', [StockController::class, 'correction'])->name('stock.correction');
     });
 
     // ── Bons de commande & Inventaires (accessibles aux employés) ──────────

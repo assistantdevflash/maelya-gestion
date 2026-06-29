@@ -12,7 +12,6 @@
                 </p>
             </div>
             <div class="flex gap-2">
-                @if(auth()->user()->isAdmin())
                 <button
                     x-data
                     @click="$dispatch('open-modal', 'entree-stock')"
@@ -22,7 +21,6 @@
                     </svg>
                     Entrée stock
                 </button>
-                @endif
             </div>
         </div>
 
@@ -96,7 +94,6 @@
                                 </span>
                                 <span class="text-gray-400 text-[10px]">({{ $produit->marge_pourcent }}%)</span>
                             </td>
-                            @if(auth()->user()->isAdmin())
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-end gap-1.5">
                                     <button
@@ -117,9 +114,6 @@
                                     </button>
                                 </div>
                             </td>
-                            @else
-                            <td class="px-4 py-3 text-right text-gray-300 text-xs">—</td>
-                            @endif
                         </tr>
                         @endforeach
                     </tbody>
