@@ -46,4 +46,25 @@ class AvoirController extends Controller
 
         return back()->with('success', "Avoir {$avoir->numero} créé — code : {$avoir->codeReduction->code}");
     }
+
+    /**
+     * Marque un avoir comme utilisé manuellement.
+     */
+    public function marquerUtilise(Avoir $avoir)
+    {
+        abort_unless($avoir->institut_id === $this->institutId(), 404);
+
+        if ($avoir->statut !== 'emis') {
+            return back()->with('error', 'Cet avoir a déjà été marqué comme utilisé.');
+        }
+
+        $avoir->update(['statut' => 'utilise']);
+
+        // Marque aussi le code de réduction lié comme épuisé
+        if ($avoir->codeReduction) {
+            $avoir->codeReduction->update(['actif' => false]);
+        }
+
+        return back()->with('success', "Avoir {$avoir->numero} marqué comme utilisé.");
+    }
 }

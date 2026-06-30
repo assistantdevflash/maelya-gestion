@@ -170,6 +170,7 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         // Avoirs — redirigé vers la page Remises & Avoirs (onglet avoirs)
         Route::get('avoirs', fn() => redirect()->route('dashboard.codes-reduction.index'))->name('avoirs.index');
         Route::post('ventes/{vente}/avoirs', [\App\Http\Controllers\Dashboard\AvoirController::class, 'store'])->name('ventes.avoirs.store');
+        Route::patch('avoirs/{avoir}/marquer-utilise', [\App\Http\Controllers\Dashboard\AvoirController::class, 'marquerUtilise'])->name('avoirs.marquer-utilise');
 
         // Avis clients (modération)
         Route::get('avis', [\App\Http\Controllers\Dashboard\AvisClientController::class, 'index'])->name('avis.index');

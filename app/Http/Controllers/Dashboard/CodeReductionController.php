@@ -16,14 +16,25 @@ class CodeReductionController extends Controller
         return session('current_institut_id', Auth::user()->institut_id);
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $institutId = $this->institutId();
+        $search = $request->input('q');
 
         $codes = CodeReduction::where('institut_id', $institutId)
             ->with('client')
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($q2) use ($search) {
+                    $q2->where('code', 'like', "%{$search}%")
+                       ->orWhere('description', 'like', "%{$search}%")
+                       ->orWhereHas('client', fn ($q3) => $q3
+                           ->where('prenom', 'like', "%{$search}%")
+                           ->orWhere('nom', 'like', "%{$search}%"));
+                });
+            })
             ->orderByDesc('created_at')
-            ->paginate(30);
+            ->paginate(30)
+            ->withQueryString();
 
         $clients = Client::where('institut_id', $institutId)
             ->where('actif', true)
@@ -47,8 +58,20 @@ class CodeReductionController extends Controller
 
         $avoirs = Avoir::where('institut_id', $this->institutId())
             ->with(['vente', 'client', 'codeReduction'])
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($q2) use ($search) {
+                    $q2->where('numero', 'like', "%{$search}%")
+                       ->orWhere('motif', 'like', "%{$search}%")
+                       ->orWhereHas('client', fn ($q3) => $q3
+                           ->where('prenom', 'like', "%{$search}%")
+                           ->orWhere('nom', 'like', "%{$search}%"))
+                       ->orWhereHas('codeReduction', fn ($q3) => $q3
+                           ->where('code', 'like', "%{$search}%"));
+                });
+            })
             ->latest()
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
         return view('dashboard.codes-reduction.index', compact('codes', 'stats', 'clients', 'avoirs'));
     }

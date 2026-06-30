@@ -141,6 +141,14 @@ class VenteController extends Controller
                     $remise = $code->calculerRemise((int) $totalBrut);
                     $codeReductionId = $code->id;
                     $code->increment('nb_utilisations');
+
+                    // Si ce code est lié à un avoir, marquer l'avoir comme utilisé
+                    $avoirLie = \App\Models\Avoir::where('code_reduction_id', $code->id)
+                        ->where('statut', 'emis')
+                        ->first();
+                    if ($avoirLie) {
+                        $avoirLie->update(['statut' => 'utilise']);
+                    }
                 }
             }
 
