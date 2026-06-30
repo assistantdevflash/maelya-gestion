@@ -26,14 +26,16 @@
                         </div>
                     </div>
                     {{-- Badge points de fidélité (toujours visible, responsive) --}}
-                    <div class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl flex-shrink-0
-                                {{ $client->points_fidelite > 0 ? 'bg-amber-50 dark:bg-amber-900/20 ring-1 ring-amber-200/60 dark:ring-amber-700/30' : 'bg-gray-50 dark:bg-slate-700/50' }}">
+                    <div class="flex items-center gap-1.5 px-3 py-2 rounded-xl flex-shrink-0 ml-1 sm:ml-2
+                                {{ $client->points_fidelite > 0
+                                    ? 'bg-amber-100 dark:bg-amber-500/20 ring-1 ring-amber-300 dark:ring-amber-400/40'
+                                    : 'bg-gray-100 dark:bg-slate-600 ring-1 ring-gray-200 dark:ring-slate-500' }}">
                         <span class="text-base sm:text-lg">{{ $client->points_fidelite > 0 ? '⭐' : '☆' }}</span>
                         <div>
-                            <p class="text-base sm:text-lg font-bold {{ $client->points_fidelite > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-400' }}">
+                            <p class="text-base sm:text-lg font-bold {{ $client->points_fidelite > 0 ? 'text-amber-700 dark:text-amber-300' : 'text-gray-500 dark:text-slate-300' }}">
                                 {{ number_format($client->points_fidelite, 0, ',', ' ') }}
                             </p>
-                            <p class="text-[10px] text-gray-400 leading-none hidden sm:block">points fidélité</p>
+                            <p class="text-[10px] {{ $client->points_fidelite > 0 ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-slate-400' }} leading-none hidden sm:block">points fidélité</p>
                         </div>
                     </div>
                 </div>
