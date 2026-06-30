@@ -78,7 +78,7 @@
         </div>
 
         {{-- KPI -- }}
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div class="stat-card text-center">
                 <p class="text-2xl font-bold text-primary-600">{{ $client->nombre_visites }}</p>
                 <p class="text-xs text-gray-500 mt-1">Visites</p>
@@ -86,6 +86,15 @@
             <div class="stat-card text-center">
                 <p class="text-2xl font-bold text-secondary-600">{{ number_format($client->total_depense, 0, ',', ' ') }}</p>
                 <p class="text-xs text-gray-500 mt-1">FCFA dépensés</p>
+            </div>
+            <div class="stat-card text-center relative overflow-hidden">
+                <p class="text-2xl font-bold {{ $client->points_fidelite > 0 ? 'text-amber-500' : 'text-gray-400' }}">
+                    {{ number_format($client->points_fidelite, 0, ',', ' ') }}
+                </p>
+                <p class="text-xs text-gray-500 mt-1">Points fidélité</p>
+                @if($client->points_fidelite > 0)
+                <div class="absolute -bottom-1 left-0 right-0 h-1 bg-amber-200 dark:bg-amber-800/50"></div>
+                @endif
             </div>
             <div class="stat-card text-center">
                 <p class="text-sm font-semibold text-gray-900">{{ $client->derniere_visite?->diffForHumans() ?? 'Jamais' }}</p>
@@ -176,6 +185,12 @@
                             :class="onglet === 'photos' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
                         📸 Galerie photos
                         <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $client->photos->count() }}</span>
+                    </button>
+                    <button type="button" x-on:click="onglet = 'remises'"
+                            class="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+                            :class="onglet === 'remises' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
+                        🎫 Remises & Avoirs
+                        <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $codesReduction->count() + $avoirs->count() }}</span>
                     </button>
                 </div>
 
@@ -484,6 +499,131 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                {{-- Onglet Remises & Avoirs --}}
+                <div x-show="onglet === 'remises'" x-cloak class="max-h-96 overflow-y-auto">
+                    {{-- Codes de réduction actifs --}}
+                    @php
+                        $codesActifs = $codesReduction->filter(fn($c) => $c->statut() === 'actif');
+                        $codesInactifs = $codesReduction->filter(fn($c) => $c->statut() !== 'actif');
+                    @endphp
+
+                    @if($codesReduction->count() > 0)
+                    <div class="px-5 py-2 text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-50/40 dark:bg-emerald-900/20">
+                        Codes de réduction ({{ $codesActifs->count() }} actifs / {{ $codesReduction->count() }} total)
+                    </div>
+                    <div class="divide-y divide-gray-50 dark:divide-slate-700">
+                        @foreach($codesReduction->sortByDesc(fn($c) => $c->statut() === 'actif') as $code)
+                        <div class="px-5 py-3 flex items-center justify-between text-sm">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-mono font-bold text-gray-900 dark:text-white text-xs">{{ $code->code }}</span>
+                                    @php $statut = $code->statut(); @endphp
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold
+                                        @switch($statut)
+                                            @case('actif') bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 @break
+                                            @case('epuise') bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 @break
+                                            @case('expire') bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400 @break
+                                            @default bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400
+                                        @endswitch">
+                                        {{ $statut }}
+                                    </span>
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                    @if($code->type === 'pourcentage')
+                                        {{ $code->valeur }}% de réduction
+                                    @else
+                                        {{ number_format($code->valeur, 0, ',', ' ') }} FCFA de réduction
+                                    @endif
+                                    @if($code->montant_minimum)
+                                        · min. {{ number_format($code->montant_minimum, 0, ',', ' ') }} FCFA
+                                    @endif
+                                </p>
+                                @if($code->date_fin || $code->limite_utilisation)
+                                <p class="text-[10px] text-gray-400 mt-0.5">
+                                    @if($code->date_debut && $code->date_debut->isFuture())
+                                        Valide à partir du {{ $code->date_debut->format('d/m/Y') }}
+                                    @endif
+                                    @if($code->date_fin)
+                                        @if($code->date_debut && $code->date_debut->isFuture()) · @endif
+                                        Expire le {{ $code->date_fin->format('d/m/Y') }}
+                                    @endif
+                                    @if($code->limite_utilisation)
+                                        · {{ $code->nb_utilisations }}/{{ $code->limite_utilisation }} utilisation(s)
+                                    @endif
+                                </p>
+                                @endif
+                                @if($code->description)
+                                <p class="text-[10px] text-gray-400 italic mt-0.5">{{ $code->description }}</p>
+                                @endif
+                            </div>
+                            <div class="flex-shrink-0 ml-3">
+                                <span class="text-sm font-bold text-gray-900 dark:text-white">
+                                    @if($code->type === 'pourcentage')
+                                        -{{ $code->valeur }}%
+                                    @else
+                                        -{{ number_format($code->valeur, 0, ',', ' ') }}
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @else
+                    <div class="px-5 py-8 text-center text-sm text-gray-400">Aucun code de réduction.</div>
+                    @endif
+
+                    {{-- Avoirs --}}
+                    @if($avoirs->count() > 0)
+                    <div class="px-5 py-2 text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-50/40 dark:bg-blue-900/20 mt-1">
+                        Avoirs ({{ $avoirs->count() }})
+                    </div>
+                    <div class="divide-y divide-gray-50 dark:divide-slate-700">
+                        @foreach($avoirs as $avoir)
+                        <div class="px-5 py-3 flex items-center justify-between text-sm">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-mono font-bold text-gray-900 dark:text-white text-xs">
+                                        {{ $avoir->codeReduction?->code ?? 'Avoir #' . substr($avoir->id, 0, 6) }}
+                                    </span>
+                                    @if($avoir->codeReduction)
+                                        @php $statutAvoir = $avoir->codeReduction->statut(); @endphp
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold
+                                            @if($statutAvoir === 'actif') bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400
+                                            @elseif($statutAvoir === 'epuise') bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400
+                                            @else bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 @endif">
+                                            {{ $statutAvoir }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                    {{ number_format($avoir->montant, 0, ',', ' ') }} FCFA
+                                    @if($avoir->motif)
+                                        · {{ $avoir->motif }}
+                                    @endif
+                                </p>
+                                @if($avoir->vente)
+                                <p class="text-[10px] text-gray-400 mt-0.5">
+                                    De la vente
+                                    <a href="{{ route('dashboard.ventes.show', $avoir->vente) }}" class="text-primary-500 hover:underline">
+                                        {{ $avoir->vente->numero ?? '#' . substr($avoir->vente->id, 0, 8) }}
+                                    </a>
+                                    · {{ $avoir->created_at->format('d/m/Y') }}
+                                </p>
+                                @endif
+                            </div>
+                            <div class="flex-shrink-0 ml-3">
+                                <span class="text-sm font-bold text-blue-600 dark:text-blue-400">
+                                    {{ number_format($avoir->montant, 0, ',', ' ') }} F
+                                </span>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @else
+                    <div class="px-5 py-8 text-center text-sm text-gray-400">Aucun avoir.</div>
+                    @endif
                 </div>
 
             </div>

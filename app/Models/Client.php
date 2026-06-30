@@ -48,6 +48,11 @@ class Client extends Model
         return $this->hasMany(Credit::class);
     }
 
+    public function avoirs()
+    {
+        return $this->hasMany(Avoir::class, 'client_id');
+    }
+
     public function photos()
     {
         return $this->hasMany(ClientPhoto::class)->latest('date_prise');
