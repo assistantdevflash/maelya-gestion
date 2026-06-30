@@ -3,26 +3,28 @@
 
     <div class="space-y-5">
         {{-- En-tête --}}
-        <div class="flex items-center gap-3">
-            <a href="{{ route('dashboard.credits.index') }}" class="btn-icon" title="Retour">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                </svg>
-            </a>
-            <div>
-                <h1 class="text-2xl font-display font-bold text-gray-900">Crédit {{ $credit->client?->nom_complet ?? '—' }}</h1>
-                <p class="text-sm text-gray-500">Vente #{{ $credit->vente?->numero ?? substr($credit->vente_id, 0, 8) }}</p>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+                <a href="{{ route('dashboard.credits.index') }}" class="btn-icon flex-shrink-0" title="Retour">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </a>
+                <div class="min-w-0">
+                    <h1 class="text-lg sm:text-2xl font-display font-bold text-gray-900 truncate">Crédit {{ $credit->client?->nom_complet ?? '—' }}</h1>
+                    <p class="text-xs sm:text-sm text-gray-500">Vente #{{ $credit->vente?->numero ?? substr($credit->vente_id, 0, 8) }}</p>
+                </div>
             </div>
-            <div class="ml-auto flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
                 @if($credit->statut === 'solde')
-                    <span class="badge badge-success">Soldé</span>
+                    <span class="badge badge-success text-xs">Soldé</span>
                 @elseif($credit->statut === 'retard')
-                    <span class="badge badge-danger">En retard</span>
+                    <span class="badge badge-danger text-xs">En retard</span>
                 @else
-                    <span class="badge badge-info">En cours</span>
+                    <span class="badge badge-info text-xs">En cours</span>
                 @endif
-                <a href="{{ route('dashboard.credits.fiche-pdf', $credit) }}" class="btn-outline text-xs py-1.5 px-3" title="Telecharger la fiche PDF">
-                    🖨️ Imprimer
+                <a href="{{ route('dashboard.credits.fiche-pdf', $credit) }}" class="btn-outline text-xs py-1.5 px-3 whitespace-nowrap" title="Télécharger la fiche PDF">
+                    🖨️ <span class="hidden sm:inline">Imprimer</span>
                 </a>
                 @php
                     $waPhonePrint = $credit->client?->telephone ? preg_replace('/[^0-9+]/', '', $credit->client->telephone) : null;
@@ -43,8 +45,8 @@
                     ) : null;
                 @endphp
                 @if($waPhonePrint)
-                <a href="https://wa.me/{{ $waPhonePrint }}?text={{ $waMsgPrint }}" target="_blank" class="btn-outline text-xs py-1.5 px-3 text-green-600 border-green-200 hover:bg-green-50" title="Partager par WhatsApp">
-                    💬 WhatsApp
+                <a href="https://wa.me/{{ $waPhonePrint }}?text={{ $waMsgPrint }}" target="_blank" class="btn-outline text-xs py-1.5 px-3 text-green-600 border-green-200 hover:bg-green-50 whitespace-nowrap" title="Partager par WhatsApp">
+                    💬 <span class="hidden sm:inline">WhatsApp</span>
                 </a>
                 @endif
             </div>
@@ -113,29 +115,30 @@
             <div class="px-5 py-3 border-b border-gray-100">
                 <h2 class="text-sm font-bold text-gray-900">Échéancier</h2>
             </div>
-            <table class="w-full text-sm">
+            <div class="overflow-x-auto -webkit-overflow-scrolling:touch">
+            <table class="w-full text-sm min-w-[500px]">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">N°</th>
-                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Date prévue</th>
-                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500">Montant</th>
-                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500 hidden sm:table-cell">Payé</th>
-                        <th class="px-4 py-2 text-center text-xs font-semibold text-gray-500">Statut</th>
-                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500">Action</th>
+                        <th class="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-gray-500">N°</th>
+                        <th class="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-gray-500">Date prévue</th>
+                        <th class="px-3 sm:px-4 py-2 text-right text-xs font-semibold text-gray-500">Montant</th>
+                        <th class="px-3 sm:px-4 py-2 text-right text-xs font-semibold text-gray-500">Payé</th>
+                        <th class="px-3 sm:px-4 py-2 text-center text-xs font-semibold text-gray-500">Statut</th>
+                        <th class="px-3 sm:px-4 py-2 text-right text-xs font-semibold text-gray-500">Action</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
                     @foreach($credit->echeances as $echeance)
-                    <tr class="{{ $echeance->statut === 'retard' ? 'bg-red-50' : '' }}">
-                        <td class="px-4 py-3 font-mono text-xs">{{ $echeance->numero }}/{{ $credit->nb_echeances }}</td>
-                        <td class="px-4 py-3 {{ $echeance->statut === 'retard' ? 'text-red-600 font-semibold' : '' }}">
+                    <tr class="{{ $echeance->statut === 'retard' ? 'bg-red-50 dark:bg-red-900/10' : '' }}">
+                        <td class="px-3 sm:px-4 py-3 font-mono text-xs">{{ $echeance->numero }}/{{ $credit->nb_echeances }}</td>
+                        <td class="px-3 sm:px-4 py-3 whitespace-nowrap {{ $echeance->statut === 'retard' ? 'text-red-600 font-semibold' : '' }}">
                             {{ \Carbon\Carbon::parse($echeance->date_prevue)->format('d/m/Y') }}
                         </td>
-                        <td class="px-4 py-3 text-right font-mono">{{ number_format($echeance->montant, 0, ',', ' ') }} F</td>
-                        <td class="px-4 py-3 text-right font-mono text-emerald-600 hidden sm:table-cell">
+                        <td class="px-3 sm:px-4 py-3 text-right font-mono text-xs whitespace-nowrap">{{ number_format($echeance->montant, 0, ',', ' ') }} F</td>
+                        <td class="px-3 sm:px-4 py-3 text-right font-mono text-xs text-emerald-600 whitespace-nowrap">
                             {{ $echeance->montant_paye > 0 ? number_format($echeance->montant_paye, 0, ',', ' ') . ' F' : '—' }}
                         </td>
-                        <td class="px-4 py-3 text-center">
+                        <td class="px-3 sm:px-4 py-3 text-center">
                             @if($echeance->statut === 'payee')
                                 <span class="badge badge-success text-[10px]">Payée</span>
                             @elseif($echeance->statut === 'retard')
@@ -144,10 +147,10 @@
                                 <span class="badge badge-secondary text-[10px]">En attente</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3 text-right">
+                        <td class="px-3 sm:px-4 py-3 text-right whitespace-nowrap">
                             @if($echeance->statut !== 'payee')
                             <button onclick="document.getElementById('payer-{{ $echeance->id }}').showModal()"
-                                    class="text-xs font-semibold text-primary-600 hover:text-primary-700">
+                                    class="text-xs font-semibold text-primary-600 hover:text-primary-700 whitespace-nowrap">
                                 Encaisser
                             </button>
 
@@ -187,6 +190,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>{{-- fin overflow-x-auto --}}
         </div>
 
         {{-- Historique des paiements --}}
@@ -195,31 +199,33 @@
             <div class="px-5 py-3 border-b border-gray-100">
                 <h2 class="text-sm font-bold text-gray-900">Historique des paiements</h2>
             </div>
-            <table class="w-full text-sm">
+            <div class="overflow-x-auto -webkit-overflow-scrolling:touch">
+            <table class="w-full text-sm min-w-[400px]">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Date</th>
-                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500">Montant</th>
-                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Mode</th>
-                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 hidden sm:table-cell">Encaissé par</th>
+                        <th class="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-gray-500">Date</th>
+                        <th class="px-3 sm:px-4 py-2 text-right text-xs font-semibold text-gray-500">Montant</th>
+                        <th class="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-gray-500">Mode</th>
+                        <th class="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-gray-500">Encaissé par</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
                     @foreach($credit->paiements as $p)
                     <tr>
-                        <td class="px-4 py-2 text-xs">{{ \Carbon\Carbon::parse($p->created_at)->format('d/m/Y H:i') }}</td>
-                        <td class="px-4 py-2 text-right font-mono text-xs font-semibold">{{ number_format($p->montant, 0, ',', ' ') }} F</td>
-                        <td class="px-4 py-2 text-xs">
+                        <td class="px-3 sm:px-4 py-2 text-xs whitespace-nowrap">{{ \Carbon\Carbon::parse($p->created_at)->format('d/m/Y H:i') }}</td>
+                        <td class="px-3 sm:px-4 py-2 text-right font-mono text-xs font-semibold whitespace-nowrap">{{ number_format($p->montant, 0, ',', ' ') }} F</td>
+                        <td class="px-3 sm:px-4 py-2 text-xs whitespace-nowrap">
                             @if($p->mode_paiement === 'cash') 💵 Espèces
                             @elseif($p->mode_paiement === 'mobile_money') 📱 Mobile
                             @else 💳 Carte
                             @endif
                         </td>
-                        <td class="px-4 py-2 text-xs hidden sm:table-cell">{{ $p->encaisseur?->prenom ?? '—' }}</td>
+                        <td class="px-3 sm:px-4 py-2 text-xs whitespace-nowrap">{{ $p->encaisseur?->prenom ?? '—' }}</td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
+            </div>
         </div>
         @endif
     </div>
