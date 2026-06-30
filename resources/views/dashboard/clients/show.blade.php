@@ -7,25 +7,38 @@
 
         {{-- Header --}}
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div class="flex items-center gap-3">
-                <a href="{{ route('dashboard.clients.index') }}" class="btn-icon text-gray-500">
+            <div class="flex items-start sm:items-center gap-3 min-w-0">
+                <a href="{{ route('dashboard.clients.index') }}" class="btn-icon text-gray-500 flex-shrink-0 mt-0.5 sm:mt-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17l-5-5m0 0l5-5m-5 5h12"/>
                     </svg>
                 </a>
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-full flex items-center justify-center text-white text-lg font-bold">
-                        {{ strtoupper(substr($client->prenom, 0, 1)) }}{{ strtoupper(substr($client->nom, 0, 1)) }}
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-2 min-w-0">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-full flex items-center justify-center text-white text-base sm:text-lg font-bold flex-shrink-0">
+                            {{ strtoupper(substr($client->prenom, 0, 1)) }}{{ strtoupper(substr($client->nom, 0, 1)) }}
+                        </div>
+                        <div class="min-w-0">
+                            <h1 class="text-lg sm:text-xl font-display font-bold text-gray-900 truncate">{{ $client->nom_complet }}</h1>
+                            @if($client->date_naissance)
+                                <p class="text-xs sm:text-sm text-gray-500">{{ $client->naissance_formatee }}</p>
+                            @endif
+                        </div>
                     </div>
-                    <div>
-                        <h1 class="text-xl font-display font-bold text-gray-900">{{ $client->nom_complet }}</h1>
-                        @if($client->date_naissance)
-                            <p class="text-sm text-gray-500">{{ $client->naissance_formatee }}</p>
-                        @endif
+                    {{-- Badge points de fidélité (toujours visible, responsive) --}}
+                    <div class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl flex-shrink-0
+                                {{ $client->points_fidelite > 0 ? 'bg-amber-50 dark:bg-amber-900/20 ring-1 ring-amber-200/60 dark:ring-amber-700/30' : 'bg-gray-50 dark:bg-slate-700/50' }}">
+                        <span class="text-base sm:text-lg">{{ $client->points_fidelite > 0 ? '⭐' : '☆' }}</span>
+                        <div>
+                            <p class="text-base sm:text-lg font-bold {{ $client->points_fidelite > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-400' }}">
+                                {{ number_format($client->points_fidelite, 0, ',', ' ') }}
+                            </p>
+                            <p class="text-[10px] text-gray-400 leading-none hidden sm:block">points fidélité</p>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 flex-shrink-0">
                 <a href="{{ route('dashboard.caisse') }}?client={{ $client->id }}" class="btn-secondary">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
