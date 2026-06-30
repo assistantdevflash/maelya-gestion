@@ -2,36 +2,37 @@
     <x-slot name="title">Fournisseurs</x-slot>
 
     <div class="space-y-4" x-data="{ showForm: false, editing: null }">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-                <h1 class="text-2xl font-display font-bold text-gray-900">Fournisseurs</h1>
-                <p class="text-sm text-gray-500 mt-1">{{ $fournisseurs->total() }} fournisseur(s)</p>
+                <h1 class="text-xl sm:text-2xl font-display font-bold text-gray-900">Fournisseurs</h1>
+                <p class="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">{{ $fournisseurs->total() }} fournisseur(s)</p>
             </div>
-            <button @click="showForm = true; editing = null" class="btn-primary">+ Nouveau fournisseur</button>
+            <button @click="showForm = true; editing = null" class="btn-primary self-start sm:self-auto">+ Nouveau fournisseur</button>
         </div>
 
         @if(session('success'))<div class="alert-success">{{ session('success') }}</div>@endif
 
         <div class="card overflow-hidden">
-            <table class="w-full text-sm">
+            <div class="overflow-x-auto -webkit-overflow-scrolling:touch">
+            <table class="w-full text-sm min-w-[550px]">
                 <thead class="bg-gray-50 text-xs uppercase text-gray-500">
                     <tr>
-                        <th class="px-4 py-3 text-left">Nom</th>
-                        <th class="px-4 py-3 text-left">Contact</th>
-                        <th class="px-4 py-3 text-left">Téléphone</th>
-                        <th class="px-4 py-3 text-left">Email</th>
-                        <th class="px-4 py-3 text-right">Actions</th>
+                        <th class="px-3 sm:px-4 py-3 text-left">Nom</th>
+                        <th class="px-3 sm:px-4 py-3 text-left">Contact</th>
+                        <th class="px-3 sm:px-4 py-3 text-left">Téléphone</th>
+                        <th class="px-3 sm:px-4 py-3 text-left">Email</th>
+                        <th class="px-3 sm:px-4 py-3 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse($fournisseurs as $f)
                         <tr class="{{ $f->actif ? '' : 'opacity-50' }}">
-                            <td class="px-4 py-3 font-semibold">{{ $f->nom }}</td>
-                            <td class="px-4 py-3 text-xs text-gray-600">{{ $f->contact_principal ?? '—' }}</td>
-                            <td class="px-4 py-3 text-xs">{{ $f->telephone ?? '—' }}</td>
-                            <td class="px-4 py-3 text-xs">{{ $f->email ?? '—' }}</td>
-                            <td class="px-4 py-3 text-right">
-                                <button @click="showForm = true; editing = {{ Js::from($f->toArray()) }}" class="text-primary-600 text-xs">Éditer</button>
+                            <td class="px-3 sm:px-4 py-3 font-semibold text-xs sm:text-sm">{{ $f->nom }}</td>
+                            <td class="px-3 sm:px-4 py-3 text-xs text-gray-600">{{ $f->contact_principal ?? '—' }}</td>
+                            <td class="px-3 sm:px-4 py-3 text-xs whitespace-nowrap">{{ $f->telephone ?? '—' }}</td>
+                            <td class="px-3 sm:px-4 py-3 text-xs">{{ $f->email ?? '—' }}</td>
+                            <td class="px-3 sm:px-4 py-3 text-right whitespace-nowrap">
+                                <button @click="showForm = true; editing = {{ Js::from($f->toArray()) }}" class="text-primary-600 text-xs hover:underline">Éditer</button>
                                 <form method="POST" action="{{ route('dashboard.fournisseurs.destroy', $f) }}" id="form-del-fourn-{{ $f->id }}" class="inline">
                                     @csrf @method('DELETE')
                                     <button type="button"
@@ -45,6 +46,7 @@
                     @endforelse
                 </tbody>
             </table>
+            </div>
         </div>
         {{ $fournisseurs->links() }}
 
