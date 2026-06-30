@@ -70,13 +70,22 @@
             </button>
         </div>
         {{-- Recherche --}}
-        <div class="relative flex-shrink-0" x-data="{ q: '{{ request('q') }}' }">
+        <div class="relative flex-shrink-0 flex items-center gap-1" x-data="{ q: '{{ request('q') }}' }">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
-            <form method="GET" action="{{ route('dashboard.codes-reduction.index') }}">
+            <form method="GET" action="{{ route('dashboard.codes-reduction.index') }}" class="flex items-center gap-1">
                 <input type="text" name="q" x-model="q" placeholder="Rechercher code, client..."
                        class="w-48 pl-9 pr-3 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary-400">
+                @if(request('q'))
+                <a href="{{ route('dashboard.codes-reduction.index') }}"
+                   class="flex items-center justify-center w-6 h-6 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                   title="Réinitialiser la recherche">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </a>
+                @endif
             </form>
         </div>
         </div>
