@@ -17,6 +17,7 @@ use App\Services\FactureNumeroService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -237,6 +238,10 @@ class VenteController extends Controller
 
             return $vente;
         });
+
+        // ── Invalider le cache du dashboard ──
+        Cache::forget("dashboard_full:{$this->institutId()}:" . now()->toDateString());
+        Cache::forget("dashboard_basic:{$this->institutId()}:" . now()->toDateString());
 
         if ($request->imprimer) {
             // Le formulaire a été soumis en target=_blank,

@@ -9,6 +9,7 @@ use App\Models\Produit;
 use App\Models\Vente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
@@ -27,14 +28,17 @@ class DashboardController extends Controller
 
         // ── Plan Basic : dashboard simplifié ─────────────────────────────────
         if (!$user->aFonctionnalite('dashboard_complet')) {
-            $stats = Vente::where('statut', 'validee')
-                ->selectRaw("
-                    SUM(CASE WHEN DATE(created_at) = ? THEN total ELSE 0 END) as ca_jour,
-                    COUNT(CASE WHEN DATE(created_at) = ? THEN 1 END) as ventes_jour,
-                    SUM(CASE WHEN DATE(created_at) >= ? AND DATE(created_at) <= ? THEN total ELSE 0 END) as ca_mois,
-                    COUNT(CASE WHEN DATE(created_at) >= ? AND DATE(created_at) <= ? THEN 1 END) as ventes_mois
-                ", [$today, $today, $startOfMonth, $endOfMonth, $startOfMonth, $endOfMonth])
-                ->first();
+            $cacheKey = "dashboard_basic:{$institutId}:" . now()->toDateString();
+            $stats = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($today, $startOfMonth, $endOfMonth) {
+                return Vente::where('statut', 'validee')
+                    ->selectRaw("
+                        SUM(CASE WHEN DATE(created_at) = ? THEN total ELSE 0 END) as ca_jour,
+                        COUNT(CASE WHEN DATE(created_at) = ? THEN 1 END) as ventes_jour,
+                        SUM(CASE WHEN DATE(created_at) >= ? AND DATE(created_at) <= ? THEN total ELSE 0 END) as ca_mois,
+                        COUNT(CASE WHEN DATE(created_at) >= ? AND DATE(created_at) <= ? THEN 1 END) as ventes_mois
+                    ", [$today, $today, $startOfMonth, $endOfMonth, $startOfMonth, $endOfMonth])
+                    ->first();
+            });
 
             $caJour     = (int) ($stats->ca_jour ?? 0);
             $caMois     = (int) ($stats->ca_mois ?? 0);
@@ -53,35 +57,37 @@ class DashboardController extends Controller
         $startOfPrevMonth = now()->subMonthNoOverflow()->startOfMonth()->toDateString();
         $endOfPrevMonth   = now()->subMonthNoOverflow()->endOfMonth()->toDateString();
 
-        // ── 1. Stats ventes fusionnées (12 requêtes → 1) ─────────────────────
-        $statsVentes = Vente::where('statut', 'validee')
-            ->selectRaw("
-                -- Current period (crédit = apport réel uniquement)
-                SUM(CASE WHEN DATE(created_at) = ? THEN CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END ELSE 0 END) as ca_jour,
-                COUNT(CASE WHEN DATE(created_at) = ? THEN 1 END) as ventes_jour,
-                SUM(CASE WHEN DATE(created_at) >= ? AND DATE(created_at) <= ? THEN CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END ELSE 0 END) as ca_mois,
-                COUNT(CASE WHEN DATE(created_at) >= ? AND DATE(created_at) <= ? THEN 1 END) as ventes_mois,
-                -- Payments by mode (this month) — crédit = apport réel
-                SUM(CASE WHEN mode_paiement = 'cash' AND DATE(created_at) >= ? AND DATE(created_at) <= ? THEN total ELSE 0 END) as paiements_cash,
-                SUM(CASE WHEN mode_paiement = 'mobile_money' AND DATE(created_at) >= ? AND DATE(created_at) <= ? THEN total ELSE 0 END) as paiements_mobile,
-                SUM(CASE WHEN mode_paiement = 'carte' AND DATE(created_at) >= ? AND DATE(created_at) <= ? THEN total ELSE 0 END) as paiements_carte,
-                SUM(CASE WHEN mode_paiement = 'mixte' AND DATE(created_at) >= ? AND DATE(created_at) <= ? THEN total ELSE 0 END) as paiements_mixte,
-                SUM(CASE WHEN mode_paiement = 'credit' AND DATE(created_at) >= ? AND DATE(created_at) <= ? THEN montant_paye ELSE 0 END) as paiements_credit,
-                -- Previous day
-                SUM(CASE WHEN DATE(created_at) = ? THEN CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END ELSE 0 END) as ca_jour_prec,
-                COUNT(CASE WHEN DATE(created_at) = ? THEN 1 END) as ventes_jour_prec,
-                -- Previous month
-                SUM(CASE WHEN DATE(created_at) >= ? AND DATE(created_at) <= ? THEN CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END ELSE 0 END) as ca_mois_prec,
-                COUNT(CASE WHEN DATE(created_at) >= ? AND DATE(created_at) <= ? THEN 1 END) as ventes_mois_prec
-            ", [
-                $today, $today,
-                $startOfMonth, $endOfMonth, $startOfMonth, $endOfMonth,
-                $startOfMonth, $endOfMonth, $startOfMonth, $endOfMonth,
-                $startOfMonth, $endOfMonth, $startOfMonth, $endOfMonth,
-                $startOfMonth, $endOfMonth, // paiements_credit
-                $yesterday, $yesterday,
-                $startOfPrevMonth, $endOfPrevMonth, $startOfPrevMonth, $endOfPrevMonth
-            ])->first();
+        // ── 1. Stats ventes fusionnées (12 requêtes → 1, cache 5 min) ────────
+        $cacheKey = "dashboard_full:{$institutId}:{$today}";
+        $cached = Cache::get($cacheKey);
+
+        if ($cached) {
+            extract($cached);
+        } else {
+            $statsVentes = Vente::where('statut', 'validee')
+                ->selectRaw("
+                    SUM(CASE WHEN DATE(created_at) = ? THEN CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END ELSE 0 END) as ca_jour,
+                    COUNT(CASE WHEN DATE(created_at) = ? THEN 1 END) as ventes_jour,
+                    SUM(CASE WHEN DATE(created_at) >= ? AND DATE(created_at) <= ? THEN CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END ELSE 0 END) as ca_mois,
+                    COUNT(CASE WHEN DATE(created_at) >= ? AND DATE(created_at) <= ? THEN 1 END) as ventes_mois,
+                    SUM(CASE WHEN mode_paiement = 'cash' AND DATE(created_at) >= ? AND DATE(created_at) <= ? THEN total ELSE 0 END) as paiements_cash,
+                    SUM(CASE WHEN mode_paiement = 'mobile_money' AND DATE(created_at) >= ? AND DATE(created_at) <= ? THEN total ELSE 0 END) as paiements_mobile,
+                    SUM(CASE WHEN mode_paiement = 'carte' AND DATE(created_at) >= ? AND DATE(created_at) <= ? THEN total ELSE 0 END) as paiements_carte,
+                    SUM(CASE WHEN mode_paiement = 'mixte' AND DATE(created_at) >= ? AND DATE(created_at) <= ? THEN total ELSE 0 END) as paiements_mixte,
+                    SUM(CASE WHEN mode_paiement = 'credit' AND DATE(created_at) >= ? AND DATE(created_at) <= ? THEN montant_paye ELSE 0 END) as paiements_credit,
+                    SUM(CASE WHEN DATE(created_at) = ? THEN CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END ELSE 0 END) as ca_jour_prec,
+                    COUNT(CASE WHEN DATE(created_at) = ? THEN 1 END) as ventes_jour_prec,
+                    SUM(CASE WHEN DATE(created_at) >= ? AND DATE(created_at) <= ? THEN CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END ELSE 0 END) as ca_mois_prec,
+                    COUNT(CASE WHEN DATE(created_at) >= ? AND DATE(created_at) <= ? THEN 1 END) as ventes_mois_prec
+                ", [
+                    $today, $today,
+                    $startOfMonth, $endOfMonth, $startOfMonth, $endOfMonth,
+                    $startOfMonth, $endOfMonth, $startOfMonth, $endOfMonth,
+                    $startOfMonth, $endOfMonth, $startOfMonth, $endOfMonth,
+                    $startOfMonth, $endOfMonth,
+                    $yesterday, $yesterday,
+                    $startOfPrevMonth, $endOfPrevMonth, $startOfPrevMonth, $endOfPrevMonth
+                ])->first();
 
         $caJour          = (int) ($statsVentes->ca_jour ?? 0);
         $ventesJour      = (int) ($statsVentes->ventes_jour ?? 0);
@@ -97,7 +103,7 @@ class DashboardController extends Controller
         $caMoisPrec      = (int) ($statsVentes->ca_mois_prec ?? 0);
         $ventesMoisPrec  = (int) ($statsVentes->ventes_mois_prec ?? 0);
 
-        // ── 2. Stats clients fusionnées (3 requêtes → 1) ─────────────────────
+        // ── 2. Stats clients fusionnées ──────────────────────────────────
         $statsClients = Client::where('actif', true)
             ->selectRaw("
                 COUNT(*) as nb_clients,
@@ -111,12 +117,12 @@ class DashboardController extends Controller
         $nouveauxClientsJour   = (int) ($statsClients->nouveaux_jour ?? 0);
         $nouveauxClientsJourPrec = (int) ($statsClients->nouveaux_jour_prec ?? 0);
 
-        // ── 3. Produits en alerte ────────────────────────────────────────────
+        // ── 3. Produits en alerte ────────────────────────────────────────
         $produitsEnAlerte = Produit::where('actif', true)
             ->whereColumn('stock', '<=', 'seuil_alerte')
             ->count();
 
-        // ── 4. Dépenses du mois ──────────────────────────────────────────────
+        // ── 4. Dépenses du mois ──────────────────────────────────────────
         $depensesMois = Depense::whereDate('date', '>=', $startOfMonth)
             ->whereDate('date', '<=', $endOfMonth)
             ->sum('montant');
@@ -124,7 +130,7 @@ class DashboardController extends Controller
         $beneficeEstime = $caMois - $depensesMois;
         $beneficeMois = $beneficeEstime;
 
-        // ── 5. Graphique 30 derniers jours ───────────────────────────────────
+        // ── 5. Graphique 30 derniers jours ───────────────────────────────
         $ventesParJour = Vente::where('statut', 'validee')
             ->whereDate('created_at', '>=', now()->subDays(29)->toDateString())
             ->selectRaw("DATE(created_at) as date, SUM(CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END) as total")
@@ -140,18 +146,29 @@ class DashboardController extends Controller
             $data[] = $ventesParJour[$date] ?? 0;
         }
 
-        // ── 6. Dernières ventes ──────────────────────────────────────────────
+        // ── 6. Dernières ventes ──────────────────────────────────────────
         $dernieresVentes = Vente::with('client')
             ->where('statut', 'validee')
             ->latest()
             ->limit(5)
             ->get();
 
-        // ── 7. Produits en alerte (liste) ────────────────────────────────────
+        // ── 7. Produits en alerte (liste) ────────────────────────────────
         $alertesStock = Produit::where('actif', true)
             ->whereColumn('stock', '<=', 'seuil_alerte')
             ->limit(5)
             ->get();
+
+        $cached = compact(
+            'caJour', 'ventesJour', 'caMois', 'ventesMois',
+            'paiementsCash', 'paiementsMobile', 'paiementsCarte', 'paiementsMixte', 'paiementsCredit',
+            'caJourPrec', 'ventesJourPrec', 'caMoisPrec', 'ventesMoisPrec',
+            'nbClients', 'totalClients', 'nouveauxClientsJour', 'nouveauxClientsJourPrec',
+            'produitsEnAlerte', 'depensesMois', 'beneficeEstime', 'beneficeMois',
+            'labels', 'data', 'dernieresVentes', 'alertesStock'
+        );
+        Cache::put($cacheKey, $cached, now()->addMinutes(5));
+    }
 
         // ── 8. Abonnement ────────────────────────────────────────────────────
         $abonnement = $user->abonnementActif;
@@ -185,6 +202,9 @@ class DashboardController extends Controller
             ->get();
 
         $chartData = ['labels' => $labels, 'values' => $data];
+
+        // Invalider le cache après une nouvelle vente du jour (optionnel : purger via Event)
+        // Le cache est déjà régénéré chaque jour (clé inclut la date)
 
         return view('dashboard.index', compact(
             'caJour', 'caMois', 'nbClients', 'totalClients', 'ventesJour', 'ventesMois',
