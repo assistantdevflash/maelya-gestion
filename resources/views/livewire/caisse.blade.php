@@ -87,15 +87,29 @@
                 Vente rapide
             </button>
 
-            {{-- Bouton Scanner code-barres produit --}}
+            {{-- Bouton Scanner code-barres produit + champ scanner externe --}}
             <div x-data="scannerCodeBarre()" x-init="init()" x-show="onglet === 'produits'" class="flex flex-col gap-1">
-                <button type="button" @click="ouvrir()"
-                        class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold border-2 border-blue-200 dark:border-blue-700/60 bg-blue-50/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100/70 dark:hover:bg-blue-900/40 transition-all duration-200">
-                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h2v12H4zm3 0h1v12H7zm3 0h2v12h-2zm4 0h1v12h-1zm3 0h2v12h-2z"/>
-                    </svg>
-                    Scanner code-barres
-                </button>
+                <div class="flex items-center gap-2">
+                    <button type="button" @click="ouvrir()"
+                            class="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold border-2 border-blue-200 dark:border-blue-700/60 bg-blue-50/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100/70 dark:hover:bg-blue-900/40 transition-all duration-200 flex-shrink-0">
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h2v12H4zm3 0h1v12H7zm3 0h2v12h-2zm4 0h1v12h-1zm3 0h2v12h-2z"/>
+                        </svg>
+                        <span class="hidden sm:inline">Scanner</span>
+                    </button>
+                    {{-- Champ pour scanner externe (USB/Bluetooth) --}}
+                    <div class="relative flex-1 min-w-0">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h2v12H4zm3 0h1v12H7zm3 0h2v12h-2zm4 0h1v12h-1zm3 0h2v12h-2z"/>
+                        </svg>
+                        <input x-model="saisieExterne" type="text"
+                               placeholder="Scanner externe ou saisir code-barres..."
+                               @keydown.enter.prevent="resoudreExterne()"
+                               @focus="scanExterneFocus = true"
+                               @blur="scanExterneFocus = false"
+                               class="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-400 placeholder:text-gray-400">
+                    </div>
+                </div>
                 <p x-show="statut" x-text="statut" class="text-xs text-center"
                    :class="erreur ? 'text-red-600' : 'text-emerald-600'"></p>
 
@@ -1076,6 +1090,8 @@ function scannerCodeBarre() {
         modalOuvert: false,
         hasCamera: false,
         saisie: '',
+        saisieExterne: '',
+        scanExterneFocus: false,
         statut: '',
         erreur: false,
         stream: null,
@@ -1112,6 +1128,11 @@ function scannerCodeBarre() {
             this.modalOuvert = false;
             if (this.intervalScan) { clearInterval(this.intervalScan); this.intervalScan = null; }
             if (this.stream) { this.stream.getTracks().forEach(t => t.stop()); this.stream = null; }
+        },
+        // Résolution depuis le champ scanner externe
+        resoudreExterne() {
+            this.resoudre(this.saisieExterne);
+            this.saisieExterne = '';
         },
         async resoudre(code) {
             code = (code || '').trim();
