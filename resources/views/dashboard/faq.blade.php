@@ -148,6 +148,12 @@ $categories = [
                 'a' => '<p>Sur la page <strong>Caisse</strong>, cliquez sur <strong>Brouillons</strong>. Vous pouvez sauvegarder une vente en cours et la reprendre plus tard — utile si vous devez interrompre une transaction ou si un client hésite.</p>'
             ],
             [
+                'q' => 'Comment scanner les codes-barres des produits ?',
+                'a' => '<p>Disponible pendant l\'<strong>essai gratuit</strong> et avec le plan <strong>Premium+</strong>. Deux options :</p>
+                <ul>
+                    <li><strong>Caméra du téléphone</strong> : dans l\'onglet Produits, cliquez sur "Scanner" → visez le code-barres → le produit s\'ajoute automatiquement au panier</li>
+                    <li><strong>Scanner externe USB/Bluetooth</strong> : branchez votre scanner, placez le curseur dans le champ "Scanner externe ou saisir code-barres", scannez → le produit s\'ajoute automatiquement</li>
+                </ul>
                 <div class="tip">Les scanners externes fonctionnent comme un clavier : ils tapent le code et appuient sur Entrée automatiquement.</div>'
             ],
             [
