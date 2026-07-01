@@ -138,6 +138,49 @@
     </div>
 </section>
 
+{{-- ═══ POUR QUI ═══ --}}
+<section class="py-24 bg-white dark:bg-gray-950">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="text-center mb-16">
+            <div class="inline-flex items-center gap-2 bg-primary-50 text-primary-700 text-xs font-bold px-4 py-1.5 rounded-full mb-4 uppercase tracking-wider">Pour qui ?</div>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">Conçu pour les indépendants et PME de service</h2>
+            <p class="text-lg text-gray-500 dark:text-gray-400 mt-4 max-w-2xl mx-auto leading-relaxed">Quel que soit votre secteur d'activité, Maëlya Gestion s'adapte à votre métier</p>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            @foreach([
+                ['✂️', 'Salons de coiffure', 'Barbershops, coiffeurs mixtes'],
+                ['💅', 'Instituts de beauté', 'Soins esthétiques, manucure, pédicure'],
+                ['💆', 'Spas & Centres de bien-être', 'Massages, hammam, soins du corps'],
+                ['🚗', 'Auto-écoles', 'Leçons de conduite, examens'],
+                ['🩺', 'Cabinets médicaux & paramédicaux', 'Médecins, kinés, psychologues'],
+                ['🔧', 'Ateliers & Services techniques', 'Réparations, maintenance, dépannage'],
+                ['📚', 'Centres de formation', 'Cours particuliers, stages, formations'],
+                ['👗', 'Boutiques de service', 'Retouches, location, personnalisation'],
+                ['💼', 'Autres PME de service', 'Agences, consultants, freelances'],
+            ] as [$emoji, $title, $desc])
+                <div class="relative bg-gradient-to-br from-primary-50/50 to-secondary-50/30 dark:from-gray-800 dark:to-gray-800/50 rounded-xl p-5 border border-primary-100/60 dark:border-gray-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group">
+                    <div class="flex items-start gap-3">
+                        <span class="text-3xl group-hover:scale-110 transition-transform">{{ $emoji }}</span>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-0.5">{{ $title }}</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $desc }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        <div class="mt-12 text-center">
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Votre activité ne figure pas ici ? Pas de souci !</p>
+            <a href="{{ route('contact') }}" class="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 font-semibold hover:gap-3 transition-all">
+                Contactez-nous pour en savoir plus
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+            </a>
+        </div>
+    </div>
+</section>
+
 {{-- ═══ FONCTIONNALITÉS ═══ --}}
 <section id="fonctionnalites" class="py-24 bg-gradient-to-b from-primary-50/30 to-primary-50/60 dark:from-gray-950 dark:to-gray-900">
     <div class="max-w-6xl mx-auto px-4 sm:px-6">

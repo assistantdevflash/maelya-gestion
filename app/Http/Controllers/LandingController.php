@@ -15,8 +15,8 @@ class LandingController extends Controller
         $plans = PlanAbonnement::where('actif', true)->orderBy('ordre')->get();
         return view('landing.index', [
             'plans' => $plans,
-            'title' => 'Maëlya Gestion — La solution de gestion des indépendants et PME de service',
-            'metaDescription' => 'Caisse, clients, rendez-vous, stocks et finances dans une seule application. Sans engagement, sans complexité. Découvrez pourquoi +500 établissements font confiance à Maëlya Gestion.',
+            'title' => 'Maëlya Gestion — Logiciel de gestion pour indépendants, PME et entreprises de service',
+            'metaDescription' => 'Solution de gestion complète pour salons, instituts, spas, auto-écoles, cabinets, ateliers et PME de service. Caisse, clients, rendez-vous, stocks et finances dans une seule application. Essai gratuit 14 jours.',
         ]);
     }
 
