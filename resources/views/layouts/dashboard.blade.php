@@ -6,6 +6,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ isset($title) ? $title . ' — ' : '' }}Maëlya Gestion</title>
 
+    {{-- Performance: DNS prefetch --}}
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+
     {{-- PWA --}}
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#9333ea">
@@ -16,6 +19,8 @@
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    
+    {{-- Theme anti-flash (critical inline script) --}}
     <script>
         (function() {
             try {
@@ -27,6 +32,7 @@
             } catch(e) {}
         })();
     </script>
+    
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     {{ $styles ?? '' }}
