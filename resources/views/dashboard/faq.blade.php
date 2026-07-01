@@ -91,7 +91,7 @@ $categories = [
                     <li><strong>Essai gratuit</strong> (14 jours) : accès complet à toutes les fonctionnalités, sans engagement</li>
                     <li><strong>Basic</strong> (2 000 FCFA/mois) : caisse, clients, RDV, prestations, parrainage, notifications</li>
                     <li><strong>Premium</strong> (4 900 FCFA/mois) : tout Basic + stock, produits, fidélité, finances, équipe, vitrine, réservation en ligne, codes de réduction</li>
-                    <li><strong>Premium+</strong> (9 900 FCFA/mois) : tout Premium + multi-établissements, vente à crédit, comparatif</li>
+                    <li><strong>Premium+</strong> (9 900 FCFA/mois) : tout Premium + multi-établissements, vente à crédit, comparatif, scanner code-barres (caméra + scanner externe)</li>
                 </ul>'
             ],
         ]
@@ -146,6 +146,9 @@ $categories = [
             [
                 'q' => 'Comment utiliser les brouillons de caisse ?',
                 'a' => '<p>Sur la page <strong>Caisse</strong>, cliquez sur <strong>Brouillons</strong>. Vous pouvez sauvegarder une vente en cours et la reprendre plus tard — utile si vous devez interrompre une transaction ou si un client hésite.</p>'
+            ],
+            [
+                <div class="tip">Les scanners externes fonctionnent comme un clavier : ils tapent le code et appuient sur Entrée automatiquement.</div>'
             ],
             [
                 'q' => 'Quels modes de paiement sont disponibles ?',

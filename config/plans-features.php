@@ -251,5 +251,19 @@ return [
                 'Détection automatique des retards de paiement',
             ],
         ],
+
+        'scan_code_barre' => [
+            'titre' => 'Scanner code-barres',
+            'plan_requis' => 'premium-plus',
+            'icon' => 'scan',
+            'accroche' => 'Scannez les codes-barres de vos produits directement depuis la caisse',
+            'description' => 'Utilisez la caméra de votre téléphone ou un scanner externe USB/Bluetooth pour ajouter instantanément des produits au panier.',
+            'avantages' => [
+                'Scan caméra intégré (BarcodeDetector)',
+                'Compatible scanners externes USB et Bluetooth',
+                'Ajout instantané au panier',
+                'Gain de temps considérable en caisse',
+            ],
+        ],
     ],
 ];

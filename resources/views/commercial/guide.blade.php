@@ -192,6 +192,7 @@ Cocody/Riviera → Marcory/Zone 4 → Plateau/Adjamé → Yopougon → Treichvil
 ['num'=>4, 'titre'=>'LES FONCTIONNALITÉS &mdash; Mémo complet', 'html'=>'
 <table><thead><tr><th>Module</th><th>Ce que ça fait</th><th>Argument clé</th></tr></thead>
 <tbody>
+<tr><td><strong>Scanner code-barres</strong></td><td>Scan caméra ou scanner externe USB/Bluetooth (essai + Premium+)</td><td>«&nbsp;Ajoutez les produits en un éclair&nbsp;»</td></tr>
 <tr><td><strong>Caisse</strong></td><td>Ventes en 10s, espèces/Wave/OM/carte/mixte/crédit</td><td>«&nbsp;Plus jamais de calcul à la main&nbsp;»</td></tr>
 <tr><td><strong>Ticket de caisse</strong></td><td>Numérique (WhatsApp) ou PDF imprimable</td><td>«&nbsp;Professionnel comme une caisse de supermarché&nbsp;»</td></tr>
 <tr><td><strong>Facture PDF</strong></td><td>Facture numérotée pour chaque vente</td><td>«&nbsp;Vos clients ont une vraie facture&nbsp;»</td></tr>
@@ -232,7 +233,7 @@ Cocody/Riviera → Marcory/Zone 4 → Plateau/Adjamé → Yopougon → Treichvil
 <tr><td><strong>Essai</strong></td><td>Gratuit 14j</td><td>Tout le monde</td><td>«&nbsp;Vous testez tout, sans rien payer, sans engagement&nbsp;»</td></tr>
 <tr><td><strong>Basic</strong></td><td>2 000 FCFA</td><td>Indépendant, sans employé</td><td>«&nbsp;C\'est 67 FCFA par jour — moins qu\'un café&nbsp;»</td></tr>
 <tr><td><strong>Premium</strong></td><td>4 900 FCFA</td><td>Établissement avec 1 à 3 employés</td><td>«&nbsp;Tout inclus : stock, fidélité, finances, équipe, vitrine&nbsp;»</td></tr>
-<tr><td><strong>Premium+</strong></td><td>9 900 FCFA</td><td>Multi-établissements</td><td>«&nbsp;Pour les propriétaires de plusieurs établissements&nbsp;»</td></tr>
+<tr><td><strong>Premium+</strong></td><td>9 900 FCFA</td><td>Multi-établissements</td><td>«&nbsp;Pour les propriétaires de plusieurs établissements, avec scanner code-barres&nbsp;»</td></tr>
 </tbody></table>
 <p><strong>Paiement :</strong> Orange Money ou Wave — Pas de carte bancaire, pas de compte bancaire nécessaire.</p>
 '],

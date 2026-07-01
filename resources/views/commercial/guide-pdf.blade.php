@@ -126,6 +126,7 @@
             <table>
                 <thead><tr><th>Module</th><th>Ce que ça fait</th><th>Argument clé</th></tr></thead>
                 <tbody>
+                <tr><td><strong>Scanner code-barres</strong></td><td>Scan caméra ou scanner externe USB/Bluetooth</td><td>« Ajoutez les produits en un éclair »</td></tr>
                 <tr><td><strong>Caisse</strong></td><td>Ventes en 10s, espèces/Wave/OM/carte/mixte/crédit</td><td>« Plus jamais de calcul à la main »</td></tr>
                 <tr><td><strong>Ticket de caisse</strong></td><td>Numérique (WhatsApp) ou PDF imprimable</td><td>« Professionnel comme une caisse de supermarché »</td></tr>
                 <tr><td><strong>Facture PDF</strong></td><td>Facture numérotée pour chaque vente</td><td>« Vos clients ont une vraie facture »</td></tr>
@@ -170,7 +171,7 @@
                 <tr><td><strong>Essai</strong></td><td>Gratuit 14j</td><td>Tout le monde</td><td>« Vous testez tout, sans rien payer, sans engagement »</td></tr>
                 <tr><td><strong>Basic</strong></td><td>2 000 FCFA</td><td>Indépendant, sans employé</td><td>« 67 FCFA par jour — moins cher qu'un café »</td></tr>
                 <tr><td><strong>Premium</strong></td><td>4 900 FCFA</td><td>Établissement avec 1-3 employés</td><td>« Tout inclus : stock, fidélité, finances, équipe, vitrine »</td></tr>
-                <tr><td><strong>Premium+</strong></td><td>9 900 FCFA</td><td>Multi-établissements</td><td>« Pour les propriétaires de plusieurs établissements »</td></tr>
+                <tr><td><strong>Premium+</strong></td><td>9 900 FCFA</td><td>Multi-établissements</td><td>« Pour les propriétaires de plusieurs établissements, avec scanner code-barres »</td></tr>
                 </tbody>
             </table>
             <p style="margin-top:6px;"><strong>Paiement :</strong> Orange Money ou Wave. Pas de carte bancaire, pas de compte bancaire nécessaire.</p>

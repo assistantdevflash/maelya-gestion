@@ -143,6 +143,7 @@
                 <tr><th>Module</th><th>Description</th><th>Plan minimum</th></tr>
             </thead>
             <tbody>
+                <tr><td><strong>Scan code-barres</strong></td><td>Scan caméra intégré ou scanner externe USB/Bluetooth pour ajouter des produits au panier.</td><td>Essai / Premium+</td></tr>
                 <tr><td><strong>Caisse</strong></td><td>Enregistrement des ventes en quelques secondes. Espèces, Wave, Orange Money, Carte, Mixte, Crédit.</td><td>Basic</td></tr>
                 <tr><td><strong>Brouillons caisse</strong></td><td>Sauvegarder une vente en cours et la reprendre plus tard.</td><td>Basic</td></tr>
                 <tr><td><strong>Ticket de caisse</strong></td><td>Ticket numérique partageable par WhatsApp, imprimable en PDF (A4).</td><td>Premium</td></tr>
@@ -193,7 +194,7 @@
                 <tr><td>Essai gratuit</td><td>0 FCFA (14 jours)</td><td>1</td><td>Accès complet à tout — sans carte bancaire, sans engagement</td></tr>
                 <tr><td>Basic</td><td>2 000 FCFA</td><td>1</td><td>Caisse, clients, RDV, prestations, parrainage, notifications, avis</td></tr>
                 <tr><td>Premium</td><td>4 900 FCFA</td><td>1</td><td>Basic + stock, produits, fidélité, finances, équipe, vitrine, réservation, codes réduction</td></tr>
-                <tr><td>Premium+</td><td>9 900 FCFA</td><td>Illimité</td><td>Premium + multi-établissements, vente à crédit, comparatif</td></tr>
+                <tr><td>Premium+</td><td>9 900 FCFA</td><td>Illimité</td><td>Premium + multi-établissements, vente à crédit, comparatif, scanner code-barres</td></tr>
             </tbody>
         </table>
         <p style="margin-top:6px;"><strong>Paiement :</strong> Orange Money ou Wave. Pas de carte bancaire ni de compte bancaire requis.</p>

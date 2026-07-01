@@ -87,7 +87,8 @@
                 Vente rapide
             </button>
 
-            {{-- Bouton Scanner code-barres produit + champ scanner externe --}}
+            {{-- Bouton Scanner code-barres produit + champ scanner externe (essai + premium-plus uniquement) --}}
+            @if(auth()->user()->aFonctionnalite('scan_code_barre'))
             <div x-data="scannerCodeBarre()" x-init="init()" x-show="onglet === 'produits'" class="flex flex-col gap-1">
                 <div class="flex items-center gap-2">
                     <button type="button" @click="ouvrir()"
@@ -143,6 +144,7 @@
                     </div>
                 </div>
             </div>
+            @endif
         </div>
 
         {{-- Formulaire vente rapide --}}
