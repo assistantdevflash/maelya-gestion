@@ -166,43 +166,43 @@
             {{-- Onglets Achats / Rendez-vous / Historique / Galerie --}}
             <div class="lg:col-span-2 card overflow-hidden" x-data="{ onglet: new URLSearchParams(window.location.search).get('onglet') || 'achats' }">
                 {{-- En-tête onglets --}}
-                <div class="p-3 border-b border-gray-100 dark:border-slate-700 flex items-center gap-1 bg-gray-50/60 dark:bg-slate-800/50">
+                <div class="p-3 border-b border-gray-100 dark:border-slate-700 flex items-center gap-1 bg-gray-50/60 dark:bg-slate-800/50 overflow-x-auto -webkit-overflow-scrolling:touch">
                     <button type="button" x-on:click="onglet = 'achats'"
-                            class="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+                            class="px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all flex-shrink-0 whitespace-nowrap"
                             :class="onglet === 'achats' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
                         🛍️ Achats
                         <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $ventes->total() }}</span>
                     </button>
                     @if(auth()->user()?->aFonctionnalite('rdv'))
                     <button type="button" x-on:click="onglet = 'rdv'"
-                            class="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+                            class="px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all flex-shrink-0 whitespace-nowrap"
                             :class="onglet === 'rdv' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
-                        📅 Rendez-vous
+                        📅 RDV
                         <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $rdvAVenir->count() + $rdvPasses->count() }}</span>
                     </button>
                     @endif
                     <button type="button" x-on:click="onglet = 'timeline'"
-                            class="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+                            class="px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all flex-shrink-0 whitespace-nowrap"
                             :class="onglet === 'timeline' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
                         🕒 Historique
                         <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $timeline->count() }}</span>
                     </button>
                     @if(auth()->user()->aFonctionnalite('credits'))
                     <button type="button" x-on:click="onglet = 'credits'"
-                            class="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+                            class="px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all flex-shrink-0 whitespace-nowrap"
                             :class="onglet === 'credits' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
                         🕐 Crédits
                         <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $credits->count() }}</span>
                     </button>
                     @endif
                     <button type="button" x-on:click="onglet = 'photos'"
-                            class="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+                            class="px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all flex-shrink-0 whitespace-nowrap"
                             :class="onglet === 'photos' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
-                        📸 Galerie photos
+                        📸 Photos
                         <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $client->photos->count() }}</span>
                     </button>
                     <button type="button" x-on:click="onglet = 'remises'"
-                            class="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+                            class="px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all flex-shrink-0 whitespace-nowrap"
                             :class="onglet === 'remises' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
                         🎫 Remises & Avoirs
                         <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $codesReduction->count() + $avoirs->count() }}</span>
