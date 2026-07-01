@@ -51,23 +51,23 @@ class AbonnementActif
         // ── Abonnement : vérifier le cache session en priorité ────────────
         $aboStatus = session('abo_status');
         if ($aboStatus !== null && $aboStatus['user_id'] === $user->id) {
-            view()->share('enSursis', $aboStatus['en_sursis']);
-            if (!empty($aboStatus['sursis_jours'])) {
-                view()->share('sursisJours', $aboStatus['sursis_jours']);
-            }
-            if (!empty($aboStatus['expire_bientot'])) {
-                session()->flash('abonnement_expire_bientot', $aboStatus['expire_bientot']);
-            }
-            // Bloquer les mutations si en sursis ou expiré
-            if ($aboStatus['en_sursis'] && !$request->routeIs('abonnement.*')) {
-                if (!in_array($request->method(), ['GET', 'HEAD'])) {
-                    if ($request->expectsJson()) {
-                        return response()->json(['message' => 'Accès restreint. Renouvelez votre abonnement.'], 403);
-                    }
-                    return back()->with('error', 'Votre abonnement a expiré.');
+            // Si le cache dit que l'abonnement est expiré/sursis, vérifier si un
+            // nouvel abonnement a été activé entre-temps (ex: renouvellement).
+            if (!empty($aboStatus['en_sursis'])) {
+                $abonnement = $user->isEmploye()
+                    ? $this->getOwnerAbonnement($user)
+                    : $user->abonnementActif;
+                if ($abonnement) {
+                    // Un abonnement actif existe → invalider le cache
+                    session()->forget('abo_status');
+                    // Continuer sans le cache (passera par la vérification DB ci-dessous)
+                } else {
+                    // Cache toujours valide : appliquer les restrictions
+                    return $this->applyAboStatus($request, $next, $aboStatus);
                 }
+            } else {
+                return $this->applyAboStatus($request, $next, $aboStatus);
             }
-            return $next($request);
         }
 
         // Pour les employés, vérifier l'abonnement du propriétaire (via proprietaire_id de l'institut)
@@ -169,6 +169,42 @@ class AbonnementActif
         }
 
         return $next($request);
+    }
+
+    /**
+     * Applique le statut d'abonnement mis en cache.
+     */
+    private function applyAboStatus(Request $request, Closure $next, array $aboStatus): Response
+    {
+        view()->share('enSursis', $aboStatus['en_sursis']);
+        if (!empty($aboStatus['sursis_jours'])) {
+            view()->share('sursisJours', $aboStatus['sursis_jours']);
+        }
+        if (!empty($aboStatus['expire_bientot'])) {
+            session()->flash('abonnement_expire_bientot', $aboStatus['expire_bientot']);
+        }
+        // Bloquer les mutations si en sursis ou expiré
+        if ($aboStatus['en_sursis'] && !$request->routeIs('abonnement.*')) {
+            if (!in_array($request->method(), ['GET', 'HEAD'])) {
+                if ($request->expectsJson()) {
+                    return response()->json(['message' => 'Accès restreint. Renouvelez votre abonnement.'], 403);
+                }
+                return back()->with('error', 'Votre abonnement a expiré.');
+            }
+        }
+        return $next($request);
+    }
+
+    /**
+     * Récupère l'abonnement actif du propriétaire pour un employé.
+     */
+    private function getOwnerAbonnement($user)
+    {
+        $institut = \App\Models\Institut::find($user->currentInstitutId());
+        $owner = $institut?->proprietaire_id
+            ? \App\Models\User::find($institut->proprietaire_id)
+            : null;
+        return $owner?->abonnementActif;
     }
 
     /**
