@@ -409,7 +409,7 @@ $categories = [
         'faqs'   => [
             [
                 'q' => 'Comment gérer plusieurs établissements avec un seul compte ?',
-                'a' => '<p>Avec les plans <strong>Premium+</strong> (jusqu\'\u00e0 3 établissements) ou <strong>Ultra</strong> (établissements illimités), vous pouvez créer plusieurs établissements depuis <strong>Mes établissements</strong> → <strong>Nouvel établissement</strong>. Chaque établissement a ses propres données (ventes, clients, stock, prestations, équipe). Basculez entre les établissements depuis le sélecteur en haut de la barre latérale. Les données sont totalement indépendantes.</p>'
+                'a' => '<p>Avec les plans <strong>Premium+</strong> (jusqu\'à 3 établissements) ou <strong>Ultra</strong> (établissements illimités), vous pouvez créer plusieurs établissements depuis <strong>Mes établissements</strong> → <strong>Nouvel établissement</strong>. Chaque établissement a ses propres données (ventes, clients, stock, prestations, équipe). Basculez entre les établissements depuis le sélecteur en haut de la barre latérale. Les données sont totalement indépendantes.</p>'
             ],
             [
                 'q' => 'Comment comparer les performances de mes établissements ?',

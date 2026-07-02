@@ -233,7 +233,7 @@ Cocody/Riviera → Marcory/Zone 4 → Plateau/Adjamé → Yopougon → Treichvil
 <tr><td><strong>Essai</strong></td><td>Gratuit 14j</td><td>Tout le monde</td><td>«&nbsp;Vous testez tout, sans rien payer, sans engagement&nbsp;»</td></tr>
 <tr><td><strong>Basic</strong></td><td>2 000 FCFA</td><td>Indépendant, sans employé</td><td>«&nbsp;C\'est 67 FCFA par jour — moins qu\'un café&nbsp;»</td></tr>
 <tr><td><strong>Premium</strong></td><td>4 900 FCFA</td><td>Établissement avec 1 à 3 employés</td><td>«&nbsp;Tout inclus : stock, fidélité, finances, équipe, vitrine&nbsp;»</td></tr>
-<tr><td><strong>Premium+</strong></td><td>9 900 FCFA</td><td>Jusqu\'\u00e0 3 établissements, 10 employés max par établissement</td><td>«&nbsp;Pour gérer plusieurs établissements, avec vente à crédit et scanner code-barres&nbsp;»</td></tr>
+<tr><td><strong>Premium+</strong></td><td>9 900 FCFA</td><td>Jusqu\'à 3 établissements, 10 employés max par établissement</td><td>«&nbsp;Pour gérer plusieurs établissements, avec vente à crédit et scanner code-barres&nbsp;»</td></tr>
 <tr><td><strong>Ultra</strong></td><td>24 900 FCFA</td><td>Établissements illimités, employés illimités</td><td>«&nbsp;Pour les grandes chaînes, contrôle total sur tous les établissements&nbsp;»</td></tr>
 </tbody></table>
 <p><strong>Paiement :</strong> Orange Money ou Wave — Pas de carte bancaire, pas de compte bancaire nécessaire.</p>
