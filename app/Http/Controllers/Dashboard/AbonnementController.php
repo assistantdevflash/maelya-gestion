@@ -58,7 +58,7 @@ class AbonnementController extends Controller
     public function plans()
     {
         $plans = PlanAbonnement::where('actif', true)
-            ->whereIn('slug', ['basic', 'premium', 'premium-plus', 'entreprise'])
+            ->whereIn('slug', ['basic', 'premium', 'premium-plus', 'ultra', 'entreprise'])
             ->orderBy('ordre')
             ->get();
 

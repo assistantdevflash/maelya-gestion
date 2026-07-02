@@ -56,8 +56,11 @@ return [
             'parrainage',
         ],
 
-        // Premium+ : tout + multi-etablissements
+        // Premium+ : tout + multi-etablissements (3 max, 10 employés max)
         'premium-plus' => ['*'],
+
+        // Ultra : tout Premium+ + établissements illimités + employés illimités
+        'ultra' => ['*'],
 
         // Ancien alias "entreprise" (rétrocompatibilité)
         'entreprise' => ['*'],

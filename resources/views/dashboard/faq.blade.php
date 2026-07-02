@@ -91,7 +91,8 @@ $categories = [
                     <li><strong>Essai gratuit</strong> (14 jours) : accès complet à toutes les fonctionnalités, sans engagement</li>
                     <li><strong>Basic</strong> (2 000 FCFA/mois) : caisse, clients, RDV, prestations, parrainage, notifications</li>
                     <li><strong>Premium</strong> (4 900 FCFA/mois) : tout Basic + stock, produits, fidélité, finances, équipe, vitrine, réservation en ligne, codes de réduction</li>
-                    <li><strong>Premium+</strong> (9 900 FCFA/mois) : tout Premium + multi-établissements, vente à crédit, comparatif, scanner code-barres (caméra + scanner externe)</li>
+                    <li><strong>Premium+</strong> (9 900 FCFA/mois) : tout Premium + multi-établissements (jusqu'à 3), jusqu'à 10 employés par établissement, vente à crédit, comparatif, scanner code-barres</li>
+                    <li><strong>Ultra</strong> (24 900 FCFA/mois) : tout Premium+ + établissements illimités, employés illimités, support prioritaire</li>
                 </ul>'
             ],
         ]
@@ -149,7 +150,7 @@ $categories = [
             ],
             [
                 'q' => 'Comment scanner les codes-barres des produits ?',
-                'a' => '<p>Disponible pendant l\'<strong>essai gratuit</strong> et avec le plan <strong>Premium+</strong>. Deux options :</p>
+                'a' => '<p>Disponible pendant l\'<strong>essai gratuit</strong> et avec les plans <strong>Premium+</strong> et <strong>Ultra</strong>. Deux options :</p>
                 <ul>
                     <li><strong>Caméra du téléphone</strong> : dans l\'onglet Produits, cliquez sur "Scanner" → visez le code-barres → le produit s\'ajoute automatiquement au panier</li>
                     <li><strong>Scanner externe USB/Bluetooth</strong> : branchez votre scanner, placez le curseur dans le champ "Scanner externe ou saisir code-barres", scannez → le produit s\'ajoute automatiquement</li>
@@ -408,11 +409,11 @@ $categories = [
         'faqs'   => [
             [
                 'q' => 'Comment gérer plusieurs établissements avec un seul compte ?',
-                'a' => '<p>Avec le plan <strong>Premium+</strong>, vous pouvez créer plusieurs établissements depuis <strong>Mes établissements</strong> → <strong>Nouvel établissement</strong>. Chaque établissement a ses propres données (ventes, clients, stock, prestations, équipe). Basculez entre les établissements depuis le sélecteur en haut de la barre latérale. Les données sont totalement indépendantes.</p>'
+                'a' => '<p>Avec les plans <strong>Premium+</strong> (jusqu\'\u00e0 3 établissements) ou <strong>Ultra</strong> (établissements illimités), vous pouvez créer plusieurs établissements depuis <strong>Mes établissements</strong> → <strong>Nouvel établissement</strong>. Chaque établissement a ses propres données (ventes, clients, stock, prestations, équipe). Basculez entre les établissements depuis le sélecteur en haut de la barre latérale. Les données sont totalement indépendantes.</p>'
             ],
             [
                 'q' => 'Comment comparer les performances de mes établissements ?',
-                'a' => '<p>Dans <strong>Comparatif</strong> (menu accessible uniquement si vous avez plusieurs établissements en Premium+), vous pouvez comparer sur une même période :</p>
+                'a' => '<p>Dans <strong>Comparatif</strong> (menu accessible uniquement si vous avez plusieurs établissements en Premium+ ou Ultra), vous pouvez comparer sur une même période :</p>
                 <ul>
                     <li>Chiffre d\'affaires par établissement</li>
                     <li>Nombre de clients et de ventes</li>
