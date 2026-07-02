@@ -18,19 +18,6 @@ return [
         // Essai gratuit : accès complet pendant 14 jours
         'essai' => ['*'],
 
-        // Basic : etablissement individuel, caisse simple
-        'basic' => [
-            'dashboard',
-            'mon_institut',
-            'prestations',
-            'caisse',
-            'historique',
-            'historique_export_pdf',
-            'abonnement',
-            'mes_transactions',
-            'parrainage',
-        ],
-
         // Premium : etablissement avec equipe, stock et finances
         'premium' => [
             'dashboard',

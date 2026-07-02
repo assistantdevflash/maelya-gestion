@@ -89,8 +89,7 @@ $categories = [
                 'a' => '<p>Allez dans <strong>Abonnement</strong> dans le menu. Choisissez votre plan et réglez par <strong>Orange Money ou Wave</strong>. Aucune carte bancaire nécessaire.</p>
                 <ul>
                     <li><strong>Essai gratuit</strong> (14 jours) : accès complet à toutes les fonctionnalités, sans engagement</li>
-                    <li><strong>Basic</strong> (2 000 FCFA/mois) : caisse, clients, RDV, prestations, parrainage, notifications</li>
-                    <li><strong>Premium</strong> (4 900 FCFA/mois) : tout Basic + stock, produits, fidélité, finances, équipe, vitrine, réservation en ligne, codes de réduction</li>
+                    <li><strong>Premium</strong> (4 900 FCFA/mois) : caisse, clients, RDV, prestations, stock, produits, fidélité, finances, équipe, vitrine, réservation en ligne, codes de réduction</li>
                     <li><strong>Premium+</strong> (9 900 FCFA/mois) : tout Premium + multi-établissements (jusqu'à 3), jusqu'à 10 employés par établissement, vente à crédit, comparatif, scanner code-barres</li>
                     <li><strong>Ultra</strong> (24 900 FCFA/mois) : tout Premium+ + établissements illimités, employés illimités, support prioritaire</li>
                 </ul>'

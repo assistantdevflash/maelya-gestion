@@ -144,22 +144,22 @@
             </thead>
             <tbody>
                 <tr><td><strong>Scan code-barres</strong></td><td>Scan caméra intégré ou scanner externe USB/Bluetooth pour ajouter des produits au panier.</td><td>Essai / Premium+</td></tr>
-                <tr><td><strong>Caisse</strong></td><td>Enregistrement des ventes en quelques secondes. Espèces, Wave, Orange Money, Carte, Mixte, Crédit.</td><td>Basic</td></tr>
-                <tr><td><strong>Brouillons caisse</strong></td><td>Sauvegarder une vente en cours et la reprendre plus tard.</td><td>Basic</td></tr>
+                <tr><td><strong>Caisse</strong></td><td>Enregistrement des ventes en quelques secondes. Espèces, Wave, Orange Money, Carte, Mixte, Crédit.</td><td>Premium</td></tr>
+                <tr><td><strong>Brouillons caisse</strong></td><td>Sauvegarder une vente en cours et la reprendre plus tard.</td><td>Premium</td></tr>
                 <tr><td><strong>Ticket de caisse</strong></td><td>Ticket numérique partageable par WhatsApp, imprimable en PDF (A4).</td><td>Premium</td></tr>
                 <tr><td><strong>Facture PDF</strong></td><td>Facture numérotée téléchargeable pour chaque vente.</td><td>Premium</td></tr>
-                <tr><td><strong>Avoir (remboursement)</strong></td><td>Créer un avoir partiel sur une vente → code de réduction réutilisable.</td><td>Basic</td></tr>
-                <tr><td><strong>Sondage satisfaction</strong></td><td>Envoi d'un lien de sondage post-achat par email ou WhatsApp. Note 1-5 étoiles + commentaire.</td><td>Basic</td></tr>
-                <tr><td><strong>Tableau de bord</strong></td><td>CA jour/mois, nombre de ventes, nouveaux clients, alertes stock, anniversaires, graphique 30 jours.</td><td>Basic</td></tr>
-                <tr><td><strong>Recherche globale</strong></td><td>Recherche simultanée dans clients, ventes, prestations, produits et RDV.</td><td>Basic</td></tr>
-                <tr><td><strong>Clients</strong></td><td>Fiches clients avec historique complet des ventes, RDV, points fidélité, galerie photos.</td><td>Basic</td></tr>
-                <tr><td><strong>Galerie photos</strong></td><td>Photos avant/après par client dans son dossier. Portfolio des résultats.</td><td>Basic</td></tr>
-                <tr><td><strong>Anniversaires clients</strong></td><td>Alerte automatique + envoi d'un code cadeau le jour J.</td><td>Basic</td></tr>
-                <tr><td><strong>Agenda / RDV</strong></td><td>Planning des rendez-vous avec prestations multiples. Confirmation email automatique au client.</td><td>Basic</td></tr>
-                <tr><td><strong>Calendrier RDV</strong></td><td>Vue calendrier interactive (mois/semaine/jour/liste). Déplacement des RDV par glissement (drag & drop).</td><td>Basic</td></tr>
-                <tr><td><strong>Réservation en ligne</strong></td><td>Les clients réservent depuis la vitrine publique 24h/24. Validation par l'administrateur.</td><td>Basic</td></tr>
-                <tr><td><strong>Prestations</strong></td><td>Catalogue des services avec prix et durée. Catégorisation possible.</td><td>Basic</td></tr>
-                <tr><td><strong>Produits</strong></td><td>Catalogue des produits vendables. Prix de vente, prix d'achat, stock, code-barre.</td><td>Basic</td></tr>
+                <tr><td><strong>Avoir (remboursement)</strong></td><td>Créer un avoir partiel sur une vente → code de réduction réutilisable.</td><td>Premium</td></tr>
+                <tr><td><strong>Sondage satisfaction</strong></td><td>Envoi d'un lien de sondage post-achat par email ou WhatsApp. Note 1-5 étoiles + commentaire.</td><td>Premium</td></tr>
+                <tr><td><strong>Tableau de bord</strong></td><td>CA jour/mois, nombre de ventes, nouveaux clients, alertes stock, anniversaires, graphique 30 jours.</td><td>Premium</td></tr>
+                <tr><td><strong>Recherche globale</strong></td><td>Recherche simultanée dans clients, ventes, prestations, produits et RDV.</td><td>Premium</td></tr>
+                <tr><td><strong>Clients</strong></td><td>Fiches clients avec historique complet des ventes, RDV, points fidélité, galerie photos.</td><td>Premium</td></tr>
+                <tr><td><strong>Galerie photos</strong></td><td>Photos avant/après par client dans son dossier. Portfolio des résultats.</td><td>Premium</td></tr>
+                <tr><td><strong>Anniversaires clients</strong></td><td>Alerte automatique + envoi d'un code cadeau le jour J.</td><td>Premium</td></tr>
+                <tr><td><strong>Agenda / RDV</strong></td><td>Planning des rendez-vous avec prestations multiples. Confirmation email automatique au client.</td><td>Premium</td></tr>
+                <tr><td><strong>Calendrier RDV</strong></td><td>Vue calendrier interactive (mois/semaine/jour/liste). Déplacement des RDV par glissement (drag & drop).</td><td>Premium</td></tr>
+                <tr><td><strong>Réservation en ligne</strong></td><td>Les clients réservent depuis la vitrine publique 24h/24. Validation par l'administrateur.</td><td>Premium</td></tr>
+                <tr><td><strong>Prestations</strong></td><td>Catalogue des services avec prix et durée. Catégorisation possible.</td><td>Premium</td></tr>
+                <tr><td><strong>Produits</strong></td><td>Catalogue des produits vendables. Prix de vente, prix d'achat, stock, code-barre.</td><td>Premium</td></tr>
                 <tr><td><strong>Stock</strong></td><td>Suivi automatique à chaque vente. Mouvements typés. Alerte seuil critique. Coût moyen pondéré.</td><td>Premium</td></tr>
                 <tr><td><strong>Fournisseurs</strong></td><td>Carnet de fournisseurs avec contacts et historique des commandes.</td><td>Premium</td></tr>
                 <tr><td><strong>Bons de commande</strong></td><td>Commander chez les fournisseurs. Réception partielle ou totale → stock mis à jour automatiquement.</td><td>Premium</td></tr>
@@ -168,14 +168,14 @@
                 <tr><td><strong>Codes de réduction</strong></td><td>Promotions en % ou montant fixe. Validité, limite d'usage, nominatif ou global.</td><td>Premium</td></tr>
                 <tr><td><strong>Finances & Dépenses</strong></td><td>Enregistrer les charges par catégorie. Calcul automatique du bénéfice net. Export PDF et CSV.</td><td>Premium</td></tr>
                 <tr><td><strong>Trésorerie prévisionnelle</strong></td><td>Projection entrées/sorties sur 7 à 90 jours. Basée sur les RDV futurs. Graphique jour par jour.</td><td>Premium</td></tr>
-                <tr><td><strong>Page vitrine</strong></td><td>Page web publique (maelyagestion.com/e/slug). Prestations, photos, horaires, avis. QR code.</td><td>Basic</td></tr>
-                <tr><td><strong>Avis clients</strong></td><td>Modération des avis post-sondage. Approuver → affiché sur vitrine. Rejeter → non publié.</td><td>Basic</td></tr>
-                <tr><td><strong>Notifications</strong></td><td>Centre d'alertes en temps réel. Push web + email. RDV, stock, paiements, anniversaires, avis.</td><td>Basic</td></tr>
+                <tr><td><strong>Page vitrine</strong></td><td>Page web publique (maelyagestion.com/e/slug). Prestations, photos, horaires, avis. QR code.</td><td>Premium</td></tr>
+                <tr><td><strong>Avis clients</strong></td><td>Modération des avis post-sondage. Approuver → affiché sur vitrine. Rejeter → non publié.</td><td>Premium</td></tr>
+                <tr><td><strong>Notifications</strong></td><td>Centre d'alertes en temps réel. Push web + email. RDV, stock, paiements, anniversaires, avis.</td><td>Premium</td></tr>
                 <tr><td><strong>Mon équipe</strong></td><td>Comptes séparés pour les employés. Rôle limité (caisse, clients, RDV). Suivi par employé.</td><td>Premium</td></tr>
                 <tr><td><strong>Multi-établissements</strong></td><td>Gérer plusieurs établissements depuis un seul compte. Données indépendantes par établissement.</td><td>Premium+</td></tr>
                 <tr><td><strong>Comparatif</strong></td><td>Comparer CA, clients, top prestations entre ses établissements sur une même période.</td><td>Premium+</td></tr>
                 <tr><td><strong>Vente à crédit</strong></td><td>Vente avec apport initial et échéancier. Suivi des paiements, rappels auto, fiche PDF.</td><td>Premium+</td></tr>
-                <tr><td><strong>Parrainage</strong></td><td>Lien unique pour inviter d'autres propriétaires. Jours gratuits pour le parrain et le filleul.</td><td>Basic</td></tr>
+                <tr><td><strong>Parrainage</strong></td><td>Lien unique pour inviter d'autres propriétaires. Jours gratuits pour le parrain et le filleul.</td><td>Premium</td></tr>
             </tbody>
         </table>
     </div>
@@ -192,9 +192,9 @@
             <thead><tr><th>Plan</th><th>Prix / mois</th><th>Établissements</th><th>Fonctionnalités incluses</th></tr></thead>
             <tbody>
                 <tr><td>Essai gratuit</td><td>0 FCFA (14 jours)</td><td>1</td><td>Accès complet à tout — sans carte bancaire, sans engagement</td></tr>
-                <tr><td>Basic</td><td>2 000 FCFA</td><td>1</td><td>Caisse, clients, RDV, prestations, parrainage, notifications, avis</td></tr>
-                <tr><td>Premium</td><td>4 900 FCFA</td><td>1</td><td>Basic + stock, produits, fidélité, finances, équipe, vitrine, réservation, codes réduction</td></tr>
-                <tr><td>Premium+</td><td>9 900 FCFA</td><td>Illimité</td><td>Premium + multi-établissements, vente à crédit, comparatif, scanner code-barres</td></tr>
+                <tr><td>Premium</td><td>4 900 FCFA</td><td>1</td><td>Caisse, clients, RDV, prestations, stock, produits, fidélité, finances, équipe, vitrine, réservation, codes réduction</td></tr>
+                <tr><td>Premium+</td><td>9 900 FCFA</td><td>3 max</td><td>Premium + multi-établissements (3 max), 10 employés max, vente à crédit, comparatif, scanner</td></tr>
+                <tr><td>Ultra</td><td>24 900 FCFA</td><td>Illimité</td><td>Premium+ + établissements illimités, employés illimités, support prioritaire</td></tr>
             </tbody>
         </table>
         <p style="margin-top:6px;"><strong>Paiement :</strong> Orange Money ou Wave. Pas de carte bancaire ni de compte bancaire requis.</p>
