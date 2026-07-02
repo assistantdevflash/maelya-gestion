@@ -90,7 +90,7 @@ $categories = [
                 <ul>
                     <li><strong>Essai gratuit</strong> (14 jours) : accès complet à toutes les fonctionnalités, sans engagement</li>
                     <li><strong>Premium</strong> (4 900 FCFA/mois) : caisse, clients, RDV, prestations, stock, produits, fidélité, finances, équipe, vitrine, réservation en ligne, codes de réduction</li>
-                    <li><strong>Premium+</strong> (9 900 FCFA/mois) : tout Premium + multi-établissements (jusqu'à 3), jusqu'à 10 employés par établissement, vente à crédit, comparatif, scanner code-barres</li>
+                    <li><strong>Premium+</strong> (9 900 FCFA/mois) : tout Premium + multi-établissements (jusqu\'à 3), jusqu\'à 10 employés par établissement, vente à crédit, comparatif, scanner code-barres</li>
                     <li><strong>Ultra</strong> (24 900 FCFA/mois) : tout Premium+ + établissements illimités, employés illimités, support prioritaire</li>
                 </ul>'
             ],
