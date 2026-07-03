@@ -103,5 +103,13 @@
     <p>Merci de votre visite !</p>
     <p>{{ $vente->institut->nom ?? 'Maëlya Gestion' }} — Conservez ce ticket</p>
 </div>
+
+@if($autoPrint ?? false)
+<script>
+    window.onload = function() {
+        window.print();
+    };
+</script>
+@endif
 </body>
 </html>

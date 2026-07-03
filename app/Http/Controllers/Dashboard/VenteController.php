@@ -246,7 +246,7 @@ class VenteController extends Controller
         if ($request->imprimer) {
             // Le formulaire a été soumis en target=_blank,
             // donc ce redirect ouvre le PDF dans le nouvel onglet
-            return redirect()->route('dashboard.ventes.ticket-pdf', $vente);
+            return redirect()->route('dashboard.ventes.ticket-pdf', ['vente' => $vente, 'print' => '1']);
         }
 
         return redirect()->route('dashboard.caisse')
@@ -388,10 +388,11 @@ class VenteController extends Controller
             abort(403);
         }
 
+        $autoPrint = request()->get('print') === '1';
         $vente->load('items', 'client', 'institut', 'user');
-        $pdf = Pdf::loadView('pdf.ticket', compact('vente'))
+        $pdf = Pdf::loadView('pdf.ticket', compact('vente', 'autoPrint'))
             ->setPaper([0, 0, 226.77, 600], 'portrait');
-        return $pdf->download("ticket-{$vente->numero}.pdf");
+        return $pdf->stream("ticket-{$vente->numero}.pdf");
     }
 
     /**
@@ -419,9 +420,10 @@ class VenteController extends Controller
             });
         }
 
+        $autoPrint = request()->get('print') === '1';
         $vente->load('items', 'client', 'institut', 'user');
-        $pdf = Pdf::loadView('pdf.facture', compact('vente'))->setPaper('a4', 'portrait');
-        return $pdf->download("facture-{$vente->numero_facture}.pdf");
+        $pdf = Pdf::loadView('pdf.facture', compact('vente', 'autoPrint'))->setPaper('a4', 'portrait');
+        return $pdf->stream("facture-{$vente->numero_facture}.pdf");
     }
 
     /**

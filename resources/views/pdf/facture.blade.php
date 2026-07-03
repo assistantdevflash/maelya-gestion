@@ -163,5 +163,13 @@
     Facture générée le {{ now()->format('d/m/Y à H:i') }} — {{ $vente->institut->nom ?? config('app.name') }}
 </div>
 
+@if($autoPrint ?? false)
+<script>
+    window.onload = function() {
+        window.print();
+    };
+</script>
+@endif
+
 </body>
 </html>
