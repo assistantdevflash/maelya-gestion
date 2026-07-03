@@ -1081,37 +1081,89 @@
 
 {{-- Fonction d'impression directe des PDF --}}
 <script>
-    function printPDF(url) {
-        // Créer une iframe cachée
-        const iframe = document.createElement('iframe');
-        iframe.style.position = 'fixed';
-        iframe.style.width = '0';
-        iframe.style.height = '0';
-        iframe.style.border = 'none';
-        iframe.style.top = '-9999px';
-        
-        // Quand le PDF est chargé, lancer l'impression
-        iframe.onload = function() {
-            setTimeout(function() {
-                try {
-                    iframe.contentWindow.focus();
-                    iframe.contentWindow.print();
-                } catch (e) {
-                    console.error('Erreur lors de l\'impression:', e);
-                    // Fallback : ouvrir dans un nouvel onglet
-                    window.open(url + '?print=1', '_blank');
+    function printPDF(url, buttonElement) {
+        return new Promise((resolve, reject) => {
+            // Créer une iframe cachée
+            const iframe = document.createElement('iframe');
+            iframe.style.position = 'fixed';
+            iframe.style.width = '0';
+            iframe.style.height = '0';
+            iframe.style.border = 'none';
+            iframe.style.top = '-9999px';
+            
+            let loaded = false;
+            
+            // Timeout de sécurité
+            const timeoutId = setTimeout(() => {
+                if (!loaded) {
+                    reject(new Error('Timeout lors du chargement du PDF'));
+                    try {
+                        document.body.removeChild(iframe);
+                    } catch (e) {}
                 }
+            }, 10000);
+            
+            // Quand le PDF est chargé, lancer l'impression
+            iframe.onload = function() {
+                loaded = true;
+                clearTimeout(timeoutId);
                 
-                // Nettoyer l'iframe après l'impression (ou après 1 minute)
                 setTimeout(function() {
+                    try {
+                        iframe.contentWindow.focus();
+                        iframe.contentWindow.print();
+                        resolve();
+                    } catch (e) {
+                        console.error('Erreur lors de l\'impression:', e);
+                        // Fallback : ouvrir dans un nouvel onglet
+                        window.open(url, '_blank');
+                        reject(e);
+                    }
+                    
+                    // Nettoyer l'iframe après l'impression (ou après 1 minute)
+                    setTimeout(function() {
+                        try {
+                            document.body.removeChild(iframe);
+                        } catch (e) {}
+                    }, 60000);
+                }, 500); // Petit délai pour s'assurer que le PDF est bien rendu
+            };
+            
+            iframe.onerror = function() {
+                loaded = true;
+                clearTimeout(timeoutId);
+                reject(new Error('Erreur lors du chargement du PDF'));
+                try {
                     document.body.removeChild(iframe);
-                }, 60000);
-            }, 500); // Petit délai pour s'assurer que le PDF est bien rendu
-        };
-        
-        // Ajouter l'iframe au DOM et charger le PDF
-        document.body.appendChild(iframe);
-        iframe.src = url;
+                } catch (e) {}
+            };
+            
+            // Ajouter l'iframe au DOM et charger le PDF
+            document.body.appendChild(iframe);
+            iframe.src = url;
+        });
+    }
+    
+    // Composant Alpine.js pour bouton d'impression avec état de chargement
+    function printButton() {
+        return {
+            loading: false,
+            async print(url) {
+                if (this.loading) return;
+                
+                this.loading = true;
+                try {
+                    await printPDF(url);
+                } catch (e) {
+                    console.error('Erreur impression:', e);
+                } finally {
+                    // Réactiver le bouton après un court délai
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 1000);
+                }
+            }
+        }
     }
 </script>
 
