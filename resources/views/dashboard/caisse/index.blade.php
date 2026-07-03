@@ -93,14 +93,9 @@
                 document.getElementById('montant-mobile').value = data.montant_mobile ?? '';
                 document.getElementById('montant-carte').value = data.montant_carte ?? '';
                 document.getElementById('pourboire').value = data.pourboire ?? 0;
-                if (data.imprimer) {
-                    form.target = '_blank';
-                    form.submit();
-                    setTimeout(() => { window.location.href = window.location.pathname + '?vente_ok=1'; }, 300);
-                } else {
-                    form.target = '_self';
-                    form.submit();
-                }
+                // Toujours soumettre dans la même fenêtre
+                form.target = '_self';
+                form.submit();
             "
         >
             @livewire('caisse', ['client' => request('client'), 'rdv' => request('rdv'), 'brouillon' => request('brouillon')])
@@ -206,5 +201,24 @@
             }
         }
     }
+
+    // Détecter si on doit lancer l'impression automatiquement
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const printVenteId = urlParams.get('print');
+        
+        if (printVenteId) {
+            // Construire l'URL du ticket PDF
+            const ticketUrl = '{{ route('dashboard.ventes.ticket-pdf', ':id') }}'.replace(':id', printVenteId);
+            
+            // Lancer l'impression automatiquement
+            setTimeout(function() {
+                printPDF(ticketUrl);
+            }, 500); // Petit délai pour laisser la page se charger complètement
+            
+            // Nettoyer l'URL (retirer le paramètre print)
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    });
     </script>
 </x-dashboard-layout>

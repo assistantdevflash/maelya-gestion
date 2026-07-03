@@ -1079,6 +1079,42 @@
     </div>
 </div>
 
+{{-- Fonction d'impression directe des PDF --}}
+<script>
+    function printPDF(url) {
+        // Créer une iframe cachée
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = 'none';
+        iframe.style.top = '-9999px';
+        
+        // Quand le PDF est chargé, lancer l'impression
+        iframe.onload = function() {
+            setTimeout(function() {
+                try {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                } catch (e) {
+                    console.error('Erreur lors de l\'impression:', e);
+                    // Fallback : ouvrir dans un nouvel onglet
+                    window.open(url + '?print=1', '_blank');
+                }
+                
+                // Nettoyer l'iframe après l'impression (ou après 1 minute)
+                setTimeout(function() {
+                    document.body.removeChild(iframe);
+                }, 60000);
+            }, 500); // Petit délai pour s'assurer que le PDF est bien rendu
+        };
+        
+        // Ajouter l'iframe au DOM et charger le PDF
+        document.body.appendChild(iframe);
+        iframe.src = url;
+    }
+</script>
+
 {{-- PWA Service Worker --}}
 <script>
     if ('serviceWorker' in navigator) {
