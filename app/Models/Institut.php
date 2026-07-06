@@ -14,12 +14,16 @@ class Institut extends Model
 
     protected $fillable = [
         'nom', 'slug', 'email', 'telephone', 'ville', 'type', 'logo', 'actif', 'vitrine_active', 'reservation_en_ligne',
+        'boutique_active', 'boutique_frais_livraison', 'boutique_zones_livraison', 'boutique_delai_livraison', 'boutique_conditions',
     ];
 
     protected $casts = [
         'actif' => 'boolean',
         'vitrine_active' => 'boolean',
         'reservation_en_ligne' => 'boolean',
+        'boutique_active' => 'boolean',
+        'boutique_frais_livraison' => 'decimal:2',
+        'boutique_zones_livraison' => 'array',
     ];
 
     protected static function boot(): void
@@ -69,6 +73,11 @@ class Institut extends Model
     public function prestations()
     {
         return $this->hasMany(Prestation::class, 'institut_id');
+    }
+
+    public function commandes()
+    {
+        return $this->hasMany(Commande::class, 'institut_id');
     }
 
     public function getLogoUrlAttribute(): string

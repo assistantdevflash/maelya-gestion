@@ -36,6 +36,9 @@ use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\Commercial\CommercialController;
 use App\Http\Controllers\Auth\InscriptionController;
 use App\Http\Controllers\VitrineController;
+use App\Http\Controllers\BoutiqueController;
+use App\Http\Controllers\Dashboard\BoutiqueConfigController;
+use App\Http\Controllers\Dashboard\CommandeController;
 use Illuminate\Support\Facades\Route;
 
 // ─── Landing Page ─────────────────────────────────────────────────────────────
@@ -58,6 +61,16 @@ Route::get('/sitemap.xml', [LandingController::class, 'sitemap'])->name('sitemap
 // ─── Vitrine publique des établissements ──────────────────────────────────────
 Route::get('/e/{slug}', [VitrineController::class, 'show'])->name('vitrine.show');
 Route::post('/e/{slug}/reserver', [VitrineController::class, 'reserver'])->name('vitrine.reserver');
+
+// ─── Boutique en ligne publique ──────────────────────────────────────────────
+Route::prefix('shop')->name('shop.')->group(function () {
+    Route::get('/{slug}', [BoutiqueController::class, 'index'])->name('index');
+    Route::get('/{slug}/produit/{id}', [BoutiqueController::class, 'produit'])->name('produit');
+    Route::post('/{slug}/commander', [BoutiqueController::class, 'commander'])
+        ->middleware('throttle:10,1')
+        ->name('commander');
+    Route::get('/{slug}/commande/{numero}', [BoutiqueController::class, 'suivreCommande'])->name('suivi');
+});
 
 // ─── Avis client public (sondage post-visite) ────────────────────────────────
 Route::get('/avis/{token}', [\App\Http\Controllers\AvisPublicController::class, 'show'])
@@ -122,6 +135,24 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
 
     // Stock consultation (tous les rôles)
     Route::get('stock', [StockController::class, 'index'])->name('stock.index');
+
+    // Boutique en ligne (admin uniquement pour la config, tous pour la consultation)
+    Route::prefix('boutique')->name('boutique.')->group(function () {
+        Route::middleware('role:admin')->group(function () {
+            Route::get('config', [BoutiqueConfigController::class, 'index'])->name('config.index');
+            Route::post('config', [BoutiqueConfigController::class, 'update'])->name('config.update');
+        });
+        
+        Route::get('commandes', [CommandeController::class, 'index'])->name('commandes.index');
+        Route::get('commandes/{commande}', [CommandeController::class, 'show'])->name('commandes.show');
+        
+        Route::middleware('role:admin')->group(function () {
+            Route::post('commandes/{commande}/statut', [CommandeController::class, 'updateStatut'])->name('commandes.statut');
+            Route::post('commandes/{commande}/payer', [CommandeController::class, 'marquerPayee'])->name('commandes.payer');
+            Route::post('commandes/{commande}/notes', [CommandeController::class, 'updateNotes'])->name('commandes.notes');
+            Route::delete('commandes/{commande}', [CommandeController::class, 'destroy'])->name('commandes.destroy');
+        });
+    });
 
     // Crédits clients & échéanciers (essai 14j + Premium+ uniquement)
     Route::middleware('feature:credits')->group(function () {
