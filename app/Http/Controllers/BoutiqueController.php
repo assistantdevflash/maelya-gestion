@@ -221,17 +221,18 @@ class BoutiqueController extends Controller
 
                 foreach ($admins as $admin) {
                     $notificationService->notifyUser(
-                        $admin->id,
+                        $admin,
+                        'commande_nouvelle',
                         'Nouvelle commande',
-                        "Commande {$commande->numero} de {$commande->client_prenom} {$commande->client_nom}",
-                        'commande',
+                        "Commande {$commande->numero} de {$commande->client_prenom} {$commande->client_nom} - " . number_format($commande->total, 0, ',', ' ') . " FCFA",
                         route('dashboard.boutique.commandes.show', $commande)
                     );
 
-                    $pushService->sendNotification(
-                        $admin->id,
+                    $pushService->sendToUser(
+                        $admin,
                         '🛒 Nouvelle commande boutique',
-                        "Commande {$commande->numero} - {$commande->total} FCFA"
+                        "Commande {$commande->numero} - " . number_format($commande->total, 0, ',', ' ') . " FCFA",
+                        route('dashboard.boutique.commandes.show', $commande)
                     );
                 }
             } catch (\Exception $e) {

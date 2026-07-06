@@ -7,7 +7,6 @@ use App\Mail\CommandeStatutUpdatedClient;
 use App\Models\Commande;
 use App\Models\Vente;
 use App\Models\VenteItem;
-use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -109,22 +108,6 @@ class CommandeController extends Controller
             }
         } catch (\Exception $e) {
             \Log::error('Erreur envoi email statut commande: ' . $e->getMessage());
-        }
-
-        // Notification au client (si compte existe)
-        if ($commande->client_id) {
-            try {
-                $notificationService = new NotificationService();
-                $notificationService->notifyUser(
-                    $commande->client_id,
-                    'Mise à jour de votre commande',
-                    "Votre commande {$commande->numero} est maintenant : {$nouveauStatut}",
-                    'commande',
-                    route('shop.suivi', ['slug' => $commande->institut->slug, 'numero' => $commande->numero])
-                );
-            } catch (\Exception $e) {
-                \Log::error('Erreur notification client commande: ' . $e->getMessage());
-            }
         }
 
         return back()->with('success', 'Statut de la commande mis à jour avec succès.');
