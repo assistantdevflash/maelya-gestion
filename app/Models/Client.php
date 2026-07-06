@@ -20,12 +20,14 @@ class Client extends Model
     }
 
     protected $fillable = [
-        'institut_id', 'prenom', 'nom', 'telephone', 'adresse', 'piece_identite', 'email',
+        'institut_id', 'type_client', 'est_patient', 'raison_sociale', 'numero_registre_commerce', 
+        'adresse_entreprise', 'prenom', 'nom', 'telephone', 'adresse', 'piece_identite', 'email',
         'date_naissance', 'notes', 'points_fidelite', 'fidelite_token', 'actif',
     ];
 
     protected $casts = [
         'actif' => 'boolean',
+        'est_patient' => 'boolean',
         'points_fidelite' => 'integer',
     ];
 
@@ -65,6 +67,24 @@ class Client extends Model
 
     public function getNomCompletAttribute(): string
     {
+        return $this->prenom . ' ' . $this->nom;
+    }
+
+    public function isEntreprise(): bool
+    {
+        return $this->type_client === 'entreprise';
+    }
+
+    public function isPersonnePhysique(): bool
+    {
+        return $this->type_client === 'personne_physique';
+    }
+
+    public function getNomAffichageAttribute(): string
+    {
+        if ($this->isEntreprise()) {
+            return $this->raison_sociale ?: ($this->prenom . ' ' . $this->nom);
+        }
         return $this->prenom . ' ' . $this->nom;
     }
 

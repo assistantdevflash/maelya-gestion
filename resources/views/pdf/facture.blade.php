@@ -81,11 +81,24 @@
     <div class="partie">
         <div class="partie-label">Client</div>
         @if($vente->client)
-            <div class="partie-nom">{{ $vente->client->prenom }} {{ $vente->client->nom }}</div>
-            <div class="partie-meta">
-                @if($vente->client->telephone){{ $vente->client->telephone }}<br>@endif
-                @if($vente->client->email){{ $vente->client->email }}@endif
-            </div>
+            @if($vente->client->isEntreprise())
+                {{-- Client entreprise --}}
+                <div class="partie-nom">{{ $vente->client->raison_sociale ?: ($vente->client->prenom . ' ' . $vente->client->nom) }}</div>
+                <div class="partie-meta">
+                    @if($vente->client->numero_registre_commerce)RC : {{ $vente->client->numero_registre_commerce }}<br>@endif
+                    @if($vente->client->adresse_entreprise){{ $vente->client->adresse_entreprise }}<br>@endif
+                    @if($vente->client->telephone)Tél : {{ $vente->client->telephone }}<br>@endif
+                    @if($vente->client->email){{ $vente->client->email }}@endif
+                </div>
+            @else
+                {{-- Personne physique --}}
+                <div class="partie-nom">{{ $vente->client->prenom }} {{ $vente->client->nom }}</div>
+                <div class="partie-meta">
+                    @if($vente->client->est_patient)<span style="color:#8B5CF6;font-weight:bold;text-transform:uppercase;font-size:8px;">Patient</span><br>@endif
+                    @if($vente->client->telephone){{ $vente->client->telephone }}<br>@endif
+                    @if($vente->client->email){{ $vente->client->email }}@endif
+                </div>
+            @endif
         @else
             <div class="partie-nom">Client de passage</div>
             <div class="partie-meta">—</div>

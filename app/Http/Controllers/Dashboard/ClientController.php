@@ -87,15 +87,32 @@ class ClientController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'prenom'         => ['required', 'string', 'max:50'],
-            'nom'            => ['required', 'string', 'max:50'],
-            'telephone'      => ['required', 'string', 'max:30'],
-            'email'          => ['nullable', 'email', 'max:255'],
-            'date_naissance' => ['nullable', 'regex:/^\d{2}-\d{2}$/'],
-            'notes'          => ['nullable', 'string', 'max:1000'],
-            'adresse'        => ['nullable', 'string', 'max:255'],
-            'piece_identite' => ['nullable', 'string', 'max:100'],
+            'type_client'               => ['required', 'in:personne_physique,entreprise'],
+            'est_patient'               => ['nullable', 'boolean'],
+            'prenom'                    => ['nullable', 'string', 'max:50'],
+            'nom'                       => ['nullable', 'string', 'max:50'],
+            'raison_sociale'            => ['nullable', 'string', 'max:255'],
+            'numero_registre_commerce'  => ['nullable', 'string', 'max:100'],
+            'adresse_entreprise'        => ['nullable', 'string', 'max:1000'],
+            'telephone'                 => ['required', 'string', 'max:30'],
+            'email'                     => ['nullable', 'email', 'max:255'],
+            'date_naissance'            => ['nullable', 'regex:/^\d{2}-\d{2}$/'],
+            'notes'                     => ['nullable', 'string'],
+            'adresse'                   => ['nullable', 'string', 'max:255'],
+            'piece_identite'            => ['nullable', 'string', 'max:100'],
         ]);
+
+        // Validation conditionnelle selon le type
+        if ($data['type_client'] === 'personne_physique') {
+            $request->validate([
+                'prenom' => ['required', 'string', 'max:50'],
+                'nom'    => ['required', 'string', 'max:50'],
+            ]);
+        } else {
+            $request->validate([
+                'raison_sociale' => ['required', 'string', 'max:255'],
+            ]);
+        }
 
         Client::create($data);
 
@@ -168,15 +185,32 @@ class ClientController extends Controller
     public function update(Request $request, Client $client)
     {
         $data = $request->validate([
-            'prenom'         => ['required', 'string', 'max:50'],
-            'nom'            => ['required', 'string', 'max:50'],
-            'telephone'      => ['required', 'string', 'max:30'],
-            'email'          => ['nullable', 'email', 'max:255'],
-            'date_naissance' => ['nullable', 'regex:/^\d{2}-\d{2}$/'],
-            'notes'          => ['nullable', 'string', 'max:1000'],
-            'adresse'        => ['nullable', 'string', 'max:255'],
-            'piece_identite' => ['nullable', 'string', 'max:100'],
+            'type_client'               => ['required', 'in:personne_physique,entreprise'],
+            'est_patient'               => ['nullable', 'boolean'],
+            'prenom'                    => ['nullable', 'string', 'max:50'],
+            'nom'                       => ['nullable', 'string', 'max:50'],
+            'raison_sociale'            => ['nullable', 'string', 'max:255'],
+            'numero_registre_commerce'  => ['nullable', 'string', 'max:100'],
+            'adresse_entreprise'        => ['nullable', 'string', 'max:1000'],
+            'telephone'                 => ['required', 'string', 'max:30'],
+            'email'                     => ['nullable', 'email', 'max:255'],
+            'date_naissance'            => ['nullable', 'regex:/^\d{2}-\d{2}$/'],
+            'notes'                     => ['nullable', 'string'],
+            'adresse'                   => ['nullable', 'string', 'max:255'],
+            'piece_identite'            => ['nullable', 'string', 'max:100'],
         ]);
+
+        // Validation conditionnelle selon le type
+        if ($data['type_client'] === 'personne_physique') {
+            $request->validate([
+                'prenom' => ['required', 'string', 'max:50'],
+                'nom'    => ['required', 'string', 'max:50'],
+            ]);
+        } else {
+            $request->validate([
+                'raison_sociale' => ['required', 'string', 'max:255'],
+            ]);
+        }
 
         $client->update($data);
 
