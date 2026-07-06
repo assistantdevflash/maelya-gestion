@@ -7,6 +7,7 @@ use App\Mail\CommandeStatutUpdatedClient;
 use App\Models\Commande;
 use App\Models\Vente;
 use App\Models\VenteItem;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Mail;
 
 class CommandeController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Liste des commandes
      */
