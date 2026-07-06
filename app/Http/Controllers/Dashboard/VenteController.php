@@ -303,18 +303,16 @@ class VenteController extends Controller
 
     public function show(Vente $vente)
     {
-        if (Auth::user()->isEmploye() && $vente->user_id !== Auth::id()) {
-            abort(403);
-        }
-
+        // Les employés peuvent voir les détails de toutes les ventes
         $vente->load('items', 'client', 'user', 'codeReduction', 'avoirs.codeReduction', 'avoirs.user');
         return view('dashboard.caisse.show', compact('vente'));
     }
 
     public function annuler(Request $request, Vente $vente)
     {
-        if (Auth::user()->isEmploye() && $vente->user_id !== Auth::id()) {
-            abort(403);
+        // Seul l'admin peut annuler une vente
+        if (!Auth::user()->isAdmin()) {
+            abort(403, 'Seul un administrateur peut annuler une vente.');
         }
 
         if ($vente->statut === 'annulee') {
