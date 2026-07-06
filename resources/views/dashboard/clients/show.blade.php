@@ -198,7 +198,7 @@
                     <button type="button" x-on:click="onglet = 'photos'"
                             class="px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all flex-shrink-0 whitespace-nowrap"
                             :class="onglet === 'photos' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
-                        � Photos & fichiers
+                        📎 Photos & fichiers
                         <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $client->photos->count() }}</span>
                     </button>
                     <button type="button" x-on:click="onglet = 'remises'"
@@ -515,11 +515,11 @@
                                       }"
                                       x-text="photos[current].label"></span>
                                 <p class="text-white/80 text-sm text-center" x-show="photos[current].legende" x-text="photos[current].legende"></p>
-                                <p class="text-gray-500 text-xs" x-text="(current + 1) + ' / ' + photos.length"></p>
+                                <p class="text-gray-500 text-xs" x-text="(current + 1) + ' / ' + photos.filter(p => !p.isPdf).length"></p>
                             </div>
 
                             {{-- Prev --}}
-                            <button x-show="photos.length > 1"
+                            <button x-show="photos.filter(p => !p.isPdf).length > 1"
                                     @click.stop="prev()"
                                     class="absolute left-0 top-1/3 -translate-y-1/2 -translate-x-12 w-10 h-10 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -527,7 +527,7 @@
                                 </svg>
                             </button>
                             {{-- Next --}}
-                            <button x-show="photos.length > 1"
+                            <button x-show="photos.filter(p => !p.isPdf).length > 1"
                                     @click.stop="next()"
                                     class="absolute right-0 top-1/3 -translate-y-1/2 translate-x-12 w-10 h-10 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -535,10 +535,10 @@
                                 </svg>
                             </button>
 
-                            {{-- Miniatures --}}
-                            <div class="flex gap-2 mt-4 overflow-x-auto max-w-full pb-1" x-show="photos.length > 1">
+                            {{-- Miniatures (uniquement les images) --}}
+                            <div class="flex gap-2 mt-4 overflow-x-auto max-w-full pb-1" x-show="photos.filter(p => !p.isPdf).length > 1">
                                 <template x-for="(p, i) in photos" :key="i">
-                                    <button @click.stop="current = i"
+                                    <button x-show="!p.isPdf" @click.stop="current = i"
                                             class="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition"
                                             :class="i === current ? 'border-white' : 'border-transparent opacity-50 hover:opacity-80'">
                                         <img :src="p.url" :alt="p.legende" class="w-full h-full object-cover">
