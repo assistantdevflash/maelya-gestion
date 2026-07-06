@@ -239,8 +239,8 @@
                         <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Communication</h3>
                         @if($waTel)
                             <a href="https://wa.me/{{ $waTel }}?text={{ rawurlencode($waMessage) }}" target="_blank" rel="noopener"
-                               class="w-full inline-flex items-center justify-center gap-2 px-3.5 py-2 text-sm font-medium text-white bg-[#25D366] border-2 border-[#1ea952] rounded-lg hover:bg-[#1fb855] hover:border-[#188c42] focus:ring-2 focus:ring-[#25D366] focus:ring-offset-2 transition-all shadow-md hover:shadow-lg dark:border-[#25D366] dark:focus:ring-offset-gray-900 dark:shadow-lg dark:shadow-[#25D366]/20">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                               class="w-full inline-flex items-center justify-center gap-2 px-3.5 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+                                <svg class="w-4 h-4 text-[#25D366]" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M20.52 3.48A11.94 11.94 0 0012 0C5.37 0 0 5.37 0 12a11.93 11.93 0 001.64 6.06L0 24l6.18-1.62A11.93 11.93 0 0012 24c6.63 0 12-5.37 12-12 0-3.2-1.25-6.21-3.48-8.52zM12 21.82a9.8 9.8 0 01-5-1.37l-.36-.22-3.67.96.98-3.58-.24-.37A9.82 9.82 0 1721.82 12c0 5.42-4.4 9.82-9.82 9.82zm5.39-7.36c-.29-.15-1.7-.84-1.97-.93-.26-.1-.45-.15-.64.15-.19.29-.74.93-.91 1.12-.17.19-.34.21-.62.07-.29-.15-1.22-.45-2.33-1.44-.86-.77-1.44-1.72-1.61-2.01-.17-.29-.02-.45.13-.6.13-.13.29-.34.43-.5.15-.17.19-.29.29-.48.1-.19.05-.36-.02-.5-.07-.15-.64-1.54-.88-2.11-.23-.55-.47-.48-.64-.48l-.55-.01c-.19 0-.5.07-.76.36-.26.29-1 1-1 2.43s1.02 2.82 1.17 3.02c.15.19 2.02 3.08 4.89 4.32.68.29 1.22.47 1.63.6.69.22 1.31.19 1.81.12.55-.08 1.7-.69 1.94-1.36.24-.67.24-1.25.17-1.36-.07-.12-.26-.19-.55-.34z"/>
                                 </svg>
                                 Envoyer par WhatsApp
@@ -323,8 +323,8 @@
                                 
                                 @if($waTel)
                                 <a href="https://wa.me/{{ $waTel }}?text={{ rawurlencode($waSondageMessage) }}" target="_blank" rel="noopener"
-                                   class="w-full inline-flex items-center justify-center gap-2 px-3.5 py-2 text-sm font-medium text-white bg-[#25D366] border-2 border-[#1ea952] rounded-lg hover:bg-[#1fb855] hover:border-[#188c42] focus:ring-2 focus:ring-[#25D366] focus:ring-offset-2 transition-all shadow-md hover:shadow-lg dark:border-[#25D366] dark:focus:ring-offset-gray-900 dark:shadow-lg dark:shadow-[#25D366]/20">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                   class="w-full inline-flex items-center justify-center gap-2 px-3.5 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+                                    <svg class="w-4 h-4 text-[#25D366]" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M20.52 3.48A11.94 11.94 0 0012 0C5.37 0 0 5.37 0 12a11.93 11.93 0 001.64 6.06L0 24l6.18-1.62A11.93 11.93 0 0012 24c6.63 0 12-5.37 12-12 0-3.2-1.25-6.21-3.48-8.52zM12 21.82a9.8 9.8 0 01-5-1.37l-.36-.22-3.67.96.98-3.58-.24-.37A9.82 9.82 0 1721.82 12c0 5.42-4.4 9.82-9.82 9.82zm5.39-7.36c-.29-.15-1.7-.84-1.97-.93-.26-.1-.45-.15-.64.15-.19.29-.74.93-.91 1.12-.17.19-.34.21-.62.07-.29-.15-1.22-.45-2.33-1.44-.86-.77-1.44-1.72-1.61-2.01-.17-.29-.02-.45.13-.6.13-.13.29-.34.43-.5.15-.17.19-.29.29-.48.1-.19.05-.36-.02-.5-.07-.15-.64-1.54-.88-2.11-.23-.55-.47-.48-.64-.48l-.55-.01c-.19 0-.5.07-.76.36-.26.29-1 1-1 2.43s1.02 2.82 1.17 3.02c.15.19 2.02 3.08 4.89 4.32.68.29 1.22.47 1.63.6.69.22 1.31.19 1.81.12.55-.08 1.7-.69 1.94-1.36.24-.67.24-1.25.17-1.36-.07-.12-.26-.19-.55-.34z"/>
                                     </svg>
                                     Envoyer par WhatsApp
