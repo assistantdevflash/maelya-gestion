@@ -383,6 +383,51 @@
                 </a>
                 @endif
 
+                {{-- Boutique en ligne --}}
+                @php
+                    $boutiqueOpen = request()->routeIs('dashboard.boutique.*');
+                    $nouvellesCommandes = \App\Models\Commande::where('institut_id', session('current_institut_id', auth()->user()->institut_id))
+                        ->where('statut', 'nouvelle')
+                        ->count();
+                @endphp
+                <div x-data="{ open: {{ $boutiqueOpen ? 'true' : 'false' }} }">
+                    <button @click="open = !open"
+                            class="sidebar-link w-full {{ $boutiqueOpen ? 'active' : '' }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span class="flex-1 text-left">Boutique</span>
+                        @if($nouvellesCommandes > 0)
+                        <span class="inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-pink-500 rounded-full">{{ $nouvellesCommandes }}</span>
+                        @endif
+                        <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="open ? 'rotate-180' : ''"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div x-show="open" x-collapse class="pl-8 mt-1 space-y-1">
+                        @if(auth()->user()->isAdmin())
+                        <a href="{{ route('dashboard.boutique.config.index') }}"
+                           class="sidebar-link text-sm {{ request()->routeIs('dashboard.boutique.config.*') ? 'active' : '' }}">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m4.22-13.22l-4.24 4.24m0 6l-4.24 4.24M23 12h-6m-6 0H5m13.22 4.22l-4.24-4.24m0-6l-4.24-4.24"/>
+                            </svg>
+                            <span class="flex-1">Configuration</span>
+                        </a>
+                        @endif
+                        <a href="{{ route('dashboard.boutique.commandes.index') }}"
+                           class="sidebar-link text-sm {{ request()->routeIs('dashboard.boutique.commandes.*') ? 'active' : '' }}">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M9 2h6l4 4v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><polyline points="9 12 11 14 15 10"/>
+                            </svg>
+                            <span class="flex-1">Commandes</span>
+                            @if($nouvellesCommandes > 0)
+                            <span class="inline-flex items-center justify-center w-4 h-4 text-[9px] font-bold text-white bg-pink-500 rounded-full">{{ $nouvellesCommandes }}</span>
+                            @endif
+                        </a>
+                    </div>
+                </div>
+
                 @php $alertesStock = \App\Models\Produit::where('actif', true)->whereColumn('stock', '<=', 'seuil_alerte')->count(); @endphp
                 @php $stockOpen = request()->routeIs('dashboard.stock.*') || request()->routeIs('dashboard.produits.*') || request()->routeIs('dashboard.categories-produits.*'); @endphp
 
