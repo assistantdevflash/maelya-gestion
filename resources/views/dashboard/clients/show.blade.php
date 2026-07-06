@@ -15,13 +15,33 @@
                 </a>
                 <div class="flex flex-wrap items-center gap-x-3 gap-y-2 min-w-0">
                     <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-full flex items-center justify-center text-white text-base sm:text-lg font-bold flex-shrink-0">
-                            {{ strtoupper(substr($client->prenom, 0, 1)) }}{{ strtoupper(substr($client->nom, 0, 1)) }}
-                        </div>
+                        @if($client->isEntreprise())
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white text-base sm:text-lg font-bold flex-shrink-0">
+                                🏢
+                            </div>
+                        @else
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-full flex items-center justify-center text-white text-base sm:text-lg font-bold flex-shrink-0">
+                                {{ strtoupper(substr($client->prenom ?? '', 0, 1)) }}{{ strtoupper(substr($client->nom ?? '', 0, 1)) }}
+                            </div>
+                        @endif
                         <div class="min-w-0">
-                            <h1 class="text-lg sm:text-xl font-display font-bold text-gray-900 truncate">{{ $client->nom_complet }}</h1>
-                            @if($client->date_naissance)
-                                <p class="text-xs sm:text-sm text-gray-500">{{ $client->naissance_formatee }}</p>
+                            <div class="flex items-center gap-2">
+                                <h1 class="text-lg sm:text-xl font-display font-bold text-gray-900 truncate">{{ $client->nom_affichage }}</h1>
+                                @if($client->est_patient)
+                                    <span class="px-2 py-0.5 text-[9px] font-bold uppercase bg-purple-100 text-purple-700 rounded">Patient</span>
+                                @endif
+                            </div>
+                            @if($client->isEntreprise())
+                                @if($client->numero_registre_commerce)
+                                    <p class="text-xs sm:text-sm text-gray-500">RC : {{ $client->numero_registre_commerce }}</p>
+                                @endif
+                                @if($client->prenom)
+                                    <p class="text-xs text-gray-400">Contact : {{ $client->prenom }}</p>
+                                @endif
+                            @else
+                                @if($client->date_naissance)
+                                    <p class="text-xs sm:text-sm text-gray-500">{{ $client->naissance_formatee }}</p>
+                                @endif
                             @endif
                         </div>
                     </div>
@@ -122,6 +142,41 @@
             <div class="card p-5">
                 <h2 class="font-semibold text-gray-900 mb-4 text-sm">📋 Informations</h2>
                 <div class="space-y-3 text-sm">
+                    @if($client->isEntreprise())
+                        @if($client->raison_sociale)
+                        <div class="flex items-center gap-2 text-gray-600">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                            </svg>
+                            <span class="font-medium">{{ $client->raison_sociale }}</span>
+                        </div>
+                        @endif
+                        @if($client->numero_registre_commerce)
+                        <div class="flex items-center gap-2 text-gray-600">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            RC : {{ $client->numero_registre_commerce }}
+                        </div>
+                        @endif
+                        @if($client->adresse_entreprise)
+                        <div class="flex items-start gap-2 text-gray-600">
+                            <svg class="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            <span class="flex-1">{{ $client->adresse_entreprise }}</span>
+                        </div>
+                        @endif
+                        @if($client->prenom)
+                        <div class="flex items-center gap-2 text-gray-600">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            Contact : {{ $client->prenom }}
+                        </div>
+                        @endif
+                    @endif
                     @if($client->telephone)
                     <div class="flex items-center gap-2 text-gray-600">
                         <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,10 +195,10 @@
                     @endif
                     @if($client->notes)
                     <div class="text-gray-600 bg-gray-50 rounded-lg p-3 text-xs leading-relaxed">
-                        {{ $client->notes }}
+                        {!! nl2br(e($client->notes)) !!}
                     </div>
                     @endif
-                    @if($client->adresse)
+                    @if($client->isPersonnePhysique() && $client->adresse)
                     <div class="flex items-start gap-2 text-gray-600">
                         <svg class="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>

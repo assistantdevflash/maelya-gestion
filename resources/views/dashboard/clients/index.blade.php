@@ -12,16 +12,21 @@
         createOpen: {{ ($errors->any() && old('_form') === 'create') ? 'true' : 'false' }},
         editOpen:   {{ ($editErrorClient ? 'true' : 'false') }},
         edit: {
-            id:             @js(old('_client_id', $editErrorClient?->id ?? '')),
-            action:         @js($editErrorClient ? route('dashboard.clients.update', $editErrorClient) : ''),
-            prenom:         @js(old('prenom',         $editErrorClient?->prenom ?? '')),
-            nom:            @js(old('nom',            $editErrorClient?->nom ?? '')),
-            telephone:      @js(old('telephone',      $editErrorClient?->telephone ?? '')),
-            email:          @js(old('email',          $editErrorClient?->email ?? '')),
-            date_naissance: @js(old('date_naissance', $editErrorClient?->date_naissance ?? '')),
-            notes:          @js(old('notes',          $editErrorClient?->notes ?? '')),
-            adresse:        @js(old('adresse',        $editErrorClient?->adresse ?? '')),
-            piece_identite: @js(old('piece_identite', $editErrorClient?->piece_identite ?? '')),
+            id:                       @js(old('_client_id', $editErrorClient?->id ?? '')),
+            action:                   @js($editErrorClient ? route('dashboard.clients.update', $editErrorClient) : ''),
+            type_client:              @js(old('type_client',              $editErrorClient?->type_client ?? 'personne_physique')),
+            est_patient:              @js(old('est_patient',              $editErrorClient?->est_patient ? true : false)),
+            prenom:                   @js(old('prenom',                   $editErrorClient?->prenom ?? '')),
+            nom:                      @js(old('nom',                      $editErrorClient?->nom ?? '')),
+            raison_sociale:           @js(old('raison_sociale',           $editErrorClient?->raison_sociale ?? '')),
+            numero_registre_commerce: @js(old('numero_registre_commerce', $editErrorClient?->numero_registre_commerce ?? '')),
+            adresse_entreprise:       @js(old('adresse_entreprise',       $editErrorClient?->adresse_entreprise ?? '')),
+            telephone:                @js(old('telephone',                $editErrorClient?->telephone ?? '')),
+            email:                    @js(old('email',                    $editErrorClient?->email ?? '')),
+            date_naissance:           @js(old('date_naissance',           $editErrorClient?->date_naissance ?? '')),
+            notes:                    @js(old('notes',                    $editErrorClient?->notes ?? '')),
+            adresse:                  @js(old('adresse',                  $editErrorClient?->adresse ?? '')),
+            piece_identite:           @js(old('piece_identite',           $editErrorClient?->piece_identite ?? '')),
         },
         openEdit(client) {
             this.edit = client;
@@ -136,13 +141,27 @@
                     <tr class="hover:bg-gray-50 transition-colors group">
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                                    {{ strtoupper(substr($client->prenom, 0, 1)) }}{{ strtoupper(substr($client->nom, 0, 1)) }}
-                                </div>
+                                @if($client->isEntreprise())
+                                    <div class="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                                        🏢
+                                    </div>
+                                @else
+                                    <div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                                        {{ strtoupper(substr($client->prenom ?? '', 0, 1)) }}{{ strtoupper(substr($client->nom ?? '', 0, 1)) }}
+                                    </div>
+                                @endif
                                 <div>
-                                    <a href="{{ route('dashboard.clients.show', $client) }}" class="font-semibold text-gray-900 hover:text-primary-600 transition-colors">
-                                        {{ $client->nom_complet }}@if($client->date_naissance === now()->format('m-d')) 🎂@endif
-                                    </a>
+                                    <div class="flex items-center gap-2">
+                                        <a href="{{ route('dashboard.clients.show', $client) }}" class="font-semibold text-gray-900 hover:text-primary-600 transition-colors">
+                                            {{ $client->nom_affichage }}@if($client->date_naissance === now()->format('m-d')) 🎂@endif
+                                        </a>
+                                        @if($client->est_patient)
+                                            <span class="px-1.5 py-0.5 text-[9px] font-bold uppercase bg-purple-100 text-purple-700 rounded">Patient</span>
+                                        @endif
+                                    </div>
+                                    @if($client->isEntreprise() && $client->prenom)
+                                        <p class="text-xs text-gray-500">Contact : {{ $client->prenom }}</p>
+                                    @endif
                                     @if($client->email)
                                         <p class="text-xs text-gray-400">{{ $client->email }}</p>
                                     @endif
@@ -168,16 +187,21 @@
                                 {{-- Modifier → ouvre modal édition --}}
                                 <button type="button" title="Modifier"
                                         @click="openEdit({
-                                            id:             @js($client->id),
-                                            action:         @js(route('dashboard.clients.update', $client)),
-                                            prenom:         @js($client->prenom),
-                                            nom:            @js($client->nom),
-                                            telephone:      @js($client->telephone ?? ''),
-                                            email:          @js($client->email ?? ''),
-                                            date_naissance: @js($client->date_naissance ?? ''),
-                                            notes:          @js($client->notes ?? ''),
-                                            adresse:        @js($client->adresse ?? ''),
-                                            piece_identite: @js($client->piece_identite ?? '')
+                                            id:                        @js($client->id),
+                                            action:                    @js(route('dashboard.clients.update', $client)),
+                                            type_client:               @js($client->type_client ?? 'personne_physique'),
+                                            est_patient:               @js($client->est_patient ? true : false),
+                                            prenom:                    @js($client->prenom ?? ''),
+                                            nom:                       @js($client->nom ?? ''),
+                                            raison_sociale:            @js($client->raison_sociale ?? ''),
+                                            numero_registre_commerce:  @js($client->numero_registre_commerce ?? ''),
+                                            adresse_entreprise:        @js($client->adresse_entreprise ?? ''),
+                                            telephone:                 @js($client->telephone ?? ''),
+                                            email:                     @js($client->email ?? ''),
+                                            date_naissance:            @js($client->date_naissance ?? ''),
+                                            notes:                     @js($client->notes ?? ''),
+                                            adresse:                   @js($client->adresse ?? ''),
+                                            piece_identite:            @js($client->piece_identite ?? '')
                                         })"
                                         class="btn-icon">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -498,82 +522,162 @@
                     @foreach($errors->all() as $e)<p>• {{ $e }}</p>@endforeach
                 </div>
                 @endif
-                <form method="POST" :action="edit.action" class="space-y-4">
+                <form method="POST" :action="edit.action" class="space-y-4" x-data="{ typeClientEdit: edit.type_client }">
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="_form" value="edit">
                     <input type="hidden" name="_client_id" :value="edit.id">
-                    <input type="hidden" name="type_client" value="personne_physique">
-                    <input type="hidden" name="est_patient" value="0">
+                    
+                    {{-- Type de client --}}
+                    <div class="form-group mb-0">
+                        <label class="form-label">Type de client *</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition"
+                                   :class="typeClientEdit === 'personne_physique' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'">
+                                <input type="radio" name="type_client" value="personne_physique" class="text-primary-600" 
+                                       x-model="typeClientEdit">
+                                <span class="text-sm font-medium">👤 Personne physique</span>
+                            </label>
+                            <label class="flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition"
+                                   :class="typeClientEdit === 'entreprise' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'">
+                                <input type="radio" name="type_client" value="entreprise" class="text-primary-600" 
+                                       x-model="typeClientEdit">
+                                <span class="text-sm font-medium">🏢 Entreprise</span>
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="form-group mb-0">
-                            <label class="form-label">Prénom *</label>
-                            <input type="text" name="prenom" required maxlength="50" class="form-input" x-model="edit.prenom">
-                        </div>
-                        <div class="form-group mb-0">
-                            <label class="form-label">Nom *</label>
-                            <input type="text" name="nom" required maxlength="50" class="form-input" x-model="edit.nom">
-                        </div>
+                        {{-- Champs pour personne physique --}}
+                        <template x-if="typeClientEdit === 'personne_physique'">
+                            <div class="col-span-2 space-y-3">
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="form-group mb-0">
+                                        <label class="form-label">Prénom *</label>
+                                        <input type="text" name="prenom" maxlength="50" class="form-input"
+                                               x-model="edit.prenom" placeholder="Fatou"
+                                               :required="typeClientEdit === 'personne_physique'">
+                                    </div>
+                                    <div class="form-group mb-0">
+                                        <label class="form-label">Nom *</label>
+                                        <input type="text" name="nom" maxlength="50" class="form-input"
+                                               x-model="edit.nom" placeholder="Traoré"
+                                               :required="typeClientEdit === 'personne_physique'">
+                                    </div>
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label class="flex items-center gap-2">
+                                        <input type="checkbox" name="est_patient" value="1" class="rounded text-primary-600"
+                                               :checked="edit.est_patient">
+                                        <span class="text-sm font-medium text-gray-700">Ce client est un patient</span>
+                                    </label>
+                                    <p class="text-xs text-gray-500 mt-1">Affichera "Patient" sur les factures</p>
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label class="form-label">Anniversaire (jour et mois)</label>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <select name="date_naissance_mois" class="form-input"
+                                                @change="edit.date_naissance = $el.value ? $el.value + '-' + ($refs.joureditsel?.value||'01') : ''">
+                                            <option value="">Mois</option>
+                                            @foreach(['01'=>'Janvier','02'=>'Février','03'=>'Mars','04'=>'Avril','05'=>'Mai','06'=>'Juin','07'=>'Juillet','08'=>'Août','09'=>'Septembre','10'=>'Octobre','11'=>'Novembre','12'=>'Décembre'] as $n=>$m)
+                                            <option value="{{ $n }}" :selected="edit.date_naissance && edit.date_naissance.substring(0,2) === '{{ $n }}'">{{ $m }}</option>
+                                            @endforeach
+                                        </select>
+                                        <select name="date_naissance_jour" x-ref="joureditsel" class="form-input"
+                                                @change="edit.date_naissance = ($refs.moissel?.value||edit.date_naissance.substring(0,2)||'01') + '-' + $el.value">
+                                            <option value="">Jour</option>
+                                            @for($d=1;$d<=31;$d++)
+                                            @php $ds=str_pad($d,2,'0',STR_PAD_LEFT) @endphp
+                                            <option value="{{ $ds }}" :selected="edit.date_naissance && edit.date_naissance.substring(3,5) === '{{ $ds }}'">{{ $d }}</option>
+                                            @endfor
+                                        </select>
+                                    </div>
+                                    <input type="hidden" name="date_naissance" :value="edit.date_naissance">
+                                </div>
+                            </div>
+                        </template>
+
+                        {{-- Champs pour entreprise --}}
+                        <template x-if="typeClientEdit === 'entreprise'">
+                            <div class="col-span-2 space-y-3">
+                                <div class="form-group mb-0">
+                                    <label class="form-label">Raison sociale *</label>
+                                    <input type="text" name="raison_sociale" maxlength="255" class="form-input"
+                                           x-model="edit.raison_sociale" placeholder="Entreprise SARL"
+                                           :required="typeClientEdit === 'entreprise'">
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="form-group mb-0">
+                                        <label class="form-label">N° Registre Commerce</label>
+                                        <input type="text" name="numero_registre_commerce" maxlength="100" class="form-input"
+                                               x-model="edit.numero_registre_commerce" placeholder="RC-123456">
+                                    </div>
+                                    <div class="form-group mb-0">
+                                        <label class="form-label">Contact (Prénom Nom)</label>
+                                        <input type="text" name="prenom" maxlength="100" class="form-input"
+                                               x-model="edit.prenom" placeholder="Jean Dupont">
+                                    </div>
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label class="form-label">Adresse entreprise</label>
+                                    <textarea name="adresse_entreprise" rows="2" maxlength="500" class="form-input resize-none"
+                                              x-model="edit.adresse_entreprise"
+                                              placeholder="Adresse complète de l'entreprise..."></textarea>
+                                </div>
+                            </div>
+                        </template>
+
+                        {{-- Champs communs --}}
                         <div class="form-group mb-0">
                             <label class="form-label">Téléphone *</label>
-                            <input type="text" name="telephone" required maxlength="30" class="form-input" x-model="edit.telephone">
+                            <input type="text" name="telephone" required maxlength="30" class="form-input"
+                                   x-model="edit.telephone" placeholder="+225 07 00 00 00">
                         </div>
                         <div class="form-group mb-0">
                             <label class="form-label">Email</label>
-                            <input type="email" name="email" maxlength="255" class="form-input" x-model="edit.email">
+                            <input type="email" name="email" maxlength="255" class="form-input"
+                                   x-model="edit.email" placeholder="contact@exemple.ci">
                         </div>
-                        <div class="col-span-2 form-group mb-0">
-                            <label class="form-label">Anniversaire (jour et mois)</label>
-                            <div class="grid grid-cols-2 gap-2">
-                                <select name="date_naissance_mois" class="form-input"
-                                        @change="edit.date_naissance = $el.value ? $el.value + '-' + ($refs.joureditsel?.value||'01') : ''">
-                                    <option value="">Mois</option>
-                                    @foreach(['01'=>'Janvier','02'=>'Février','03'=>'Mars','04'=>'Avril','05'=>'Mai','06'=>'Juin','07'=>'Juillet','08'=>'Août','09'=>'Septembre','10'=>'Octobre','11'=>'Novembre','12'=>'Décembre'] as $n=>$m)
-                                    <option value="{{ $n }}" :selected="edit.date_naissance && edit.date_naissance.substring(0,2) === '{{ $n }}'">{{ $m }}</option>
-                                    @endforeach
-                                </select>
-                                <select name="date_naissance_jour" x-ref="joureditsel" class="form-input"
-                                        @change="edit.date_naissance = ($refs.moissel?.value||edit.date_naissance.substring(0,2)||'01') + '-' + $el.value">
-                                    <option value="">Jour</option>
-                                    @for($d=1;$d<=31;$d++)
-                                    @php $ds=str_pad($d,2,'0',STR_PAD_LEFT) @endphp
-                                    <option value="{{ $ds }}" :selected="edit.date_naissance && edit.date_naissance.substring(3,5) === '{{ $ds }}'">{{ $d }}</option>
-                                    @endfor
-                                </select>
-                            </div>
-                            <input type="hidden" name="date_naissance" :value="edit.date_naissance">
-                        </div>
+                        
                         <div class="col-span-2 form-group mb-0">
                             <label class="form-label">Notes</label>
-                            <textarea name="notes" rows="2" maxlength="1000" class="form-input resize-none"
-                                      x-model="edit.notes" placeholder="Allergies, préférences..."></textarea>
+                            <textarea name="notes" rows="3" class="form-input resize-none"
+                                      x-model="edit.notes"
+                                      placeholder="Informations complémentaires, allergies, préférences..."></textarea>
+                            <p class="text-xs text-gray-500 mt-1">Vous pouvez utiliser le HTML basique (gras, italique, listes...)</p>
                         </div>
-                        {{-- Informations supplémentaires (collapsible) --}}
-                        <div class="col-span-2" x-data="{ showExtraEdit: false }">
-                            <button type="button" @click="showExtraEdit = !showExtraEdit"
-                                    class="flex items-center gap-2 text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors">
-                                <svg class="w-3.5 h-3.5 transition-transform" :class="showExtraEdit ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                </svg>
-                                Informations supplémentaires
-                            </button>
-                            <div x-show="showExtraEdit" x-collapse class="mt-3 space-y-3">
-                                <div class="form-group mb-0">
-                                    <label class="form-label">Adresse</label>
-                                    <input type="text" name="adresse" maxlength="255" class="form-input" x-model="edit.adresse"
-                                           placeholder="Abidjan, Cocody...">
-                                </div>
-                                <div class="form-group mb-0">
-                                    <label class="form-label">Pièce d'identité</label>
-                                    <input type="text" name="piece_identite" maxlength="100" class="form-input" x-model="edit.piece_identite"
-                                           placeholder="N° CNI, Passeport...">
+
+                        {{-- Informations supplémentaires (collapsible) - uniquement pour personne physique --}}
+                        <template x-if="typeClientEdit === 'personne_physique'">
+                            <div class="col-span-2" x-data="{ showExtraEdit: false }">
+                                <button type="button" @click="showExtraEdit = !showExtraEdit"
+                                        class="flex items-center gap-2 text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors">
+                                    <svg class="w-3.5 h-3.5 transition-transform" :class="showExtraEdit ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                    Informations supplémentaires
+                                </button>
+                                <div x-show="showExtraEdit" x-collapse class="mt-3 space-y-3">
+                                    <div class="form-group mb-0">
+                                        <label class="form-label">Adresse</label>
+                                        <input type="text" name="adresse" maxlength="255" class="form-input"
+                                               x-model="edit.adresse" placeholder="Abidjan, Cocody...">
+                                    </div>
+                                    <div class="form-group mb-0">
+                                        <label class="form-label">Pièce d'identité</label>
+                                        <input type="text" name="piece_identite" maxlength="100" class="form-input"
+                                               x-model="edit.piece_identite" placeholder="N° CNI, Passeport...">
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </template>
                     </div>
                     <div class="flex gap-3 pt-1">
                         <button type="button" @click="editOpen = false" class="btn btn-outline flex-1 justify-center">Annuler</button>
                         <button type="submit" class="btn-primary flex-1 justify-center">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
                     </div>
                 </form>
             </div>
