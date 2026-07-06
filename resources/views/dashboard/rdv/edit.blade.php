@@ -220,7 +220,6 @@ function rdvForm(prestations, selectedIds, initialDuree) {
             const p = this.prestations.find(p => String(p.id) === String(id));
             return p?.categorie?.nom || '';
         },
-        },
 
         getPrestationDuree(id) {
             const p = this.prestations.find(p => String(p.id) === String(id));
