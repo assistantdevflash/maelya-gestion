@@ -762,20 +762,116 @@
                         @foreach($errors->all() as $e)<p>&bull; {{ $e }}</p>@endforeach
                     </div>
                     @endif
-                    <form method="POST" action="{{ route('dashboard.clients.update', $client) }}" class="space-y-4">
+                    <form method="POST" action="{{ route('dashboard.clients.update', $client) }}" class="space-y-4" x-data="{ typeClient: '{{ old('type_client', $client->type_client ?? 'personne_physique') }}' }">
                         @csrf
                         @method('PUT')
+                        
+                        {{-- Type de client --}}
+                        <div class="form-group mb-0">
+                            <label class="form-label">Type de client *</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition"
+                                       :class="typeClient === 'personne_physique' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'">
+                                    <input type="radio" name="type_client" value="personne_physique" class="text-primary-600" 
+                                           x-model="typeClient">
+                                    <span class="text-sm font-medium">👤 Personne physique</span>
+                                </label>
+                                <label class="flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition"
+                                       :class="typeClient === 'entreprise' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'">
+                                    <input type="radio" name="type_client" value="entreprise" class="text-primary-600" 
+                                           x-model="typeClient">
+                                    <span class="text-sm font-medium">🏢 Entreprise</span>
+                                </label>
+                            </div>
+                        </div>
+                        
                         <div class="grid grid-cols-2 gap-3">
-                            <div class="form-group mb-0">
-                                <label class="form-label">Prénom *</label>
-                                <input type="text" name="prenom" required maxlength="50" class="form-input"
-                                       value="{{ old('prenom', $client->prenom) }}">
-                            </div>
-                            <div class="form-group mb-0">
-                                <label class="form-label">Nom *</label>
-                                <input type="text" name="nom" required maxlength="50" class="form-input"
-                                       value="{{ old('nom', $client->nom) }}">
-                            </div>
+                            {{-- Champs pour personne physique --}}
+                            <template x-if="typeClient === 'personne_physique'">
+                                <div class="col-span-2 space-y-3">
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div class="form-group mb-0">
+                                            <label class="form-label">Prénom *</label>
+                                            <input type="text" name="prenom" maxlength="50" class="form-input"
+                                                   value="{{ old('prenom', $client->prenom) }}"
+                                                   :required="typeClient === 'personne_physique'">
+                                        </div>
+                                        <div class="form-group mb-0">
+                                            <label class="form-label">Nom *</label>
+                                            <input type="text" name="nom" maxlength="50" class="form-input"
+                                                   value="{{ old('nom', $client->nom) }}"
+                                                   :required="typeClient === 'personne_physique'">
+                                        </div>
+                                    </div>
+                                    <div class="form-group mb-0">
+                                        <label class="flex items-center gap-2">
+                                            <input type="checkbox" name="est_patient" value="1" class="rounded text-primary-600"
+                                                   {{ old('est_patient', $client->est_patient) ? 'checked' : '' }}>
+                                            <span class="text-sm font-medium text-gray-700">Ce client est un patient</span>
+                                        </label>
+                                        <p class="text-xs text-gray-500 mt-1">Affichera "Patient" sur les factures</p>
+                                    </div>
+                                    <div class="form-group mb-0">
+                                        <label class="form-label">Anniversaire (jour et mois)</label>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            @php
+                                                $dn = old('date_naissance', $client->date_naissance ?? '');
+                                                $dnMois = $dn ? substr($dn, 0, 2) : '';
+                                                $dnJour = $dn ? substr($dn, 3, 2) : '';
+                                                $mois = ['01'=>'Janvier','02'=>'Février','03'=>'Mars','04'=>'Avril','05'=>'Mai','06'=>'Juin','07'=>'Juillet','08'=>'Août','09'=>'Septembre','10'=>'Octobre','11'=>'Novembre','12'=>'Décembre'];
+                                            @endphp
+                                            <select name="date_naissance_mois" id="show-mois-sel" class="form-input">
+                                                <option value="">Mois</option>
+                                                @foreach($mois as $n => $m)
+                                                <option value="{{ $n }}" @selected($dnMois === $n)>{{ $m }}</option>
+                                                @endforeach
+                                            </select>
+                                            <select name="date_naissance_jour" id="show-jour-sel" class="form-input">
+                                                <option value="">Jour</option>
+                                                @for($d = 1; $d <= 31; $d++)
+                                                @php $ds = str_pad($d, 2, '0', STR_PAD_LEFT) @endphp
+                                                <option value="{{ $ds }}" @selected($dnJour === $ds)>{{ $d }}</option>
+                                                @endfor
+                                            </select>
+                                        </div>
+                                        <input type="hidden" name="date_naissance" id="show-dn-hidden" value="{{ $dn }}">
+                                    </div>
+                                </div>
+                            </template>
+                            
+                            {{-- Champs pour entreprise --}}
+                            <template x-if="typeClient === 'entreprise'">
+                                <div class="col-span-2 space-y-3">
+                                    <div class="form-group mb-0">
+                                        <label class="form-label">Raison sociale *</label>
+                                        <input type="text" name="raison_sociale" maxlength="255" class="form-input"
+                                               value="{{ old('raison_sociale', $client->raison_sociale) }}"
+                                               placeholder="Entreprise SARL"
+                                               :required="typeClient === 'entreprise'">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div class="form-group mb-0">
+                                            <label class="form-label">N° Registre Commerce</label>
+                                            <input type="text" name="numero_registre_commerce" maxlength="100" class="form-input"
+                                                   value="{{ old('numero_registre_commerce', $client->numero_registre_commerce) }}"
+                                                   placeholder="RC-123456">
+                                        </div>
+                                        <div class="form-group mb-0">
+                                            <label class="form-label">Contact (Prénom Nom)</label>
+                                            <input type="text" name="prenom" maxlength="100" class="form-input"
+                                                   value="{{ old('prenom', $client->prenom) }}"
+                                                   placeholder="Jean Dupont">
+                                        </div>
+                                    </div>
+                                    <div class="form-group mb-0">
+                                        <label class="form-label">Adresse entreprise</label>
+                                        <textarea name="adresse_entreprise" rows="2" maxlength="500" class="form-input resize-none"
+                                                  placeholder="Adresse complète de l'entreprise...">{{ old('adresse_entreprise', $client->adresse_entreprise) }}</textarea>
+                                    </div>
+                                </div>
+                            </template>
+                            
+                            {{-- Champs communs --}}
                             <div class="form-group mb-0">
                                 <label class="form-label">Téléphone *</label>
                                 <input type="text" name="telephone" required maxlength="30" class="form-input"
@@ -786,74 +882,58 @@
                                 <input type="email" name="email" maxlength="255" class="form-input"
                                        value="{{ old('email', $client->email) }}">
                             </div>
-                            <div class="col-span-2 form-group mb-0">
-                                <label class="form-label">Anniversaire (jour et mois)</label>
-                                <div class="grid grid-cols-2 gap-2">
-                                    @php
-                                        $dn = old('date_naissance', $client->date_naissance ?? '');
-                                        $dnMois = $dn ? substr($dn, 0, 2) : '';
-                                        $dnJour = $dn ? substr($dn, 3, 2) : '';
-                                        $mois = ['01'=>'Janvier','02'=>'Février','03'=>'Mars','04'=>'Avril','05'=>'Mai','06'=>'Juin','07'=>'Juillet','08'=>'Août','09'=>'Septembre','10'=>'Octobre','11'=>'Novembre','12'=>'Décembre'];
-                                    @endphp
-                                    <select name="date_naissance_mois" class="form-input">
-                                        <option value="">Mois</option>
-                                        @foreach($mois as $n => $m)
-                                        <option value="{{ $n }}" @selected($dnMois === $n)>{{ $m }}</option>
-                                        @endforeach
-                                    </select>
-                                    <select name="date_naissance_jour" class="form-input">
-                                        <option value="">Jour</option>
-                                        @for($d = 1; $d <= 31; $d++)
-                                        @php $ds = str_pad($d, 2, '0', STR_PAD_LEFT) @endphp
-                                        <option value="{{ $ds }}" @selected($dnJour === $ds)>{{ $d }}</option>
-                                        @endfor
-                                    </select>
-                                </div>
-                                {{-- Champ hidden calculé via JS simple --}}
-                                <input type="hidden" name="date_naissance" id="show-dn-hidden" value="{{ $dn }}">
-                                <script>
-                                (function() {
-                                    document.addEventListener('DOMContentLoaded', function() {
-                                        var moisSel = document.querySelector('[name=date_naissance_mois]');
-                                        var jourSel = document.querySelector('[name=date_naissance_jour]');
-                                        var hidden  = document.getElementById('show-dn-hidden');
-                                        function update() {
-                                            hidden.value = (moisSel.value && jourSel.value) ? moisSel.value + '-' + jourSel.value : '';
-                                        }
-                                        if (moisSel) moisSel.addEventListener('change', update);
-                                        if (jourSel) jourSel.addEventListener('change', update);
-                                    });
-                                })();
-                                </script>
-                            </div>
+                            
                             <div class="col-span-2 form-group mb-0">
                                 <label class="form-label">Notes</label>
-                                <textarea name="notes" rows="2" maxlength="1000" class="form-input resize-none"
-                                          placeholder="Allergies, préférences...">{{ old('notes', $client->notes) }}</textarea>
+                                <textarea name="notes" rows="3" class="form-input resize-none"
+                                          placeholder="Informations complémentaires, allergies, préférences...">{{ old('notes', $client->notes) }}</textarea>
+                                <p class="text-xs text-gray-500 mt-1">Vous pouvez utiliser le HTML basique (gras, italique, listes...)</p>
                             </div>
-                            {{-- Informations supplémentaires (collapsible) --}}
-                            <div class="col-span-2" x-data="{ showExtraShowEdit: false }">
-                                <button type="button" @click="showExtraShowEdit = !showExtraShowEdit"
-                                        class="flex items-center gap-2 text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors">
-                                    <svg class="w-3.5 h-3.5 transition-transform" :class="showExtraShowEdit ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                    </svg>
-                                    Informations supplémentaires
-                                </button>
-                                <div x-show="showExtraShowEdit" x-collapse class="mt-3 space-y-3">
-                                    <div class="form-group mb-0">
-                                        <label class="form-label">Adresse</label>
-                                        <input type="text" name="adresse" maxlength="255" class="form-input"
-                                               value="{{ old('adresse', $client->adresse) }}" placeholder="Abidjan, Cocody...">
-                                    </div>
-                                    <div class="form-group mb-0">
-                                        <label class="form-label">Pièce d'identité</label>
-                                        <input type="text" name="piece_identite" maxlength="100" class="form-input"
-                                               value="{{ old('piece_identite', $client->piece_identite) }}" placeholder="N° CNI, Passeport...">
+                            
+                            {{-- Informations supplémentaires (collapsible) - uniquement pour personne physique --}}
+                            <template x-if="typeClient === 'personne_physique'">
+                                <div class="col-span-2" x-data="{ showExtraShowEdit: false }">
+                                    <button type="button" @click="showExtraShowEdit = !showExtraShowEdit"
+                                            class="flex items-center gap-2 text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors">
+                                        <svg class="w-3.5 h-3.5 transition-transform" :class="showExtraShowEdit ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                        </svg>
+                                        Informations supplémentaires
+                                    </button>
+                                    <div x-show="showExtraShowEdit" x-collapse class="mt-3 space-y-3">
+                                        <div class="form-group mb-0">
+                                            <label class="form-label">Adresse</label>
+                                            <input type="text" name="adresse" maxlength="255" class="form-input"
+                                                   value="{{ old('adresse', $client->adresse) }}" placeholder="Abidjan, Cocody...">
+                                        </div>
+                                        <div class="form-group mb-0">
+                                            <label class="form-label">Pièce d'identité</label>
+                                            <input type="text" name="piece_identite" maxlength="100" class="form-input"
+                                                   value="{{ old('piece_identite', $client->piece_identite) }}" placeholder="N° CNI, Passeport...">
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </template>
                         </div>
+                        
+                        {{-- Script pour synchroniser la date de naissance --}}
+                        <script>
+                        (function() {
+                            document.addEventListener('DOMContentLoaded', function() {
+                                var moisSel = document.getElementById('show-mois-sel');
+                                var jourSel = document.getElementById('show-jour-sel');
+                                var hidden  = document.getElementById('show-dn-hidden');
+                                function update() {
+                                    if (hidden) {
+                                        hidden.value = (moisSel.value && jourSel.value) ? moisSel.value + '-' + jourSel.value : '';
+                                    }
+                                }
+                                if (moisSel) moisSel.addEventListener('change', update);
+                                if (jourSel) jourSel.addEventListener('change', update);
+                            });
+                        })();
+                        </script>
+                        
                         <div class="flex gap-3 pt-1">
                             <button type="button" @click="show = false" class="btn btn-outline flex-1 justify-center">Annuler</button>
                             <button type="submit" class="btn-primary flex-1 justify-center">Enregistrer</button>
