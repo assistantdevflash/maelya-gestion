@@ -153,7 +153,7 @@
                         <ul class="space-y-2.5 text-sm text-gray-600">
                             <li class="flex items-center gap-2.5">
                                 <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                                {{ $plan->max_instituts === null ? 'Instituts illimités' : $plan->max_instituts . ' institut' }}
+                                {{ $plan->max_instituts === null ? 'Établissements illimités' : $plan->max_instituts . ' établissement' }}
                             </li>
                             <li class="flex items-center gap-2.5">
                                 <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
