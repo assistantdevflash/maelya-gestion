@@ -198,7 +198,7 @@
                     <button type="button" x-on:click="onglet = 'photos'"
                             class="px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all flex-shrink-0 whitespace-nowrap"
                             :class="onglet === 'photos' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
-                        📸 Photos
+                        � Photos & fichiers
                         <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $client->photos->count() }}</span>
                     </button>
                     <button type="button" x-on:click="onglet = 'remises'"
@@ -358,13 +358,14 @@
                 </div>
                 @endif
 
-                {{-- Onglet Galerie photos --}}
+                {{-- Onglet Galerie photos & fichiers --}}
                 <div x-show="onglet === 'photos'" x-cloak
                      x-data="{
                          photos: @js($client->photos->map(fn($p) => [
                              'url'     => $p->url,
                              'legende' => $p->legende ?? '',
                              'type'    => $p->type,
+                             'isPdf'   => $p->isPdf(),
                              'label'   => match($p->type) {
                                  'avant'       => 'Avant',
                                  'apres'       => 'Après',
@@ -380,9 +381,25 @@
                          ])->values()->all()),
                          current: 0,
                          open: false,
-                         openAt(i) { this.current = i; this.open = true; },
-                         prev() { this.current = (this.current - 1 + this.photos.length) % this.photos.length; },
-                         next() { this.current = (this.current + 1) % this.photos.length; }
+                         openAt(i) { 
+                             // Si c'est un PDF, ouvrir dans un nouvel onglet au lieu du lightbox
+                             if (this.photos[i].isPdf) {
+                                 window.open(this.photos[i].url, '_blank');
+                             } else {
+                                 this.current = i;
+                                 this.open = true;
+                             }
+                         },
+                         prev() { 
+                             do {
+                                 this.current = (this.current - 1 + this.photos.length) % this.photos.length;
+                             } while (this.photos[this.current].isPdf && this.photos.some(p => !p.isPdf));
+                         },
+                         next() { 
+                             do {
+                                 this.current = (this.current + 1) % this.photos.length;
+                             } while (this.photos[this.current].isPdf && this.photos.some(p => !p.isPdf));
+                         }
                      }"
                      @keydown.arrow-left.window="if(open) prev()"
                      @keydown.arrow-right.window="if(open) next()"
@@ -390,7 +407,7 @@
                      class="p-5">
 
                     <div class="flex items-center justify-between mb-4">
-                        <p class="text-xs text-gray-500">{{ $client->photos->count() }} photo(s)</p>
+                        <p class="text-xs text-gray-500">{{ $client->photos->count() }} fichier(s)</p>
                         <button x-data type="button" @click="$dispatch('open-photos-modal')" class="btn-primary text-xs">
                             + Ajouter
                         </button>
@@ -400,9 +417,21 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                             @foreach($client->photos as $i => $photo)
                                 <div class="flex flex-col gap-1">
-                                    <div class="relative group cursor-pointer" @click="openAt({{ $i }})">
-                                        <img src="{{ $photo->url }}" alt="{{ $photo->legende }}"
-                                             class="w-full aspect-square object-cover rounded-lg hover:opacity-80 transition">
+                                    @if($photo->isPdf())
+                                        {{-- Affichage pour les PDF --}}
+                                        <a href="{{ $photo->url }}" target="_blank" class="relative group">
+                                            <div class="w-full aspect-square bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 rounded-lg hover:opacity-80 transition flex flex-col items-center justify-center border-2 border-red-200 dark:border-red-700">
+                                                <svg class="w-12 h-12 text-red-600 dark:text-red-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                                </svg>
+                                                <span class="text-xs font-bold text-red-600 dark:text-red-400">PDF</span>
+                                            </div>
+                                    @else
+                                        {{-- Affichage pour les images --}}
+                                        <div class="relative group cursor-pointer" @click="openAt({{ $i }})">
+                                            <img src="{{ $photo->url }}" alt="{{ $photo->legende }}"
+                                                 class="w-full aspect-square object-cover rounded-lg hover:opacity-80 transition">
+                                    @endif
                                         {{-- Badge type --}}
                                         @php
                                             $typeColor = match($photo->type) {
@@ -431,20 +460,24 @@
                                               @click.stop>
                                             @csrf @method('DELETE')
                                             <button type="button"
-                                                    onclick="window.dispatchEvent(new CustomEvent('confirm-delete',{detail:{formId:'delete-photo-{{ $photo->id }}',title:'Supprimer cette photo ?',message:'Cette photo sera définitivement supprimée.'}}))"
+                                                    onclick="window.dispatchEvent(new CustomEvent('confirm-delete',{detail:{formId:'delete-photo-{{ $photo->id }}',title:'Supprimer ce fichier ?',message:'Ce fichier sera définitivement supprimé.'}}))"
                                                     class="w-6 h-6 bg-red-600 text-white rounded flex items-center justify-center hover:bg-red-700">
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                                             </button>
                                         </form>
                                         @endif
-                                        {{-- Légende overlay au survol --}}
-                                        @if($photo->legende)
+                                        {{-- Légende overlay au survol (seulement pour les images) --}}
+                                        @if($photo->legende && $photo->isImage())
                                         <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent rounded-b-lg px-2 pt-6 pb-1.5
                                                     opacity-0 group-hover:opacity-100 transition pointer-events-none">
                                             <p class="text-white text-[10px] leading-tight truncate">{{ $photo->legende }}</p>
                                         </div>
                                         @endif
-                                    </div>
+                                    @if($photo->isPdf())
+                                        </a>
+                                    @else
+                                        </div>
+                                    @endif
                                     {{-- Légende sous la vignette (toujours visible) --}}
                                     @if($photo->legende)
                                     <p class="text-[10px] text-gray-500 dark:text-slate-400 truncate leading-tight px-0.5">{{ $photo->legende }}</p>
@@ -453,7 +486,7 @@
                             @endforeach
                         </div>
                     @else
-                        <p class="text-sm text-gray-400 text-center py-8">Aucune photo. Ajoutez-en pour suivre l'évolution.</p>
+                        <p class="text-sm text-gray-400 text-center py-8">Aucun fichier. Ajoutez des photos ou documents pour suivre l'évolution.</p>
                     @endif
 
                     {{-- ── Lightbox / Slider ── --}}
@@ -781,7 +814,7 @@
             <div x-show="show" class="fixed inset-0 z-[70] flex items-center justify-center p-4">
                 <div class="absolute inset-0 bg-black/50" @click="show = false"></div>
                 <div class="relative bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md p-6" @click.stop>
-                    <h3 class="font-bold text-gray-900 dark:text-gray-100 mb-4">Ajouter des photos</h3>
+                    <h3 class="font-bold text-gray-900 dark:text-gray-100 mb-4">Ajouter des photos & fichiers</h3>
                     <form method="POST" action="{{ route('dashboard.clients.photos.store', $client) }}?onglet=photos" enctype="multipart/form-data" class="space-y-3">
                         @csrf
                         <div>
@@ -802,8 +835,9 @@
                             <input type="text" name="legende" maxlength="255" class="form-input" placeholder="Ex: Soin du visage">
                         </div>
                         <div>
-                            <label class="form-label">Photos (jpg/png/webp, max 5 Mo) *</label>
-                            <input type="file" name="photos[]" multiple required accept="image/*" class="form-input">
+                            <label class="form-label">Fichiers (jpg/png/pdf, max 10 Mo) *</label>
+                            <input type="file" name="photos[]" multiple required accept="image/*,.pdf" class="form-input">
+                            <p class="text-xs text-gray-500 mt-1">Photos (JPG, PNG, WebP) ou documents PDF scannés</p>
                         </div>
                         <div class="flex gap-3 pt-2">
                             <button type="button" @click="show = false" class="btn btn-outline flex-1 justify-center">Annuler</button>

@@ -20,7 +20,7 @@ class ClientPhotoController extends Controller
     public function store(Request $request, Client $client)
     {
         $data = $request->validate([
-            'photos.*'   => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'photos.*'   => ['required', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:10240'],
             'type'       => ['required', 'in:avant,apres,avant_apres,autre'],
             'legende'    => ['nullable', 'string', 'max:255'],
             'date_prise' => ['nullable', 'date'],
@@ -29,20 +29,35 @@ class ClientPhotoController extends Controller
         $institutId = session('current_institut_id', Auth::user()->institut_id);
 
         foreach ($request->file('photos') as $file) {
-            $path = $this->storeResized($file, "clients/{$client->id}/photos");
+            $mimeType = $file->getMimeType();
+            $extension = $file->getClientOriginalExtension();
+            
+            // Si c'est un PDF, stocker directement sans redimensionnement
+            if ($mimeType === 'application/pdf' || $extension === 'pdf') {
+                $path = $file->store("clients/{$client->id}/photos", 'public');
+            } else {
+                // Image : redimensionner
+                $path = $this->storeResized($file, "clients/{$client->id}/photos");
+            }
+            
             ClientPhoto::create([
                 'institut_id' => $institutId,
                 'client_id'   => $client->id,
                 'user_id'     => Auth::id(),
                 'type'        => $data['type'],
                 'path'        => $path,
+                'mime_type'   => $mimeType,
+                'extension'   => $extension,
                 'legende'     => $data['legende'] ?? null,
                 'date_prise'  => $data['date_prise'] ?? now()->toDateString(),
             ]);
         }
 
+        $count = count($request->file('photos'));
+        $message = $count === 1 ? 'Fichier ajouté.' : "{$count} fichiers ajoutés.";
+        
         return redirect()->route('dashboard.clients.show', ['client' => $client, 'onglet' => 'photos'])
-            ->with('success', count($request->file('photos')) . ' photo(s) ajoutée(s).');
+            ->with('success', $message);
     }
 
     public function destroy(Client $client, ClientPhoto $photo)
@@ -51,7 +66,7 @@ class ClientPhotoController extends Controller
         abort_unless(Auth::user()->isAdmin(), 403);
         $photo->delete();
         return redirect()->route('dashboard.clients.show', ['client' => $client, 'onglet' => 'photos'])
-            ->with('success', 'Photo supprimée.');
+            ->with('success', 'Fichier supprimé.');
     }
 
     /**

@@ -12,7 +12,7 @@ class ClientPhoto extends Model
     use HasUuids, BelongsToInstitut;
 
     protected $fillable = [
-        'institut_id', 'client_id', 'user_id', 'type', 'path', 'legende', 'date_prise',
+        'institut_id', 'client_id', 'user_id', 'type', 'path', 'mime_type', 'extension', 'legende', 'date_prise',
     ];
 
     protected $casts = [
@@ -32,6 +32,16 @@ class ClientPhoto extends Model
     public function getUrlAttribute(): string
     {
         return Storage::disk('public')->url($this->path);
+    }
+
+    public function isPdf(): bool
+    {
+        return $this->mime_type === 'application/pdf' || $this->extension === 'pdf';
+    }
+
+    public function isImage(): bool
+    {
+        return !$this->isPdf();
     }
 
     protected static function booted()
