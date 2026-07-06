@@ -113,6 +113,7 @@ class Caisse extends Component
             $query->where(function ($q) {
                 $q->where('prenom', 'like', "%{$this->clientSearch}%")
                     ->orWhere('nom', 'like', "%{$this->clientSearch}%")
+                    ->orWhere('raison_sociale', 'like', "%{$this->clientSearch}%")
                     ->orWhere('telephone', 'like', "%{$this->clientSearch}%");
             });
         }
@@ -126,7 +127,7 @@ class Caisse extends Component
         $this->clientSearch  = '';
         $this->showClientList = false;
         $client = Client::find($id);
-        $this->selectedClientNom      = $client?->nom_complet;
+        $this->selectedClientNom      = $client?->nom_affichage;
         $this->selectedClientTel      = $client?->telephone;
         $this->selectedClientAdresse  = $client?->adresse;
         $this->selectedClientPieceId  = $client?->piece_identite;

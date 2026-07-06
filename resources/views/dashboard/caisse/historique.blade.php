@@ -82,7 +82,7 @@
                                 {{ $vente->created_at->format('d/m/Y H:i') }}
                             </td>
                             <td class="px-4 py-3 hidden lg:table-cell text-gray-600">
-                                {{ $vente->client?->nom_complet ?? 'Anonyme' }}
+                                {{ $vente->client?->nom_affichage ?? 'Anonyme' }}
                             </td>
                             @if(!Auth::user()->isEmploye())
                             <td class="px-4 py-3 hidden xl:table-cell">
