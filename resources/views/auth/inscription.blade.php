@@ -104,9 +104,12 @@
                                         <option value="">Choisir...</option>
                                         <option value="salon_coiffure"      {{ old('type_institut') === 'salon_coiffure'      ? 'selected' : '' }}>Salon de coiffure</option>
                                         <option value="institut_beaute"     {{ old('type_institut') === 'institut_beaute'     ? 'selected' : '' }}>Institut de beauté</option>
-                                        <option value="barbier"             {{ old('type_institut') === 'barbier'             ? 'selected' : '' }}>Barbier</option>
                                         <option value="centre_esthetique"   {{ old('type_institut') === 'centre_esthetique'   ? 'selected' : '' }}>Centre esthétique</option>
                                         <option value="boutique_mode"       {{ old('type_institut') === 'boutique_mode'       ? 'selected' : '' }}>Boutique de mode</option>
+                                        <option value="auto_ecole"          {{ old('type_institut') === 'auto_ecole'          ? 'selected' : '' }}>Auto-écoles</option>
+                                        <option value="cabinet_medical"     {{ old('type_institut') === 'cabinet_medical'     ? 'selected' : '' }}>Cabinets médicaux & paramédicaux</option>
+                                        <option value="atelier_technique"   {{ old('type_institut') === 'atelier_technique'   ? 'selected' : '' }}>Ateliers & Services techniques</option>
+                                        <option value="centre_formation"    {{ old('type_institut') === 'centre_formation'    ? 'selected' : '' }}>Centres de formation</option>
                                         <option value="imprimerie"          {{ old('type_institut') === 'imprimerie'          ? 'selected' : '' }}>Imprimerie</option>
                                         <option value="lavage_auto"         {{ old('type_institut') === 'lavage_auto'         ? 'selected' : '' }}>Lavage auto</option>
                                         <option value="pressing"            {{ old('type_institut') === 'pressing'            ? 'selected' : '' }}>Pressing / Laverie</option>
