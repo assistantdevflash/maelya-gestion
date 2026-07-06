@@ -92,6 +92,11 @@ class RdvController extends Controller
             'prestations.*'    => ['uuid', 'exists:prestations,id'],
             'envoyer_confirmation' => ['nullable', 'boolean'],
         ]);
+        
+        // Si l'utilisateur est un employé, il est automatiquement assigné
+        if (Auth::user()->isEmploye()) {
+            $data['employe_id'] = Auth::id();
+        }
 
         $rdv = RendezVous::create(\Arr::except($data, ['prestations', 'envoyer_confirmation']));
 
@@ -210,6 +215,11 @@ class RdvController extends Controller
             'prestations'      => ['nullable', 'array'],
             'prestations.*'    => ['uuid', 'exists:prestations,id'],
         ]);
+        
+        // Les employés ne peuvent pas modifier l'assignation
+        if (Auth::user()->isEmploye()) {
+            unset($data['employe_id']);
+        }
 
         $rdv->update(\Arr::except($data, ['prestations']));
         $rdv->prestations()->sync($data['prestations'] ?? []);

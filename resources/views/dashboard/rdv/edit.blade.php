@@ -159,7 +159,7 @@
         {{-- DÉTAILS --}}
         <div class="card p-5 space-y-4">
             <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Détails</p>
-            @if($employes->isNotEmpty())
+            @if($employes->isNotEmpty() && Auth::user()->isAdmin())
             <div>
                 <label class="form-label">Employé(e) assigné(e)</label>
                 <select name="employe_id" class="form-input">
@@ -170,6 +170,15 @@
                     </option>
                     @endforeach
                 </select>
+            </div>
+            @elseif(Auth::user()->isEmploye())
+            <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                <p class="text-sm text-gray-600">
+                    <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                    Seul l'administrateur peut modifier l'assignation.
+                </p>
             </div>
             @endif
             <div>
