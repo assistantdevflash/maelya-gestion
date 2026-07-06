@@ -20,7 +20,7 @@ class CommandeController extends Controller
      */
     public function index(Request $request)
     {
-        $institutId = session('institut_id');
+        $institutId = session('current_institut_id', auth()->user()->institut_id);
 
         $query = Commande::where('institut_id', $institutId)
             ->with(['client', 'items'])

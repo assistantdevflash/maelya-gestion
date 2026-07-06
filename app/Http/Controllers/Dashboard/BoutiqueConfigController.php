@@ -14,7 +14,7 @@ class BoutiqueConfigController extends Controller
      */
     public function index()
     {
-        $institut = Institut::findOrFail(session('institut_id'));
+        $institut = Institut::findOrFail(session('current_institut_id', auth()->user()->institut_id));
 
         return view('dashboard.boutique.config', compact('institut'));
     }
@@ -24,7 +24,7 @@ class BoutiqueConfigController extends Controller
      */
     public function update(Request $request)
     {
-        $institut = Institut::findOrFail(session('institut_id'));
+        $institut = Institut::findOrFail(session('current_institut_id', auth()->user()->institut_id));
 
         $data = $request->validate([
             'boutique_active' => 'boolean',
