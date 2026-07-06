@@ -334,10 +334,16 @@
             @if($clientId)
                 @if($this->selectedClient)
                 <div class="flex items-center gap-2.5 p-2.5 bg-primary-50/50 rounded-xl">
-                    <div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                        {{ strtoupper(substr($this->selectedClient->prenom, 0, 1)) }}
-                    </div>
-                    <span class="text-sm font-semibold text-gray-900">{{ $this->selectedClient->nom_complet }}</span>
+                    @if($this->selectedClient->isEntreprise())
+                        <div class="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                            🏢
+                        </div>
+                    @else
+                        <div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                            {{ strtoupper(substr($this->selectedClient->prenom ?? '', 0, 1)) }}
+                        </div>
+                    @endif
+                    <span class="text-sm font-semibold text-gray-900">{{ $this->selectedClient->nom_affichage }}</span>
                 </div>
                 @endif
             @else

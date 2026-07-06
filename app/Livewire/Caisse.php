@@ -481,10 +481,17 @@ class Caisse extends Component
                 ->get()
                 ->map(fn ($c) => [
                     'id'        => $c->id,
-                    'nom'       => $c->nom_complet,
-                    'initiale'  => strtoupper(substr($c->prenom ?? $c->nom ?? '?', 0, 1)),
+                    'nom'       => $c->nom_affichage,
+                    'initiale'  => $c->isEntreprise() 
+                        ? '🏢' 
+                        : strtoupper(substr($c->prenom ?? $c->nom ?? '?', 0, 1)),
                     'telephone' => $c->telephone ?? '',
-                    'search'    => mb_strtolower(($c->prenom ?? '') . ' ' . ($c->nom ?? '') . ' ' . ($c->telephone ?? '')),
+                    'search'    => mb_strtolower(
+                        ($c->prenom ?? '') . ' ' . 
+                        ($c->nom ?? '') . ' ' . 
+                        ($c->raison_sociale ?? '') . ' ' . 
+                        ($c->telephone ?? '')
+                    ),
                 ]),
         ]);
     }
