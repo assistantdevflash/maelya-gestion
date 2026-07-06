@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CategorieProduit;
 use App\Models\Produit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ProduitController extends Controller
 {
@@ -57,7 +58,10 @@ class ProduitController extends Controller
             $data['photo'] = $request->file('photo')->store('produits', 'public');
         }
 
-        Produit::create($data);
+        $produit = Produit::create($data);
+
+        // Vider le cache de la caisse pour afficher le nouveau produit immédiatement
+        Cache::forget('caisse_catalog_' . $produit->institut_id);
 
         return redirect()->route('dashboard.produits.index')
             ->with('success', 'Produit ajouté.');
@@ -105,13 +109,21 @@ class ProduitController extends Controller
 
         $produit->update($data);
 
+        // Vider le cache de la caisse pour afficher les modifications immédiatement
+        Cache::forget('caisse_catalog_' . $produit->institut_id);
+
         return redirect()->route('dashboard.produits.index')
             ->with('success', 'Produit mis à jour.');
     }
 
     public function destroy(Produit $produit)
     {
+        $institutId = $produit->institut_id;
         $produit->delete();
+
+        // Vider le cache de la caisse
+        Cache::forget('caisse_catalog_' . $institutId);
+
         return redirect()->route('dashboard.produits.index')
             ->with('success', 'Produit supprimé.');
     }

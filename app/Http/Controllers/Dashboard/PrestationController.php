@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CategoriePrestation;
 use App\Models\Prestation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class PrestationController extends Controller
 {
@@ -55,7 +56,10 @@ class PrestationController extends Controller
         $data['categorie_id'] = $data['categorie_prestation_id'];
         unset($data['categorie_prestation_id']);
 
-        Prestation::create($data);
+        $prestation = Prestation::create($data);
+
+        // Vider le cache de la caisse pour afficher la nouvelle prestation immédiatement
+        Cache::forget('caisse_catalog_' . $prestation->institut_id);
 
         return redirect()->route('dashboard.prestations.index')
             ->with('success', 'Prestation ajoutée.');
@@ -82,13 +86,21 @@ class PrestationController extends Controller
 
         $prestation->update($data);
 
+        // Vider le cache de la caisse pour afficher les modifications immédiatement
+        Cache::forget('caisse_catalog_' . $prestation->institut_id);
+
         return redirect()->route('dashboard.prestations.index')
             ->with('success', 'Prestation mise à jour.');
     }
 
     public function destroy(Prestation $prestation)
     {
+        $institutId = $prestation->institut_id;
         $prestation->delete();
+
+        // Vider le cache de la caisse
+        Cache::forget('caisse_catalog_' . $institutId);
+
         return redirect()->route('dashboard.prestations.index')
             ->with('success', 'Prestation supprimée.');
     }
@@ -96,6 +108,10 @@ class PrestationController extends Controller
     public function toggle(Prestation $prestation)
     {
         $prestation->update(['actif' => !$prestation->actif]);
+
+        // Vider le cache de la caisse
+        Cache::forget('caisse_catalog_' . $prestation->institut_id);
+
         return back()->with('success', $prestation->actif ? 'Prestation activée.' : 'Prestation désactivée.');
     }
 }
