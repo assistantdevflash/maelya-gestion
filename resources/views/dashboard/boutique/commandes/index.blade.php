@@ -1,8 +1,4 @@
-@extends('layouts.dashboard')
-
-@section('title', 'Commandes boutique')
-
-@section('content')
+<x-dashboard-layout>
 <div class="space-y-6">
     {{-- Header --}}
     <div class="flex justify-between items-center">
@@ -156,4 +152,4 @@
         @endif
     </div>
 </div>
-@endsection
+</x-dashboard-layout>

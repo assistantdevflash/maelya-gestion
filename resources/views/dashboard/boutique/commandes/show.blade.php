@@ -1,8 +1,4 @@
-@extends('layouts.dashboard')
-
-@section('title', 'Commande ' . $commande->numero)
-
-@section('content')
+<x-dashboard-layout>
 <div class="max-w-4xl mx-auto space-y-6">
     {{-- Header --}}
     <div class="flex justify-between items-center">
@@ -180,4 +176,4 @@
         @endif
     </div>
 </div>
-@endsection
+</x-dashboard-layout>

@@ -1,8 +1,4 @@
-@extends('layouts.dashboard')
-
-@section('title', 'Configuration boutique')
-
-@section('content')
+<x-dashboard-layout>
 <div class="max-w-4xl mx-auto">
     <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Configuration de la boutique en ligne</h1>
 
@@ -122,4 +118,4 @@
         </div>
     </form>
 </div>
-@endsection
+</x-dashboard-layout>
