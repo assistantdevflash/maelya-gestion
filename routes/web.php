@@ -145,12 +145,12 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         
         Route::get('commandes', [CommandeController::class, 'index'])->name('commandes.index');
         Route::get('commandes/{commande}', [CommandeController::class, 'show'])->name('commandes.show');
+        Route::get('commandes/{commande}/facture', [CommandeController::class, 'facturePdf'])->name('commandes.facture');
         
         Route::middleware('role:admin')->group(function () {
             Route::post('commandes/{commande}/statut', [CommandeController::class, 'updateStatut'])->name('commandes.statut');
             Route::post('commandes/{commande}/payer', [CommandeController::class, 'marquerPayee'])->name('commandes.payer');
             Route::post('commandes/{commande}/notes', [CommandeController::class, 'updateNotes'])->name('commandes.notes');
-            Route::get('commandes/{commande}/facture', [CommandeController::class, 'facturePdf'])->name('commandes.facture');
             Route::delete('commandes/{commande}', [CommandeController::class, 'destroy'])->name('commandes.destroy');
         });
     });
