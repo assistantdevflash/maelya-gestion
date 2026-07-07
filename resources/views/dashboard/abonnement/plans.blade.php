@@ -364,6 +364,30 @@
                                 <p class="text-xs text-gray-400 mt-1">Fournissez la référence <strong>OU</strong> le reçu — un seul suffit.</p>
                             </div>
 
+                            {{-- Option boutique en ligne --}}
+                            <div x-data="{ optionBoutique: {{ request('ajouter') === 'boutique' ? 'true' : 'false' }} }"
+                                 class="p-4 bg-gradient-to-r from-primary-50 to-secondary-50 border-2 border-primary-200 rounded-2xl">
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="option_boutique" value="1"
+                                           x-model="optionBoutique"
+                                           class="mt-1 w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                                    <div class="flex-1">
+                                        <span class="font-semibold text-gray-900">
+                                            🛍️ Ajouter la boutique en ligne
+                                        </span>
+                                        <span class="ml-2 text-sm font-bold text-primary-600">
+                                            +3 900 F/mois
+                                        </span>
+                                        <p class="text-sm text-gray-600 mt-1">
+                                            Vos clients pourront commander vos produits en ligne avec livraison à domicile
+                                        </p>
+                                        <p class="text-xs text-gray-500 mt-1" x-show="optionBoutique">
+                                            Soit <strong x-text="periode === 'mensuel' ? '3 900' : periode === 'annuel' ? '46 800' : '140 400'"></strong> FCFA pour la période
+                                        </p>
+                                    </div>
+                                </label>
+                            </div>
+
                             {{-- Boutons --}}
                             <div class="flex items-center gap-3 pt-1">
                                 <button type="button" @click="showModal = false; step = 1"

@@ -30,6 +30,11 @@ class BoutiqueController extends Controller
             abort(404, 'Cette boutique n\'est pas disponible.');
         }
 
+        // Vérifier que le propriétaire a l'option boutique (ou est en essai)
+        if (!$institut->proprietaire?->hasBoutiqueAccess()) {
+            abort(404, 'Cette boutique n\'est pas disponible.');
+        }
+
         // Récupérer les produits actifs avec leurs catégories
         // Utiliser le cache pour optimiser les performances
         $produits = Cache::remember("boutique_{$institut->id}_produits", 3600, function () use ($institut) {

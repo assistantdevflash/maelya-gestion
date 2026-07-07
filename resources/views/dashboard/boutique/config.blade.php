@@ -15,6 +15,38 @@
         </div>
     @endif
 
+    @php
+        $hasBoutique = auth()->user()->hasBoutiqueAccess();
+        $isEssai = auth()->user()->abonnementActif?->plan?->slug === 'essai';
+    @endphp
+
+    @if(!$hasBoutique && !$isEssai)
+    {{-- Bandeau d'upgrade : l'option boutique n'est pas activée --}}
+    <div class="p-6 bg-amber-50 dark:bg-amber-950/30 border-2 border-amber-300 dark:border-amber-700 rounded-2xl">
+        <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-amber-500 dark:bg-amber-600 rounded-xl flex items-center justify-center text-white flex-shrink-0">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-lg font-bold text-amber-900 dark:text-amber-200">Module non inclus dans votre abonnement</h3>
+                <p class="text-amber-800 dark:text-amber-300 mt-2">
+                    Le module <strong>Boutique en ligne</strong> est une option payante à <strong>3 900 F/mois</strong>.
+                    Ajoutez-le à votre abonnement pour permettre à vos clients de commander vos produits en ligne avec livraison à domicile.
+                </p>
+                <div class="flex gap-3 mt-4">
+                    <a href="{{ route('abonnement.plans') }}?ajouter=boutique" class="btn-primary">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                        Activer la boutique (+3 900 F/mois)
+                    </a>
+                    <a href="{{ route('dashboard.boutique.commandes.index') }}" class="btn-ghost">
+                        Voir mes commandes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    @else
+
     <form method="POST" action="{{ route('dashboard.boutique.config.update') }}" class="space-y-8">
         @csrf
 
@@ -141,5 +173,6 @@
             </button>
         </div>
     </form>
+    @endif
 </div>
 </x-dashboard-layout>

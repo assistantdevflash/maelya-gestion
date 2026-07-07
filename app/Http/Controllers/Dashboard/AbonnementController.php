@@ -104,14 +104,30 @@ class AbonnementController extends Controller
             : null;
         $montant = $plan->prixPourPeriode($request->periode);
 
+        // Option boutique en ligne (add-on payant)
+        $optionBoutique = $request->boolean('option_boutique');
+        $prixBoutique = 0;
+        if ($optionBoutique) {
+            $nbMois = match ($request->periode) {
+                'mensuel'  => 1,
+                'annuel'   => 12,
+                'triennal' => 36,
+            };
+            $prixBoutique = 3900 * $nbMois;
+        }
+
         Abonnement::create([
             'user_id' => $user->id,
             'plan_id' => $plan->id,
-            'montant' => $montant,
+            'montant' => $montant + $prixBoutique,
             'periode' => $request->periode,
             'statut' => 'en_attente',
             'reference_transfert' => $request->reference_transfert,
             'preuve_paiement' => $preuvePath,
+            'metadata' => [
+                'boutique' => $optionBoutique,
+                'boutique_prix' => $optionBoutique ? 3900 : 0,
+            ],
         ]);
 
         // Notifier tous les super-admins par email

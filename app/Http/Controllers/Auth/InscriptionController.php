@@ -133,6 +133,10 @@ class InscriptionController extends Controller
                     'reference_transfert' => 'ESSAI-' . strtoupper(substr(md5($user->id), 0, 8)),
                     'debut_le'  => now()->toDateString(),
                     'expire_le' => now()->addDays(14)->toDateString(),
+                    'metadata'  => [
+                        'boutique' => true,
+                        'boutique_prix' => 0, // gratuit pendant l'essai
+                    ],
                 ]);
             }
             // ── Créer le parrainage commercial si code commercial utilisé ─────────

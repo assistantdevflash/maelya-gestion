@@ -72,4 +72,47 @@ class Abonnement extends Model
         if (!$this->expire_le) return 0;
         return max(0, (int) abs(now()->startOfDay()->diffInDays($this->expire_le->copy()->startOfDay(), false)));
     }
+
+    // ── Option Boutique en ligne ─────────────────────────────────────────────
+
+    /**
+     * L'option boutique en ligne est-elle activée sur cet abonnement ?
+     */
+    public function hasBoutique(): bool
+    {
+        return (bool) ($this->metadata['boutique'] ?? false);
+    }
+
+    /**
+     * Activer ou désactiver l'option boutique.
+     */
+    public function setBoutique(bool $active, int $prix = 3900): void
+    {
+        $meta = $this->metadata ?? [];
+        $meta['boutique'] = $active;
+        $meta['boutique_prix'] = $prix;
+        $this->metadata = $meta;
+    }
+
+    /**
+     * Prix mensuel de l'option boutique.
+     */
+    public function getBoutiquePrixMensuel(): int
+    {
+        return $this->metadata['boutique_prix'] ?? 3900;
+    }
+
+    /**
+     * Prix total de l'option boutique pour une période donnée.
+     */
+    public function getBoutiquePrixTotal(string $periode): int
+    {
+        $nbMois = match ($periode) {
+            'mensuel'  => 1,
+            'annuel'   => 12,
+            'triennal' => 36,
+            default    => 1,
+        };
+        return $this->getBoutiquePrixMensuel() * $nbMois;
+    }
 }

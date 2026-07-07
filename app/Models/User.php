@@ -178,6 +178,38 @@ class User extends Authenticatable
     }
 
     /**
+     * L'utilisateur a-t-il accès au module boutique en ligne ?
+     * L'option boutique est un add-on payant (3 900 F/mois) sur les plans payants.
+     * Gratuit pendant l'essai et pour les super admins.
+     */
+    public function hasBoutiqueAccess(): bool
+    {
+        // Super admin : toujours
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        // Vérifier la feature de base dans le plan
+        if (!$this->aFonctionnalite('boutique')) {
+            return false;
+        }
+
+        // Période d'essai : boutique gratuite
+        $abo = $this->abonnementActif;
+        if (!$abo) {
+            return false;
+        }
+
+        // Plan essai → boutique offerte
+        if ($abo->plan->slug === 'essai') {
+            return true;
+        }
+
+        // Plan payant → vérifier l'option boutique dans les métadonnées
+        return $abo->hasBoutique();
+    }
+
+    /**
      * Retourne l'ID de l'institut courant (session ou fallback).
      */
     public function currentInstitutId(): string
