@@ -314,6 +314,29 @@
                                 </div>
                             </div>
 
+                            {{-- Option boutique en ligne (juste sous Montant) --}}
+                            <div class="bg-primary-50 dark:bg-primary-950/30 border-2 border-primary-200 dark:border-primary-800/60 rounded-2xl p-4">
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="option_boutique" value="1"
+                                           x-model="optionBoutique"
+                                           class="mt-1 w-5 h-5 rounded border-gray-300 dark:border-slate-600 text-primary-600 focus:ring-primary-500 dark:bg-slate-800">
+                                    <div class="flex-1">
+                                        <span class="font-semibold text-gray-900 dark:text-white">
+                                            🛍️ Ajouter la boutique en ligne
+                                        </span>
+                                        <span class="ml-2 text-sm font-bold text-primary-600 dark:text-primary-400">
+                                            +3 900 F/mois
+                                        </span>
+                                        <p class="text-sm text-gray-600 dark:text-slate-400 mt-1">
+                                            Vos clients pourront commander vos produits en ligne avec livraison à domicile
+                                        </p>
+                                        <p class="text-xs text-primary-700 dark:text-primary-300 mt-1 font-medium" x-show="optionBoutique">
+                                            Soit <strong x-text="periode === 'mensuel' ? '3 900' : periode === 'annuel' ? '46 800' : '140 400'"></strong> FCFA pour la période
+                                        </p>
+                                    </div>
+                                </label>
+                            </div>
+
                             {{-- Nom du bénéficiaire --}}
                             <p class="text-xs text-gray-400 text-center -mt-2">Nom du bénéficiaire : <span class="font-medium text-gray-600">MAELYA GESTION</span></p>
 
@@ -364,30 +387,6 @@
                                 <p class="text-xs text-gray-400 mt-1">Fournissez la référence <strong>OU</strong> le reçu — un seul suffit.</p>
                             </div>
 
-                            {{-- Option boutique en ligne --}}
-                            <div x-data="{ optionBoutique: {{ request('ajouter') === 'boutique' ? 'true' : 'false' }} }"
-                                 class="p-4 bg-gradient-to-r from-primary-50 to-secondary-50 border-2 border-primary-200 rounded-2xl">
-                                <label class="flex items-start gap-3 cursor-pointer">
-                                    <input type="checkbox" name="option_boutique" value="1"
-                                           x-model="optionBoutique"
-                                           class="mt-1 w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500">
-                                    <div class="flex-1">
-                                        <span class="font-semibold text-gray-900">
-                                            🛍️ Ajouter la boutique en ligne
-                                        </span>
-                                        <span class="ml-2 text-sm font-bold text-primary-600">
-                                            +3 900 F/mois
-                                        </span>
-                                        <p class="text-sm text-gray-600 mt-1">
-                                            Vos clients pourront commander vos produits en ligne avec livraison à domicile
-                                        </p>
-                                        <p class="text-xs text-gray-500 mt-1" x-show="optionBoutique">
-                                            Soit <strong x-text="periode === 'mensuel' ? '3 900' : periode === 'annuel' ? '46 800' : '140 400'"></strong> FCFA pour la période
-                                        </p>
-                                    </div>
-                                </label>
-                            </div>
-
                             {{-- Boutons --}}
                             <div class="flex items-center gap-3 pt-1">
                                 <button type="button" @click="showModal = false; step = 1"
@@ -427,6 +426,7 @@
             selectedPrixMensuel: 0,
             selectedPrixAnnuel: 0,
             selectedPrixTriennal: 0,
+            optionBoutique: {{ request('ajouter') === 'boutique' ? 'true' : 'false' }},
 
             openModal(planId, planNom, prixMensuel, prixAnnuel, prixTriennal) {
                 this.selectedPlanId = planId;
@@ -458,6 +458,10 @@
 
             selectedTotal() {
                 let total = this.periode === 'annuel' ? this.selectedPrixAnnuel : this.periode === 'triennal' ? this.selectedPrixTriennal : this.selectedPrixMensuel;
+                if (this.optionBoutique) {
+                    const nbMois = this.periode === 'annuel' ? 12 : this.periode === 'triennal' ? 36 : 1;
+                    total += 3900 * nbMois;
+                }
                 return new Intl.NumberFormat('fr-FR').format(total);
             },
 
