@@ -217,7 +217,7 @@
                 </button>
             </div>
 
-            <form method="POST" action="{{ route('boutique.commander', $institut->slug) }}" class="p-6 space-y-4">
+            <form method="POST" action="{{ route('shop.commander', $institut->slug) }}" class="p-6 space-y-4">
                 @csrf
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
