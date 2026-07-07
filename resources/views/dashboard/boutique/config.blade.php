@@ -54,7 +54,7 @@
                         >
                         <button 
                             type="button"
-                            onclick="navigator.clipboard.writeText('{{ url('/shop/' . $institut->slug) }}'); this.innerHTML='<svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M5 13l4 4L19 7\"/></svg> Copié'; setTimeout(() => this.innerHTML='Copier', 2000)"
+                            onclick="var btn=this;navigator.clipboard.writeText('{{ url('/shop/' . $institut->slug) }}').then(function(){btn.innerHTML='✓ Copié';setTimeout(function(){btn.innerHTML='Copier'},2000)})"
                             class="btn-primary px-5"
                         >
                             Copier

@@ -24,6 +24,8 @@
             ];
         @endphp
         <span class="px-4 py-2 text-sm font-bold rounded-xl shadow-sm {{ $colors[$commande->statut] ?? 'bg-gray-100 text-gray-800' }}">
+            {{ ucfirst(str_replace('_', ' ', $commande->statut)) }}
+        </span>
     </div>
 
     @if(session('success'))
@@ -43,7 +45,6 @@
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Informations client</h2>
                 </div>
                 <div class="card-body">
-                    <div class="space-y-4">
                     <div class="space-y-4">
                     <div>
                         <p class="text-sm font-medium text-gray-500 dark:text-slate-400">Nom complet</p>
