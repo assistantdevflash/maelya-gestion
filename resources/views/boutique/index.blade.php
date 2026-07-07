@@ -349,6 +349,12 @@
                 toast: { show: false, message: '' },
                 produits: @json($produitsJson),
 
+                init() {
+                    // Nettoyer le panier des items invalides (prix à 0 ou manquant)
+                    this.panier = this.panier.filter(item => item.prix && item.prix > 0);
+                    this.sauvegarderPanier();
+                },
+
                 get produitsAffiches() {
                     return this.produits.filter(p => {
                         const matchCategorie = this.selectedCategorie === null || String(p.categorie_id) === String(this.selectedCategorie);
