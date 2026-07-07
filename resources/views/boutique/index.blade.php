@@ -292,17 +292,7 @@
                     show: false,
                     message: ''
                 },
-                produits: @json($produits->map(function($p) {
-                    return [
-                        'id' => $p->id,
-                        'nom' => $p->nom,
-                        'prix' => $p->prix,
-                        'stock' => $p->stock,
-                        'photo' => $p->photo,
-                        'categorie' => $p->categorie?->nom,
-                        'categorie_id' => $p->categorie_id,
-                    ];
-                })),
+                produits: @json($produitsJson),
 
                 get produitsAffichés() {
                     return this.produits.filter(p => {

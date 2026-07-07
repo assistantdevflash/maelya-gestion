@@ -44,9 +44,23 @@ class BoutiqueController extends Controller
         // Récupérer les catégories avec au moins un produit
         $categories = $produits->pluck('categorie')->unique()->filter();
 
+        // Préparer les données produits pour JavaScript
+        $produitsJson = $produits->map(function($p) {
+            return [
+                'id' => $p->id,
+                'nom' => $p->nom,
+                'prix' => $p->prix,
+                'stock' => $p->stock,
+                'photo' => $p->photo,
+                'categorie' => $p->categorie?->nom,
+                'categorie_id' => $p->categorie_id,
+            ];
+        });
+
         return view('boutique.index', [
             'institut' => $institut,
             'produits' => $produits,
+            'produitsJson' => $produitsJson,
             'categories' => $categories,
             'ogTitle' => $institut->nom . ' - Boutique en ligne',
             'ogDescription' => 'Découvrez nos produits et passez commande en ligne avec livraison à domicile',
