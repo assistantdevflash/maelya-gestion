@@ -1,5 +1,5 @@
 <x-dashboard-layout>
-<div class="max-w-4xl mx-auto space-y-6">
+<div class="space-y-6">
     {{-- Header --}}
     <div>
         <h1 class="text-2xl font-display font-bold text-gray-900 dark:text-white tracking-tight">Configuration boutique en ligne</h1>

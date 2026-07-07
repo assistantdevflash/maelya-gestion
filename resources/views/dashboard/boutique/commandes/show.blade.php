@@ -1,5 +1,5 @@
 <x-dashboard-layout>
-<div class="max-w-5xl mx-auto space-y-6">
+<div class="space-y-6">
     {{-- Header --}}
     <div class="flex items-start justify-between">
         <div>
@@ -75,34 +75,34 @@
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
                         <thead class="bg-gray-50 dark:bg-slate-800">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Produit</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Qté</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Prix unitaire</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Total</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Produit</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Qté</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Prix unitaire</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Total</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-slate-700">
                             @foreach($commande->items as $item)
                                 <tr>
-                                    <td class="px-6 py-4 text-gray-900 dark:text-white">{{ $item->nom_snapshot }}</td>
-                                    <td class="px-6 py-4 text-center text-gray-700 dark:text-slate-300">{{ $item->quantite }}</td>
-                                    <td class="px-6 py-4 text-right text-gray-700 dark:text-slate-300">{{ number_format($item->prix_snapshot, 0, ',', ' ') }} FCFA</td>
-                                    <td class="px-6 py-4 text-right font-semibold text-gray-900 dark:text-white">{{ number_format($item->sous_total, 0, ',', ' ') }} FCFA</td>
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white">{{ $item->nom_snapshot }}</td>
+                                    <td class="px-4 py-3 text-center text-gray-700 dark:text-slate-300">{{ $item->quantite }}</td>
+                                    <td class="px-4 py-3 text-right text-gray-700 dark:text-slate-300">{{ number_format($item->prix_snapshot, 0, ',', ' ') }} FCFA</td>
+                                    <td class="px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">{{ number_format($item->sous_total, 0, ',', ' ') }} FCFA</td>
                                 </tr>
                             @endforeach
                         </tbody>
                         <tfoot class="bg-gray-50 dark:bg-slate-800">
                             <tr>
-                                <td colspan="3" class="px-6 py-3 text-right text-sm font-medium text-gray-700 dark:text-slate-300">Sous-total</td>
-                                <td class="px-6 py-3 text-right font-semibold text-gray-900 dark:text-white">{{ number_format($commande->sous_total, 0, ',', ' ') }} FCFA</td>
+                                <td colspan="3" class="px-4 py-3 text-right text-sm font-medium text-gray-700 dark:text-slate-300">Sous-total</td>
+                                <td class="px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">{{ number_format($commande->sous_total, 0, ',', ' ') }} FCFA</td>
                             </tr>
                             <tr>
-                                <td colspan="3" class="px-6 py-3 text-right text-sm font-medium text-gray-700 dark:text-slate-300">Frais de livraison</td>
-                                <td class="px-6 py-3 text-right font-semibold text-gray-900 dark:text-white">{{ number_format($commande->frais_livraison, 0, ',', ' ') }} FCFA</td>
+                                <td colspan="3" class="px-4 py-3 text-right text-sm font-medium text-gray-700 dark:text-slate-300">Frais de livraison</td>
+                                <td class="px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">{{ number_format($commande->frais_livraison, 0, ',', ' ') }} FCFA</td>
                             </tr>
                             <tr class="bg-gray-100 dark:bg-slate-700">
-                                <td colspan="3" class="px-6 py-4 text-right text-base font-bold text-gray-900 dark:text-white">Total</td>
-                                <td class="px-6 py-4 text-right text-lg font-bold text-primary-600 dark:text-primary-400">{{ number_format($commande->total, 0, ',', ' ') }} FCFA</td>
+                                <td colspan="3" class="px-4 py-3 text-right text-base font-bold text-gray-900 dark:text-white">Total</td>
+                                <td class="px-4 py-3 text-right text-lg font-bold text-primary-600 dark:text-primary-400">{{ number_format($commande->total, 0, ',', ' ') }} FCFA</td>
                             </tr>
                         </tfoot>
                     </table>

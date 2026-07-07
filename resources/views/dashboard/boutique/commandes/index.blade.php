@@ -89,34 +89,34 @@
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
                     <thead class="bg-gray-50 dark:bg-slate-800">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">N° Commande</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Client</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Montant</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Statut</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Paiement</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">N° Commande</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Client</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Montant</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Statut</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Paiement</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-slate-700">
                         @foreach($commandes as $commande)
                             <tr class="hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-4 py-3 whitespace-nowrap">
                                     <span class="font-medium text-gray-900 dark:text-white font-mono text-sm">{{ $commande->numero }}</span>
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-4 py-3">
                                     <div>
                                         <p class="font-medium text-gray-900 dark:text-white">{{ $commande->client_prenom }} {{ $commande->client_nom }}</p>
                                         <p class="text-sm text-gray-500 dark:text-slate-400">{{ $commande->client_telephone }}</p>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">
                                     {{ $commande->created_at->format('d/m/Y H:i') }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-900 dark:text-white">
+                                <td class="px-4 py-3 whitespace-nowrap font-semibold text-gray-900 dark:text-white">
                                     {{ number_format($commande->total, 0, ',', ' ') }} <span class="text-xs font-normal text-gray-500">F</span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-4 py-3 whitespace-nowrap">
                                     @php
                                         $colors = [
                                             'nouvelle' => 'bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-300',
@@ -132,7 +132,7 @@
                                         {{ ucfirst(str_replace('_', ' ', $commande->statut)) }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-4 py-3 whitespace-nowrap">
                                     @if($commande->payee)
                                         <span class="px-2 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
                                             Payée
@@ -143,7 +143,7 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <td class="px-4 py-3 whitespace-nowrap text-right">
                                     <a href="{{ route('dashboard.boutique.commandes.show', $commande) }}" class="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium transition-colors">
                                         Voir →
                                     </a>
