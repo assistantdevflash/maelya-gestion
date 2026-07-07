@@ -49,7 +49,7 @@ class BoutiqueController extends Controller
             return [
                 'id' => $p->id,
                 'nom' => $p->nom,
-                'prix' => $p->prix,
+                'prix' => $p->prix_vente,
                 'stock' => $p->stock,
                 'photo' => $p->photo,
                 'categorie' => $p->categorie?->nom,

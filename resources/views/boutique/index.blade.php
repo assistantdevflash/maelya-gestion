@@ -56,13 +56,13 @@
                 </div>
                 
                 {{-- Bouton panier avec badge --}}
-                <button @click="panierOpen = true" class="relative inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105 flex-shrink-0">
+                <button @click="panierOpen = true" class="relative inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:bg-primary-700 transition-all hover:scale-105 flex-shrink-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                     <span class="hidden sm:inline">Panier</span>
                     {{-- Badge compteur --}}
                     <span x-show="totalArticles > 0" 
                           x-text="totalArticles"
-                          class="absolute -top-2 -right-2 w-6 h-6 bg-secondary-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-slate-800"></span>
+                          class="absolute -top-2 -right-2 min-w-[1.5rem] h-6 px-1.5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-lg"></span>
                 </button>
             </div>
         </div>
@@ -99,8 +99,8 @@
                     </button>
                     @foreach($categories as $cat)
                     <button 
-                        @click="selectedCategorie = {{ $cat->id }}"
-                        :class="selectedCategorie === {{ $cat->id }} ? 'bg-primary-600 text-white ring-2 ring-primary-600 ring-offset-2' : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700'"
+                        @click="selectedCategorie = '{{ $cat->id }}'"
+                        :class="selectedCategorie === '{{ $cat->id }}' ? 'bg-primary-600 text-white ring-2 ring-primary-600 ring-offset-2' : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700'"
                         class="px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-slate-600 transition-all"
                     >
                         {{ $cat->nom }}
@@ -117,7 +117,7 @@
         </div>
 
         {{-- Grille produits --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <template x-for="produit in produitsAffiches" :key="produit.id">
                 <div class="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                     {{-- Image produit --}}
@@ -144,12 +144,12 @@
                         </div>
                         
                         <div class="flex items-center justify-between gap-3">
-                            <p class="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-500 bg-clip-text text-transparent">
+                            <p class="text-xl font-bold text-primary-600 dark:text-primary-400">
                                 <span x-text="new Intl.NumberFormat('fr-FR').format(produit.prix)"></span> F
                             </p>
                             <button 
                                 @click="ajouterAuPanier(produit)"
-                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-lg font-medium text-sm shadow-md hover:shadow-lg transition-all hover:scale-105"
+                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium text-sm shadow-md hover:shadow-lg transition-all hover:scale-105"
                             >
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
                                 Ajouter
@@ -243,7 +243,7 @@
                         <span x-text="new Intl.NumberFormat('fr-FR').format(total) + ' F'"></span>
                     </div>
                 </div>
-                <button @click="ouvrirCommande()" class="w-full py-3 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105">
+                <button @click="ouvrirCommande()" class="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105">
                     Commander
                 </button>
             </div>
@@ -330,7 +330,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all hover:scale-105">
+                <button type="submit" class="w-full py-3.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all hover:scale-105">
                     Confirmer la commande
                 </button>
             </form>
@@ -351,7 +351,7 @@
 
                 get produitsAffiches() {
                     return this.produits.filter(p => {
-                        const matchCategorie = this.selectedCategorie === null || p.categorie_id === this.selectedCategorie;
+                        const matchCategorie = this.selectedCategorie === null || String(p.categorie_id) === String(this.selectedCategorie);
                         const matchSearch = this.searchQuery === '' || p.nom.toLowerCase().includes(this.searchQuery.toLowerCase());
                         return matchCategorie && matchSearch;
                     });
