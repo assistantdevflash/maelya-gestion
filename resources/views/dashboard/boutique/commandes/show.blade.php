@@ -122,7 +122,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('dashboard.boutique.commandes.updateNotes', $commande) }}">
+                    <form method="POST" action="{{ route('dashboard.boutique.commandes.notes', $commande) }}">
                         @csrf
                         <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Notes administrateur</label>
                         <textarea 
@@ -147,7 +147,7 @@
                     <h2 class="font-semibold text-gray-900 dark:text-white">Changer le statut</h2>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ route('dashboard.boutique.commandes.updateStatut', $commande) }}" class="space-y-3">
+                    <form method="POST" action="{{ route('dashboard.boutique.commandes.statut', $commande) }}" class="space-y-3">
                         @csrf
                         <select name="statut" class="input w-full">
                             <option value="nouvelle" {{ $commande->statut == 'nouvelle' ? 'selected' : '' }}>Nouvelle</option>
@@ -173,7 +173,7 @@
                     <h2 class="font-semibold text-gray-900 dark:text-white">Paiement</h2>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ route('dashboard.boutique.commandes.marquerPayee', $commande) }}">
+                    <form method="POST" action="{{ route('dashboard.boutique.commandes.payer', $commande) }}">
                         @csrf
                         <p class="text-sm text-gray-600 dark:text-slate-400 mb-4">Marquer cette commande comme payée ({{ number_format($commande->total, 0, ',', ' ') }} FCFA)</p>
                         <button type="submit" class="btn-success w-full">
