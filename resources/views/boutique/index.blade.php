@@ -258,7 +258,7 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto"
+         class="fixed inset-0 bg-black/60 z-50 flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto"
          @click="commandeOpen = false">
         <div @click.stop 
              x-transition:enter="transition ease-out duration-300"
@@ -267,15 +267,18 @@
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="opacity-100 scale-100"
              x-transition:leave-end="opacity-0 scale-95"
-             class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl my-8">
-            <div class="p-5 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+             class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl my-2 sm:my-8 max-h-[calc(100vh-1rem)] flex flex-col">
+            {{-- Header sticky --}}
+            <div class="flex-shrink-0 p-5 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
                 <h2 class="text-xl font-bold text-gray-900 dark:text-white">Finaliser la commande</h2>
                 <button @click="commandeOpen = false" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
 
-            <form method="POST" action="{{ route('shop.commander', $institut->slug) }}" class="p-6 space-y-5">
+            {{-- Corps scrollable --}}
+            <div class="flex-1 overflow-y-auto p-6">
+            <form method="POST" action="{{ route('shop.commander', $institut->slug) }}" class="space-y-5">
                 @csrf
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -334,6 +337,7 @@
                     Confirmer la commande
                 </button>
             </form>
+            </div>
         </div>
     </div>
 
