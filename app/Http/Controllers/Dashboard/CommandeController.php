@@ -7,6 +7,7 @@ use App\Mail\CommandeStatutUpdatedClient;
 use App\Models\Commande;
 use App\Models\Vente;
 use App\Models\VenteItem;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -209,5 +210,20 @@ class CommandeController extends Controller
 
         return redirect()->route('dashboard.boutique.commandes.index')
             ->with('success', "Commande {$numero} supprimée avec succès.");
+    }
+
+    /**
+     * Générer la facture PDF d'une commande
+     */
+    public function facturePdf(Commande $commande)
+    {
+        $this->authorize('view', $commande);
+
+        $commande->load(['items', 'client', 'institut']);
+
+        $pdf = Pdf::loadView('pdf.facture-commande', compact('commande'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->stream("facture-{$commande->numero}.pdf");
     }
 }

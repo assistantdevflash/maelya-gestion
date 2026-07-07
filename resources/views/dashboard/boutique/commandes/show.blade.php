@@ -150,29 +150,55 @@
         {{-- Actions --}}
         <div class="space-y-6">
             @can('update', $commande)
+            @php
+                $actionsDisponibles = [
+                    'nouvelle' => [
+                        ['statut' => 'acceptee', 'label' => 'Accepter', 'class' => 'btn-success', 'icon' => 'M5 13l4 4L19 7'],
+                        ['statut' => 'refusee', 'label' => 'Refuser', 'class' => 'btn-danger', 'icon' => 'M6 18L18 6M6 6l12 12'],
+                    ],
+                    'acceptee' => [
+                        ['statut' => 'en_preparation', 'label' => 'Mettre en préparation', 'class' => 'btn-primary', 'icon' => 'M13 10V3L4 14h7v7l9-11h-7z'],
+                    ],
+                    'en_preparation' => [
+                        ['statut' => 'en_livraison', 'label' => 'Mettre en livraison', 'class' => 'btn-primary', 'icon' => 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z'],
+                    ],
+                    'en_livraison' => [
+                        ['statut' => 'livree', 'label' => 'Marquer livrée', 'class' => 'btn-success', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
+                    ],
+                ];
+                $actions = $actionsDisponibles[$commande->statut] ?? [];
+            @endphp
+            @if(!empty($actions))
             <div class="card">
                 <div class="card-header">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Changer le statut</h2>
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Actions</h2>
                 </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ route('dashboard.boutique.commandes.statut', $commande) }}" class="space-y-4">
+                <div class="card-body space-y-3">
+                    @foreach($actions as $action)
+                    <form method="POST" action="{{ route('dashboard.boutique.commandes.statut', $commande) }}">
                         @csrf
-                        <select name="statut" class="input w-full">
-                            <option value="nouvelle" {{ $commande->statut == 'nouvelle' ? 'selected' : '' }}>Nouvelle</option>
-                            <option value="acceptee" {{ $commande->statut == 'acceptee' ? 'selected' : '' }}>Acceptée</option>
-                            <option value="en_preparation" {{ $commande->statut == 'en_preparation' ? 'selected' : '' }}>En préparation</option>
-                            <option value="en_livraison" {{ $commande->statut == 'en_livraison' ? 'selected' : '' }}>En livraison</option>
-                            <option value="livree" {{ $commande->statut == 'livree' ? 'selected' : '' }}>Livrée</option>
-                            <option value="annulee" {{ $commande->statut == 'annulee' ? 'selected' : '' }}>Annulée</option>
-                            <option value="refusee" {{ $commande->statut == 'refusee' ? 'selected' : '' }}>Refusée</option>
-                        </select>
-                        <button type="submit" class="btn-primary w-full">
-                            Mettre à jour
+                        <input type="hidden" name="statut" value="{{ $action['statut'] }}">
+                        <button type="submit" class="{{ $action['class'] }} w-full">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $action['icon'] }}"/></svg>
+                            {{ $action['label'] }}
                         </button>
                     </form>
+                    @endforeach
                 </div>
             </div>
+            @endif
             @endcan
+
+            {{-- Facture --}}
+            <div class="card">
+                <div class="card-body space-y-3">
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white">Télécharger la facture</p>
+                    <a href="{{ route('dashboard.boutique.commandes.facture', $commande) }}" target="_blank" class="btn-outline w-full">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        Facture PDF
+                    </a>
+                </div>
+            </div>
 
             @if(!$commande->payee && $commande->peutEtreMarqueePayee())
             @can('update', $commande)
