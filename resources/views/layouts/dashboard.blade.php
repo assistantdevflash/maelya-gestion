@@ -460,7 +460,7 @@
                          x-transition:leave="transition-all duration-150 ease-in"
                          x-transition:leave-start="opacity-100 translate-y-0"
                          x-transition:leave-end="opacity-0 -translate-y-1"
-                         class="mt-0.5 ml-4 pl-3 border-l border-gray-100 dark:border-slate-700/60 space-y-0.5">
+                         class="pl-8 mt-1 space-y-1">
                         @if(auth()->user()->isAdmin())
                         <a href="{{ route('dashboard.produits.index') }}"
                            class="sidebar-link text-sm {{ request()->routeIs('dashboard.produits.*') || request()->routeIs('dashboard.categories-produits.*') ? 'active' : '' }}">
