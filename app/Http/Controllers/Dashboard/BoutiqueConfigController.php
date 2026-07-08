@@ -16,7 +16,13 @@ class BoutiqueConfigController extends Controller
     {
         $institut = Institut::findOrFail(session('current_institut_id', auth()->user()->institut_id));
 
-        return view('dashboard.boutique.config', compact('institut'));
+        // Vérifier si une demande d'ajout d'option boutique est en attente
+        $demandeEnAttente = \App\Models\Abonnement::where('user_id', auth()->id())
+            ->where('statut', 'en_attente')
+            ->whereJsonContains('metadata->type', 'ajout_option_boutique')
+            ->first();
+
+        return view('dashboard.boutique.config', compact('institut', 'demandeEnAttente'));
     }
 
     /**

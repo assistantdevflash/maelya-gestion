@@ -219,6 +219,23 @@ class AbonnementController extends Controller
             return back()->with('error', 'Vous avez déjà une demande d\'ajout d\'option boutique en attente.');
         }
 
+        // Validation des données de paiement
+        $request->validate([
+            'reference_transfert' => 'nullable|string|max:255',
+            'preuve_paiement' => 'nullable|file|mimes:jpeg,jpg,png,webp,pdf|max:10240',
+        ]);
+
+        // Au moins une preuve de paiement
+        if (!$request->reference_transfert && !$request->hasFile('preuve_paiement')) {
+            return back()->with('error', 'Veuillez fournir une référence de transfert ou un reçu de paiement.');
+        }
+
+        // Upload du reçu si présent
+        $preuvePath = null;
+        if ($request->hasFile('preuve_paiement')) {
+            $preuvePath = $request->file('preuve_paiement')->store('abonnements/preuves', 'public');
+        }
+
         // Calculer le prorata pour le reste de la période
         $joursRestants = max(1, $abo->joursRestants());
         $prixJournalier = 3900 / 30;
@@ -231,8 +248,8 @@ class AbonnementController extends Controller
             'montant'    => $montantProrata,
             'periode'    => 'option_boutique',
             'statut'     => 'en_attente',
-            'reference_transfert' => null,
-            'preuve_paiement' => null,
+            'reference_transfert' => $request->reference_transfert,
+            'preuve_paiement' => $preuvePath,
             'metadata'   => [
                 'type' => 'ajout_option_boutique',
                 'abonnement_source_id' => $abo->id,
@@ -263,7 +280,7 @@ class AbonnementController extends Controller
             );
         } catch (\Throwable $e) { \Log::warning('[Push] ' . $e->getMessage()); }
 
-        return redirect()->route('abonnement.plans')
-            ->with('success', 'Demande d\'ajout de l\'option boutique envoyée ! Montant prorata : ' . number_format($montantProrata, 0, ',', ' ') . ' FCFA.');
+        return redirect()->route('dashboard.boutique.config.index')
+            ->with('success', 'Demande d\'ajout de l\'option boutique envoyée ! Montant prorata : ' . number_format($montantProrata, 0, ',', ' ') . ' FCFA. Vous serez notifié dès la validation.');
     }
 }
