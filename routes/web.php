@@ -329,6 +329,7 @@ Route::middleware('auth')->prefix('abonnement')->name('abonnement.')->group(func
     Route::get('/historique', [AbonnementController::class, 'historique'])->name('historique');
     Route::get('/souscrire/{plan}', [AbonnementController::class, 'showSouscrire'])->name('souscrire.show');
     Route::post('/souscrire/{plan}', [AbonnementController::class, 'souscrire'])->name('souscrire');
+    Route::post('/ajouter-option-boutique', [AbonnementController::class, 'ajouterOptionBoutique'])->name('ajouter-boutique');
 });
 
 // ─── Webhooks ─────────────────────────────────────────────────────────────────

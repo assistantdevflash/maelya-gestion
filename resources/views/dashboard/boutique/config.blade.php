@@ -31,13 +31,29 @@
                 <h3 class="text-lg font-bold text-amber-900 dark:text-amber-200">Module non inclus dans votre abonnement</h3>
                 <p class="text-amber-800 dark:text-amber-300 mt-2">
                     Le module <strong>Boutique en ligne</strong> est une option payante à <strong>3 900 F/mois</strong>.
-                    Ajoutez-le à votre abonnement pour permettre à vos clients de commander vos produits en ligne avec livraison à domicile.
+                    Ajoutez-le à votre abonnement actuel pour permettre à vos clients de commander vos produits en ligne avec livraison à domicile.
                 </p>
+                @php
+                    $aboActif = auth()->user()->abonnementActif;
+                    $joursRestants = $aboActif ? $aboActif->joursRestants() : 0;
+                    $montantProrata = $joursRestants > 0 ? (int) round((3900 / 30) * $joursRestants) : 0;
+                @endphp
+                @if($montantProrata > 0)
+                <div class="mt-3 p-3 bg-amber-100 dark:bg-amber-900/40 rounded-lg border border-amber-200 dark:border-amber-700">
+                    <p class="text-sm text-amber-900 dark:text-amber-200">
+                        💡 <strong>Prorata calculé :</strong> {{ number_format($montantProrata, 0, ',', ' ') }} FCFA pour les {{ $joursRestants }} jours restants de votre abonnement actuel.
+                        À partir du prochain renouvellement, le montant sera de 3 900 FCFA/mois.
+                    </p>
+                </div>
+                @endif
                 <div class="flex gap-3 mt-4">
-                    <a href="{{ route('abonnement.plans') }}?ajouter=boutique" class="btn-primary">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                        Activer la boutique (+3 900 F/mois)
-                    </a>
+                    <form method="POST" action="{{ route('abonnement.ajouter-boutique') }}" class="inline-block">
+                        @csrf
+                        <button type="submit" class="btn-primary">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                            Activer la boutique (+{{ number_format($montantProrata, 0, ',', ' ') }} F)
+                        </button>
+                    </form>
                     <a href="{{ route('dashboard.boutique.commandes.index') }}" class="btn-ghost">
                         Voir mes commandes
                     </a>

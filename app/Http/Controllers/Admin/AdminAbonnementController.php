@@ -51,6 +51,51 @@ class AdminAbonnementController extends Controller
             return back()->with('error', 'Ce n\'est pas une demande en attente.');
         }
 
+        // ── Cas spécial : ajout d'option boutique en cours d'abonnement ───────
+        if (($abonnement->metadata['type'] ?? '') === 'ajout_option_boutique') {
+            $aboSource = Abonnement::find($abonnement->metadata['abonnement_source_id'] ?? null);
+            
+            if (!$aboSource || $aboSource->statut !== 'actif') {
+                return back()->with('error', 'L\'abonnement source n\'est plus actif.');
+            }
+
+            // Activer l'option boutique sur l'abonnement source
+            $aboSource->setBoutique(true, 3900);
+            $aboSource->save();
+
+            // Marquer cette demande comme traitée
+            $abonnement->update([
+                'statut' => 'actif',
+                'valide_par' => Auth::id(),
+                'debut_le' => now()->toDateString(),
+                'expire_le' => $aboSource->expire_le, // même date d'expiration que l'abonnement principal
+            ]);
+
+            // Notifier l'utilisateur
+            $user = $aboSource->user;
+            if ($user) {
+                NotificationService::notifyUser(
+                    $user,
+                    'option_boutique_activee',
+                    '🛍️ Option boutique activée',
+                    'Votre option boutique en ligne est maintenant active ! Vos clients peuvent commander en ligne.',
+                    '/dashboard/boutique/config'
+                );
+
+                try {
+                    app(\App\Services\PushNotificationService::class)->sendToUser(
+                        $user,
+                        '🛍️ Boutique activée !',
+                        'Votre boutique en ligne est maintenant active.',
+                        '/dashboard/boutique/config'
+                    );
+                } catch (\Throwable $e) { \Log::warning('[Push] ' . $e->getMessage()); }
+            }
+
+            return back()->with('success', 'Option boutique activée pour ' . ($user->name ?? 'l\'utilisateur') . ' !');
+        }
+
+        // ── Validation normale d'abonnement ────────────────────────────────────
         $plan = $abonnement->plan;
         $jours = $plan->joursPourPeriode($abonnement->periode);
 

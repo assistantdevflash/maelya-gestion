@@ -7,6 +7,7 @@ use App\Mail\NouvelleDemandeAbonnement;
 use App\Models\Abonnement;
 use App\Models\PlanAbonnement;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -189,5 +190,80 @@ class AbonnementController extends Controller
 
         return redirect()->route('abonnement.plans')
             ->with('success', "Votre demande d'abonnement a été envoyée ! Elle sera validée sous 24h.");
+    }
+
+    /**
+     * Ajouter l'option boutique à un abonnement existant
+     */
+    public function ajouterOptionBoutique(Request $request)
+    {
+        $user = Auth::user();
+        $abo = $user->abonnementActif;
+
+        // Vérifications de base
+        if (!$abo || $abo->plan->slug === 'essai') {
+            return back()->with('error', 'Action non disponible.');
+        }
+
+        if ($abo->hasBoutique()) {
+            return back()->with('info', 'L\'option boutique est déjà activée sur votre abonnement.');
+        }
+
+        // Vérifier qu'il n'y a pas déjà une demande en attente
+        $demandeExistante = Abonnement::where('user_id', $user->id)
+            ->where('statut', 'en_attente')
+            ->whereJsonContains('metadata->type', 'ajout_option_boutique')
+            ->exists();
+
+        if ($demandeExistante) {
+            return back()->with('error', 'Vous avez déjà une demande d\'ajout d\'option boutique en attente.');
+        }
+
+        // Calculer le prorata pour le reste de la période
+        $joursRestants = max(1, $abo->joursRestants());
+        $prixJournalier = 3900 / 30;
+        $montantProrata = (int) round($prixJournalier * $joursRestants);
+
+        // Créer une demande d'ajout d'option (en_attente)
+        $nouvelAbo = Abonnement::create([
+            'user_id'    => $user->id,
+            'plan_id'    => $abo->plan_id,
+            'montant'    => $montantProrata,
+            'periode'    => 'option_boutique',
+            'statut'     => 'en_attente',
+            'reference_transfert' => null,
+            'preuve_paiement' => null,
+            'metadata'   => [
+                'type' => 'ajout_option_boutique',
+                'abonnement_source_id' => $abo->id,
+                'boutique' => true,
+                'boutique_prix' => 3900,
+                'jours_restants' => $joursRestants,
+            ],
+        ]);
+
+        // Notifier les super-admins
+        $superAdmins = User::where('role', 'super_admin')->get();
+        foreach ($superAdmins as $admin) {
+            Mail::to($admin->email)->send(new \App\Mail\NouvelleDemandeAbonnement($nouvelAbo));
+        }
+
+        NotificationService::notifyAdmins(
+            'nouvelle_demande',
+            '🛍️ Ajout option boutique',
+            ($user->prenom ?? $user->name) . ' demande à ajouter l\'option boutique en ligne (prorata ' . number_format($montantProrata, 0, ',', ' ') . ' F).',
+            '/admin/abonnements?statut=en_attente'
+        );
+
+        try {
+            app(\App\Services\PushNotificationService::class)->sendToAdmins(
+                '🛍️ Ajout option boutique',
+                ($user->prenom ?? '') . ' demande l\'option boutique (' . number_format($montantProrata, 0, ',', ' ') . ' F prorata).',
+                '/admin/abonnements?statut=en_attente'
+            );
+        } catch (\Throwable $e) { \Log::warning('[Push] ' . $e->getMessage()); }
+
+        return redirect()->route('abonnement.plans')
+            ->with('success', 'Demande d\'ajout de l\'option boutique envoyée ! Montant prorata : ' . number_format($montantProrata, 0, ',', ' ') . ' FCFA.');
     }
 }
