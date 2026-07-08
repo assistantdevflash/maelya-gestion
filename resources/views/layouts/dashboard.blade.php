@@ -6,8 +6,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ isset($title) ? $title . ' — ' : '' }}Maëlya Gestion</title>
 
-    {{-- Performance: DNS prefetch --}}
+    {{-- Performance: DNS prefetch & Preconnect --}}
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 
     {{-- PWA --}}
     <link rel="manifest" href="/manifest.json">
@@ -20,21 +21,15 @@
 
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     
-    {{-- Theme anti-flash (critical inline script) --}}
-    <script>
-        (function() {
-            try {
-                var t = localStorage.getItem('maelya-theme');
-                var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                if (t === 'dark' || (t !== 'light' && prefersDark)) {
-                    document.documentElement.classList.add('dark');
-                }
-            } catch(e) {}
-        })();
-    </script>
+    {{-- Theme anti-flash (critical inline script - minified) --}}
+    <script>(function(){try{var t=localStorage.getItem('maelya-theme'),d=matchMedia('(prefers-color-scheme: dark)').matches;(t==='dark'||(t!=='light'&&d))&&document.documentElement.classList.add('dark')}catch(e){}})();</script>
     
+    {{-- Vite assets with preload --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @livewireStyles
+    
+    {{-- Livewire styles (async) --}}
+    <style>{{ app('livewire')->styles(['nonce' => csp_nonce()]) }}</style>
+    
     {{ $styles ?? '' }}
     @stack('head')
 </head>
@@ -1010,7 +1005,8 @@
     </script>
 </div>
 
-@livewireScripts
+{{-- Livewire scripts (defer for performance) --}}
+<script>{{ app('livewire')->scripts(['nonce' => csp_nonce()]) }}</script>
 <script>
     window.csrfToken = '{{ csrf_token() }}';
 </script>

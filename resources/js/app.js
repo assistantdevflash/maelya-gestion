@@ -1,14 +1,25 @@
 import './bootstrap';
-import caisseApp from './caisse';
 
-// Expose le composant Caisse POS en global pour Alpine x-data
-// Livewire gère Alpine : import, window.Alpine, et Alpine.start()
-window.caisseApp = caisseApp;
+// Lazy load caisse app only when needed
+let caisseAppModule = null;
+window.caisseApp = function(...args) {
+    if (!caisseAppModule) {
+        // Import dynamique : ne charge que si on accède à la caisse
+        import('./caisse').then(module => {
+            caisseAppModule = module.default;
+            if (typeof caisseAppModule === 'function') {
+                return caisseAppModule(...args);
+            }
+        });
+        return { loading: true }; // État temporaire
+    }
+    return caisseAppModule(...args);
+};
 
 // ═══════════════════════════════════════════════════════════════
 //  GLOBAL FORM LOADING — disable bouton + spinner au submit
 // ═══════════════════════════════════════════════════════════════
-document.addEventListener('submit', (e) => {
+const handleFormSubmit = (e) => {
     const form = e.target;
     if (!(form instanceof HTMLFormElement)) return;
 
@@ -39,7 +50,10 @@ document.addEventListener('submit', (e) => {
 
     // Afficher la barre de progression
     showProgressBar();
-});
+};
+
+// Attacher l'événement
+document.addEventListener('submit', handleFormSubmit);
 
 // ═══════════════════════════════════════════════════════════════
 //  BARRE DE PROGRESSION — navigation & soumission

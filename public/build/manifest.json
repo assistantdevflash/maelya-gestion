@@ -1,6 +1,14 @@
 {
+  "_alpine-l0sNRNKZ.js": {
+    "file": "assets/js/alpine-l0sNRNKZ.js",
+    "name": "alpine"
+  },
+  "_vendor-DBnUWTm1.js": {
+    "file": "assets/js/vendor-DBnUWTm1.js",
+    "name": "vendor"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-BikbfJWt.css",
+    "file": "assets/css/app-BIGSwsrB.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -9,9 +17,21 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-ygthFGgK.js",
+    "file": "assets/js/app-2KIFQhly.js",
     "name": "app",
     "src": "resources/js/app.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_vendor-DBnUWTm1.js"
+    ],
+    "dynamicImports": [
+      "resources/js/caisse.js"
+    ]
+  },
+  "resources/js/caisse.js": {
+    "file": "assets/js/caisse-DN7in10L.js",
+    "name": "caisse",
+    "src": "resources/js/caisse.js",
+    "isDynamicEntry": true
   }
 }
