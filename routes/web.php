@@ -327,6 +327,7 @@ Route::middleware('auth')->prefix('abonnement')->name('abonnement.')->group(func
     Route::get('/plans', [AbonnementController::class, 'plans'])->name('plans');
     Route::get('/upgrade', [AbonnementController::class, 'upgrade'])->name('upgrade');
     Route::get('/historique', [AbonnementController::class, 'historique'])->name('historique');
+    Route::get('/souscrire/{plan}', [AbonnementController::class, 'showSouscrire'])->name('souscrire.show');
     Route::post('/souscrire/{plan}', [AbonnementController::class, 'souscrire'])->name('souscrire');
 });
 

@@ -73,6 +73,44 @@ class AbonnementController extends Controller
         return view('dashboard.abonnement.plans', compact('plans', 'abonnementActif', 'demandeEnAttente'));
     }
 
+    /**
+     * Affiche la page de souscription complète pour un plan donné.
+     */
+    public function showSouscrire(Request $request, PlanAbonnement $plan)
+    {
+        if (!$plan->actif || $plan->slug === 'essai') {
+            return redirect()->route('abonnement.plans')
+                ->with('error', "Ce plan n'est pas disponible.");
+        }
+
+        $periode = $request->query('periode', 'mensuel');
+        if (!in_array($periode, ['mensuel', 'annuel', 'triennal'])) {
+            $periode = 'mensuel';
+        }
+
+        $user = Auth::user();
+        $abonnementActif = $user->abonnementActif;
+
+        $demandeEnAttente = Abonnement::where('user_id', $user->id)
+            ->where('statut', 'en_attente')
+            ->with('plan')
+            ->first();
+
+        // Tous les plans pour permettre le changement
+        $plans = PlanAbonnement::where('actif', true)
+            ->whereIn('slug', ['premium', 'premium-plus', 'ultra', 'entreprise'])
+            ->orderBy('ordre')
+            ->get();
+
+        // Prix pour la période sélectionnée
+        $prixPlan = $plan->prixEffectif($periode);
+
+        return view('dashboard.abonnement.souscrire', compact(
+            'plan', 'plans', 'periode', 'prixPlan',
+            'abonnementActif', 'demandeEnAttente', 'user'
+        ));
+    }
+
     public function souscrire(Request $request, PlanAbonnement $plan)
     {
         if (!$plan->actif || $plan->slug === 'essai') {
