@@ -48,19 +48,19 @@
             </div>
             <div class="card-body space-y-5">
                 {{-- Plan sélectionné (non modifiable) --}}
-                <div class="p-6 bg-gradient-to-br from-primary-50 to-pink-50 dark:from-primary-950/40 dark:to-pink-950/40 border-2 border-primary-200 dark:border-primary-800/60 rounded-2xl">
+                <div class="p-6 bg-gradient-to-br from-primary-50 to-pink-50 dark:from-primary-900/30 dark:to-pink-900/30 border-2 border-primary-200 dark:border-primary-700 rounded-2xl">
                     <div class="flex items-center justify-between">
                         <div>
                             <label class="block text-xs font-bold uppercase tracking-wider text-primary-600 dark:text-primary-400 mb-2">Plan sélectionné</label>
                             <h3 class="text-2xl font-display font-bold text-gray-900 dark:text-white">{{ $plan->nom }}</h3>
-                            <p class="text-sm text-gray-600 dark:text-slate-300 mt-1">{{ number_format($plan->prixEffectif(), 0, ',', ' ') }} FCFA / mois</p>
+                            <p class="text-sm text-gray-600 dark:text-slate-200 mt-1">{{ number_format($plan->prixEffectif(), 0, ',', ' ') }} FCFA / mois</p>
                         </div>
-                        <div class="flex items-center justify-center w-16 h-16 rounded-2xl bg-white dark:bg-slate-800 shadow-md">
+                        <div class="flex items-center justify-center w-16 h-16 rounded-2xl bg-white dark:bg-slate-700 shadow-md border border-gray-100 dark:border-slate-600">
                             <svg class="w-8 h-8 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         </div>
                     </div>
                     @if($plan->description)
-                    <p class="text-sm text-gray-600 dark:text-slate-400 mt-3 pt-3 border-t border-primary-200 dark:border-primary-800/50">{{ $plan->description }}</p>
+                    <p class="text-sm text-gray-600 dark:text-slate-300 mt-3 pt-3 border-t border-primary-200 dark:border-primary-700">{{ $plan->description }}</p>
                     @endif
                 </div>
 
@@ -97,33 +97,33 @@
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white">2. Récapitulatif</h2>
             </div>
             <div class="card-body space-y-4">
-                <div class="p-5 bg-gray-50 dark:bg-slate-900/50 rounded-2xl border-2 border-gray-200 dark:border-slate-700 space-y-3">
+                <div class="p-5 bg-gray-50 dark:bg-slate-800 rounded-2xl border-2 border-gray-200 dark:border-slate-600 space-y-3">
                     <div class="flex justify-between items-center">
-                        <span class="text-gray-600 dark:text-slate-300 font-medium">Plan</span>
+                        <span class="text-gray-600 dark:text-slate-200 font-medium">Plan</span>
                         <span class="font-bold text-gray-900 dark:text-white">{{ $plan->nom }}</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-gray-600 dark:text-slate-300 font-medium">Période</span>
+                        <span class="text-gray-600 dark:text-slate-200 font-medium">Période</span>
                         <span class="font-semibold text-gray-900 dark:text-white" x-text="periodeLabel()"></span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-gray-600 dark:text-slate-300 font-medium">Prix du plan</span>
+                        <span class="text-gray-600 dark:text-slate-200 font-medium">Prix du plan</span>
                         <span class="font-semibold text-gray-900 dark:text-white" x-text="formatPlanPrice() + ' FCFA'"></span>
                     </div>
 
                     {{-- Option boutique --}}
-                    <div class="pt-3 border-t-2 border-gray-200 dark:border-slate-700">
-                        <label class="flex items-start gap-3 cursor-pointer p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800/70 transition-colors border-2 border-transparent hover:border-primary-200 dark:hover:border-primary-800/50">
+                    <div class="pt-3 border-t-2 border-gray-200 dark:border-slate-600">
+                        <label class="flex items-start gap-3 cursor-pointer p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700/50 transition-colors border-2 border-transparent hover:border-primary-200 dark:hover:border-primary-700/70">
                             <input type="checkbox" name="option_boutique" value="1"
                                    x-model="optionBoutique"
-                                   class="mt-1 w-5 h-5 rounded border-gray-300 dark:border-slate-500 text-primary-600 focus:ring-primary-500 dark:bg-slate-800 dark:focus:ring-primary-400">
+                                   class="mt-1 w-5 h-5 rounded border-gray-300 dark:border-slate-500 text-primary-600 focus:ring-primary-500 dark:bg-slate-700 dark:focus:ring-primary-400">
                             <div class="flex-1">
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <span class="font-semibold text-gray-900 dark:text-white text-base">🛍️ Boutique en ligne</span>
-                                    <span class="text-sm font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/50 px-2 py-0.5 rounded">+3 900 F/mois</span>
+                                    <span class="text-sm font-bold text-primary-600 dark:text-primary-300 bg-primary-50 dark:bg-primary-900/50 px-2 py-0.5 rounded">+3 900 F/mois</span>
                                 </div>
-                                <p class="text-sm text-gray-600 dark:text-slate-300 mt-1">Vos clients pourront commander en ligne avec livraison</p>
-                                <p x-show="optionBoutique" x-cloak class="text-xs font-semibold text-primary-700 dark:text-primary-300 mt-2 bg-primary-50 dark:bg-primary-950/30 px-2 py-1 rounded inline-block">
+                                <p class="text-sm text-gray-600 dark:text-slate-200 mt-1">Vos clients pourront commander en ligne avec livraison</p>
+                                <p x-show="optionBoutique" x-cloak class="text-xs font-semibold text-primary-700 dark:text-primary-200 mt-2 bg-primary-50 dark:bg-primary-900/40 px-2 py-1 rounded inline-block">
                                     +<span x-text="boutiquePrice()"></span> FCFA pour la période
                                 </p>
                             </div>
@@ -131,9 +131,9 @@
                     </div>
 
                     {{-- Total --}}
-                    <div class="pt-4 mt-1 border-t-2 border-primary-300 dark:border-primary-700 flex justify-between items-center">
+                    <div class="pt-4 mt-1 border-t-2 border-primary-300 dark:border-primary-600 flex justify-between items-center">
                         <span class="text-lg font-bold text-gray-900 dark:text-white">Total à payer</span>
-                        <span class="text-2xl font-bold text-primary-600 dark:text-primary-400" x-text="totalPrice() + ' FCFA'"></span>
+                        <span class="text-2xl font-bold text-primary-600 dark:text-primary-300" x-text="totalPrice() + ' FCFA'"></span>
                     </div>
                 </div>
             </div>
@@ -148,15 +148,15 @@
 
                 {{-- Mode de paiement --}}
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-3">Mode de paiement</label>
-                    <div class="flex items-center gap-2 bg-gray-100 dark:bg-slate-800 rounded-xl p-1.5">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-3">Mode de paiement</label>
+                    <div class="flex items-center gap-2 bg-gray-100 dark:bg-slate-800/80 rounded-xl p-1.5 shadow-inner">
                         <button type="button" @click="payMethod = 'om'"
-                                :class="payMethod === 'om' ? 'bg-white dark:bg-slate-700 shadow-sm text-orange-600 font-semibold' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300'"
+                                :class="payMethod === 'om' ? 'bg-white dark:bg-slate-700 shadow-md text-orange-600 dark:text-orange-500 font-semibold border border-gray-200 dark:border-slate-600' : 'text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'"
                                 class="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm transition-all">
                             <span class="font-bold text-lg">OM</span> Orange Money
                         </button>
                         <button type="button" @click="payMethod = 'wave'"
-                                :class="payMethod === 'wave' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600 font-semibold' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300'"
+                                :class="payMethod === 'wave' ? 'bg-white dark:bg-slate-700 shadow-md text-blue-600 dark:text-blue-500 font-semibold border border-gray-200 dark:border-slate-600' : 'text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'"
                                 class="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm transition-all">
                             <span class="font-bold text-lg">W</span> Wave
                         </button>
@@ -164,34 +164,34 @@
                 </div>
 
                 {{-- Infos bénéficiaire --}}
-                <div class="p-5 bg-gray-50 dark:bg-slate-900/60 rounded-2xl border-2 border-gray-200 dark:border-slate-700 space-y-4">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm font-medium text-gray-600 dark:text-slate-300">Bénéficiaire</span>
-                        <div class="flex items-center gap-3">
-                            <span class="font-bold text-gray-900 dark:text-white font-mono text-lg tracking-wide">07 09 87 40 67</span>
+                <div class="p-5 bg-gray-50 dark:bg-slate-800 rounded-2xl border-2 border-gray-200 dark:border-slate-600 space-y-4">
+                    <div class="flex items-center justify-between gap-3">
+                        <span class="text-sm font-medium text-gray-600 dark:text-slate-200 flex-shrink-0">Bénéficiaire</span>
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                            <span class="font-bold text-gray-900 dark:text-white font-mono text-base sm:text-lg tracking-wide whitespace-nowrap">07 09 87 40 67</span>
                             <button type="button"
                                     @click="navigator.clipboard.writeText('0709874067'); copied = true; setTimeout(() => copied = false, 2000)"
-                                    class="p-2 text-gray-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
+                                    class="p-2 text-gray-500 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors flex-shrink-0">
                                 <svg x-show="!copied" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                                 <svg x-show="copied" x-cloak class="w-5 h-5 text-emerald-500 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             </button>
                         </div>
                     </div>
-                    <div class="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-slate-700">
-                        <span class="text-sm font-medium text-gray-600 dark:text-slate-300">Nom</span>
+                    <div class="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-slate-600">
+                        <span class="text-sm font-medium text-gray-600 dark:text-slate-200">Nom</span>
                         <span class="font-semibold text-gray-900 dark:text-white">MAELYA GESTION</span>
                     </div>
-                    <div class="flex items-center justify-between pt-3 border-t-2 border-gray-300 dark:border-slate-600">
-                        <span class="text-sm font-medium text-gray-600 dark:text-slate-300">Montant à transférer</span>
-                        <span class="text-xl font-bold text-primary-600 dark:text-primary-400" x-text="totalPrice() + ' FCFA'"></span>
+                    <div class="flex items-center justify-between pt-3 border-t-2 border-gray-300 dark:border-slate-500">
+                        <span class="text-sm font-medium text-gray-600 dark:text-slate-200">Montant à transférer</span>
+                        <span class="text-xl font-bold text-primary-600 dark:text-primary-300" x-text="totalPrice() + ' FCFA'"></span>
                     </div>
                 </div>
 
                 {{-- Info --}}
-                <div class="flex items-start gap-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/40 rounded-xl p-4">
-                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
-                    <p class="text-sm text-blue-800 dark:text-blue-200">
-                        Effectuez le transfert au numéro ci-dessus puis fournissez la référence ou le reçu. Votre abonnement sera activé <strong>après vérification par un administrateur</strong> (généralement sous 24h).
+                <div class="flex items-start gap-3 bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-200 dark:border-blue-700/60 rounded-xl p-4">
+                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-300 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                    <p class="text-sm text-blue-900 dark:text-blue-100">
+                        Effectuez le transfert au numéro ci-dessus puis fournissez la référence ou le reçu. Votre abonnement sera activé <strong class="dark:text-white">après vérification par un administrateur</strong> (généralement sous 24h).
                     </p>
                 </div>
 
