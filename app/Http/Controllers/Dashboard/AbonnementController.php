@@ -96,17 +96,11 @@ class AbonnementController extends Controller
             ->with('plan')
             ->first();
 
-        // Tous les plans pour permettre le changement
-        $plans = PlanAbonnement::where('actif', true)
-            ->whereIn('slug', ['premium', 'premium-plus', 'ultra', 'entreprise'])
-            ->orderBy('ordre')
-            ->get();
-
         // Prix pour la période sélectionnée
         $prixPlan = $plan->prixEffectif($periode);
 
         return view('dashboard.abonnement.souscrire', compact(
-            'plan', 'plans', 'periode', 'prixPlan',
+            'plan', 'periode', 'prixPlan',
             'abonnementActif', 'demandeEnAttente', 'user'
         ));
     }

@@ -1,11 +1,11 @@
 <x-dashboard-layout>
-<div class="max-w-3xl mx-auto space-y-8 py-4" x-data="souscrire({{ $plan->id }}, '{{ $plan->nom }}', {{ $plan->prixEffectif() }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }}, '{{ $periode }}', {{ request('ajouter') === 'boutique' ? 'true' : 'false' }})">
+<div class="max-w-3xl mx-auto space-y-8 py-4" x-data="souscrire({{ $plan->prixEffectif() }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }}, '{{ $periode }}', {{ request('ajouter') === 'boutique' ? 'true' : 'false' }})">
 
     {{-- Fil d'Ariane --}}
-    <nav class="flex items-center gap-2 text-sm text-gray-500">
-        <a href="{{ route('abonnement.plans') }}" class="hover:text-primary-600 transition-colors">Abonnement</a>
+    <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400">
+        <a href="{{ route('abonnement.plans') }}" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Abonnement</a>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-        <span class="text-gray-900 font-medium">Souscrire à {{ $plan->nom }}</span>
+        <span class="text-gray-900 dark:text-white font-medium">Souscrire à {{ $plan->nom }}</span>
     </nav>
 
     {{-- Titre --}}
@@ -41,53 +41,49 @@
         @csrf
         <input type="hidden" name="periode" :value="periode">
 
-        {{-- Section 1 : Choix du plan et période --}}
+        {{-- Section 1 : Plan et période --}}
         <div class="card">
             <div class="card-header">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white">1. Votre formule</h2>
             </div>
             <div class="card-body space-y-5">
-                {{-- Sélecteur de plan --}}
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-3">Plan choisi</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        @foreach($plans as $p)
-                        <label class="relative cursor-pointer">
-                            <input type="radio" name="plan_selector" value="{{ $p->id }}"
-                                   @click="changePlan('{{ $p->id }}', '{{ $p->nom }}', {{ $p->prixEffectif() }}, {{ $p->prixPourPeriode('annuel') }}, {{ $p->prixPourPeriode('triennal') }})"
-                                   {{ $p->id === $plan->id ? 'checked' : '' }}
-                                   class="peer sr-only">
-                            <div class="border-2 rounded-xl p-4 text-center transition-all
-                                        peer-checked:border-primary-500 peer-checked:bg-primary-50 dark:peer-checked:bg-primary-950/20
-                                        border-gray-200 dark:border-slate-600 hover:border-primary-300">
-                                <span class="block font-bold text-gray-900 dark:text-white text-lg">{{ $p->nom }}</span>
-                                <span class="text-sm text-gray-500 dark:text-slate-400">{{ number_format($p->prixEffectif(), 0, ',', ' ') }} F/mois</span>
-                            </div>
-                        </label>
-                        @endforeach
+                {{-- Plan sélectionné (non modifiable) --}}
+                <div class="p-6 bg-gradient-to-br from-primary-50 to-pink-50 dark:from-primary-950/40 dark:to-pink-950/40 border-2 border-primary-200 dark:border-primary-800/60 rounded-2xl">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-primary-600 dark:text-primary-400 mb-2">Plan sélectionné</label>
+                            <h3 class="text-2xl font-display font-bold text-gray-900 dark:text-white">{{ $plan->nom }}</h3>
+                            <p class="text-sm text-gray-600 dark:text-slate-300 mt-1">{{ number_format($plan->prixEffectif(), 0, ',', ' ') }} FCFA / mois</p>
+                        </div>
+                        <div class="flex items-center justify-center w-16 h-16 rounded-2xl bg-white dark:bg-slate-800 shadow-md">
+                            <svg class="w-8 h-8 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        </div>
                     </div>
+                    @if($plan->description)
+                    <p class="text-sm text-gray-600 dark:text-slate-400 mt-3 pt-3 border-t border-primary-200 dark:border-primary-800/50">{{ $plan->description }}</p>
+                    @endif
                 </div>
 
                 {{-- Sélecteur de période --}}
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-3">Période d'engagement</label>
-                    <div class="inline-flex bg-gray-100 dark:bg-slate-800 rounded-xl p-1.5 gap-1.5">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-3">Période d'engagement</label>
+                    <div class="inline-flex bg-gray-100 dark:bg-slate-800/80 rounded-xl p-1.5 gap-1.5 shadow-inner">
                         <button type="button" @click="setPeriode('mensuel')"
-                                :class="periode === 'mensuel' ? 'bg-white dark:bg-slate-700 shadow-sm text-gray-900 dark:text-white font-semibold' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300'"
+                                :class="periode === 'mensuel' ? 'bg-white dark:bg-slate-700 shadow-md text-gray-900 dark:text-white font-semibold border border-gray-200 dark:border-slate-600' : 'text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'"
                                 class="px-5 py-3 rounded-lg text-sm transition-all flex items-center gap-2">
                             📅 Mensuel
                         </button>
                         <button type="button" @click="setPeriode('annuel')"
-                                :class="periode === 'annuel' ? 'bg-white dark:bg-slate-700 shadow-sm text-gray-900 dark:text-white font-semibold' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300'"
+                                :class="periode === 'annuel' ? 'bg-white dark:bg-slate-700 shadow-md text-gray-900 dark:text-white font-semibold border border-gray-200 dark:border-slate-600' : 'text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'"
                                 class="px-5 py-3 rounded-lg text-sm transition-all flex items-center gap-2 relative">
                             📆 1 an
-                            <span class="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">-10%</span>
+                            <span class="absolute -top-2 -right-2 bg-emerald-500 dark:bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">-10%</span>
                         </button>
                         <button type="button" @click="setPeriode('triennal')"
-                                :class="periode === 'triennal' ? 'bg-white dark:bg-slate-700 shadow-sm text-gray-900 dark:text-white font-semibold' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300'"
+                                :class="periode === 'triennal' ? 'bg-white dark:bg-slate-700 shadow-md text-gray-900 dark:text-white font-semibold border border-gray-200 dark:border-slate-600' : 'text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'"
                                 class="px-5 py-3 rounded-lg text-sm transition-all flex items-center gap-2 relative">
                             📆 3 ans
-                            <span class="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">-20%</span>
+                            <span class="absolute -top-2 -right-2 bg-emerald-500 dark:bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">-20%</span>
                         </button>
                     </div>
                     <p class="text-xs text-gray-500 dark:text-slate-400 mt-2" x-text="periodeInfo()"></p>
@@ -101,33 +97,33 @@
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white">2. Récapitulatif</h2>
             </div>
             <div class="card-body space-y-4">
-                <div class="p-5 bg-gray-50 dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-700 space-y-3">
+                <div class="p-5 bg-gray-50 dark:bg-slate-900/50 rounded-2xl border-2 border-gray-200 dark:border-slate-700 space-y-3">
                     <div class="flex justify-between items-center">
-                        <span class="text-gray-600 dark:text-slate-400">Plan</span>
-                        <span class="font-bold text-gray-900 dark:text-white" x-text="selectedPlanNom"></span>
+                        <span class="text-gray-600 dark:text-slate-300 font-medium">Plan</span>
+                        <span class="font-bold text-gray-900 dark:text-white">{{ $plan->nom }}</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-gray-600 dark:text-slate-400">Période</span>
+                        <span class="text-gray-600 dark:text-slate-300 font-medium">Période</span>
                         <span class="font-semibold text-gray-900 dark:text-white" x-text="periodeLabel()"></span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-gray-600 dark:text-slate-400">Prix du plan</span>
+                        <span class="text-gray-600 dark:text-slate-300 font-medium">Prix du plan</span>
                         <span class="font-semibold text-gray-900 dark:text-white" x-text="formatPlanPrice() + ' FCFA'"></span>
                     </div>
 
                     {{-- Option boutique --}}
-                    <div class="pt-3 border-t border-gray-200 dark:border-slate-700">
-                        <label class="flex items-start gap-3 cursor-pointer p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
+                    <div class="pt-3 border-t-2 border-gray-200 dark:border-slate-700">
+                        <label class="flex items-start gap-3 cursor-pointer p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800/70 transition-colors border-2 border-transparent hover:border-primary-200 dark:hover:border-primary-800/50">
                             <input type="checkbox" name="option_boutique" value="1"
                                    x-model="optionBoutique"
-                                   class="mt-1 w-5 h-5 rounded border-gray-300 dark:border-slate-600 text-primary-600 focus:ring-primary-500 dark:bg-slate-800">
+                                   class="mt-1 w-5 h-5 rounded border-gray-300 dark:border-slate-500 text-primary-600 focus:ring-primary-500 dark:bg-slate-800 dark:focus:ring-primary-400">
                             <div class="flex-1">
-                                <div class="flex items-center gap-2">
-                                    <span class="font-semibold text-gray-900 dark:text-white">🛍️ Boutique en ligne</span>
-                                    <span class="text-sm font-bold text-primary-600 dark:text-primary-400">+3 900 F/mois</span>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="font-semibold text-gray-900 dark:text-white text-base">🛍️ Boutique en ligne</span>
+                                    <span class="text-sm font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/50 px-2 py-0.5 rounded">+3 900 F/mois</span>
                                 </div>
-                                <p class="text-sm text-gray-500 dark:text-slate-400 mt-0.5">Vos clients pourront commander en ligne avec livraison</p>
-                                <p x-show="optionBoutique" class="text-xs font-medium text-primary-700 dark:text-primary-300 mt-1">
+                                <p class="text-sm text-gray-600 dark:text-slate-300 mt-1">Vos clients pourront commander en ligne avec livraison</p>
+                                <p x-show="optionBoutique" x-cloak class="text-xs font-semibold text-primary-700 dark:text-primary-300 mt-2 bg-primary-50 dark:bg-primary-950/30 px-2 py-1 rounded inline-block">
                                     +<span x-text="boutiquePrice()"></span> FCFA pour la période
                                 </p>
                             </div>
@@ -135,7 +131,7 @@
                     </div>
 
                     {{-- Total --}}
-                    <div class="pt-3 border-t-2 border-primary-200 dark:border-primary-800 flex justify-between items-center">
+                    <div class="pt-4 mt-1 border-t-2 border-primary-300 dark:border-primary-700 flex justify-between items-center">
                         <span class="text-lg font-bold text-gray-900 dark:text-white">Total à payer</span>
                         <span class="text-2xl font-bold text-primary-600 dark:text-primary-400" x-text="totalPrice() + ' FCFA'"></span>
                     </div>
@@ -168,25 +164,25 @@
                 </div>
 
                 {{-- Infos bénéficiaire --}}
-                <div class="p-5 bg-gray-50 dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-700 space-y-4">
+                <div class="p-5 bg-gray-50 dark:bg-slate-900/60 rounded-2xl border-2 border-gray-200 dark:border-slate-700 space-y-4">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm font-medium text-gray-500 dark:text-slate-400">Bénéficiaire</span>
+                        <span class="text-sm font-medium text-gray-600 dark:text-slate-300">Bénéficiaire</span>
                         <div class="flex items-center gap-3">
                             <span class="font-bold text-gray-900 dark:text-white font-mono text-lg tracking-wide">07 09 87 40 67</span>
                             <button type="button"
                                     @click="navigator.clipboard.writeText('0709874067'); copied = true; setTimeout(() => copied = false, 2000)"
-                                    class="p-2 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
+                                    class="p-2 text-gray-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
                                 <svg x-show="!copied" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                                <svg x-show="copied" x-cloak class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                <svg x-show="copied" x-cloak class="w-5 h-5 text-emerald-500 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             </button>
                         </div>
                     </div>
                     <div class="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-slate-700">
-                        <span class="text-sm font-medium text-gray-500 dark:text-slate-400">Nom</span>
+                        <span class="text-sm font-medium text-gray-600 dark:text-slate-300">Nom</span>
                         <span class="font-semibold text-gray-900 dark:text-white">MAELYA GESTION</span>
                     </div>
-                    <div class="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-slate-700">
-                        <span class="text-sm font-medium text-gray-500 dark:text-slate-400">Montant à transférer</span>
+                    <div class="flex items-center justify-between pt-3 border-t-2 border-gray-300 dark:border-slate-600">
+                        <span class="text-sm font-medium text-gray-600 dark:text-slate-300">Montant à transférer</span>
                         <span class="text-xl font-bold text-primary-600 dark:text-primary-400" x-text="totalPrice() + ' FCFA'"></span>
                     </div>
                 </div>
@@ -201,9 +197,9 @@
 
                 {{-- Référence transfert --}}
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-3">Référence de votre transfert</label>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-3">Référence de votre transfert</label>
                     <input type="text" name="reference_transfert" class="form-input" placeholder="Ex : numéro de transaction OM/Wave">
-                    <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Le numéro de référence que vous recevez par SMS après le transfert.</p>
+                    <p class="text-xs text-gray-600 dark:text-slate-400 mt-1">Le numéro de référence que vous recevez par SMS après le transfert.</p>
                 </div>
 
                 {{-- OU --}}
@@ -215,25 +211,25 @@
 
                 {{-- Upload reçu --}}
                 <div x-data="{ fileName: '' }">
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-3">Reçu de transfert (image ou PDF)</label>
-                    <label class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl hover:border-primary-400 dark:hover:border-primary-600 cursor-pointer transition-colors bg-gray-50/50 dark:bg-slate-900/50">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-3">Reçu de transfert (image ou PDF)</label>
+                    <label class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl hover:border-primary-400 dark:hover:border-primary-500 cursor-pointer transition-colors bg-gray-50/50 dark:bg-slate-900/50">
                         <template x-if="!fileName">
                             <div class="text-center">
-                                <svg class="mx-auto w-10 h-10 text-gray-300 dark:text-slate-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                                <svg class="mx-auto w-10 h-10 text-gray-400 dark:text-slate-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
                                 <p class="text-sm text-primary-600 dark:text-primary-400 font-medium">Cliquez pour sélectionner un fichier</p>
-                                <p class="text-xs text-gray-400 dark:text-slate-500 mt-1">JPEG, PNG, WebP ou PDF — 10 Mo max</p>
+                                <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">JPEG, PNG, WebP ou PDF — 10 Mo max</p>
                             </div>
                         </template>
                         <template x-if="fileName">
-                            <div class="flex items-center gap-3 text-sm text-emerald-700 dark:text-emerald-400">
+                            <div class="flex items-center gap-3 text-sm text-emerald-700 dark:text-emerald-400 font-medium">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                <span class="font-medium truncate max-w-[300px]" x-text="fileName"></span>
+                                <span class="truncate max-w-[300px]" x-text="fileName"></span>
                             </div>
                         </template>
                         <input type="file" name="preuve_paiement" accept="image/*,.pdf" class="sr-only"
                                @change="fileName = $event.target.files[0]?.name || ''">
                     </label>
-                    <p class="text-xs text-gray-500 dark:text-slate-400 mt-2">Fournissez la référence <strong>OU</strong> le reçu — un seul des deux suffit.</p>
+                    <p class="text-xs text-gray-600 dark:text-slate-400 mt-2">Fournissez la référence <strong class="dark:text-slate-300">OU</strong> le reçu — un seul des deux suffit.</p>
                 </div>
             </div>
         </div>
@@ -257,13 +253,11 @@
 
 <x-slot:scripts>
 <script>
-function souscrire(planId, planNom, prixMensuel, prixAnnuel, prixTriennal, initialPeriode, initialBoutique) {
+function souscrire(prixMensuel, prixAnnuel, prixTriennal, initialPeriode, initialBoutique) {
     return {
-        selectedPlanId: planId,
-        selectedPlanNom: planNom,
-        selectedPrixMensuel: prixMensuel,
-        selectedPrixAnnuel: prixAnnuel,
-        selectedPrixTriennal: prixTriennal,
+        prixMensuel: prixMensuel,
+        prixAnnuel: prixAnnuel,
+        prixTriennal: prixTriennal,
         periode: initialPeriode,
         payMethod: 'om',
         copied: false,
@@ -273,21 +267,10 @@ function souscrire(planId, planNom, prixMensuel, prixAnnuel, prixTriennal, initi
             this.periode = p;
         },
 
-        changePlan(id, nom, pm, pa, pt) {
-            this.selectedPlanId = id;
-            this.selectedPlanNom = nom;
-            this.selectedPrixMensuel = pm;
-            this.selectedPrixAnnuel = pa;
-            this.selectedPrixTriennal = pt;
-            // Mettre à jour l'action du formulaire
-            const form = document.querySelector('form');
-            form.action = '/abonnement/souscrire/' + id;
-        },
-
         planPrice() {
-            if (this.periode === 'annuel') return this.selectedPrixAnnuel;
-            if (this.periode === 'triennal') return this.selectedPrixTriennal;
-            return this.selectedPrixMensuel;
+            if (this.periode === 'annuel') return this.prixAnnuel;
+            if (this.periode === 'triennal') return this.prixTriennal;
+            return this.prixMensuel;
         },
 
         boutiquePrice() {
