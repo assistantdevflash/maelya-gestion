@@ -27,8 +27,8 @@
     {{-- Vite assets with preload --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
-    {{-- Livewire styles (async) --}}
-    <style>{{ app('livewire')->styles(['nonce' => csp_nonce()]) }}</style>
+    {{-- Livewire styles --}}
+    @livewireStyles
     
     {{ $styles ?? '' }}
     @stack('head')
@@ -1005,8 +1005,8 @@
     </script>
 </div>
 
-{{-- Livewire scripts (defer for performance) --}}
-<script>{{ app('livewire')->scripts(['nonce' => csp_nonce()]) }}</script>
+{{-- Livewire scripts --}}
+@livewireScripts
 <script>
     window.csrfToken = '{{ csrf_token() }}';
 </script>
