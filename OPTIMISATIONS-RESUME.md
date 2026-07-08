@@ -24,10 +24,10 @@ Corriger définitivement les problèmes de LCP (Largest Contentful Paint) qui at
 **Résultat** : Élimination des render-blocking resources critiques
 
 ### 3. **JavaScript Intelligent** ✅
-- **Import dynamique** : caisse.js chargé uniquement quand nécessaire (lazy load)
+- **Code splitting** : Alpine.js et Axios extraits dans des chunks séparés
+- **Minification Terser** : Suppression des console.log, debugger, et code mort
 - **Alpine.js optimisé** : Géré par Livewire, pas de double chargement
 - **Event handlers efficaces** : Form submit optimisé
-- **Pas de code bloquant** : Tout en defer ou async
 
 **Résultat** : First Input Delay (FID) < 100ms
 
@@ -79,19 +79,18 @@ Nouveau component Blade pour lazy loading automatique :
 
 ## 🎨 Structure des Assets Optimisés
 
-### JavaScript (Total: 48 KB)
+### JavaScript (Total: 47 KB)
 ```
 public/build/assets/js/
-├── app-2KIFQhly.js          2.8 KB  (code principal)
-├── caisse-DN7in10L.js       8.2 KB  (lazy loaded)
-├── vendor-DBnUWTm1.js      37.0 KB  (Axios)
-└── alpine-l0sNRNKZ.js       0.0 KB  (géré par Livewire)
+├── app-DoqN62Kw.js          9.75 KB  (code principal + caisse)
+├── vendor-DBnUWTm1.js      37.08 KB  (Axios)
+└── alpine-l0sNRNKZ.js       0.00 KB  (géré par Livewire)
 ```
 
-### CSS (Total: 219 KB)
+### CSS (Total: 209 KB)
 ```
 public/build/assets/css/
-└── app-BIGSwsrB.css       219.4 KB  (minifié)
+└── app-D6TDrDH1.css       209.33 KB  (minifié)
 ```
 
 ## 🔧 Commandes de Déploiement
