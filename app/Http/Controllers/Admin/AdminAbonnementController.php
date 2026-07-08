@@ -298,17 +298,19 @@ class AdminAbonnementController extends Controller
     {
         $request->validate(['jours' => ['required', 'integer', 'min:1', 'max:90']]);
 
+        $jours = (int) $request->jours; // Cast explicite en int pour Carbon
+
         $newExpire = ($abonnement->expire_le && $abonnement->expire_le->isFuture())
-            ? $abonnement->expire_le->addDays($request->jours)
-            : now()->addDays($request->jours);
+            ? $abonnement->expire_le->addDays($jours)
+            : now()->addDays($jours);
 
         $abonnement->update([
             'statut' => 'actif',
             'expire_le' => $newExpire->toDateString(),
             'debut_le' => $abonnement->debut_le ?? now()->toDateString(),
-            'notes_admin' => ($abonnement->notes_admin ? $abonnement->notes_admin . "\n" : '') . 'Prolongé de ' . $request->jours . ' jours le ' . now()->format('d/m/Y'),
+            'notes_admin' => ($abonnement->notes_admin ? $abonnement->notes_admin . "\n" : '') . "Prolongé de {$jours} jours le " . now()->format('d/m/Y'),
         ]);
 
-        return back()->with('success', "Essai prolongé de {$request->jours} jours.");
+        return back()->with('success', "Essai prolongé de {$jours} jours.");
     }
 }
