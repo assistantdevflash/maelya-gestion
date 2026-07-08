@@ -446,9 +446,9 @@
                         </svg>
                         <span class="flex-1">Gestion stocks</span>
                         @if($alertesStock > 0)
-                            <span class="flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold mr-1">{{ $alertesStock }}</span>
+                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold">{{ $alertesStock }}</span>
                         @endif
-                        <svg class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200 flex-shrink-0" :class="open ? 'rotate-180' : ''" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
                         </svg>
                     </button>
