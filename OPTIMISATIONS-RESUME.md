@@ -96,9 +96,14 @@ public/build/assets/css/
 
 ## 🔧 Commandes de Déploiement
 
+⚠️ **IMPORTANT** : Node.js n'est pas installé sur le serveur LWS. Tous les builds se font en local.
+
 ### En local (avant push)
 ```bash
+# Build des assets avec Vite
 npm run build
+
+# Commit avec les assets buildés
 git add -A
 git commit -m "Performance optimizations"
 git push origin main
@@ -109,7 +114,7 @@ git push origin main
 cd ~/maelya
 git pull origin main
 composer install --no-dev --optimize-autoloader
-npm run build  # si Node.js disponible
+# PAS de npm run build (Node.js non installé)
 php artisan view:cache
 php artisan config:cache
 php artisan route:cache

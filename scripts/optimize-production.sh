@@ -25,9 +25,9 @@ php artisan event:cache
 echo "🎯 Optimisation Composer..."
 composer install --no-dev --optimize-autoloader --no-interaction
 
-# 6. Build des assets avec Vite
-echo "🎨 Build des assets..."
-npm run build
+# 6. Build des assets (à faire en local, pas sur serveur)
+echo "⚠️  RAPPEL : Build assets en local avec 'npm run build' avant push"
+echo "   (Node.js non installé sur ce serveur)"
 
 # 7. Permissions
 echo "🔐 Ajustement des permissions..."

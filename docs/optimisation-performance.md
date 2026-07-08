@@ -52,15 +52,22 @@ Réduire le LCP (Largest Contentful Paint) de 30s+ à <2.5s pour une expérience
 ## 🛠️ Commandes
 
 ### Production (Déploiement)
+
+⚠️ **IMPORTANT** : Build assets en local avant de push (Node.js non installé sur serveur)
+
 ```bash
-# Optimisation complète
-php artisan app:optimize
-
-# Ou via script shell
-bash scripts/optimize-production.sh
-
-# Build assets
+# EN LOCAL : Build des assets
 npm run build
+git add public/build
+git commit -m "Build production"
+git push origin main
+
+# SUR SERVEUR : Optimisation Laravel uniquement
+cd ~/maelya
+git pull origin main
+php artisan app:optimize
+# OU
+bash scripts/optimize-production.sh
 ```
 
 ### Développement

@@ -1,15 +1,25 @@
 # 🎯 DÉPLOIEMENT PERFORMANCE - Actions Immédiates
 
-## 📦 1. Pousser le code
+## 📦 1. Build en local (OBLIGATOIRE)
 ```bash
+cd "/Volumes/Dev Disk/maelya-gestion/app"
+
+# Build des assets avec Vite
+npm run build
+
+# Commit et push (avec les assets buildés)
+git add -A
+git commit -m "Build production assets"
 git push origin main
 ```
+
+⚠️ **IMPORTANT** : Node.js n'est pas installé sur le serveur LWS. Tous les builds doivent être faits en local et pushés dans le repo.
 
 ## 🖥️ 2. Sur le serveur LWS (SSH)
 ```bash
 cd ~/maelya
 
-# Pull du code
+# Pull du code (avec les assets buildés)
 git pull origin main
 
 # Clear ancien cache
@@ -19,10 +29,6 @@ php artisan cache:clear
 
 # Réinstaller dépendances optimisées
 composer install --no-dev --optimize-autoloader
-
-# Build assets (si Node.js disponible sur serveur)
-npm install
-npm run build
 
 # Activer les caches
 php artisan view:cache
