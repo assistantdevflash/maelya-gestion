@@ -424,7 +424,7 @@
                 </div>
 
                 @php $alertesStock = \App\Models\Produit::where('actif', true)->whereColumn('stock', '<=', 'seuil_alerte')->count(); @endphp
-                @php $stockOpen = request()->routeIs('dashboard.stock.*') || request()->routeIs('dashboard.produits.*') || request()->routeIs('dashboard.categories-produits.*'); @endphp
+                @php $stockOpen = request()->routeIs('dashboard.stock.*') || request()->routeIs('dashboard.produits.*') || request()->routeIs('dashboard.categories-produits.*') || request()->routeIs('dashboard.fournisseurs.*') || request()->routeIs('dashboard.bons-commande.*') || request()->routeIs('dashboard.inventaires.*'); @endphp
 
                 @if(!$featureHas('stock') && !$featureHas('produits'))
                     {{-- Bloc verrouillé : redirige directement vers la page d'upgrade --}}
