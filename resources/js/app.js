@@ -1,20 +1,8 @@
 import './bootstrap';
+import caisseApp from './caisse';
 
-// Lazy load caisse app only when needed
-let caisseAppModule = null;
-window.caisseApp = function(...args) {
-    if (!caisseAppModule) {
-        // Import dynamique : ne charge que si on accède à la caisse
-        import('./caisse').then(module => {
-            caisseAppModule = module.default;
-            if (typeof caisseAppModule === 'function') {
-                return caisseAppModule(...args);
-            }
-        });
-        return { loading: true }; // État temporaire
-    }
-    return caisseAppModule(...args);
-};
+// Expose le composant Caisse POS en global pour Alpine x-data
+window.caisseApp = caisseApp;
 
 // ═══════════════════════════════════════════════════════════════
 //  GLOBAL FORM LOADING — disable bouton + spinner au submit
