@@ -78,6 +78,8 @@ class AdminInstitutController extends Controller
             'jours' => ['required', 'integer', 'min:1', 'max:1095'],
         ]);
 
+        $jours = (int) $request->jours; // Cast explicite en int pour Carbon
+
         $owner = $institut->users->firstWhere('role', 'admin');
         if (!$owner) {
             return back()->with('error', 'Aucun propriétaire trouvé pour cet institut.');
@@ -98,12 +100,12 @@ class AdminInstitutController extends Controller
             'reference_transfert' => 'OFFERT-' . strtoupper(substr(md5(uniqid()), 0, 8)),
             'statut' => 'actif',
             'debut_le' => now()->toDateString(),
-            'expire_le' => now()->addDays($request->jours)->toDateString(),
+            'expire_le' => now()->addDays($jours)->toDateString(),
             'valide_par' => auth()->id(),
             'notes_admin' => 'Abonnement offert par l\'administrateur.',
         ]);
 
-        return back()->with('success', "Accès offert pour {$request->jours} jours.");
+        return back()->with('success', "Accès offert pour {$jours} jours.");
     }
 
     public function destroy(Institut $institut)
