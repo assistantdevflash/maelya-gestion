@@ -28,8 +28,7 @@
         <div class="lg:flex-1 flex items-center justify-center px-6 py-12 lg:py-0">
             <div class="max-w-md text-center lg:text-left">
                 <a href="{{ route('home') }}" class="inline-flex items-center gap-3 group mb-6">
-                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-white text-2xl shadow-lg transition-transform group-hover:scale-105"
-                         style="background: linear-gradient(135deg, #9333ea, #ec4899);">M</div>
+                    <img src="{{ asset('images/logo.png') }}" alt="Maëlya Gestion" class="w-14 h-14 rounded-2xl transition-transform group-hover:scale-105">
                     <span class="text-2xl font-display font-bold text-gray-900 dark:text-white tracking-tight">Maëlya Gestion</span>
                 </a>
                 <h1 class="text-3xl lg:text-4xl font-display font-bold text-gray-900 dark:text-white leading-tight">

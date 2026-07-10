@@ -35,8 +35,7 @@
         {{-- Logo --}}
         <div class="text-center mb-8">
             <a href="{{ route('home') }}" class="inline-flex items-center gap-2.5 group">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-lg shadow-glow transition-transform group-hover:scale-105"
-                     style="background: linear-gradient(135deg, #9333ea, #ec4899);">M</div>
+                <img src="{{ asset('images/logo.png') }}" alt="Maëlya Gestion" class="w-10 h-10 rounded-xl transition-transform group-hover:scale-105">
                 <span class="text-xl font-display font-bold text-white tracking-tight">Maëlya Gestion</span>
             </a>
         </div>
