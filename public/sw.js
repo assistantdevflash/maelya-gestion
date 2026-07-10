@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'maelya-v2';
+const CACHE_VERSION = 'maelya-v3';
 
 // Assets statiques à mettre en cache au premier chargement
 const PRECACHE_ASSETS = [
