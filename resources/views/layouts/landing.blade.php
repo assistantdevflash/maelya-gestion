@@ -153,8 +153,7 @@
             <div class="flex items-center justify-between h-16 lg:h-18">
                 {{-- Logo --}}
                 <a href="{{ route('home') }}" class="flex items-center gap-2.5 group">
-                    <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white text-base shadow-md transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg"
-                         style="background: linear-gradient(135deg, #9333ea, #ec4899);">M</div>
+                    <img src="{{ asset('images/logo.png') }}" alt="Maëlya Gestion" class="w-9 h-9 rounded-xl shadow-md transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg">
                     <span class="font-display font-bold text-lg tracking-tight"
                           :class="scrolled ? 'text-gray-900 dark:text-white' : 'text-white'">Maëlya <span class="gradient-text">Gestion</span></span>
                 </a>
@@ -285,8 +284,7 @@
                 {{-- Branding --}}
                 <div class="md:col-span-5">
                     <div class="flex items-center gap-2.5 mb-5">
-                        <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white text-base"
-                             style="background: linear-gradient(135deg, #9333ea, #ec4899);">M</div>
+                        <img src="{{ asset('images/logo.png') }}" alt="Maëlya Gestion" class="w-9 h-9 rounded-xl">
                         <span class="font-display font-bold text-white text-lg tracking-tight">Maëlya Gestion</span>
                     </div>
                     <p class="text-sm leading-relaxed max-w-sm mb-6">
