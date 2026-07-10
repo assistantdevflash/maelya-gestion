@@ -130,8 +130,7 @@
     {{-- ═══ Top bar mobile/tablette (style WhatsApp) ═══ --}}
     <header class="lg:hidden fixed top-0 left-0 right-0 z-40 bg-gray-950 px-4 h-14 flex items-center">
         <div class="flex items-center gap-2.5 flex-1 min-w-0">
-            <div class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-white text-sm flex-shrink-0"
-                 style="background:linear-gradient(135deg,#9333ea,#ec4899);">M</div>
+            <img src="{{ asset('images/logo.png') }}" alt="Maëlya Gestion" class="w-8 h-8 rounded-xl flex-shrink-0 bg-white">
             <span class="font-bold text-white text-base truncate">Maëlya Gestion</span>
         </div>
         <div class="flex items-center gap-2 flex-shrink-0">
