@@ -87,9 +87,18 @@ class BoutiqueController extends Controller
             abort(404, 'Cette boutique n\'est pas disponible.');
         }
 
+        // Vérifier l'accès boutique (abonnement)
+        if (!$institut->proprietaire?->hasBoutiqueAccess()) {
+            abort(404, 'Cette boutique n\'est pas disponible.');
+        }
+
         $produit = Produit::where('id', $id)
             ->where('institut_id', $institut->id)
             ->where('actif', true)
+            ->where(function ($q) {
+                // Compatibilité : produits sans colonne visible_boutique (avant migration)
+                $q->where('visible_boutique', true)->orWhereNull('visible_boutique');
+            })
             ->with(['categorie', 'images'])
             ->firstOrFail();
 

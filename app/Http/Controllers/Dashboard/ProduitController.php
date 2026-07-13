@@ -63,8 +63,9 @@ class ProduitController extends Controller
 
         $produit = Produit::create($data);
 
-        // Vider le cache de la caisse pour afficher le nouveau produit immédiatement
+        // Vider le cache de la caisse ET de la boutique
         Cache::forget('caisse_catalog_' . $produit->institut_id);
+        Cache::forget('boutique_' . $produit->institut_id . '_produits');
 
         return redirect()->route('dashboard.produits.index')
             ->with('success', 'Produit ajouté.');
@@ -116,8 +117,9 @@ class ProduitController extends Controller
 
         $produit->update($data);
 
-        // Vider le cache de la caisse pour afficher les modifications immédiatement
+        // Vider le cache de la caisse ET de la boutique
         Cache::forget('caisse_catalog_' . $produit->institut_id);
+        Cache::forget('boutique_' . $produit->institut_id . '_produits');
 
         return redirect()->route('dashboard.produits.index')
             ->with('success', 'Produit mis à jour.');
@@ -128,8 +130,9 @@ class ProduitController extends Controller
         $institutId = $produit->institut_id;
         $produit->delete();
 
-        // Vider le cache de la caisse
+        // Vider le cache de la caisse ET de la boutique
         Cache::forget('caisse_catalog_' . $institutId);
+        Cache::forget('boutique_' . $institutId . '_produits');
 
         return redirect()->route('dashboard.produits.index')
             ->with('success', 'Produit supprimé.');
