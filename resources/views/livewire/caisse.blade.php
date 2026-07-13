@@ -748,7 +748,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         <span x-text="enAttenteLoading ? 'Enregistrement...' : 'Mettre en attente'"></span>
                     </button>
-                    <a href="{{ route('dashboard.caisse.brouillons.index') }}"
+                    {{-- <a href="{{ route('dashboard.caisse.brouillons.index') }}"
                        class="px-3 py-2 text-xs font-semibold rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition">
                         Brouillons
                     </a>
@@ -757,7 +757,7 @@
                        class="px-3 py-2 text-xs font-semibold rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition">
                         Crédits
                     </a>
-                    @endif
+                    @endif --}}
                 </div>
             </div>
         </div>
