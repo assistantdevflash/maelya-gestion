@@ -9,7 +9,7 @@
                     @if($maxInstituts === null)
                         Plan Premium+ — établissements illimités
                     @else
-                        {{ $instituts->count() }} / {{ $maxInstituts }} institut{{ $maxInstituts > 1 ? 's' : '' }}
+                        {{ $instituts->count() }} / {{ $maxInstituts }} établissment{{ $maxInstituts > 1 ? 's' : '' }}
                     @endif
                 </p>
             </div>
