@@ -272,9 +272,18 @@
          GALERIE PHOTOS — HORS du formulaire principal, upload 100% AJAX
     ──────────────────────────────────────────────────────────────────────── --}}
     @if($isEdit)
+    @php
+        $imagesData = ($images ?? collect())->map(function($img) {
+            return [
+                'id'           => $img->id,
+                'url'          => asset('storage/' . $img->chemin),
+                'is_principale' => $img->is_principale ? true : false,
+            ];
+        })->values()->toArray();
+    @endphp
     <div class="max-w-[calc(66.667%-12px)]"
          x-data="galerieManager({
-             images:      @json(($images ?? collect())->map(fn($img) => ['id' => $img->id, 'url' => asset('storage/'.$img->chemin), 'is_principale' => (bool)$img->is_principale])->values()),
+             images:      {{ json_encode($imagesData) }},
              uploadUrl:   '{{ route('dashboard.produits.images.store', $produit) }}',
              deleteBase:  '{{ url('dashboard/produits/' . $produit->id . '/images') }}',
              csrf:        '{{ csrf_token() }}',
