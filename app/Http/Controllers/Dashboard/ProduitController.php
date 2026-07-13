@@ -73,7 +73,8 @@ class ProduitController extends Controller
     public function edit(Produit $produit)
     {
         $categories = CategorieProduit::orderBy('nom')->get();
-        return view('dashboard.produits.edit', compact('produit', 'categories'));
+        $images = $produit->images()->orderBy('ordre')->get();
+        return view('dashboard.produits.edit', compact('produit', 'categories', 'images'));
     }
 
     public function update(Request $request, Produit $produit)

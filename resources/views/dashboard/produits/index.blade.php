@@ -17,12 +17,23 @@
                         <span class="ml-1 inline-flex items-center justify-center w-[18px] h-[18px] text-xs bg-amber-100 text-amber-600 rounded-full font-bold leading-none">!</span>
                     @endif
                 </button>
-                <button x-data @click="$dispatch('open-produit')" class="btn-primary group">
+                <button x-data @click="$dispatch('open-categories')" class="btn-outline">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                    </svg>
+                    Catégories
+                    @if($categories->count() > 0)
+                        <span class="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] text-xs bg-gray-100 text-gray-600 rounded-full px-1 font-mono leading-none">{{ $categories->count() }}</span>
+                    @else
+                        <span class="ml-1 inline-flex items-center justify-center w-[18px] h-[18px] text-xs bg-amber-100 text-amber-600 rounded-full font-bold leading-none">!</span>
+                    @endif
+                </button>
+                <a href="{{ route('dashboard.produits.create') }}" class="btn-primary group">
                     <svg class="w-4 h-4 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                     </svg>
                     Nouveau produit
-                </button>
+                </a>
             </div>
         </div>
 
@@ -115,44 +126,18 @@
                                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                                         </button>
                                     </form>
-                                    <button x-data @click="$dispatch('show-produit', {
-                                        nom: '{{ addslashes($produit->nom) }}',
-                                        reference: '{{ addslashes($produit->reference ?? '—') }}',
-                                        categorie: '{{ addslashes($produit->categorie?->nom ?? '—') }}',
-                                        prix_achat: '{{ $produit->prix_achat ? number_format($produit->prix_achat, 0, ',', ' ').' F' : '—' }}',
-                                        prix_vente: '{{ number_format($produit->prix_vente, 0, ',', ' ') }} F',
-                                        stock: '{{ $produit->stock }} {{ $produit->unite }}',
-                                        seuil_alerte: '{{ $produit->seuil_alerte }} {{ $produit->unite }}',
-                                        unite: '{{ $produit->unite }}',
-                                        description: '{{ addslashes($produit->description ?? '—') }}',
-                                        photo_url: '{{ $produit->photo ? asset('storage/'.$produit->photo) : '' }}'
-                                    })" class="btn-icon text-gray-400 hover:text-primary-600" title="Détails">
+                                    <a href="{{ route('dashboard.produits.edit', $produit) }}"
+                                       class="btn-icon text-gray-400 hover:text-primary-600" title="Voir / Modifier">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                         </svg>
-                                    </button>
-                                    <button x-data @click="$dispatch('edit-produit', {
-                                        id: '{{ $produit->id }}',
-                                        categorie_id: '{{ $produit->categorie_id }}',
-                                        nom: '{{ addslashes($produit->nom) }}',
-                                        reference: '{{ addslashes($produit->reference ?? '') }}',
-                                        prix_achat: {{ $produit->prix_achat ?? 0 }},
-                                        prix_vente: {{ $produit->prix_vente }},
-                                        stock: {{ $produit->stock }},
-                                        seuil_alerte: {{ $produit->seuil_alerte }},
-                                        unite: '{{ $produit->unite }}',
-                                        code_barre: '{{ addslashes($produit->code_barre ?? '') }}',
-                                        description: '{{ addslashes($produit->description ?? '') }}',
-                                        description_courte: '{{ addslashes($produit->description_courte ?? '') }}',
-                                        visible_boutique: {{ $produit->visible_boutique ? 'true' : 'false' }},
-                                        featured: {{ $produit->featured ? 'true' : 'false' }},
-                                        photo_url: '{{ $produit->photo ? asset('storage/'.$produit->photo) : '' }}'
-                                    })" class="btn-icon" title="Modifier">
+                                    </a>
+                                    <a href="{{ route('dashboard.produits.edit', $produit) }}" class="btn-icon" title="Modifier">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
-                                    </button>
+                                    </a>
                                     <form id="delete-produit-{{ $produit->id }}" method="POST" action="{{ route('dashboard.produits.destroy', $produit) }}">
                                         @csrf @method('DELETE')
                                     </form>
