@@ -1,7 +1,7 @@
 <x-dashboard-layout>
 @php $isEdit = isset($produit); @endphp
 
-<div class="max-w-4xl space-y-6">
+<div class="max-w-4xl mx-auto space-y-6">
 
     {{-- Header --}}
     <div class="flex items-center gap-4">
@@ -16,24 +16,24 @@
                 {{ $isEdit ? 'Modifier ' . $produit->nom : 'Nouveau produit' }}
             </h1>
             <p class="text-sm text-gray-500 dark:text-slate-400 mt-0.5">
-                {{ $isEdit ? 'Modifiez les informations et la galerie photos du produit' : 'Renseignez les informations du nouveau produit' }}
+                {{ $isEdit ? 'Modifiez les informations du produit' : 'Renseignez les informations du nouveau produit' }}
             </p>
         </div>
     </div>
 
     @if($errors->any())
-        <div class="alert-danger text-sm">
-            @foreach($errors->all() as $e) <p>• {{ $e }}</p> @endforeach
-        </div>
+        <div class="alert-danger text-sm">@foreach($errors->all() as $e)<p>• {{ $e }}</p>@endforeach</div>
     @endif
-
     @if(session('success'))
         <div class="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 rounded-xl p-4 text-emerald-800 dark:text-emerald-200 text-sm font-medium">
             ✓ {{ session('success') }}
         </div>
     @endif
 
-    <form method="POST"
+    {{-- ─────────────────────────────────────────────────────────────────────
+         FORMULAIRE PRINCIPAL  (jamais imbriqué avec la galerie)
+    ──────────────────────────────────────────────────────────────────────── --}}
+    <form id="produit-form" method="POST"
           action="{{ $isEdit ? route('dashboard.produits.update', $produit) : route('dashboard.produits.store') }}"
           enctype="multipart/form-data">
         @csrf
@@ -62,7 +62,7 @@
                                 @endforeach
                             </select>
                             @if($categories->isEmpty())
-                                <p class="text-xs text-amber-600 mt-1">Aucune catégorie. <a href="{{ route('dashboard.produits.index', ['action' => 'categories']) }}" class="underline font-medium">Créez-en une d'abord</a>.</p>
+                                <p class="text-xs text-amber-600 mt-1">Aucune catégorie. <a href="{{ route('dashboard.produits.index') }}" class="underline font-medium">Créez-en une d'abord</a>.</p>
                             @endif
                             @error('categorie_id') <p class="form-error">{{ $message }}</p> @enderror
                         </div>
@@ -96,7 +96,7 @@
                             <label class="form-label">Description longue</label>
                             <textarea name="description" rows="3" maxlength="500"
                                       class="form-textarea"
-                                      placeholder="Composition, utilisation, caractéristiques...">{{ old('description', $produit->description ?? '') }}</textarea>
+                                      placeholder="Composition, utilisation...">{{ old('description', $produit->description ?? '') }}</textarea>
                         </div>
 
                         <div class="form-group">
@@ -136,8 +136,8 @@
                             <div class="form-group">
                                 <label class="form-label">{{ $isEdit ? 'Stock actuel' : 'Stock initial *' }}</label>
                                 @if($isEdit)
-                                    <input type="number" value="{{ $produit->stock }}" class="form-input bg-gray-50 dark:bg-slate-800/50 text-gray-500" disabled>
-                                    <p class="text-xs text-gray-400 mt-1">Via Entrée / Correction de stock.</p>
+                                    <input type="number" value="{{ $produit->stock }}" class="form-input opacity-60" disabled>
+                                    <p class="text-xs text-gray-400 mt-1">Via Entrée / Correction.</p>
                                 @else
                                     <input type="number" name="stock" required min="0" value="{{ old('stock', 0) }}"
                                            class="form-input @error('stock') border-red-400 @enderror">
@@ -164,71 +164,6 @@
                     </div>
                 </div>
 
-                {{-- Galerie photos (édition seulement) --}}
-                @if($isEdit)
-                @php $images = $images ?? collect(); @endphp
-                <div class="card">
-                    <div class="card-header flex items-center justify-between">
-                        <h2 class="text-base font-semibold text-gray-900 dark:text-white">Galerie photos</h2>
-                        <span class="text-xs text-gray-400">{{ $images->count() }}/5 &nbsp;—&nbsp; ⭐ = couverture</span>
-                    </div>
-                    <div class="card-body space-y-4">
-
-                        @if($images->isNotEmpty())
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            @foreach($images as $img)
-                            <div class="relative group rounded-xl overflow-hidden border-2 {{ $img->is_principale ? 'border-amber-400' : 'border-gray-200 dark:border-slate-700' }}">
-                                <img src="{{ asset('storage/' . $img->chemin) }}" alt="" class="w-full aspect-square object-cover">
-                                @if($img->is_principale)
-                                    <div class="absolute top-2 left-2 bg-amber-400 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full">⭐ Couverture</div>
-                                @endif
-                                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                    @if(!$img->is_principale)
-                                    <form method="POST" action="{{ route('dashboard.produits.images.principale', [$produit, $img]) }}">
-                                        @csrf
-                                        <button type="submit" title="Définir comme couverture"
-                                                class="p-2 bg-amber-400 hover:bg-amber-300 text-amber-900 rounded-xl">
-                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                                        </button>
-                                    </form>
-                                    @endif
-                                    <form method="POST" action="{{ route('dashboard.produits.images.destroy', [$produit, $img]) }}"
-                                          onsubmit="return confirm('Supprimer cette image ?')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="p-2 bg-red-500 hover:bg-red-400 text-white rounded-xl">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                            @endforeach
-                        </div>
-                        @else
-                            <p class="text-sm text-gray-400 italic">Aucune image dans la galerie.</p>
-                        @endif
-
-                        @if($images->count() < 5)
-                        <form method="POST" action="{{ route('dashboard.produits.images.store', $produit) }}"
-                              enctype="multipart/form-data" id="form-galerie">
-                            @csrf
-                            <div class="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-5 text-center hover:border-primary-400 transition-colors">
-                                <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                <p class="text-sm text-gray-500 mb-1">{{ 5 - $images->count() }} emplacement(s) disponible(s)</p>
-                                <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-xl transition-colors">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                                    Ajouter des photos
-                                    <input type="file" name="images[]" accept="image/*" multiple class="hidden"
-                                           onchange="document.getElementById('form-galerie').submit()">
-                                </label>
-                            </div>
-                        </form>
-                        @else
-                            <p class="text-xs text-amber-600">Limite de 5 images atteinte.</p>
-                        @endif
-                    </div>
-                </div>
-                @endif
-
             </div>
 
             {{-- Colonne latérale --}}
@@ -240,12 +175,12 @@
                     </div>
                     <div class="card-body space-y-3">
                         @if($isEdit && $produit->photo)
-                        <img src="{{ asset('storage/' . $produit->photo) }}" alt="{{ $produit->nom }}"
-                             class="w-full aspect-square object-cover rounded-xl border border-gray-200 dark:border-slate-700">
-                        <label class="flex items-center gap-2 text-sm text-red-500 hover:text-red-700 cursor-pointer">
-                            <input type="checkbox" name="supprimer_photo" value="1" class="rounded">
-                            Supprimer cette photo
-                        </label>
+                            <img src="{{ asset('storage/' . $produit->photo) }}" alt="{{ $produit->nom }}"
+                                 class="w-full aspect-square object-cover rounded-xl border border-gray-200 dark:border-slate-700">
+                            <label class="flex items-center gap-2 text-sm text-red-500 hover:text-red-700 cursor-pointer">
+                                <input type="checkbox" name="supprimer_photo" value="1" class="rounded">
+                                Supprimer cette photo
+                            </label>
                         @elseif($isEdit)
                             <div class="aspect-square bg-gray-100 dark:bg-slate-800 rounded-xl flex items-center justify-center">
                                 <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -260,38 +195,49 @@
                     </div>
                 </div>
 
-                <div class="card">
+                {{-- Boutique en ligne — toggles Alpine.js (pas de CSS peer non compilé) --}}
+                <div class="card"
+                     x-data="{
+                        visibleBoutique: {{ old('visible_boutique', $produit->visible_boutique ?? true) ? 'true' : 'false' }},
+                        featured: {{ old('featured', $produit->featured ?? false) ? 'true' : 'false' }}
+                     }">
                     <div class="card-header">
                         <h2 class="text-base font-semibold text-gray-900 dark:text-white">Boutique en ligne</h2>
                     </div>
                     <div class="card-body space-y-4">
-                        <label class="flex items-center justify-between cursor-pointer">
-                            <div>
+
+                        {{-- Visible en boutique --}}
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-900 dark:text-white">Visible en boutique</p>
                                 <p class="text-xs text-gray-500">Affiché sur la page publique</p>
                             </div>
-                            <div class="relative flex-shrink-0">
-                                <input type="hidden" name="visible_boutique" value="0">
-                                <input type="checkbox" name="visible_boutique" value="1"
-                                       {{ old('visible_boutique', $produit->visible_boutique ?? true) ? 'checked' : '' }}
-                                       class="sr-only peer">
-                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                            </div>
-                        </label>
+                            <button type="button" @click="visibleBoutique = !visibleBoutique"
+                                    :class="visibleBoutique ? 'bg-primary-600' : 'bg-gray-300 dark:bg-slate-600'"
+                                    class="relative inline-flex h-6 w-11 flex-shrink-0 rounded-full transition-colors duration-200 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                                <span :class="visibleBoutique ? 'translate-x-5' : 'translate-x-0.5'"
+                                      class="inline-block mt-0.5 h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ease-in-out"></span>
+                            </button>
+                            <input type="hidden" name="visible_boutique" :value="visibleBoutique ? '1' : '0'">
+                        </div>
+
                         <hr class="border-gray-100 dark:border-slate-700">
-                        <label class="flex items-center justify-between cursor-pointer">
-                            <div>
+
+                        {{-- En vedette --}}
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-900 dark:text-white">⭐ En vedette</p>
                                 <p class="text-xs text-gray-500">Mis en avant dans la boutique</p>
                             </div>
-                            <div class="relative flex-shrink-0">
-                                <input type="hidden" name="featured" value="0">
-                                <input type="checkbox" name="featured" value="1"
-                                       {{ old('featured', $produit->featured ?? false) ? 'checked' : '' }}
-                                       class="sr-only peer">
-                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
-                            </div>
-                        </label>
+                            <button type="button" @click="featured = !featured"
+                                    :class="featured ? 'bg-amber-500' : 'bg-gray-300 dark:bg-slate-600'"
+                                    class="relative inline-flex h-6 w-11 flex-shrink-0 rounded-full transition-colors duration-200 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2">
+                                <span :class="featured ? 'translate-x-5' : 'translate-x-0.5'"
+                                      class="inline-block mt-0.5 h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ease-in-out"></span>
+                            </button>
+                            <input type="hidden" name="featured" :value="featured ? '1' : '0'">
+                        </div>
+
                     </div>
                 </div>
 
@@ -321,5 +267,75 @@
             </div>
         </div>
     </form>
+
+    {{-- ─────────────────────────────────────────────────────────────────────
+         GALERIE PHOTOS — HORS du formulaire principal (évite imbrication)
+    ──────────────────────────────────────────────────────────────────────── --}}
+    @if($isEdit)
+    @php $images = $images ?? collect(); @endphp
+    <div class="card max-w-[calc(66.667%-12px)]">
+        <div class="card-header flex items-center justify-between">
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Galerie photos</h2>
+            <span class="text-xs text-gray-400">{{ $images->count() }}/5 &nbsp;·&nbsp; ⭐ = image de couverture dans la boutique</span>
+        </div>
+        <div class="card-body space-y-4">
+
+            @if($images->isNotEmpty())
+            <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                @foreach($images as $img)
+                <div class="relative group rounded-xl overflow-hidden border-2 {{ $img->is_principale ? 'border-amber-400' : 'border-gray-200 dark:border-slate-700' }}">
+                    <img src="{{ asset('storage/' . $img->chemin) }}" alt="" class="w-full aspect-square object-cover">
+                    @if($img->is_principale)
+                        <div class="absolute top-1 left-1 bg-amber-400 text-amber-900 text-[9px] font-bold px-1.5 py-0.5 rounded-full">⭐</div>
+                    @endif
+                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5">
+                        @if(!$img->is_principale)
+                        <form method="POST" action="{{ route('dashboard.produits.images.principale', [$produit, $img]) }}">
+                            @csrf
+                            <button type="submit" title="Définir comme couverture"
+                                    class="p-1.5 bg-amber-400 hover:bg-amber-300 text-amber-900 rounded-lg">
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                            </button>
+                        </form>
+                        @endif
+                        <form method="POST" action="{{ route('dashboard.produits.images.destroy', [$produit, $img]) }}"
+                              onsubmit="return confirm('Supprimer cette image ?')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="p-1.5 bg-red-500 hover:bg-red-400 text-white rounded-lg">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            @else
+                <p class="text-sm text-gray-400 italic">Aucune image dans la galerie.</p>
+            @endif
+
+            @if($images->count() < 5)
+            <form method="POST" action="{{ route('dashboard.produits.images.store', $produit) }}"
+                  enctype="multipart/form-data" id="form-galerie">
+                @csrf
+                <div class="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-5 text-center hover:border-primary-400 transition-colors">
+                    <svg class="w-7 h-7 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <p class="text-sm text-gray-500 mb-1">{{ 5 - $images->count() }} emplacement(s) disponible(s)</p>
+                    <p class="text-xs text-gray-400 mb-3">JPG, PNG, WebP · Max 2 Mo · Sélectionner plusieurs à la fois</p>
+                    <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-xl transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                        Ajouter des photos
+                        <input type="file" name="images[]" accept="image/*" multiple class="hidden"
+                               onchange="document.getElementById('form-galerie').submit()">
+                    </label>
+                </div>
+            </form>
+            @else
+                <p class="text-xs text-amber-600">Limite de 5 images atteinte. Survolez une image pour la supprimer.</p>
+            @endif
+
+        </div>
+    </div>
+    @endif
+
 </div>
 </x-dashboard-layout>
