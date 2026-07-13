@@ -383,10 +383,8 @@
                 @endif
 
                 <button type="submit"
-                        x-ref="submitBtn"
                         @click="handleSubmit($event)"
-                        :disabled="submitting"
-                        :class="submitting ? 'opacity-70 cursor-not-allowed' : 'hover:bg-primary-700 hover:shadow-xl'"
+                        :class="submitting ? 'opacity-70 cursor-wait' : 'hover:bg-primary-700 hover:shadow-xl'"
                         class="w-full py-4 bg-primary-600 text-white rounded-xl font-bold text-lg shadow-lg transition-all flex items-center justify-center gap-3">
                     <template x-if="submitting">
                         <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
