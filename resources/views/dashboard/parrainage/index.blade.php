@@ -147,7 +147,7 @@
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $parrainage->filleul->name }}</p>
-                                <p class="text-xs text-gray-400">{{ $parrainage->filleul->institut?->nom ?? 'Institut' }} · {{ $parrainage->created_at->format('d/m/Y') }}</p>
+                                <p class="text-xs text-gray-400">{{ $parrainage->filleul->institut?->nom ?? 'Établissement' }} · {{ $parrainage->created_at->format('d/m/Y') }}</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
