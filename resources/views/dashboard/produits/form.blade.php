@@ -269,9 +269,238 @@
     </form>
 
     {{-- ─────────────────────────────────────────────────────────────────────
-         GALERIE PHOTOS — HORS du formulaire principal (évite imbrication)
+         GALERIE PHOTOS — HORS du formulaire principal, upload 100% AJAX
     ──────────────────────────────────────────────────────────────────────── --}}
     @if($isEdit)
+    <div class="max-w-[calc(66.667%-12px)]"
+         x-data="galerieManager({
+             images:      @json(($images ?? collect())->map(fn($img) => ['id' => $img->id, 'url' => asset('storage/'.$img->chemin), 'is_principale' => (bool)$img->is_principale])->values()),
+             uploadUrl:   '{{ route('dashboard.produits.images.store', $produit) }}',
+             deleteBase:  '{{ url('dashboard/produits/' . $produit->id . '/images') }}',
+             csrf:        '{{ csrf_token() }}',
+             max:         5
+         })">
+        <div class="card">
+            <div class="card-header flex items-center justify-between">
+                <h2 class="text-base font-semibold text-gray-900 dark:text-white">Galerie photos</h2>
+                <span class="text-xs text-gray-400">
+                    <span x-text="images.length"></span>/5 &nbsp;·&nbsp; ⭐ = couverture boutique
+                </span>
+            </div>
+            <div class="card-body space-y-4">
+
+                {{-- Message d'erreur inline --}}
+                <div x-show="errorMsg" x-cloak
+                     class="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/40 rounded-xl text-sm text-red-700 dark:text-red-300">
+                    <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    <span x-text="errorMsg"></span>
+                    <button @click="errorMsg = ''" class="ml-auto text-red-400 hover:text-red-600">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                {{-- Grille des images existantes --}}
+                <div x-show="images.length > 0" class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                    <template x-for="img in images" :key="img.id">
+                        <div class="relative group rounded-xl overflow-hidden"
+                             :class="img.is_principale ? 'ring-2 ring-amber-400' : 'ring-1 ring-gray-200 dark:ring-slate-700'">
+                            <img :src="img.url" alt="" class="w-full aspect-square object-cover">
+
+                            {{-- Badge couverture --}}
+                            <div x-show="img.is_principale"
+                                 class="absolute top-1.5 left-1.5 bg-amber-400 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                                ⭐ Couverture
+                            </div>
+
+                            {{-- Spinner suppression --}}
+                            <div x-show="img.deleting"
+                                 class="absolute inset-0 bg-white/70 dark:bg-slate-900/70 flex items-center justify-center">
+                                <svg class="w-6 h-6 animate-spin text-primary-600" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                </svg>
+                            </div>
+
+                            {{-- Overlay actions (hover) --}}
+                            <div x-show="!img.deleting"
+                                 class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center gap-2 pb-3">
+                                <template x-if="!img.is_principale">
+                                    <button type="button" @click="setPrincipale(img)"
+                                            title="Définir comme couverture"
+                                            class="flex items-center gap-1 px-2.5 py-1.5 bg-amber-400 hover:bg-amber-300 text-amber-900 text-xs font-semibold rounded-lg transition-colors">
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                        Couverture
+                                    </button>
+                                </template>
+                                <button type="button" @click="deleteImage(img)"
+                                        title="Supprimer"
+                                        class="flex items-center gap-1 px-2.5 py-1.5 bg-red-500 hover:bg-red-400 text-white text-xs font-semibold rounded-lg transition-colors">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    Supprimer
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                {{-- Zone d'upload (masquée si max atteint) --}}
+                <div x-show="images.length < max">
+                    <label class="block cursor-pointer"
+                           :class="uploading ? 'pointer-events-none opacity-60' : ''"
+                           @dragover.prevent @drop.prevent="handleDrop($event)">
+                        <input type="file" name="images[]" accept="image/jpeg,image/png,image/webp,image/gif"
+                               multiple class="hidden" @change="handleFiles($event)">
+                        <div class="border-2 border-dashed rounded-xl p-6 text-center transition-colors"
+                             :class="dragging ? 'border-primary-400 bg-primary-50 dark:bg-primary-950/20' : 'border-gray-300 dark:border-slate-600 hover:border-primary-400'">
+                            <template x-if="!uploading">
+                                <div>
+                                    <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    <p class="text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                                        Cliquez ou glissez-déposez vos photos ici
+                                    </p>
+                                    <p class="text-xs text-gray-400">
+                                        JPG, PNG, WebP · Max 5 Mo / image ·
+                                        <span x-text="max - images.length"></span> emplacement(s) restant(s)
+                                    </p>
+                                </div>
+                            </template>
+                            <template x-if="uploading">
+                                <div class="flex flex-col items-center gap-3">
+                                    <svg class="w-8 h-8 animate-spin text-primary-600" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                    </svg>
+                                    <p class="text-sm text-primary-600 font-medium">Envoi en cours...</p>
+                                    <div class="w-48 bg-gray-200 rounded-full h-1.5">
+                                        <div class="bg-primary-600 h-1.5 rounded-full transition-all duration-300"
+                                             :style="'width:' + uploadProgress + '%'"></div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </label>
+                </div>
+
+                <div x-show="images.length >= max"
+                     class="text-sm text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Limite de 5 images atteinte. Survolez une image pour la supprimer.
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function galerieManager({ images, uploadUrl, deleteBase, csrf, max }) {
+        return {
+            images,
+            uploading: false,
+            uploadProgress: 0,
+            errorMsg: '',
+            dragging: false,
+            max,
+
+            handleFiles(event) {
+                const files = Array.from(event.target.files);
+                event.target.value = '';
+                this.upload(files);
+            },
+
+            handleDrop(event) {
+                this.dragging = false;
+                const files = Array.from(event.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                if (files.length) this.upload(files);
+            },
+
+            async upload(files) {
+                this.errorMsg = '';
+
+                // Validation côté client
+                const slotsLeft = this.max - this.images.length;
+                if (files.length > slotsLeft) {
+                    this.errorMsg = `Vous pouvez ajouter au maximum ${slotsLeft} image(s) supplémentaire(s).`;
+                    return;
+                }
+                const oversized = files.filter(f => f.size > 5 * 1024 * 1024);
+                if (oversized.length) {
+                    this.errorMsg = `${oversized.length} fichier(s) dépassent 5 Mo : ${oversized.map(f => f.name).join(', ')}`;
+                    return;
+                }
+
+                const formData = new FormData();
+                files.forEach(f => formData.append('images[]', f));
+                formData.append('_token', csrf);
+
+                this.uploading = true;
+                this.uploadProgress = 0;
+
+                try {
+                    const xhr = new XMLHttpRequest();
+                    await new Promise((resolve, reject) => {
+                        xhr.upload.onprogress = (e) => {
+                            if (e.lengthComputable) this.uploadProgress = Math.round((e.loaded / e.total) * 90);
+                        };
+                        xhr.onload = () => {
+                            this.uploadProgress = 100;
+                            if (xhr.status >= 200 && xhr.status < 300) resolve(JSON.parse(xhr.responseText));
+                            else reject(JSON.parse(xhr.responseText));
+                        };
+                        xhr.onerror = () => reject({ error: 'Erreur réseau' });
+                        xhr.open('POST', uploadUrl);
+                        xhr.setRequestHeader('Accept', 'application/json');
+                        xhr.send(formData);
+                    }).then(data => {
+                        data.images.forEach(img => this.images.push(img));
+                    });
+                } catch (err) {
+                    this.errorMsg = err.error ?? err.message ?? 'Erreur lors de l\'envoi.';
+                    if (err.errors) {
+                        this.errorMsg = Object.values(err.errors).flat().join(' ');
+                    }
+                } finally {
+                    this.uploading = false;
+                    this.uploadProgress = 0;
+                }
+            },
+
+            async deleteImage(img) {
+                if (!confirm(`Supprimer cette image ?`)) return;
+                img.deleting = true;
+                try {
+                    const res = await fetch(`${deleteBase}/${img.id}`, {
+                        method: 'POST',
+                        headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ _method: 'DELETE' }),
+                    });
+                    const data = await res.json();
+                    this.images = this.images.filter(i => i.id !== img.id);
+                    // Mettre à jour la principale si besoin
+                    if (data.new_principale_id) {
+                        const next = this.images.find(i => i.id === data.new_principale_id);
+                        if (next) next.is_principale = true;
+                    }
+                } catch (e) {
+                    img.deleting = false;
+                    this.errorMsg = 'Erreur lors de la suppression.';
+                }
+            },
+
+            async setPrincipale(img) {
+                try {
+                    await fetch(`${deleteBase}/${img.id}/principale`, {
+                        method: 'POST',
+                        headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+                    });
+                    this.images.forEach(i => i.is_principale = i.id === img.id);
+                } catch (e) {
+                    this.errorMsg = 'Erreur lors de la mise à jour.';
+                }
+            },
+        };
+    }
+    </script>
+    @endif
     @php $images = $images ?? collect(); @endphp
     <div class="card max-w-[calc(66.667%-12px)]">
         <div class="card-header flex items-center justify-between">
