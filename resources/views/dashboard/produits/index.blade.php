@@ -99,6 +99,22 @@
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-end gap-1.5">
+                                    {{-- Toggle visible boutique --}}
+                                    <form method="POST" action="{{ route('dashboard.produits.toggle-visible', $produit) }}">
+                                        @csrf
+                                        <button type="submit" title="{{ $produit->visible_boutique ? 'Visible boutique (cliquer pour masquer)' : 'Masqué boutique (cliquer pour afficher)' }}"
+                                                class="btn-icon {{ $produit->visible_boutique ? 'text-primary-500 hover:text-primary-700' : 'text-gray-300 hover:text-primary-400' }}">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                        </button>
+                                    </form>
+                                    {{-- Toggle vedette --}}
+                                    <form method="POST" action="{{ route('dashboard.produits.toggle-featured', $produit) }}">
+                                        @csrf
+                                        <button type="submit" title="{{ $produit->featured ? 'En vedette (cliquer pour retirer)' : 'Pas en vedette (cliquer pour mettre en avant)' }}"
+                                                class="btn-icon {{ $produit->featured ? 'text-amber-500 hover:text-amber-700' : 'text-gray-300 hover:text-amber-400' }}">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                        </button>
+                                    </form>
                                     <button x-data @click="$dispatch('show-produit', {
                                         nom: '{{ addslashes($produit->nom) }}',
                                         reference: '{{ addslashes($produit->reference ?? '—') }}',
@@ -128,6 +144,9 @@
                                         unite: '{{ $produit->unite }}',
                                         code_barre: '{{ addslashes($produit->code_barre ?? '') }}',
                                         description: '{{ addslashes($produit->description ?? '') }}',
+                                        description_courte: '{{ addslashes($produit->description_courte ?? '') }}',
+                                        visible_boutique: {{ $produit->visible_boutique ? 'true' : 'false' }},
+                                        featured: {{ $produit->featured ? 'true' : 'false' }},
                                         photo_url: '{{ $produit->photo ? asset('storage/'.$produit->photo) : '' }}'
                                     })" class="btn-icon" title="Modifier">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -179,11 +198,11 @@
             show: false,
             isEdit: false,
             formAction: '{{ route('dashboard.produits.store') }}',
-            form: { categorie_id: '', nom: '', reference: '', code_barre: '', prix_achat: '', prix_vente: '', stock: 0, seuil_alerte: 5, unite: 'pièce', description: '', photo_url: '' },
+            form: { categorie_id: '', nom: '', reference: '', code_barre: '', prix_achat: '', prix_vente: '', stock: 0, seuil_alerte: 5, unite: 'pièce', description: '', description_courte: '', visible_boutique: true, featured: false, photo_url: '' },
             resetForm() {
                 this.isEdit = false;
                 this.formAction = '{{ route('dashboard.produits.store') }}';
-                this.form = { categorie_id: '', nom: '', reference: '', code_barre: '', prix_achat: '', prix_vente: '', stock: 0, seuil_alerte: 5, unite: 'pièce', description: '', photo_url: '' };
+                this.form = { categorie_id: '', nom: '', reference: '', code_barre: '', prix_achat: '', prix_vente: '', stock: 0, seuil_alerte: 5, unite: 'pièce', description: '', description_courte: '', visible_boutique: true, featured: false, photo_url: '' };
             },
             init() {
                 window.addEventListener('open-produit', () => { this.resetForm(); this.show = true; });
@@ -201,6 +220,9 @@
                         seuil_alerte: e.detail.seuil_alerte,
                         unite: e.detail.unite,
                         description: e.detail.description,
+                        description_courte: e.detail.description_courte || '',
+                        visible_boutique: e.detail.visible_boutique !== false,
+                        featured: e.detail.featured === true || e.detail.featured === 'true',
                         photo_url: e.detail.photo_url || ''
                     };
                     this.show = true;
@@ -309,6 +331,26 @@
                             <textarea name="description" rows="2" maxlength="500"
                                       x-model="form.description" class="form-textarea text-sm"></textarea>
                         </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label text-xs">Description courte (boutique)</label>
+                        <input type="text" name="description_courte" maxlength="255"
+                               x-model="form.description_courte" class="form-input text-sm"
+                               placeholder="Résumé affiché dans la boutique en ligne...">
+                    </div>
+
+                    <div class="flex items-center gap-6">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="hidden" name="visible_boutique" value="0">
+                            <input type="checkbox" name="visible_boutique" value="1" x-model="form.visible_boutique" class="rounded">
+                            <span class="text-sm font-medium text-gray-700 dark:text-slate-300">Visible en boutique</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="hidden" name="featured" value="0">
+                            <input type="checkbox" name="featured" value="1" x-model="form.featured" class="rounded">
+                            <span class="text-sm font-medium text-gray-700 dark:text-slate-300">★ En vedette</span>
+                        </label>
                     </div>
 
                      {{-- Photo --}}

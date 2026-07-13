@@ -44,6 +44,7 @@ class ProduitController extends Controller
             'seuil_alerte' => ['required', 'integer', 'min:0'],
             'unite' => ['required', 'string', 'max:30'],
             'description' => ['nullable', 'string', 'max:500'],
+            'description_courte' => ['nullable', 'string', 'max:255'],
             'photo' => ['nullable', 'image', 'max:2048'],
         ]);
 
@@ -52,6 +53,8 @@ class ProduitController extends Controller
         }
 
         $data['prix_achat'] = $data['prix_achat'] ?? 0;
+        $data['visible_boutique'] = $request->boolean('visible_boutique', true);
+        $data['featured'] = $request->boolean('featured', false);
 
         // Upload photo optionnelle
         if ($request->hasFile('photo')) {
@@ -85,6 +88,7 @@ class ProduitController extends Controller
             'seuil_alerte' => ['required', 'integer', 'min:0'],
             'unite' => ['required', 'string', 'max:30'],
             'description' => ['nullable', 'string', 'max:500'],
+            'description_courte' => ['nullable', 'string', 'max:255'],
             'photo' => ['nullable', 'image', 'max:2048'],
         ]);
 
@@ -93,6 +97,8 @@ class ProduitController extends Controller
         }
 
         $data['prix_achat'] = $data['prix_achat'] ?? 0;
+        $data['visible_boutique'] = $request->boolean('visible_boutique', true);
+        $data['featured'] = $request->boolean('featured', false);
 
         // Upload photo optionnelle (remplace l'ancienne si existante)
         if ($request->hasFile('photo')) {
@@ -155,5 +161,30 @@ class ProduitController extends Controller
             'stock'      => (int) $produit->stock,
             'code_barre' => $produit->code_barre,
         ]);
+    }
+
+    /**
+     * Basculer la visibilité boutique d'un produit
+     */
+    public function toggleVisible(Produit $produit)
+    {
+        $produit->update(['visible_boutique' => !$produit->visible_boutique]);
+        Cache::forget('boutique_' . $produit->institut_id . '_produits');
+        Cache::forget('caisse_catalog_' . $produit->institut_id);
+        return back()->with('success', $produit->visible_boutique
+            ? "« {$produit->nom} » visible dans la boutique."
+            : "« {$produit->nom} » masqué dans la boutique.");
+    }
+
+    /**
+     * Basculer le statut "en vedette" d'un produit
+     */
+    public function toggleFeatured(Produit $produit)
+    {
+        $produit->update(['featured' => !$produit->featured]);
+        Cache::forget('boutique_' . $produit->institut_id . '_produits');
+        return back()->with('success', $produit->featured
+            ? "« {$produit->nom} » mis en vedette."
+            : "« {$produit->nom} » retiré des vedettes.");
     }
 }

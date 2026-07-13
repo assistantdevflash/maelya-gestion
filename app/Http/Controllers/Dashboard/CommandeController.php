@@ -213,6 +213,72 @@ class CommandeController extends Controller
     }
 
     /**
+     * Compter les nouvelles commandes (pour polling temps réel)
+     */
+    public function countNouvelles()
+    {
+        $institutId = session('current_institut_id', auth()->user()->institut_id);
+        $count = Commande::where('institut_id', $institutId)->nouvelles()->count();
+        return response()->json(['count' => $count]);
+    }
+
+    /**
+     * Exporter les commandes en CSV
+     */
+    public function export(Request $request)
+    {
+        $institutId = session('current_institut_id', auth()->user()->institut_id);
+
+        $query = Commande::where('institut_id', $institutId)
+            ->with('items')
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('statut')) {
+            $query->where('statut', $request->statut);
+        }
+        if ($request->filled('payee')) {
+            $query->where('payee', $request->payee === '1');
+        }
+
+        $commandes = $query->get();
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="commandes-' . now()->format('Y-m-d') . '.csv"',
+        ];
+
+        $callback = function () use ($commandes) {
+            $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF)); // BOM UTF-8
+            fputcsv($file, ['N\u00b0 Commande', 'Date', 'Client', 'Téléphone', 'Email', 'Adresse', 'Produits', 'Sous-total', 'Livraison', 'Total', 'Statut', 'Payée', 'Mode paiement', 'Notes client'], ';');
+
+            foreach ($commandes as $cmd) {
+                $produits = $cmd->items->map(fn($i) => $i->quantite . 'x ' . $i->nom_snapshot)->implode(' | ');
+                fputcsv($file, [
+                    $cmd->numero,
+                    $cmd->created_at->format('d/m/Y H:i'),
+                    $cmd->client_prenom . ' ' . $cmd->client_nom,
+                    $cmd->client_telephone,
+                    $cmd->client_email ?? '',
+                    $cmd->client_adresse ?? '',
+                    $produits,
+                    $cmd->sous_total,
+                    $cmd->frais_livraison,
+                    $cmd->total,
+                    $cmd->statut,
+                    $cmd->payee ? 'Oui' : 'Non',
+                    $cmd->mode_paiement ?? 'cash',
+                    $cmd->notes_client ?? '',
+                ], ';');
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
      * Générer la facture PDF d'une commande
      */
     public function facturePdf(Commande $commande)

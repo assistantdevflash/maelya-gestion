@@ -144,6 +144,8 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         });
         
         Route::get('commandes', [CommandeController::class, 'index'])->name('commandes.index');
+        Route::get('commandes/export', [CommandeController::class, 'export'])->name('commandes.export');
+        Route::get('commandes/count-nouvelles', [CommandeController::class, 'countNouvelles'])->name('commandes.count-nouvelles');
         Route::get('commandes/{commande}', [CommandeController::class, 'show'])->name('commandes.show');
         Route::get('commandes/{commande}/facture', [CommandeController::class, 'facturePdf'])->name('commandes.facture');
         
@@ -216,7 +218,9 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
 
         // Produits + Stock (feature: produits / stock)
         Route::middleware('feature:produits')->group(function () {
-            Route::resource('produits', ProduitController::class)->except(['show']);
+        Route::resource('produits', ProduitController::class)->except(['show']);
+            Route::post('produits/{produit}/toggle-visible', [ProduitController::class, 'toggleVisible'])->name('produits.toggle-visible');
+            Route::post('produits/{produit}/toggle-featured', [ProduitController::class, 'toggleFeatured'])->name('produits.toggle-featured');
             Route::resource('categories-produits', CategorieProduitController::class)->except(['show', 'create', 'edit']);
         });
 

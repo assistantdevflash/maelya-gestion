@@ -35,13 +35,14 @@ class BoutiqueController extends Controller
             abort(404, 'Cette boutique n\'est pas disponible.');
         }
 
-        // Récupérer les produits actifs avec leurs catégories
-        // Utiliser le cache pour optimiser les performances
+        // Récupérer les produits actifs et visibles en boutique
         $produits = Cache::remember("boutique_{$institut->id}_produits", 3600, function () use ($institut) {
             return $institut->produits()
                 ->with('categorie')
                 ->where('actif', true)
+                ->where('visible_boutique', true)
                 ->where('stock', '>', 0)
+                ->orderByDesc('featured')
                 ->orderBy('nom')
                 ->get();
         });
@@ -59,6 +60,8 @@ class BoutiqueController extends Controller
                 'photo' => $p->photo,
                 'categorie' => $p->categorie?->nom,
                 'categorie_id' => $p->categorie_id,
+                'description_courte' => $p->description_courte,
+                'featured' => (bool) $p->featured,
             ];
         });
 
@@ -128,9 +131,10 @@ class BoutiqueController extends Controller
             'email' => 'nullable|email|max:255',
             'adresse' => 'required|string|max:500',
             'notes' => 'nullable|string|max:1000',
+            'mode_paiement' => 'nullable|string|max:30',
             'panier' => 'required|array|min:1',
             'panier.*.produit_id' => 'required|uuid|exists:produits,id',
-            'panier.*.quantite' => 'required|integer|min:1',
+            'panier.*.quantite' => 'required|integer|min:1|max:999',
         ]);
 
         try {
@@ -200,12 +204,13 @@ class BoutiqueController extends Controller
                 'client_prenom' => $data['prenom'],
                 'client_nom' => $data['nom'],
                 'client_telephone' => $data['telephone'],
-                'client_email' => $data['email'],
+                'client_email' => $data['email'] ?? null,
                 'client_adresse' => $data['adresse'],
                 'sous_total' => $sousTotal,
                 'frais_livraison' => $fraisLivraison,
                 'total' => $total,
                 'statut' => 'nouvelle',
+                'mode_paiement' => 'cash',
                 'notes_client' => $data['notes'] ?? null,
             ]);
 

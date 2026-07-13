@@ -62,7 +62,7 @@
                     @endif
                     <div>
                         <p class="text-sm font-medium text-gray-500 dark:text-slate-400">Adresse de livraison</p>
-                        <p class="text-base font-semibold text-gray-900 dark:text-white mt-1">{{ $commande->adresse_livraison }}</p>
+                        <p class="text-base font-semibold text-gray-900 dark:text-white mt-1">{{ $commande->client_adresse }}</p>
                     </div>
                     </div>
                 </div>
@@ -188,6 +188,29 @@
             </div>
             @endif
             @endcan
+
+            <div class="card">
+                <div class="card-body space-y-3">
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white">Paiement</p>
+                    <div class="flex items-center gap-2">
+                        <span class="px-3 py-1.5 text-xs font-semibold rounded-lg {{ $commande->payee ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-slate-400' }}">
+                            {{ $commande->payee ? 'Payée' : 'Non payée' }}
+                        </span>
+                        <span class="text-xs text-gray-400">{{ $commande->mode_paiement === 'cash' ? 'Cash à la livraison' : ucfirst($commande->mode_paiement ?? 'cash') }}</span>
+                    </div>
+                    @if($commande->statut === 'livree' && !$commande->payee)
+                    @can('update', $commande)
+                    <form method="POST" action="{{ route('dashboard.boutique.commandes.payer', $commande) }}">
+                        @csrf
+                        <button type="submit" class="btn-success w-full">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Marquer payée
+                        </button>
+                    </form>
+                    @endcan
+                    @endif
+                </div>
+            </div>
 
             {{-- Facture --}}
             <div class="card">
