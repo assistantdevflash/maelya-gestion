@@ -38,7 +38,7 @@ class BoutiqueController extends Controller
         // Récupérer les produits actifs et visibles en boutique
         $produits = Cache::remember("boutique_{$institut->id}_produits", 3600, function () use ($institut) {
             return $institut->produits()
-                ->with('categorie')
+                ->with(['categorie', 'imagePrincipale'])
                 ->where('actif', true)
                 ->where('visible_boutique', true)
                 ->where('stock', '>', 0)
@@ -57,7 +57,7 @@ class BoutiqueController extends Controller
                 'nom' => $p->nom,
                 'prix' => $p->prix_vente,
                 'stock' => $p->stock,
-                'photo' => $p->photo,
+                'photo' => $p->imagePrincipale?->chemin ?? $p->photo,
                 'categorie' => $p->categorie?->nom,
                 'categorie_id' => $p->categorie_id,
                 'description_courte' => $p->description_courte,
@@ -90,7 +90,7 @@ class BoutiqueController extends Controller
         $produit = Produit::where('id', $id)
             ->where('institut_id', $institut->id)
             ->where('actif', true)
-            ->with('categorie')
+            ->with(['categorie', 'images'])
             ->firstOrFail();
 
         // Produits similaires (même catégorie)

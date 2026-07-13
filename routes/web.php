@@ -218,9 +218,14 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
 
         // Produits + Stock (feature: produits / stock)
         Route::middleware('feature:produits')->group(function () {
-        Route::resource('produits', ProduitController::class)->except(['show']);
+            Route::resource('produits', ProduitController::class)->except(['show']);
             Route::post('produits/{produit}/toggle-visible', [ProduitController::class, 'toggleVisible'])->name('produits.toggle-visible');
             Route::post('produits/{produit}/toggle-featured', [ProduitController::class, 'toggleFeatured'])->name('produits.toggle-featured');
+            // Images produit
+            Route::post('produits/{produit}/images', [\App\Http\Controllers\Dashboard\ProduitImageController::class, 'store'])->name('produits.images.store');
+            Route::get('produits/{produit}/images-json', [\App\Http\Controllers\Dashboard\ProduitImageController::class, 'indexJson'])->name('produits.images.json');
+            Route::delete('produits/{produit}/images/{image}', [\App\Http\Controllers\Dashboard\ProduitImageController::class, 'destroy'])->name('produits.images.destroy');
+            Route::post('produits/{produit}/images/{image}/principale', [\App\Http\Controllers\Dashboard\ProduitImageController::class, 'setPrincipale'])->name('produits.images.principale');
             Route::resource('categories-produits', CategorieProduitController::class)->except(['show', 'create', 'edit']);
         });
 

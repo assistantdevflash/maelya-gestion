@@ -226,6 +226,8 @@
                         photo_url: e.detail.photo_url || ''
                     };
                     this.show = true;
+                    // Charger les images de galerie
+                    setTimeout(() => loadGalerie(e.detail.id), 100);
                 });
             }
          }"
@@ -353,9 +355,9 @@
                         </label>
                     </div>
 
-                     {{-- Photo --}}
+                     {{-- Photo principale --}}
                     <div class="form-group">
-                        <label class="form-label text-xs">Photo</label>
+                        <label class="form-label text-xs">Photo principale</label>
                         <template x-if="isEdit && form.photo_url">
                             <div class="flex items-center gap-3 mb-2">
                                 <img :src="form.photo_url" alt="Photo actuelle"
@@ -372,6 +374,26 @@
                         <input type="file" name="photo" accept="image/*" class="form-input text-sm">
                         <p class="text-xs text-gray-400 mt-1">JPG, PNG ou WebP · Max 2 Mo · Optionnelle</p>
                     </div>
+
+                    {{-- Galerie multi-images (uniquement en édition) --}}
+                    <template x-if="isEdit">
+                        <div class="form-group border-t border-gray-100 dark:border-slate-700 pt-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <label class="form-label text-xs mb-0">Galerie photos (jusqu'à 5)</label>
+                                <span class="text-[10px] text-gray-400">⭐ = couverture</span>
+                            </div>
+                            {{-- Images existantes --}}
+                            <div class="galerie-images-container" :data-produit-id="form.id">
+                                <p class="text-xs text-gray-400 italic" id="galerie-loading-msg">Chargement des images...</p>
+                            </div>
+                            {{-- Upload nouvelles images --}}
+                            <form :action="'/dashboard/produits/' + form.id + '/images'" method="POST" enctype="multipart/form-data" class="mt-3 flex items-center gap-2">
+                                @csrf
+                                <input type="file" name="images[]" accept="image/*" multiple class="form-input text-xs flex-1" onchange="this.form.submit()">
+                                <span class="text-xs text-gray-400 whitespace-nowrap">Max 5, 2 Mo/img</span>
+                            </form>
+                        </div>
+                    </template>
                 </form>
             </div>
             <div class="modal-footer">
@@ -524,4 +546,51 @@
         });
     </script>
     @endif
+
+    <script>
+    function loadGalerie(produitId) {
+        if (!produitId) return;
+        const container = document.querySelector('.galerie-images-container[data-produit-id="' + produitId + '"]');
+        if (!container) return;
+        container.innerHTML = '<p class="text-xs text-gray-400 italic">Chargement...</p>';
+
+        fetch('/dashboard/produits/' + produitId + '/images-json', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+        })
+        .then(r => r.json())
+        .then(images => {
+            if (!images.length) {
+                container.innerHTML = '<p class="text-xs text-gray-400 italic">Aucune image dans la galerie.</p>';
+                return;
+            }
+            container.innerHTML = images.map(img => `
+                <div class="flex items-center gap-2 p-2 bg-gray-50 dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700">
+                    <img src="${img.url}" alt="" class="w-14 h-14 rounded-lg object-cover flex-shrink-0">
+                    <div class="flex-1 min-w-0">
+                        ${img.is_principale ? '<span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">⭐ Couverture</span>' : ''}
+                    </div>
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                        ${!img.is_principale ? `
+                        <form method="POST" action="/dashboard/produits/${produitId}/images/${img.id}/principale">
+                            <input type="hidden" name="_token" value="${document.querySelector('meta[name=csrf-token]').content}">
+                            <button type="submit" title="Définir comme couverture" class="p-1.5 text-amber-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                            </button>
+                        </form>` : ''}
+                        <form method="POST" action="/dashboard/produits/${produitId}/images/${img.id}" onsubmit="return confirm('Supprimer cette image ?')">
+                            <input type="hidden" name="_token" value="${document.querySelector('meta[name=csrf-token]').content}">
+                            <input type="hidden" name="_method" value="DELETE">
+                            <button type="submit" title="Supprimer" class="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            `).join('<div class="h-1.5"></div>');
+        })
+        .catch(() => {
+            container.innerHTML = '<p class="text-xs text-red-400">Erreur de chargement.</p>';
+        });
+    }
+    </script>
 </x-dashboard-layout>

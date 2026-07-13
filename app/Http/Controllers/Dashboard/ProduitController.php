@@ -168,10 +168,11 @@ class ProduitController extends Controller
      */
     public function toggleVisible(Produit $produit)
     {
-        $produit->update(['visible_boutique' => !$produit->visible_boutique]);
+        $newValue = !$produit->visible_boutique;
+        $produit->update(['visible_boutique' => $newValue]);
         Cache::forget('boutique_' . $produit->institut_id . '_produits');
         Cache::forget('caisse_catalog_' . $produit->institut_id);
-        return back()->with('success', $produit->visible_boutique
+        return back()->with('success', $newValue
             ? "« {$produit->nom} » visible dans la boutique."
             : "« {$produit->nom} » masqué dans la boutique.");
     }
@@ -181,9 +182,10 @@ class ProduitController extends Controller
      */
     public function toggleFeatured(Produit $produit)
     {
-        $produit->update(['featured' => !$produit->featured]);
+        $newValue = !$produit->featured;
+        $produit->update(['featured' => $newValue]);
         Cache::forget('boutique_' . $produit->institut_id . '_produits');
-        return back()->with('success', $produit->featured
+        return back()->with('success', $newValue
             ? "« {$produit->nom} » mis en vedette."
             : "« {$produit->nom} » retiré des vedettes.");
     }

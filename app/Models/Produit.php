@@ -21,11 +21,14 @@ class Produit extends Model
 
     protected $fillable = [
         'institut_id', 'categorie_id', 'nom', 'reference', 'code_barre',
-        'prix_achat', 'cout_moyen_pondere', 'prix_vente', 'stock', 'seuil_alerte', 'unite', 'description', 'photo', 'actif',
+        'prix_achat', 'cout_moyen_pondere', 'prix_vente', 'stock', 'seuil_alerte', 'unite',
+        'description', 'description_courte', 'photo', 'actif', 'visible_boutique', 'featured',
     ];
 
     protected $casts = [
         'actif' => 'boolean',
+        'visible_boutique' => 'boolean',
+        'featured' => 'boolean',
         'prix_achat' => 'integer',
         'cout_moyen_pondere' => 'integer',
         'prix_vente' => 'integer',
@@ -79,6 +82,25 @@ class Produit extends Model
     public function categorie()
     {
         return $this->belongsTo(CategorieProduit::class, 'categorie_id');
+    }
+
+    public function images()
+    {
+        return $this->hasMany(ProduitImage::class, 'produit_id')->orderBy('ordre');
+    }
+
+    public function imagePrincipale()
+    {
+        return $this->hasOne(ProduitImage::class, 'produit_id')->where('is_principale', true)->orderBy('ordre');
+    }
+
+    /** Retourne l'URL de la photo principale (images table prioritaire, fallback sur photo colonne) */
+    public function getPhotoUrlAttribute(): ?string
+    {
+        $img = $this->imagePrincipale;
+        if ($img) return asset('storage/' . $img->chemin);
+        if ($this->photo) return asset('storage/' . $this->photo);
+        return null;
     }
 
     public function mouvements()
