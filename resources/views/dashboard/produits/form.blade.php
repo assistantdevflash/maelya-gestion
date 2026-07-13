@@ -248,9 +248,6 @@
                     </button>
                     <a href="{{ route('dashboard.produits.index') }}" class="btn btn-outline w-full justify-center">Annuler</a>
                     @if($isEdit)
-                    <form id="delete-form" method="POST" action="{{ route('dashboard.produits.destroy', $produit) }}">
-                        @csrf @method('DELETE')
-                    </form>
                     <button type="button" x-data
                             @click="$dispatch('confirm-delete', {
                                 formId: 'delete-form',
@@ -267,6 +264,13 @@
             </div>
         </div>
     </form>
+
+    {{-- Formulaire de suppression — HORS du formulaire principal (évite @method DELETE d'écraser @method PUT) --}}
+    @if($isEdit)
+    <form id="delete-form" method="POST" action="{{ route('dashboard.produits.destroy', $produit) }}" style="display:none">
+        @csrf @method('DELETE')
+    </form>
+    @endif
 
     {{-- ─────────────────────────────────────────────────────────────────────
          GALERIE PHOTOS — HORS du formulaire principal, upload 100% AJAX
