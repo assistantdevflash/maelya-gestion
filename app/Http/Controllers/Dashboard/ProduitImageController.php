@@ -105,7 +105,10 @@ class ProduitImageController extends Controller
 
         $this->clearCaches($produit);
         return response()->json(['ok' => true]);
-    } à un produit (max 5 au total)
+    }
+
+    /**
+     * Ajouter une ou plusieurs images à un produit (max 5 au total) — réponse JSON
      */
     public function store(Request $request, Produit $produit)
     {
