@@ -17,17 +17,6 @@
                         <span class="ml-1 inline-flex items-center justify-center w-[18px] h-[18px] text-xs bg-amber-100 text-amber-600 rounded-full font-bold leading-none">!</span>
                     @endif
                 </button>
-                <button x-data @click="$dispatch('open-categories')" class="btn-outline">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
-                    </svg>
-                    Catégories
-                    @if($categories->count() > 0)
-                        <span class="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] text-xs bg-gray-100 text-gray-600 rounded-full px-1 font-mono leading-none">{{ $categories->count() }}</span>
-                    @else
-                        <span class="ml-1 inline-flex items-center justify-center w-[18px] h-[18px] text-xs bg-amber-100 text-amber-600 rounded-full font-bold leading-none">!</span>
-                    @endif
-                </button>
                 <a href="{{ route('dashboard.produits.create') }}" class="btn-primary group">
                     <svg class="w-4 h-4 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
