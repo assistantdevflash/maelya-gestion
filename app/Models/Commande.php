@@ -67,16 +67,17 @@ class Commande extends Model
 
     /**
      * Générer un numéro unique de commande
+     * IMPORTANT: la contrainte unique est globale, donc on cherche le max global du jour
      */
     public static function genererNumero(string $institutId): string
     {
         $prefix = 'CMD';
         $date = now()->format('Ymd');
-        
-        // Trouver le dernier numéro du jour
-        $lastCommande = self::where('institut_id', $institutId)
-            ->where('numero', 'like', "$prefix-$date-%")
-            ->orderBy('numero', 'desc')
+
+        // Recherche GLOBALE (tous instituts) avec lock pour éviter la race condition
+        $lastCommande = self::where('numero', 'like', "$prefix-$date-%")
+            ->lockForUpdate()
+            ->orderByRaw('CAST(SUBSTRING_INDEX(numero, \'-\', -1) AS UNSIGNED) DESC')
             ->first();
 
         if ($lastCommande) {

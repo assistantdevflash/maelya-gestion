@@ -277,6 +277,10 @@ class BoutiqueController extends Controller
                 'numero' => $commande->numero
             ])->with('success', 'Votre commande a été passée avec succès !');
 
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            // Numéro de commande en doublon (race condition entre 2 instituts) — retry
+            DB::rollBack();
+            return back()->with('error', 'Une erreur technique est survenue. Merci de réessayer.')->withInput();
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', $e->getMessage())->withInput();
