@@ -367,8 +367,31 @@
                     </div>
                 </template>
 
-                <button type="submit" class="w-full py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all">
-                    Confirmer la commande
+                {{-- Erreur serveur --}}
+                @if(session('error') || $errors->any())
+                <div class="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/40 rounded-xl text-sm text-red-700 dark:text-red-300">
+                    <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    <div>
+                        @if(session('error'))
+                            <p>{{ session('error') }}</p>
+                        @endif
+                        @foreach($errors->all() as $e)
+                            <p>• {{ $e }}</p>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                <button type="submit"
+                        x-ref="submitBtn"
+                        @click="handleSubmit($event)"
+                        :disabled="submitting"
+                        :class="submitting ? 'opacity-70 cursor-not-allowed' : 'hover:bg-primary-700 hover:shadow-xl'"
+                        class="w-full py-4 bg-primary-600 text-white rounded-xl font-bold text-lg shadow-lg transition-all flex items-center justify-center gap-3">
+                    <template x-if="submitting">
+                        <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    </template>
+                    <span x-text="submitting ? 'Envoi en cours...' : 'Confirmer la commande'"></span>
                 </button>
                 <p class="text-center text-xs text-gray-400">{{ $institut->boutique_delai_livraison ? 'Livraison : ' . $institut->boutique_delai_livraison : 'Délai de livraison selon disponibilité' }}</p>
             </form>
@@ -383,7 +406,8 @@
                 selectedCategorie: null,
                 sortBy: 'default',
                 panierOpen: false,
-                commandeOpen: false,
+                commandeOpen: {{ session('error') || $errors->any() ? 'true' : 'false' }},
+                submitting: false,
                 panier: JSON.parse(localStorage.getItem('panier_{{ $institut->id }}') || '[]'),
                 fraisLivraison: {{ $institut->boutique_frais_livraison ?? 0 }},
                 toast: { show: false, message: '' },
@@ -476,6 +500,19 @@
                     this.toast.message = message;
                     this.toast.show = true;
                     setTimeout(() => { this.toast.show = false; }, 3000);
+                },
+
+                handleSubmit(event) {
+                    // Vérification que les items du panier sont bien dans le DOM avant envoi
+                    if (this.panier.length === 0) {
+                        event.preventDefault();
+                        this.showToast('Votre panier est vide.');
+                        return;
+                    }
+                    // Anti double-clic
+                    if (this.submitting) { event.preventDefault(); return; }
+                    this.submitting = true;
+                    // Le formulaire se soumet normalement (pas d'event.preventDefault)
                 }
             }
         }
