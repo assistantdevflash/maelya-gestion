@@ -218,10 +218,23 @@
     </main>
 
     <script>
+    @php
+        $produitData = [
+            'id'               => $produit->id,
+            'nom'              => $produit->nom,
+            'prix'             => $produit->prix_vente,
+            'stock'            => $produit->stock,
+            'photo'            => $produit->photo,
+            'categorie'        => $produit->categorie?->nom,
+            'categorie_id'     => $produit->categorie_id,
+            'description_courte' => $produit->description_courte,
+            'featured'         => $produit->featured ? true : false,
+        ];
+    @endphp
     function ficheProduit() {
         return {
             quantite: 1,
-            produit: @json(['id' => $produit->id, 'nom' => $produit->nom, 'prix' => $produit->prix_vente, 'stock' => $produit->stock, 'photo' => $produit->photo, 'categorie' => $produit->categorie?->nom, 'categorie_id' => $produit->categorie_id, 'description_courte' => $produit->description_courte, 'featured' => (bool)$produit->featured]),
+            produit: @json($produitData),
             panier: JSON.parse(localStorage.getItem('panier_{{ $institut->id }}') || '[]'),
             toast: { show: false, message: '' },
 
