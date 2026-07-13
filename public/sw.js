@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'maelya-v4';
+const CACHE_VERSION = 'maelya-v5';
 
 // Assets statiques à mettre en cache au premier chargement
 const PRECACHE_ASSETS = [
@@ -114,7 +114,7 @@ async function networkFirstWithOfflineFallback(request) {
 
 // ── Notifications Push ──────────────────────────────────────────────────────
 self.addEventListener('push', event => {
-    let data = { title: 'Maëlya Gestion', body: 'Nouvelle notification', url: '/', icon: '/icons/icon-192.png' };
+    let data = { title: 'Maëlya Gestion', body: 'Nouvelle notification', url: '/', icon: '/icons/icon-192.png?v=4' };
     try {
         if (event.data) data = { ...data, ...event.data.json() };
     } catch (e) {}

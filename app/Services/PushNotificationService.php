@@ -64,7 +64,7 @@ class PushNotificationService
             'body'  => $corps,
             'icon'  => $icon,
             'url'   => $url,
-            'badge' => '/icons/icon-72.png',
+            'badge' => '/icons/badge-72.png?v=4',
         ]);
 
         foreach ($subscriptions as $sub) {
