@@ -44,7 +44,7 @@
             </div>
             <div class="flex-1">
                 <p class="text-sm font-semibold text-gray-900">Passez au plan Premium+ pour plusieurs établissements</p>
-                <p class="text-xs text-gray-500 mt-0.5">Votre plan actuel autorise {{ $maxInstituts }} établissement. Le plan Premium+ permet des établissements illimités avec employés illimités.</p>
+                <p class="text-xs text-gray-500 mt-0.5">Votre plan actuel autorise {{ $maxInstituts }} établissement. Le plan Premium+ permet des 3 établissements  avec 10 employés par établissement.</p>
             </div>
             <a href="{{ route('abonnement.plans') }}" class="btn-primary text-sm flex-shrink-0">Voir les plans</a>
         </div>
@@ -67,7 +67,7 @@
                               style="background: linear-gradient(135deg, #9333ea, #ec4899);">Premium+</span>
                     </div>
                     <p class="text-sm text-gray-500 mb-3">
-                        Votre plan Premium+ vous permet de créer autant d'établissements que vous souhaitez. Chaque établissement a ses propres clients, stock, ventes et employés indépendants.
+                        Votre plan Premium+ vous permet de créer jusqu'à 3 établissements avec 10 employés par établissement. Chaque établissement a ses propres clients, stock, ventes et employés indépendants.
                     </p>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div class="flex items-center gap-2">
@@ -92,7 +92,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 </svg>
                             </div>
-                            <p class="text-xs text-gray-600">Employés illimités par établissement</p>
+                            <p class="text-xs text-gray-600">10 employés par établissement</p>
                         </div>
                     </div>
                 </div>

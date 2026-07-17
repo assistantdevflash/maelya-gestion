@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" class="h-full">
+<html lang="fr" class="min-h-screen">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -33,9 +33,9 @@
     {{ $styles ?? '' }}
     @stack('head')
 </head>
-<body class="dashboard h-full font-sans">
+<body class="dashboard min-h-screen font-sans">
 
-<div class="flex h-full" x-data='{
+<div class="flex min-h-screen" x-data='{
     sidebarOpen: false,
     themeMenu: false,
     theme: localStorage.getItem("maelya-theme") || "system",
