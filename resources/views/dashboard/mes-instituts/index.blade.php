@@ -122,6 +122,7 @@
             'business_center' => 'Business center',
             'depot_gaz'       => 'Dépôt de gaz',
             'commerce'        => 'Commerce / Alimentation',
+            'informatique_telephonie' => 'Informatique / Téléphonie',
             'autre'           => 'Autre',
         ];
         @endphp
@@ -416,6 +417,7 @@
                                             <option value="business_center">Business center</option>
                                             <option value="depot_gaz">Dépôt de gaz</option>
                                             <option value="commerce">Commerce / Alimentation</option>
+                                            <option value="informatique_telephonie">Informatique / Téléphonie</option>
                                             <option value="autre">Autre</option>
                                         </select>
                                     </div>

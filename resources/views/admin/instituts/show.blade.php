@@ -29,6 +29,7 @@
                             'business_center' => 'Business center',
                             'depot_gaz'       => 'Dépôt de gaz',
                             'commerce'        => 'Commerce / Alimentation',
+                            'informatique_telephonie' => 'Informatique / Téléphonie',
                             'autre'           => 'Autre',
                         ];
                     @endphp

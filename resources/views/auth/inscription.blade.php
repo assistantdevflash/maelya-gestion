@@ -115,6 +115,7 @@
                                         <option value="business_center"     {{ old('type_institut') === 'business_center'     ? 'selected' : '' }}>Business center</option>
                                         <option value="depot_gaz"           {{ old('type_institut') === 'depot_gaz'           ? 'selected' : '' }}>Dépôt de gaz</option>
                                         <option value="commerce"            {{ old('type_institut') === 'commerce'            ? 'selected' : '' }}>Commerce / Alimentation</option>
+                                        <option value="informatique_telephonie" {{ old('type_institut') === 'informatique_telephonie' ? 'selected' : '' }}>Informatique / Téléphonie</option>
                                         <option value="autre"               {{ old('type_institut') === 'autre'               ? 'selected' : '' }}>Autre</option>
                                     </select>
                                 </div>
