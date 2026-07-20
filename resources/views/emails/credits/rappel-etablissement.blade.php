@@ -18,10 +18,10 @@
 
     {{-- HEADER --}}
     <tr>
-        <td style="background:linear-gradient(135deg,#7c3aed,#6366f1);padding:36px 32px;text-align:center;">
+        <td bgcolor="#7c3aed" style="background-color:#7c3aed;background:linear-gradient(135deg,#7c3aed,#6366f1);padding:36px 32px;text-align:center;">
             <div style="width:56px;height:56px;background:rgba(255,255,255,0.2);border-radius:16px;display:inline-block;text-align:center;line-height:56px;margin-bottom:16px;font-size:28px;">📅</div>
-            <h1 style="color:#fff;font-size:22px;font-weight:700;margin:0 0 6px;">Echeance credit demain</h1>
-            <p style="color:rgba(255,255,255,0.85);font-size:14px;margin:0;">{{ $client?->nom_complet ?? 'Client' }} — {{ $date->translatedFormat('l d F Y') }}</p>
+            <h1 style="color:#ffffff !important;font-size:22px;font-weight:700;margin:0 0 6px;">Echeance credit demain</h1>
+            <p style="color:rgba(255,255,255,0.85) !important;font-size:14px;margin:0;">{{ $client?->nom_complet ?? 'Client' }} — {{ $date->translatedFormat('l d F Y') }}</p>
         </td>
     </tr>
 

@@ -10,10 +10,10 @@
         .wrapper { max-width: 600px; margin: 32px auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
 
         /* Header */
-        .header { background: linear-gradient(135deg, #9333ea, #ec4899); padding: 36px 32px; text-align: center; }
+        .header { background-color:#9333ea; background: linear-gradient(135deg, #9333ea, #ec4899); padding: 36px 32px; text-align: center; }
         .header-icon { width: 56px; height: 56px; background: rgba(255,255,255,0.2); border-radius: 16px; display: inline-block; text-align: center; line-height: 56px; margin-bottom: 16px; font-size: 28px; }
-        .header h1 { color: #fff; font-size: 22px; font-weight: 700; line-height: 1.3; }
-        .header p { color: rgba(255,255,255,0.85); font-size: 14px; margin-top: 6px; }
+        .header h1 { color: #ffffff !important; font-size: 22px; font-weight: 700; line-height: 1.3; }
+        .header p { color: rgba(255,255,255,0.85) !important; font-size: 14px; margin-top: 6px; }
 
         /* Body */
         .body { padding: 32px; }
@@ -55,10 +55,10 @@
 
     {{-- ══ HEADER ══ --}}
     <tr>
-        <td style="background:linear-gradient(135deg,#9333ea,#ec4899);padding:36px 32px;text-align:center;">
+        <td bgcolor="#9333ea" style="background-color:#9333ea;background:linear-gradient(135deg,#9333ea,#ec4899);padding:36px 32px;text-align:center;">
             <div style="width:56px;height:56px;background:rgba(255,255,255,0.2);border-radius:16px;display:inline-block;text-align:center;line-height:56px;margin-bottom:16px;font-size:28px;">✅</div>
-            <h1 style="color:#fff;font-size:22px;font-weight:700;margin:0 0 6px;">Votre abonnement est activé !</h1>
-            <p style="color:rgba(255,255,255,0.85);font-size:14px;margin:0;">Bienvenue dans {{ config('app.name') }}, {{ $abonnement->user->prenom ?? $abonnement->user->name }}.</p>
+            <h1 style="color:#ffffff !important;font-size:22px;font-weight:700;margin:0 0 6px;">Votre abonnement est activé !</h1>
+            <p style="color:rgba(255,255,255,0.85) !important;font-size:14px;margin:0;">Bienvenue dans {{ config('app.name') }}, {{ $abonnement->user->prenom ?? $abonnement->user->name }}.</p>
         </td>
     </tr>
 
@@ -119,17 +119,17 @@
 
                 {{-- En-tête facture --}}
                 <tr>
-                    <td style="background:linear-gradient(135deg,#9333ea,#ec4899);padding:20px 24px;">
+                    <td bgcolor="#9333ea" style="background-color:#9333ea;background:linear-gradient(135deg,#9333ea,#ec4899);padding:20px 24px;">
                         <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
                                 <td>
-                                    <p style="font-size:18px;font-weight:800;color:#fff;margin:0 0 3px;">{{ config('app.name') }}</p>
-                                    <p style="font-size:11px;color:rgba(255,255,255,0.8);margin:0;">Logiciel de gestion d'établissements</p>
+                                    <p style="font-size:18px;font-weight:800;color:#ffffff !important;margin:0 0 3px;">{{ config('app.name') }}</p>
+                                    <p style="font-size:11px;color:rgba(255,255,255,0.8) !important;margin:0;">Logiciel de gestion d'établissements</p>
                                 </td>
                                 <td align="right">
-                                    <p style="font-size:10px;color:rgba(255,255,255,0.75);text-transform:uppercase;letter-spacing:0.08em;margin:0 0 3px;">Facture</p>
-                                    <p style="font-size:15px;font-weight:800;color:#fff;margin:0 0 3px;">{{ $facturRef }}</p>
-                                    <p style="font-size:12px;color:rgba(255,255,255,0.8);margin:0;">{{ $abonnement->debut_le->format('d/m/Y') }}</p>
+                                    <p style="font-size:10px;color:rgba(255,255,255,0.75) !important;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 3px;">Facture</p>
+                                    <p style="font-size:15px;font-weight:800;color:#ffffff !important;margin:0 0 3px;">{{ $facturRef }}</p>
+                                    <p style="font-size:12px;color:rgba(255,255,255,0.8) !important;margin:0;">{{ $abonnement->debut_le->format('d/m/Y') }}</p>
                                 </td>
                             </tr>
                         </table>

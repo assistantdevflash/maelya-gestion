@@ -12,10 +12,10 @@
 
     {{-- ══ HEADER ══ --}}
     <tr>
-        <td style="background:linear-gradient(135deg,#dc2626,#f97316);padding:36px 32px;text-align:center;">
+        <td bgcolor="#dc2626" style="background-color:#dc2626;background:linear-gradient(135deg,#dc2626,#f97316);padding:36px 32px;text-align:center;">
             <div style="width:56px;height:56px;background:rgba(255,255,255,0.2);border-radius:16px;display:inline-block;text-align:center;line-height:56px;margin-bottom:16px;font-size:28px;">❌</div>
-            <h1 style="color:#fff;font-size:22px;font-weight:700;margin:0 0 6px;">Demande non validée</h1>
-            <p style="color:rgba(255,255,255,0.85);font-size:14px;margin:0;">Bonjour {{ $abonnement->user->prenom ?? $abonnement->user->name }},</p>
+            <h1 style="color:#ffffff !important;font-size:22px;font-weight:700;margin:0 0 6px;">Demande non validée</h1>
+            <p style="color:rgba(255,255,255,0.85) !important;font-size:14px;margin:0;">Bonjour {{ $abonnement->user->prenom ?? $abonnement->user->name }},</p>
         </td>
     </tr>
 

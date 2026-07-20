@@ -23,6 +23,12 @@
         'annulee', 'refusee' => 'linear-gradient(135deg,#ef4444,#f97316)',
         default => 'linear-gradient(135deg,#9333ea,#ec4899)',
     };
+    $solidColor = match($commande->statut) {
+        'livree' => '#10b981',
+        'en_livraison' => '#3b82f6',
+        'annulee', 'refusee' => '#ef4444',
+        default => '#9333ea',
+    };
     $icon = match($commande->statut) {
         'livree' => '✅',
         'en_livraison' => '🚚',
@@ -39,11 +45,11 @@
 
     {{-- HEADER --}}
     <tr>
-        <td style="background:{{ $gradient }};padding:36px 32px;text-align:center;">
+        <td bgcolor="{{ $solidColor }}" style="background-color:{{ $solidColor }};background:{{ $gradient }};padding:36px 32px;text-align:center;">
             <div style="width:56px;height:56px;background:rgba(255,255,255,0.2);border-radius:16px;display:inline-block;text-align:center;line-height:56px;margin-bottom:16px;font-size:28px;">{{ $icon }}</div>
-            <h1 style="color:#fff;font-size:22px;font-weight:700;margin:0 0 6px;">{{ $statutLabel }}</h1>
-            <p style="color:rgba(255,255,255,0.85);font-size:14px;margin:0 0 4px;">Bonjour {{ $commande->client_prenom }} {{ $commande->client_nom }}, votre commande <strong>{{ $commande->numero }}</strong> a été mise à jour.</p>
-            <p style="color:rgba(255,255,255,0.7);font-size:13px;margin:0;">{{ $commande->institut->nom }}</p>
+            <h1 style="color:#ffffff !important;font-size:22px;font-weight:700;margin:0 0 6px;">{{ $statutLabel }}</h1>
+            <p style="color:rgba(255,255,255,0.85) !important;font-size:14px;margin:0 0 4px;">Bonjour {{ $commande->client_prenom }} {{ $commande->client_nom }}, votre commande <strong>{{ $commande->numero }}</strong> a été mise à jour.</p>
+            <p style="color:rgba(255,255,255,0.7) !important;font-size:13px;margin:0;">{{ $commande->institut->nom }}</p>
         </td>
     </tr>
 

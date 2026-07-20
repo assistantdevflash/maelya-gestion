@@ -10,13 +10,13 @@
         .wrapper { max-width: 600px; margin: 32px auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
 
         /* Header */
-        .header { background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%); padding: 40px 32px; text-align: center; }
-        .header-logo { font-size: 28px; font-weight: 900; color: #fff; letter-spacing: -0.5px; margin-bottom: 4px; }
+        .header { background-color:#9333ea; background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%); padding: 40px 32px; text-align: center; }
+        .header-logo { font-size: 28px; font-weight: 900; color: #ffffff !important; letter-spacing: -0.5px; margin-bottom: 4px; }
         .header-logo span { opacity: 0.85; font-weight: 400; }
-        .header-tagline { color: rgba(255,255,255,0.8); font-size: 13px; margin-bottom: 24px; }
+        .header-tagline { color: rgba(255,255,255,0.8) !important; font-size: 13px; margin-bottom: 24px; }
         .header-welcome { background: rgba(255,255,255,0.15); border-radius: 12px; padding: 16px 20px; display: inline-block; }
-        .header-welcome p { color: #fff; font-size: 18px; font-weight: 700; }
-        .header-welcome small { color: rgba(255,255,255,0.85); font-size: 13px; }
+        .header-welcome p { color: #ffffff !important; font-size: 18px; font-weight: 700; }
+        .header-welcome small { color: rgba(255,255,255,0.85) !important; font-size: 13px; }
 
         /* Body */
         .body { padding: 36px 32px; }

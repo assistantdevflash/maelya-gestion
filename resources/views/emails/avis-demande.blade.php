@@ -15,15 +15,15 @@
 
     {{-- HEADER --}}
     <tr>
-        <td style="background:linear-gradient(135deg,#9333ea,#ec4899);padding:36px 32px;text-align:center;">
+        <td bgcolor="#9333ea" style="background-color:#9333ea;background:linear-gradient(135deg,#9333ea,#ec4899);padding:36px 32px;text-align:center;">
             <div style="width:56px;height:56px;background:rgba(255,255,255,0.2);border-radius:16px;display:inline-block;text-align:center;line-height:56px;margin-bottom:16px;font-size:28px;">🌸</div>
-            <h1 style="color:#fff;font-size:22px;font-weight:700;margin:0 0 6px;">Merci pour votre visite !</h1>
+            <h1 style="color:#ffffff !important;font-size:22px;font-weight:700;margin:0 0 6px;">Merci pour votre visite !</h1>
             @if($rdv)
-                <p style="color:rgba(255,255,255,0.85);font-size:14px;margin:0 0 4px;">Bonjour {{ $rdv->client_nom }}, votre avis compte beaucoup pour nous.</p>
-                <p style="color:rgba(255,255,255,0.7);font-size:13px;margin:0;">{{ $rdv->institut?->nom ?? config('app.name') }}</p>
+                <p style="color:rgba(255,255,255,0.85) !important;font-size:14px;margin:0 0 4px;">Bonjour {{ $rdv->client_nom }}, votre avis compte beaucoup pour nous.</p>
+                <p style="color:rgba(255,255,255,0.7) !important;font-size:13px;margin:0;">{{ $rdv->institut?->nom ?? config('app.name') }}</p>
             @elseif($vente)
-                <p style="color:rgba(255,255,255,0.85);font-size:14px;margin:0 0 4px;">Bonjour {{ $vente->client?->prenom ?? $vente->client?->nom ?? '' }}, votre avis compte beaucoup pour nous.</p>
-                <p style="color:rgba(255,255,255,0.7);font-size:13px;margin:0;">{{ $vente->institut?->nom ?? config('app.name') }}</p>
+                <p style="color:rgba(255,255,255,0.85) !important;font-size:14px;margin:0 0 4px;">Bonjour {{ $vente->client?->prenom ?? $vente->client?->nom ?? '' }}, votre avis compte beaucoup pour nous.</p>
+                <p style="color:rgba(255,255,255,0.7) !important;font-size:13px;margin:0;">{{ $vente->institut?->nom ?? config('app.name') }}</p>
             @endif
         </td>
     </tr>
