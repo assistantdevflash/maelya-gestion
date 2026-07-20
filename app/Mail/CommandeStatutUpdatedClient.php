@@ -15,7 +15,9 @@ class CommandeStatutUpdatedClient extends Mailable
 
     public function __construct(
         public Commande $commande
-    ) {}
+    ) {
+        $this->commande->loadMissing('institut');
+    }
 
     public function envelope(): Envelope
     {
