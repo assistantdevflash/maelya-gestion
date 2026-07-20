@@ -55,7 +55,53 @@ class AdminInstitutController extends Controller
         $abonnementSursis = (!$abonnementActif && $owner) ? $owner->abonnementEnSursis() : null;
         $plans = PlanAbonnement::where('actif', true)->orderBy('ordre')->get();
         $historique = $owner ? Abonnement::where('user_id', $owner->id)->with('plan')->latest()->get() : collect();
-        return view('admin.instituts.show', compact('institut', 'owner', 'abonnementActif', 'abonnementSursis', 'plans', 'historique'));
+
+        // ─── KPIs / Statistiques ───────────────────────────────────────────────
+        $now = now();
+        $debutMois = $now->copy()->startOfMonth();
+        $debutJour = $now->copy()->startOfDay();
+
+        // Comptes bruts (sans période)
+        $totalProduits    = $institut->produits()->count();
+        $totalPrestations = $institut->prestations()->count();
+        $totalClients     = $institut->clients()->count();
+
+        // Clients par période
+        $clientsMois = $institut->clients()->where('created_at', '>=', $debutMois)->count();
+        $clientsJour = $institut->clients()->where('created_at', '>=', $debutJour)->count();
+
+        // Ventes : agrégation conditionnelle en 1 requête
+        $statsVentes = $institut->ventes()->where('statut', 'validee')
+            ->selectRaw("
+                COUNT(*) as nb_total,
+                COALESCE(SUM(total), 0) as ca_total,
+                COUNT(CASE WHEN created_at >= ? THEN 1 END) as nb_mois,
+                COALESCE(SUM(CASE WHEN created_at >= ? THEN total ELSE 0 END), 0) as ca_mois,
+                COUNT(CASE WHEN created_at >= ? THEN 1 END) as nb_jour,
+                COALESCE(SUM(CASE WHEN created_at >= ? THEN total ELSE 0 END), 0) as ca_jour
+            ", [$debutMois, $debutMois, $debutJour, $debutJour])
+            ->first();
+
+        // Commandes boutique
+        $boutiqueActive = (bool) $institut->boutique_active;
+
+        $statsCommandes = $institut->commandes()
+            ->selectRaw("
+                COUNT(*) as nb_total,
+                COALESCE(SUM(total), 0) as ca_total,
+                COUNT(CASE WHEN created_at >= ? THEN 1 END) as nb_mois,
+                COALESCE(SUM(CASE WHEN created_at >= ? THEN total ELSE 0 END), 0) as ca_mois,
+                COUNT(CASE WHEN created_at >= ? THEN 1 END) as nb_jour,
+                COALESCE(SUM(CASE WHEN created_at >= ? THEN total ELSE 0 END), 0) as ca_jour
+            ", [$debutMois, $debutMois, $debutJour, $debutJour])
+            ->first();
+
+        return view('admin.instituts.show', compact(
+            'institut', 'owner', 'abonnementActif', 'abonnementSursis', 'plans', 'historique',
+            'totalProduits', 'totalPrestations', 'totalClients',
+            'clientsMois', 'clientsJour',
+            'statsVentes', 'statsCommandes', 'boutiqueActive'
+        ));
     }
 
     public function update(Request $request, Institut $institut)
