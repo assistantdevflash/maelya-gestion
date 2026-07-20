@@ -186,10 +186,6 @@
                                    placeholder="Laisser vide si pas de promo">
                             @error('prix_promo') <p class="form-error">{{ $message }}</p> @enderror
                         </div>
-                                       class="form-input @error('prix_vente') border-red-400 @enderror">
-                                @error('prix_vente') <p class="form-error">{{ $message }}</p> @enderror
-                            </div>
-                        </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div class="form-group">

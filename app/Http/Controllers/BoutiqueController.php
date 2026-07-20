@@ -161,7 +161,7 @@ class BoutiqueController extends Controller
             // Vérifier les stocks
             foreach ($data['panier'] as $item) {
                 $produit = $produits->get($item['produit_id']);
-                
+
                 if (!$produit) {
                     throw new \Exception('Produit non trouvé ou indisponible.');
                 }
