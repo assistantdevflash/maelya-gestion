@@ -154,6 +154,7 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
             Route::post('commandes/{commande}/statut', [CommandeController::class, 'updateStatut'])->name('commandes.statut');
             Route::post('commandes/{commande}/payer', [CommandeController::class, 'marquerPayee'])->name('commandes.payer');
             Route::post('commandes/{commande}/notes', [CommandeController::class, 'updateNotes'])->name('commandes.notes');
+            Route::put('commandes/{commande}', [CommandeController::class, 'update'])->name('commandes.update');
             Route::delete('commandes/{commande}', [CommandeController::class, 'destroy'])->name('commandes.destroy');
         });
     });

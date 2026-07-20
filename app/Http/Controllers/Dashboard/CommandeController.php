@@ -195,6 +195,82 @@ class CommandeController extends Controller
     }
 
     /**
+     * Mettre à jour une commande avant acceptation (modifier quantités, zone, retirer articles)
+     */
+    public function update(Request $request, Commande $commande)
+    {
+        $this->authorize('update', $commande);
+
+        if ($commande->statut !== 'nouvelle') {
+            return back()->with('error', 'Seules les commandes en statut "nouvelle" peuvent être modifiées.');
+        }
+
+        $data = $request->validate([
+            'frais_livraison' => 'nullable|integer|min:0',
+            'zone_index' => 'nullable|integer|min:0',
+            'items' => 'required|array|min:1',
+            'items.*.id' => 'required|uuid|exists:commande_items,id',
+            'items.*.quantite' => 'required|integer|min:0|max:999',
+            'items.*.supprimer' => 'nullable',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $sousTotal = 0;
+
+            foreach ($data['items'] as $itemData) {
+                $cmdItem = $commande->items()->find($itemData['id']);
+                if (!$cmdItem) continue;
+
+                if (!empty($itemData['supprimer']) || (int)$itemData['quantite'] === 0) {
+                    $cmdItem->delete();
+                    continue;
+                }
+
+                $cmdItem->update([
+                    'quantite' => (int)$itemData['quantite'],
+                    'sous_total' => $cmdItem->prix_snapshot * (int)$itemData['quantite'],
+                ]);
+                $sousTotal += $cmdItem->sous_total;
+            }
+
+            // Calculer les frais selon la zone
+            $zones = is_array($commande->institut->boutique_zones_livraison) ? $commande->institut->boutique_zones_livraison : [];
+            $fraisLivraison = $data['frais_livraison'] ?? $commande->frais_livraison;
+            if (isset($data['zone_index']) && isset($zones[$data['zone_index']])) {
+                $fraisLivraison = (int)($zones[$data['zone_index']]['frais'] ?? $fraisLivraison);
+            }
+
+            $total = $sousTotal + $fraisLivraison;
+
+            $commande->update([
+                'sous_total' => $sousTotal,
+                'frais_livraison' => $fraisLivraison,
+                'total' => $total,
+            ]);
+
+            DB::commit();
+
+            // Envoyer un email de mise à jour au client
+            try {
+                if ($commande->client_email) {
+                    Mail::to($commande->client_email)
+                        ->send(new CommandeStatutUpdatedClient($commande));
+                }
+            } catch (\Exception $e) {
+                \Log::error('Erreur envoi email màj commande: ' . $e->getMessage());
+            }
+
+            return back()->with('success', 'Commande mise à jour avec succès. Le client a été notifié.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Erreur lors de la mise à jour : ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Supprimer une commande (uniquement si annulée ou refusée)
      */
     public function destroy(Commande $commande)

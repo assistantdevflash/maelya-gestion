@@ -64,6 +64,27 @@
                         <p class="text-sm font-medium text-gray-500 dark:text-slate-400">Adresse de livraison</p>
                         <p class="text-base font-semibold text-gray-900 dark:text-white mt-1">{{ $commande->client_adresse }}</p>
                     </div>
+                    {{-- Zone de livraison --}}
+                    @php
+                        $zones = is_array($commande->institut->boutique_zones_livraison) ? $commande->institut->boutique_zones_livraison : [];
+                        $zoneTrouvee = null;
+                        foreach ($zones as $z) {
+                            if (isset($z['frais']) && (int)$z['frais'] === (int)$commande->frais_livraison) { $zoneTrouvee = $z; break; }
+                        }
+                    @endphp
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-slate-400">Zone de livraison</p>
+                        <p class="text-base font-semibold text-gray-900 dark:text-white mt-1">
+                            @if($zoneTrouvee)
+                                {{ $zoneTrouvee['nom'] }} · {{ number_format($zoneTrouvee['frais'], 0, ',', ' ') }} FCFA
+                                @if(!empty($zoneTrouvee['delai'])) · {{ $zoneTrouvee['delai'] }} @endif
+                            @elseif($commande->frais_livraison > 0)
+                                Frais : {{ number_format($commande->frais_livraison, 0, ',', ' ') }} FCFA
+                            @else
+                                Non spécifiée
+                            @endif
+                        </p>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -145,6 +166,66 @@
                     </form>
                 </div>
             </div>
+
+            {{-- ✏️ Modifier la commande (avant acceptation) --}}
+            @if($commande->statut === 'nouvelle')
+            <div class="card border-2 border-amber-200 dark:border-amber-700" x-data="{ editOpen: false }">
+                <div class="card-header flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">✏️ Ajuster la commande</h2>
+                    <button @click="editOpen = !editOpen" class="text-sm text-primary-600 hover:text-primary-700 font-medium">
+                        <span x-show="!editOpen">Modifier</span>
+                        <span x-show="editOpen">Annuler</span>
+                    </button>
+                </div>
+                <div x-show="editOpen" class="card-body" x-cloak>
+                    <form method="POST" action="{{ route('dashboard.boutique.commandes.update', $commande) }}" class="space-y-4">
+                        @csrf @method('PUT')
+
+                        {{-- Zone de livraison --}}
+                        @php $zones = is_array($commande->institut->boutique_zones_livraison) ? $commande->institut->boutique_zones_livraison : []; @endphp
+                        @if(count($zones) > 0)
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Zone de livraison</label>
+                            <select name="zone_index" class="form-input" onchange="this.form.querySelector('[name=frais_livraison]').value = this.options[this.selectedIndex].dataset.frais || {{ $commande->frais_livraison }}">
+                                <option value="">Frais par défaut ({{ number_format($commande->institut->boutique_frais_livraison ?? 0, 0, ',', ' ') }} F)</option>
+                                @foreach($zones as $i => $z)
+                                <option value="{{ $i }}" data-frais="{{ $z['frais'] ?? 0 }}"
+                                    {{ isset($zoneTrouvee) && (int)($z['frais']??0) === (int)$commande->frais_livraison ? 'selected' : '' }}>
+                                    {{ $z['nom'] }} — {{ number_format($z['frais'] ?? 0, 0, ',', ' ') }} F{{ !empty($z['delai']) ? ' (' . $z['delai'] . ')' : '' }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @endif
+                        <input type="hidden" name="frais_livraison" value="{{ $commande->frais_livraison }}">
+
+                        {{-- Articles --}}
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Articles</label>
+                            <div class="space-y-2">
+                                @foreach($commande->items as $i => $item)
+                                <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-slate-800 rounded-xl">
+                                    <input type="hidden" name="items[{{ $i }}][id]" value="{{ $item->id }}">
+                                    <span class="flex-1 text-sm font-medium text-gray-900 dark:text-white">{{ $item->nom_snapshot }}</span>
+                                    <input type="number" name="items[{{ $i }}][quantite]" value="{{ $item->quantite }}" min="0" max="999"
+                                           class="form-input w-20 text-center text-sm">
+                                    <span class="text-xs text-gray-500 w-24 text-right">{{ number_format($item->prix_snapshot, 0, ',', ' ') }} F</span>
+                                    <label class="flex items-center gap-1 text-xs text-red-500 cursor-pointer">
+                                        <input type="checkbox" name="items[{{ $i }}][supprimer]" value="1"> Retirer
+                                    </label>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary w-full">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Mettre à jour la commande
+                        </button>
+                    </form>
+                </div>
+            </div>
+            @endif
         </div>
 
         {{-- Actions --}}
