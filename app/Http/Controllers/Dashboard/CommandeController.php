@@ -199,8 +199,6 @@ class CommandeController extends Controller
      */
     public function update(Request $request, Commande $commande)
     {
-        \Log::info('CommandeController@update appelé', ['commande_id' => $commande->id]);
-
         $this->authorize('update', $commande);
 
         if ($commande->statut !== 'nouvelle') {
@@ -215,8 +213,6 @@ class CommandeController extends Controller
             'items.*.quantite' => 'required|integer|min:0|max:999',
             'items.*.supprimer' => 'nullable',
         ]);
-
-        \Log::info('Validation OK, items:', $data['items'] ?? []);
 
         try {
             DB::beginTransaction();

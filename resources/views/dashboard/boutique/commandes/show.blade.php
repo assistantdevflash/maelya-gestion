@@ -177,7 +177,14 @@
                         Modifier
                     </button>
                 </div>
-                <div id="edit-commande-body" class="card-body hidden">
+                <div id="edit-commande-body" class="card-body {{ $errors->any() ? '' : 'hidden' }}">
+                    {{-- Erreurs validation --}}
+                    @if($errors->any())
+                    <div class="mb-4 p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/40 rounded-xl text-sm text-red-700 dark:text-red-300">
+                        @foreach($errors->all() as $e)<p>• {{ $e }}</p>@endforeach
+                    </div>
+                    @endif
+
                     <form method="POST" action="{{ route('dashboard.boutique.commandes.update', $commande) }}" class="space-y-4">
                         @csrf
 
