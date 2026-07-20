@@ -56,6 +56,7 @@ class BoutiqueController extends Controller
                 'id' => $p->id,
                 'nom' => $p->nom,
                 'prix' => $p->prix_vente,
+                'prix_promo' => $p->prix_promo,
                 'stock' => $p->stock,
                 'photo' => $p->imagePrincipale?->chemin ?? $p->photo,
                 'categorie' => $p->categorie?->nom,

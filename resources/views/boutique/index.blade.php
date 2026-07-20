@@ -145,9 +145,15 @@
                         </div>
                         <p x-show="produit.description_courte" class="text-xs text-gray-500 line-clamp-2" x-text="produit.description_courte"></p>
                         <div class="mt-auto flex items-center justify-between gap-2">
-                            <p class="text-base sm:text-lg font-bold text-primary-600 dark:text-primary-400">
-                                <span x-text="new Intl.NumberFormat('fr-FR').format(produit.prix)"></span> <span class="text-sm font-normal">F</span>
-                            </p>
+                            <div>
+                                <p x-show="produit.prix_promo" class="text-xs text-gray-400 dark:text-gray-500 line-through">
+                                    <span x-text="new Intl.NumberFormat('fr-FR').format(produit.prix)"></span> F
+                                </p>
+                                <p class="text-base sm:text-lg font-bold"
+                                   :class="produit.prix_promo ? 'text-red-500 dark:text-red-400' : 'text-primary-600 dark:text-primary-400'">
+                                    <span x-text="new Intl.NumberFormat('fr-FR').format(produit.prix_promo || produit.prix)"></span> <span class="text-sm font-normal">F</span>
+                                </p>
+                            </div>
                             <button @click="ajouterAuPanier(produit)"
                                 class="inline-flex items-center gap-1 px-3 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium text-sm shadow-md hover:shadow-lg transition-all hover:scale-105">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>

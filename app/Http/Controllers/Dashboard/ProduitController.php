@@ -40,6 +40,7 @@ class ProduitController extends Controller
             'code_barre' => ['nullable', 'string', 'max:50'],
             'prix_achat' => ['nullable', 'integer', 'min:0'],
             'prix_vente' => ['required', 'integer', 'min:0'],
+            'prix_promo' => ['nullable', 'integer', 'min:0', 'lt:prix_vente'],
             'stock' => ['required', 'integer', 'min:0'],
             'seuil_alerte' => ['required', 'integer', 'min:0'],
             'unite' => ['required', 'string', 'max:30'],
@@ -47,6 +48,11 @@ class ProduitController extends Controller
             'description_courte' => ['nullable', 'string', 'max:255'],
             'photo' => ['nullable', 'image', 'max:2048'],
         ]);
+
+        // Prix promo ne doit pas dépasser le prix de vente
+        if (!empty($data['prix_promo']) && $data['prix_promo'] >= $data['prix_vente']) {
+            return back()->withInput()->withErrors(['prix_promo' => 'Le prix promo doit être inférieur au prix de vente.']);
+        }
 
         if (isset($data['prix_achat']) && $data['prix_vente'] < $data['prix_achat']) {
             return back()->withErrors(['prix_vente' => 'Le prix de vente ne peut pas être inférieur au prix d\'achat.'])->withInput();

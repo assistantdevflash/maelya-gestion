@@ -21,7 +21,7 @@ class Produit extends Model
 
     protected $fillable = [
         'institut_id', 'categorie_id', 'nom', 'reference', 'code_barre',
-        'prix_achat', 'cout_moyen_pondere', 'prix_vente', 'stock', 'seuil_alerte', 'unite',
+        'prix_achat', 'cout_moyen_pondere', 'prix_vente', 'prix_promo', 'stock', 'seuil_alerte', 'unite',
         'description', 'description_courte', 'photo', 'actif', 'visible_boutique', 'featured',
     ];
 
@@ -32,6 +32,7 @@ class Produit extends Model
         'prix_achat' => 'integer',
         'cout_moyen_pondere' => 'integer',
         'prix_vente' => 'integer',
+        'prix_promo' => 'integer',
         'stock' => 'integer',
         'seuil_alerte' => 'integer',
     ];

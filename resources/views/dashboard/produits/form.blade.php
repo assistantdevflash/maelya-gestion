@@ -173,6 +173,19 @@
                                 <label class="form-label">Prix de vente (FCFA) *</label>
                                 <input type="number" name="prix_vente" required min="0" step="1"
                                        value="{{ old('prix_vente', $produit->prix_vente ?? '') }}"
+                                       class="form-input @error('prix_vente') border-red-400 @enderror" placeholder="5000">
+                                @error('prix_vente') <p class="form-error">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Prix promo (FCFA) <span class="text-gray-400 font-normal text-xs">(prix barré sur la boutique)</span></label>
+                            <input type="number" name="prix_promo" min="0" step="1"
+                                   value="{{ old('prix_promo', $produit->prix_promo ?? '') }}"
+                                   class="form-input @error('prix_promo') border-red-400 @enderror"
+                                   placeholder="Laisser vide si pas de promo">
+                            @error('prix_promo') <p class="form-error">{{ $message }}</p> @enderror
+                        </div>
                                        class="form-input @error('prix_vente') border-red-400 @enderror">
                                 @error('prix_vente') <p class="form-error">{{ $message }}</p> @enderror
                             </div>
