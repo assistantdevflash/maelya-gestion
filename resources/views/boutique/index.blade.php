@@ -22,7 +22,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="bg-gray-50 dark:bg-slate-900 min-h-screen" x-data="boutique()" x-cloak>
+<body class="bg-purple-50 dark:bg-slate-900 min-h-screen" x-data="boutique()" x-cloak>
     {{-- Toast notification --}}
     <div x-show="toast.show" 
          x-transition:enter="transition ease-out duration-300"
