@@ -138,12 +138,13 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group" x-data="{ quillReady: false }">
                             <label class="form-label">Description longue</label>
                             <div class="richtext-wrapper">
                                 <div id="desc-editor"></div>
                             </div>
                             <textarea name="description" id="desc-textarea" class="sr-only">{{ old('description', $produit->description ?? '') }}</textarea>
+                            <p x-show="!quillReady" class="text-xs text-amber-600 mt-1">⏳ Chargement de l'éditeur… Si le champ reste vide, <a href="#" @click.prevent="$el.closest('.form-group').querySelector('.richtext-wrapper').innerHTML = '<textarea name=description rows=4 class=form-textarea>' + document.getElementById('desc-textarea').value + '</textarea>'; quillReady = true" class="underline">cliquez ici pour utiliser le mode texte simple</a>.</p>
                         </div>
 
                         <div class="form-group">
@@ -563,30 +564,39 @@
     @endif
 
     {{-- Quill richtext + Scanner code-barres — chargés AVANT Alpine pour éviter race condition --}}
-    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"
+            onerror="document.getElementById('desc-editor')?.insertAdjacentHTML('afterend', '<p class=text-sm-text-red-500>⚠️ Éditeur indisponible (CDN bloqué).</p>')"></script>
     <script>
     (function() {
         // ── Quill richtext description longue ──────────────────────────
-        const editorEl = document.getElementById('desc-editor');
-        if (editorEl) {
-            const quill = new Quill('#desc-editor', {
-                theme: 'snow',
-                placeholder: 'Composition, utilisation, conseils…',
-                modules: {
-                    toolbar: [
-                        ['bold', 'italic', 'underline'],
-                        [{ list: 'ordered' }, { list: 'bullet' }],
-                        ['clean']
-                    ]
-                }
-            });
+        try {
+            const editorEl = document.getElementById('desc-editor');
+            if (editorEl && typeof Quill !== 'undefined') {
+                const quill = new Quill('#desc-editor', {
+                    theme: 'snow',
+                    placeholder: 'Composition, utilisation, conseils…',
+                    modules: {
+                        toolbar: [
+                            ['bold', 'italic', 'underline'],
+                            [{ list: 'ordered' }, { list: 'bullet' }],
+                            ['clean']
+                        ]
+                    }
+                });
 
-            const oldDesc = document.getElementById('desc-textarea').value;
-            if (oldDesc) quill.clipboard.dangerouslyPasteHTML(oldDesc);
+                const oldDesc = document.getElementById('desc-textarea').value;
+                if (oldDesc) quill.clipboard.dangerouslyPasteHTML(oldDesc);
 
-            document.getElementById('produit-form').addEventListener('submit', function () {
-                document.getElementById('desc-textarea').value = quill.root.innerHTML;
-            });
+                document.getElementById('produit-form').addEventListener('submit', function () {
+                    document.getElementById('desc-textarea').value = quill.root.innerHTML;
+                });
+
+                // Signaler que Quill est prêt
+                const group = editorEl.closest('[x-data]');
+                if (group && group.__x) group.__x.$data.quillReady = true;
+            }
+        } catch(e) {
+            console.warn('Quill init failed:', e);
         }
 
         // ── Scanner code-barres (identique caisse) ─────────────────────
