@@ -66,6 +66,7 @@ Route::post('/e/{slug}/reserver', [VitrineController::class, 'reserver'])->name(
 Route::prefix('shop')->name('shop.')->group(function () {
     Route::get('/{slug}', [BoutiqueController::class, 'index'])->name('index');
     Route::get('/{slug}/produit/{id}', [BoutiqueController::class, 'produit'])->name('produit');
+    Route::get('/{slug}/commander', [BoutiqueController::class, 'commanderForm'])->name('commander.form');
     Route::post('/{slug}/commander', [BoutiqueController::class, 'commander'])
         ->middleware('throttle:10,1')
         ->name('commander');

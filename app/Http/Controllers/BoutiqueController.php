@@ -123,6 +123,20 @@ class BoutiqueController extends Controller
     }
 
     /**
+     * Page checkout (commander)
+     */
+    public function commanderForm(string $slug)
+    {
+        $institut = Institut::where('slug', $slug)->firstOrFail();
+
+        if (!$institut->boutique_active) {
+            abort(404, 'Cette boutique n\'est pas disponible.');
+        }
+
+        return view('boutique.commander', compact('institut'));
+    }
+
+    /**
      * Passer une commande
      */
     public function commander(Request $request, string $slug)

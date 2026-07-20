@@ -97,11 +97,11 @@
             {{-- Filtres catégories --}}
             @if($categories->isNotEmpty())
             <div class="flex flex-wrap gap-2">
-                <button @click="selectedCategorie = null"
+                <button @click="setCategorie(null)"
                     :class="selectedCategorie === null ? 'bg-primary-600 text-white ring-2 ring-primary-600 ring-offset-2' : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-100'"
                     class="px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-slate-600 transition-all">Tous</button>
                 @foreach($categories as $cat)
-                <button @click="selectedCategorie = '{{ $cat->id }}'"
+                <button @click="setCategorie('{{ $cat->id }}')"
                     :class="selectedCategorie === '{{ $cat->id }}' ? 'bg-primary-600 text-white ring-2 ring-primary-600 ring-offset-2' : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-100'"
                     class="px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-slate-600 transition-all">{{ $cat->nom }}</button>
                 @endforeach
@@ -280,128 +280,16 @@
         </div>
     </div>
 
-    {{-- Modal Commande --}}
-    <div x-show="commandeOpen"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-black/60 z-50 flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto"
-         @click="commandeOpen = false">
-        <div @click.stop
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 scale-95"
-             x-transition:enter-end="opacity-100 scale-100"
-             class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg my-4 flex flex-col">
-            <div class="flex-shrink-0 p-5 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
-                <div>
-                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">Finaliser la commande</h2>
-                    <p class="text-sm text-gray-500 mt-0.5">Paiement à la livraison &bull; <span x-text="new Intl.NumberFormat('fr-FR').format(total) + ' F'"></span></p>
-                </div>
-                <button @click="commandeOpen = false" class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
-
-            <div class="overflow-y-auto max-h-[80vh] p-5">
-            <form id="form-commande" method="POST" action="{{ route('shop.commander', $institut->slug) }}" class="space-y-4">
-                @csrf
-
-                {{-- Récapitulatif produits --}}
-                <div class="bg-gray-50 dark:bg-slate-900 rounded-xl p-4 space-y-2">
-                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Votre commande</p>
-                    <template x-for="item in panier">
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-700 dark:text-slate-300" x-text="item.quantite + 'x ' + item.nom"></span>
-                            <span class="font-medium text-gray-900 dark:text-white" x-text="new Intl.NumberFormat('fr-FR').format(item.prix * item.quantite) + ' F'"></span>
-                        </div>
-                    </template>
-                    <div class="border-t border-gray-200 dark:border-slate-700 pt-2 mt-2 flex justify-between font-bold">
-                        <span class="text-gray-900 dark:text-white">Total</span>
-                        <span class="text-primary-600" x-text="new Intl.NumberFormat('fr-FR').format(total) + ' F'"></span>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">Prénom *</label>
-                        <input type="text" name="prenom" required class="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-xl text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">Nom *</label>
-                        <input type="text" name="nom" required class="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-xl text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">Téléphone *</label>
-                    <input type="tel" name="telephone" required placeholder="07 XX XX XX XX" class="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-xl text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">Email (optionnel)</label>
-                    <input type="email" name="email" class="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-xl text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">Adresse de livraison *</label>
-                    <textarea name="adresse" rows="3" required placeholder="Quartier, commune, ville, point de repère..." class="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-xl text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"></textarea>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">Notes (optionnel)</label>
-                    <textarea name="notes" rows="2" placeholder="Instructions spéciales, horaires de disponibilité..." class="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-xl text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"></textarea>
-                </div>
-
-                {{-- Mode de paiement : cash uniquement --}}
-                <div class="flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl">
-                    <svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                    <div>
-                        <p class="text-sm font-semibold text-emerald-900 dark:text-emerald-300">Paiement à la livraison</p>
-                        <p class="text-xs text-emerald-700 dark:text-emerald-400">Vous payez en cash à la réception de votre commande</p>
-                    </div>
-                </div>
-                <input type="hidden" name="mode_paiement" value="cash">
-
-                {{-- Items panier --}}
-                <template x-for="(item, index) in panier" :key="index">
-                    <div>
-                        <input type="hidden" :name="'panier[' + index + '][produit_id]'" :value="item.id">
-                        <input type="hidden" :name="'panier[' + index + '][quantite]'" :value="item.quantite">
-                    </div>
-                </template>
-
-                {{-- Erreur serveur --}}
-                @if(session('error') || $errors->any())
-                <div class="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/40 rounded-xl text-sm text-red-700 dark:text-red-300">
-                    <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                    <div>
-                        @if(session('error'))
-                            <p>{{ session('error') }}</p>
-                        @endif
-                        @foreach($errors->all() as $e)
-                            <p>• {{ $e }}</p>
-                        @endforeach
-                    </div>
-                </div>
-                @endif
-
-                <button type="submit"
-                        @click="handleSubmit($event)"
-                        :class="submitting ? 'opacity-70 cursor-wait' : 'hover:bg-primary-700 hover:shadow-xl'"
-                        class="w-full py-4 bg-primary-600 text-white rounded-xl font-bold text-lg shadow-lg transition-all flex items-center justify-center gap-3">
-                    <template x-if="submitting">
-                        <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                    </template>
-                    <span x-text="submitting ? 'Envoi en cours...' : 'Confirmer la commande'"></span>
-                </button>
-                <p class="text-center text-xs text-gray-400">{{ $institut->boutique_delai_livraison ? 'Livraison : ' . $institut->boutique_delai_livraison : 'Délai de livraison selon disponibilité' }}</p>
-            </form>
-            </div>
-        </div>
+    {{-- Bouton Commander — redirige vers la page checkout --}}
+    <div x-show="panier.length > 0" class="fixed bottom-24 right-6 z-40">
+        <a href="{{ route('shop.commander.form', $institut->slug) }}"
+           class="flex items-center gap-3 px-6 py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-2xl font-bold shadow-xl hover:shadow-2xl transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+            <span>Commander</span>
+            <span class="bg-white/20 px-2.5 py-1 rounded-full text-sm" x-text="new Intl.NumberFormat('fr-FR').format(sousTotal) + ' F'"></span>
+        </a>
     </div>
+
 
     <script>
         function boutique() {
@@ -410,8 +298,6 @@
                 selectedCategorie: null,
                 sortBy: 'default',
                 panierOpen: false,
-                commandeOpen: {{ session('error') || $errors->any() ? 'true' : 'false' }},
-                submitting: false,
                 panier: JSON.parse(localStorage.getItem('panier_{{ $institut->id }}') || '[]'),
                 fraisLivraison: {{ $institut->boutique_frais_livraison ?? 0 }},
                 toast: { show: false, message: '' },
@@ -420,11 +306,23 @@
                 init() {
                     this.panier = this.panier.filter(item => item.prix && item.prix > 0);
                     this.sauvegarderPanier();
+                    // Lire catégorie depuis l'URL (?categorie=xxx)
+                    const params = new URLSearchParams(location.search);
+                    if (params.get('categorie')) this.selectedCategorie = params.get('categorie');
                     // Ouvrir panier si redirigé depuis fiche produit
-                    if (new URLSearchParams(location.search).get('panier') === '1') {
+                    if (params.get('panier') === '1') {
                         this.panierOpen = true;
                         history.replaceState(null, '', location.pathname);
                     }
+                },
+
+                // Watcher catégorie → mettre à jour l'URL
+                setCategorie(catId) {
+                    this.selectedCategorie = catId;
+                    const url = new URL(location);
+                    if (catId) url.searchParams.set('categorie', catId);
+                    else url.searchParams.delete('categorie');
+                    history.pushState(null, '', url);
                 },
 
                 get produitsAffiches() {
@@ -495,34 +393,11 @@
                     localStorage.setItem('panier_{{ $institut->id }}', JSON.stringify(this.panier));
                 },
 
-                ouvrirCommande() {
-                    this.panierOpen = false;
-                    this.commandeOpen = true;
-                },
-
                 showToast(message) {
                     this.toast.message = message;
                     this.toast.show = true;
                     setTimeout(() => { this.toast.show = false; }, 3000);
                 },
-
-                handleSubmit(event) {
-                    // Vérification que les items du panier sont bien dans le DOM avant envoi
-                    if (this.panier.length === 0) {
-                        event.preventDefault();
-                        this.showToast('Votre panier est vide.');
-                        return;
-                    }
-                    // Anti double-clic
-                    if (this.submitting) { event.preventDefault(); return; }
-                    this.submitting = true;
-                    // Vider le panier après soumission
-                    setTimeout(() => {
-                        this.panier = [];
-                        localStorage.removeItem('maelya_panier');
-                    }, 500);
-                    // Le formulaire se soumet normalement (pas d'event.preventDefault)
-                }
             }
         }
     </script>
