@@ -252,17 +252,7 @@ class CommandeController extends Controller
 
             DB::commit();
 
-            // Envoyer un email de mise à jour au client
-            try {
-                if ($commande->client_email) {
-                    Mail::to($commande->client_email)
-                        ->send(new CommandeStatutUpdatedClient($commande));
-                }
-            } catch (\Exception $e) {
-                \Log::error('Erreur envoi email màj commande: ' . $e->getMessage());
-            }
-
-            return back()->with('success', 'Commande mise à jour avec succès. Le client a été notifié.');
+            return back()->with('success', 'Commande mise à jour avec succès.');
 
         } catch (\Exception $e) {
             DB::rollBack();

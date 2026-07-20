@@ -152,8 +152,8 @@
                         @csrf
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-3">Notes administrateur</label>
-                            <textarea 
-                                name="notes_admin" 
+                            <textarea
+                                name="notes_admin"
                                 rows="4"
                                 placeholder="Remarques internes..."
                                 class="input w-full"
