@@ -69,7 +69,7 @@
                 </div>
                 @endif
                 <div class="flex gap-3 mt-4" x-data="{ showModal: false }">
-                    <button type="button" 
+                    <button type="button"
                             @click="showModal = true"
                             {{ ($demandeEnAttente ?? false) ? 'disabled' : '' }}
                             class="btn-primary {{ ($demandeEnAttente ?? false) ? 'opacity-50 cursor-not-allowed' : '' }}">
@@ -81,14 +81,14 @@
                     </a>
 
                     {{-- Modal de paiement --}}
-                    <div x-show="showModal" 
+                    <div x-show="showModal"
                          x-cloak
                          @click.self="showModal = false"
                          class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                        <div @click.away="showModal = false" 
+                        <div @click.away="showModal = false"
                              x-data="{ payMethod: 'om', copied: false, fileName: '' }"
                              class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                            
+
                             {{-- Header --}}
                             <div class="sticky top-0 bg-gradient-to-r from-primary-600 to-secondary-600 p-6 rounded-t-3xl z-10">
                                 <div class="flex items-start justify-between">
@@ -227,9 +227,9 @@
             </div>
             <div class="card-body space-y-6">
                 <label class="flex items-start gap-4 cursor-pointer group p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <input 
-                        type="checkbox" 
-                        name="boutique_active" 
+                    <input
+                        type="checkbox"
+                        name="boutique_active"
                         value="1"
                         {{ $institut->boutique_active ? 'checked' : '' }}
                         class="mt-1 w-6 h-6 rounded-lg border-gray-300 dark:border-slate-600 text-primary-600 focus:ring-2 focus:ring-primary-500 dark:bg-slate-900"
@@ -247,13 +247,13 @@
                         <p class="font-semibold text-primary-900 dark:text-primary-300">Lien de votre boutique</p>
                     </div>
                     <div class="flex gap-3">
-                        <input 
-                            type="text" 
-                            value="{{ url('/shop/' . $institut->slug) }}" 
+                        <input
+                            type="text"
+                            value="{{ url('/shop/' . $institut->slug) }}"
                             readonly
                             class="flex-1 px-4 py-3 bg-white dark:bg-slate-900 border-2 border-primary-200 dark:border-primary-700 rounded-xl text-sm text-gray-800 dark:text-slate-200 font-mono"
                         >
-                        <button 
+                        <button
                             type="button"
                             onclick="var btn=this;navigator.clipboard.writeText('{{ url('/shop/' . $institut->slug) }}').then(function(){btn.innerHTML='✓ Copié';setTimeout(function(){btn.innerHTML='Copier'},2000)})"
                             class="btn-primary px-5"
@@ -275,9 +275,9 @@
             <div class="card-body space-y-6">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-3">Frais de livraison (FCFA)</label>
-                    <input 
-                        type="number" 
-                        name="boutique_frais_livraison" 
+                    <input
+                        type="number"
+                        name="boutique_frais_livraison"
                         value="{{ old('boutique_frais_livraison', $institut->boutique_frais_livraison) }}"
                         placeholder="1500"
                         min="0"
@@ -289,9 +289,9 @@
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-3">Délai de livraison</label>
-                    <input 
-                        type="text" 
-                        name="boutique_delai_livraison" 
+                    <input
+                        type="text"
+                        name="boutique_delai_livraison"
                         value="{{ old('boutique_delai_livraison', $institut->boutique_delai_livraison) }}"
                         placeholder="24h - 48h"
                         maxlength="100"
@@ -338,8 +338,8 @@
             </div>
             <div class="card-body">
                 <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-3">Conditions générales de vente</label>
-                <textarea 
-                    name="boutique_conditions" 
+                <textarea
+                    name="boutique_conditions"
                     rows="6"
                     placeholder="Ex: Paiement à la livraison, Retour sous 7 jours..."
                     class="input w-full"
@@ -362,16 +362,21 @@
     </form>
     @endif
 </div>
-</x-dashboard-layout>
 
-@push('scripts')
+{{-- Zone editor — inline pour éviter race condition Alpine --}}
 <script>
 document.addEventListener('alpine:init', () => {
-    Alpine.data('zoneEditor', (initialZones) => ({
-        zones: Array.isArray(initialZones) && initialZones.length > 0
-            ? initialZones.map(z => typeof z === 'object' ? z : {nom: z, frais: 0, delai: ''})
-            : []
-    }));
+    Alpine.data('zoneEditor', (initialZones) => {
+        // Normaliser : string → array d'objets, objets existants conservés
+        let zones = [];
+        if (Array.isArray(initialZones) && initialZones.length > 0) {
+            zones = initialZones.map(z =>
+                typeof z === 'object' ? {nom: z.nom || '', frais: z.frais || 0, delai: z.delai || ''}
+                                      : {nom: String(z).trim(), frais: 0, delai: ''}
+            );
+        }
+        return { zones };
+    });
 });
 </script>
-@endpush
+</x-dashboard-layout>
