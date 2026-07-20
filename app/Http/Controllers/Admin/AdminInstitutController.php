@@ -70,22 +70,26 @@ class AdminInstitutController extends Controller
         $clientsMois = $institut->clients()->where('created_at', '>=', $debutMois)->count();
         $clientsJour = $institut->clients()->where('created_at', '>=', $debutJour)->count();
 
-        // Ventes : agrégation conditionnelle en 1 requête
+        // Ventes : agrégation conditionnelle en 1 requête (hors crédits non payés)
         $statsVentes = $institut->ventes()->where('statut', 'validee')
+            ->where(function ($q) {
+                $q->where('mode_paiement', '!=', 'credit')
+                  ->orWhere('montant_paye', '>', 0);
+            })
             ->selectRaw("
                 COUNT(*) as nb_total,
-                COALESCE(SUM(total), 0) as ca_total,
+                COALESCE(SUM(CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END), 0) as ca_total,
                 COUNT(CASE WHEN created_at >= ? THEN 1 END) as nb_mois,
-                COALESCE(SUM(CASE WHEN created_at >= ? THEN total ELSE 0 END), 0) as ca_mois,
+                COALESCE(SUM(CASE WHEN created_at >= ? AND (mode_paiement != 'credit' OR montant_paye > 0) THEN (CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END) ELSE 0 END), 0) as ca_mois,
                 COUNT(CASE WHEN created_at >= ? THEN 1 END) as nb_jour,
-                COALESCE(SUM(CASE WHEN created_at >= ? THEN total ELSE 0 END), 0) as ca_jour
+                COALESCE(SUM(CASE WHEN created_at >= ? AND (mode_paiement != 'credit' OR montant_paye > 0) THEN (CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END) ELSE 0 END), 0) as ca_jour
             ", [$debutMois, $debutMois, $debutJour, $debutJour])
             ->first();
 
-        // Commandes boutique
+        // Commandes boutique (livrées uniquement)
         $boutiqueActive = (bool) $institut->boutique_active;
 
-        $statsCommandes = $institut->commandes()
+        $statsCommandes = $institut->commandes()->where('statut', 'livree')
             ->selectRaw("
                 COUNT(*) as nb_total,
                 COALESCE(SUM(total), 0) as ca_total,

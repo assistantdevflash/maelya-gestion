@@ -30,6 +30,11 @@ class FinanceController extends Controller
         $nbVentes = Vente::where('statut', 'validee')
             ->whereDate('created_at', '>=', $debut)
             ->whereDate('created_at', '<=', $fin)
+            ->where(function ($q) {
+                // Exclure les crédits non payés (montant_paye = 0)
+                $q->where('mode_paiement', '!=', 'credit')
+                  ->orWhere('montant_paye', '>', 0);
+            })
             ->count();
 
         $totalDepenses = Depense::whereDate('date', '>=', $debut)
@@ -199,10 +204,11 @@ class FinanceController extends Controller
             return $r->prestations->sum('prix');
         });
         
-        // Moyenne quotidienne des ventes des 30 derniers jours
+        // Moyenne quotidienne des ventes des 30 derniers jours (hors crédits non payés)
         $caRecent = Vente::where('statut', 'validee')
             ->where('created_at', '>=', now()->subDays(30))
-            ->sum('total');
+            ->selectRaw("SUM(CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END) as total_reel")
+            ->value('total_reel') ?? 0;
         $caQuotidien = $caRecent / 30;
         $projectionVentes = (int) round($caQuotidien * $joursPrevi);
         
@@ -300,6 +306,11 @@ class FinanceController extends Controller
             ->where('statut', 'validee')
             ->whereDate('created_at', '>=', $debut)
             ->whereDate('created_at', '<=', $fin)
+            ->where(function ($q) {
+                // Exclure les crédits non payés
+                $q->where('mode_paiement', '!=', 'credit')
+                  ->orWhere('montant_paye', '>', 0);
+            })
             ->latest()
             ->get();
 
@@ -308,7 +319,7 @@ class FinanceController extends Controller
             ->latest('date')
             ->get();
 
-        $revenus = $ventes->sum('total');
+        $revenus = $ventes->sum(fn ($v) => $v->mode_paiement === 'credit' ? $v->montant_paye : $v->total);
         $totalDepenses = $depenses->sum('montant');
         $benefice = $revenus - $totalDepenses;
 
@@ -326,6 +337,10 @@ class FinanceController extends Controller
             ->where('statut', 'validee')
             ->whereDate('created_at', '>=', $debut)
             ->whereDate('created_at', '<=', $fin)
+            ->where(function ($q) {
+                $q->where('mode_paiement', '!=', 'credit')
+                  ->orWhere('montant_paye', '>', 0);
+            })
             ->latest()
             ->get();
 
@@ -334,7 +349,7 @@ class FinanceController extends Controller
             $v->numero,
             $v->created_at->format('d/m/Y H:i'),
             $v->client?->nom_complet ?? 'Anonyme',
-            $v->total,
+            $v->mode_paiement === 'credit' ? $v->montant_paye : $v->total,
             $v->mode_paiement,
             $v->statut,
         ]);
@@ -386,6 +401,10 @@ class FinanceController extends Controller
             ->where('statut', 'validee')
             ->whereDate('created_at', '>=', $debut)
             ->whereDate('created_at', '<=', $fin)
+            ->where(function ($q) {
+                $q->where('mode_paiement', '!=', 'credit')
+                  ->orWhere('montant_paye', '>', 0);
+            })
             ->latest()
             ->get();
 
@@ -394,7 +413,7 @@ class FinanceController extends Controller
             ->latest('date')
             ->get();
 
-        $ca = $ventes->sum('total');
+        $ca = $ventes->sum(fn ($v) => $v->mode_paiement === 'credit' ? $v->montant_paye : $v->total);
         $depenses_total = $depenses->sum('montant');
         $benefice = $ca - $depenses_total;
         $nbVentes = $ventes->count();
