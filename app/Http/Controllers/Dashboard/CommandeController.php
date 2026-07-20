@@ -209,7 +209,7 @@ class CommandeController extends Controller
             'frais_livraison' => 'nullable|integer|min:0',
             'zone_index' => 'nullable|integer|min:0',
             'items' => 'required|array|min:1',
-            'items.*.id' => 'required|uuid|exists:commande_items,id',
+            'items.*.id' => 'required|string',
             'items.*.quantite' => 'required|integer|min:0|max:999',
             'items.*.supprimer' => 'nullable',
         ]);
@@ -223,16 +223,18 @@ class CommandeController extends Controller
                 $cmdItem = $commande->items()->find($itemData['id']);
                 if (!$cmdItem) continue;
 
-                if (!empty($itemData['supprimer']) || (int)$itemData['quantite'] === 0) {
+                if (($itemData['supprimer'] ?? null) == '1' || (int)$itemData['quantite'] === 0) {
                     $cmdItem->delete();
                     continue;
                 }
 
+                $qte = (int) $itemData['quantite'];
+                $subTotal = $cmdItem->prix_snapshot * $qte;
                 $cmdItem->update([
-                    'quantite' => (int)$itemData['quantite'],
-                    'sous_total' => $cmdItem->prix_snapshot * (int)$itemData['quantite'],
+                    'quantite' => $qte,
+                    'sous_total' => $subTotal,
                 ]);
-                $sousTotal += $cmdItem->sous_total;
+                $sousTotal += $subTotal;
             }
 
             // Calculer les frais selon la zone
