@@ -83,61 +83,67 @@
                                        value="{{ old('reference', $produit->reference ?? '') }}"
                                        class="form-input" placeholder="SKU-001">
                             </div>
-                            <div class="form-group" x-data="barcodeScanner()">
+                            <div class="form-group" x-data="scannerCodeBarre()" x-init="hasCamera = 'BarcodeDetector' in window && !!navigator.mediaDevices?.getUserMedia">
                                 <label class="form-label">Code-barres</label>
                                 <div class="flex gap-2">
-                                    <input type="text" name="code_barre" maxlength="50" id="code_barre_input"
-                                           x-ref="codeInput"
-                                           value="{{ old('code_barre', $produit->code_barre ?? '') }}"
-                                           class="form-input flex-1" placeholder="EAN-13">
-                                    <button type="button" @click="startScan()"
-                                            class="p-2.5 rounded-xl bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/60 transition"
+                                    <div class="relative flex-1">
+                                        <input type="text" name="code_barre" maxlength="50" id="code_barre_input"
+                                               x-ref="codeInput"
+                                               x-model="saisieExterne"
+                                               value="{{ old('code_barre', $produit->code_barre ?? '') }}"
+                                               @keydown.enter.prevent="resoudreExterne()"
+                                               @focus="scanExterneFocus = true"
+                                               @blur="scanExterneFocus = false"
+                                               class="form-input flex-1" placeholder="EAN-13">
+                                    </div>
+                                    <button type="button" @click="ouvrir()"
+                                            class="p-2.5 rounded-xl bg-blue-50/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100/70 dark:hover:bg-blue-900/40 border-2 border-blue-200 dark:border-blue-700/60 transition"
                                             title="Scanner un code-barres">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2m0 0H8m4-7V4M5 8V6a2 2 0 012-2h2m6 0h2a2 2 0 012 2v2m0 8v2a2 2 0 01-2 2h-2m-6 0H7a2 2 0 01-2-2v-2"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h2v12H4zm3 0h1v12H7zm3 0h2v12h-2zm4 0h1v12h-1zm3 0h2v12h-2z"/>
                                         </svg>
                                     </button>
                                 </div>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Utilisé pour le scan à la caisse. Cliquez sur l'icône pour scanner avec la caméra.</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Scannez ou saisissez un code-barres. Enter pour valider.</p>
+
+                                {{-- Modal scan caméra --}}
+                                <div x-show="modalOuvert" x-cloak
+                                     class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+                                     @keydown.escape.window="fermer()">
+                                    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-sm w-full p-5 space-y-4">
+                                        <div class="flex items-center justify-between">
+                                            <h3 class="font-bold text-gray-800 dark:text-slate-100">Scanner un produit</h3>
+                                            <button @click="fermer()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">✕</button>
+                                        </div>
+                                        <template x-if="hasCamera">
+                                            <div>
+                                                <video x-ref="video" autoplay playsinline class="w-full rounded-lg bg-black"></video>
+                                                <p class="text-xs text-gray-500 mt-2 text-center">Placez le code-barres face à la caméra.</p>
+                                            </div>
+                                        </template>
+                                        <template x-if="!hasCamera">
+                                            <p class="text-sm text-amber-600">Caméra indisponible sur ce navigateur. Utilisez un scanner externe ou saisissez le code manuellement.</p>
+                                        </template>
+                                        <div class="space-y-2">
+                                            <label class="text-xs text-gray-500 dark:text-slate-400">Ou saisissez le code manuellement</label>
+                                            <div class="flex gap-2">
+                                                <input x-model="saisie" type="text" placeholder="EAN-13 ou code interne"
+                                                       @keydown.enter.prevent="resoudre(saisie)"
+                                                       class="form-input flex-1" autofocus>
+                                                <button @click="resoudre(saisie)" class="btn-primary px-4">OK</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="form-group" x-data="richtextEditor(@js(old('description', $produit->description ?? '')))">
+                        <div class="form-group">
                             <label class="form-label">Description longue</label>
-
-                            {{-- Barre d'outils --}}
-                            <div class="flex items-center gap-0.5 p-1 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-t-xl">
-                                <button type="button" @click="exec('bold')"
-                                        :class="active('bold') ? 'bg-white dark:bg-slate-700 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
-                                        class="p-1.5 rounded-lg text-sm font-bold transition" title="Gras">B</button>
-                                <button type="button" @click="exec('italic')"
-                                        :class="active('italic') ? 'bg-white dark:bg-slate-700 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
-                                        class="p-1.5 rounded-lg text-sm italic font-serif transition" title="Italique"><i>I</i></button>
-                                <button type="button" @click="exec('underline')"
-                                        :class="active('underline') ? 'bg-white dark:bg-slate-700 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
-                                        class="p-1.5 rounded-lg text-sm underline transition" title="Souligné"><u>U</u></button>
-                                <span class="w-px h-5 bg-gray-300 dark:bg-slate-600 mx-1"></span>
-                                <button type="button" @click="exec('insertUnorderedList')"
-                                        :class="active('insertUnorderedList') ? 'bg-white dark:bg-slate-700 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
-                                        class="p-1.5 rounded-lg text-sm transition" title="Liste à puces">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-                                </button>
-                                <button type="button" @click="exec('insertOrderedList')"
-                                        :class="active('insertOrderedList') ? 'bg-white dark:bg-slate-700 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
-                                        class="p-1.5 rounded-lg text-sm transition" title="Liste numérotée">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20h14M7 12h14M7 4h14M3 20v-1h2v-1H3v-1h3v4H3zm0-7V9h-1v2h1zm0-3V7h3v10H3v-1h2v-3H3z"/></svg>
-                                </button>
+                            <div class="richtext-wrapper">
+                                <div id="desc-editor"></div>
                             </div>
-
-                            {{-- Zone d'édition --}}
-                            <div x-ref="editor"
-                                 contenteditable="true"
-                                 @input="sync"
-                                 class="min-h-[120px] px-4 py-3 bg-white dark:bg-slate-700 border border-t-0 border-gray-200 dark:border-slate-600 rounded-b-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/50 prose prose-sm max-w-none"
-                                 x-html="html"></div>
-
-                            {{-- Champ caché pour le form --}}
-                            <textarea name="description" x-ref="textarea" class="sr-only" x-model="html"></textarea>
+                            <textarea name="description" id="desc-textarea" class="sr-only">{{ old('description', $produit->description ?? '') }}</textarea>
                         </div>
 
                         <div class="form-group">
@@ -558,116 +564,121 @@
 
 </div>
 </x-dashboard-layout>
+
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+<style>
+    .ql-toolbar.ql-snow {
+        background: var(--ql-toolbar-bg, #f9fafb);
+        border-color: #e5e7eb;
+        border-radius: 12px 12px 0 0;
+    }
+    .ql-container.ql-snow {
+        background: var(--ql-bg, #ffffff);
+        border-color: #e5e7eb;
+        border-radius: 0 0 12px 12px;
+        font-size: 14px;
+        min-height: 150px;
+    }
+    .ql-editor { min-height: 150px; color: #111827; }
+    .ql-editor.ql-blank::before { color: #9ca3af; font-style: normal; }
+    .dark .ql-toolbar.ql-snow  { --ql-toolbar-bg: rgb(255 255 255 / 0.05); border-color: rgb(255 255 255 / 0.1); }
+    .dark .ql-container.ql-snow { --ql-bg: rgb(255 255 255 / 0.03); border-color: rgb(255 255 255 / 0.1); }
+    .dark .ql-editor { color: #f3f4f6; }
+    .dark .ql-toolbar button svg .ql-stroke { stroke: #d1d5db; }
+    .dark .ql-toolbar button svg .ql-fill { fill: #d1d5db; }
+    .dark .ql-toolbar .ql-picker-label { color: #d1d5db; }
+    .dark .ql-toolbar .ql-picker-options { background: #1f2937; border-color: rgb(255 255 255 / 0.1); }
+    .dark .ql-toolbar button:hover svg .ql-stroke,
+    .dark .ql-toolbar button.ql-active svg .ql-stroke { stroke: #c084fc; }
+    .dark .ql-toolbar button:hover svg .ql-fill,
+    .dark .ql-toolbar button.ql-active svg .ql-fill { fill: #c084fc; }
+</style>
+@endpush
+
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
 <script>
-document.addEventListener('alpine:init', () => {
-
-    // ─── Richtext Editor ────────────────────────────────────────────────
-    Alpine.data('richtextEditor', (initialHtml = '') => ({
-        html: initialHtml || '',
-
-        init() {
-            this.$watch('html', val => {
-                if (this.$refs.editor && this.$refs.editor.innerHTML !== val) {
-                    this.$refs.editor.innerHTML = val;
-                }
-            });
-        },
-
-        exec(command) {
-            this.$refs.editor.focus();
-            document.execCommand(command, false, null);
-            this.sync();
-        },
-
-        active(command) {
-            return document.queryCommandState(command);
-        },
-
-        sync() {
-            this.html = this.$refs.editor.innerHTML;
+document.addEventListener('DOMContentLoaded', function () {
+    // ── Quill richtext description longue ──────────────────────────────
+    const quill = new Quill('#desc-editor', {
+        theme: 'snow',
+        placeholder: 'Composition, utilisation, conseils…',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline'],
+                [{ list: 'ordered' }, { list: 'bullet' }],
+                ['clean']
+            ]
         }
-    }));
+    });
 
-    // ─── Barcode Scanner ────────────────────────────────────────────────
-    Alpine.data('barcodeScanner', () => ({
-        scanning: false,
-        stream: null,
+    const oldDesc = document.getElementById('desc-textarea').value;
+    if (oldDesc) {
+        quill.clipboard.dangerouslyPasteHTML(oldDesc);
+    }
 
-        async startScan() {
-            // Vérifier si l'API BarcodeDetector est disponible
-            if (!('BarcodeDetector' in window)) {
-                // Fallback : focus le champ pour scanner matériel (clavier USB)
-                this.$refs.codeInput.focus();
-                this.$refs.codeInput.placeholder = 'Scannez maintenant...';
-                setTimeout(() => {
-                    this.$refs.codeInput.placeholder = 'EAN-13';
-                }, 5000);
-                return;
-            }
-
-            try {
-                this.stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'environment' }
-                });
-
-                // Créer le modal de scan
-                const modal = document.createElement('div');
-                modal.innerHTML = `
-                    <div style="position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.9);display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                        <video id="barcode-video" autoplay playsinline style="max-width:100%;max-height:70vh;border-radius:12px;"></video>
-                        <div id="barcode-zone" style="position:absolute;width:250px;height:150px;border:2px solid #a855f7;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,0.5);"></div>
-                        <p style="color:#fff;margin-top:16px;font-size:14px;">Placez le code-barres dans le cadre</p>
-                        <button id="barcode-close" style="margin-top:12px;padding:8px 24px;background:#ef4444;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">Annuler</button>
-                    </div>`;
-                document.body.appendChild(modal);
-
-                const video = document.getElementById('barcode-video');
-                const closeBtn = document.getElementById('barcode-close');
-                video.srcObject = this.stream;
-
-                const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128', 'code_39', 'upc_a', 'upc_e'] });
-
-                const scan = async () => {
-                    if (!this.stream) return;
-                    try {
-                        const barcodes = await detector.detect(video);
-                        if (barcodes.length > 0) {
-                            this.$refs.codeInput.value = barcodes[0].rawValue;
-                            this.stopScan();
-                            modal.remove();
-                        }
-                    } catch (e) {}
-                    if (this.stream) requestAnimationFrame(scan);
-                };
-                scan();
-
-                closeBtn.onclick = () => {
-                    this.stopScan();
-                    modal.remove();
-                };
-
-                // Arrêter après 30s max
-                setTimeout(() => {
-                    if (this.stream) {
-                        this.stopScan();
-                        modal.remove();
-                    }
-                }, 30000);
-
-            } catch (e) {
-                alert('Impossible d\'accéder à la caméra. Vérifiez les permissions.');
-            }
-        },
-
-        stopScan() {
-            if (this.stream) {
-                this.stream.getTracks().forEach(t => t.stop());
-                this.stream = null;
-            }
-        }
-    }));
-
+    document.getElementById('produit-form').addEventListener('submit', function () {
+        document.getElementById('desc-textarea').value = quill.root.innerHTML;
+    });
 });
+
+// ── Scanner code-barres (identique à la caisse) ──────────────────────────
+function scannerCodeBarre() {
+    return {
+        modalOuvert: false,
+        hasCamera: false,
+        saisie: '',
+        saisieExterne: @js(old('code_barre', $produit->code_barre ?? '')),
+        scanExterneFocus: false,
+        stream: null,
+        detector: null,
+        intervalScan: null,
+
+        async ouvrir() {
+            this.modalOuvert = true;
+            this.saisie = '';
+            this.hasCamera = 'BarcodeDetector' in window && !!navigator.mediaDevices?.getUserMedia;
+            if (!this.hasCamera) return;
+            try {
+                this.detector = new BarcodeDetector({ formats: ['ean_13','ean_8','code_128','code_39','upc_a','upc_e'] });
+                this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                await this.$nextTick();
+                this.$refs.video.srcObject = this.stream;
+                this.intervalScan = setInterval(() => this.scanner(), 500);
+            } catch (e) {
+                this.hasCamera = false;
+            }
+        },
+
+        async scanner() {
+            if (!this.$refs.video || this.$refs.video.readyState < 2) return;
+            try {
+                const codes = await this.detector.detect(this.$refs.video);
+                if (codes.length) this.resoudre(codes[0].rawValue);
+            } catch (_) {}
+        },
+
+        fermer() {
+            this.modalOuvert = false;
+            if (this.intervalScan) { clearInterval(this.intervalScan); this.intervalScan = null; }
+            if (this.stream) { this.stream.getTracks().forEach(t => t.stop()); this.stream = null; }
+        },
+
+        resoudreExterne() {
+            this.resoudre(this.saisieExterne);
+            this.saisieExterne = '';
+        },
+
+        resoudre(code) {
+            code = (code || '').trim();
+            if (!code) return;
+            // Remplit le champ code-barres avec la valeur scannée
+            this.saisieExterne = code;
+            this.$refs.codeInput.value = code;
+            this.fermer();
+        }
+    };
+}
 </script>
 @endpush
