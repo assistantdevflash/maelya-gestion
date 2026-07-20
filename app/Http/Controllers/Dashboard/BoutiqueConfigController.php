@@ -38,6 +38,9 @@ class BoutiqueConfigController extends Controller
             'boutique_delai_livraison' => 'nullable|string|max:255',
             'boutique_conditions' => 'nullable|string|max:5000',
             'boutique_zones_livraison' => 'nullable|array',
+            'boutique_zones_livraison.*.nom' => 'required|string|max:100',
+            'boutique_zones_livraison.*.frais' => 'required|integer|min:0',
+            'boutique_zones_livraison.*.delai' => 'nullable|string|max:50',
         ]);
 
         // Si boutique_active n'est pas dans la requête, c'est false

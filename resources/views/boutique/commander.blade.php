@@ -2,8 +2,10 @@
 
 @section('title', 'Commander — ' . $institut->nom)
 
+@php $zones = $zones ?? []; @endphp
+
 @section('content')
-<div class="min-h-screen bg-purple-50 dark:bg-gray-900 py-8" x-data="checkout()">
+<div class="min-h-screen bg-purple-50 dark:bg-gray-900 py-8" x-data="checkout(@js($zones), {{ $institut->boutique_frais_livraison ?? 0 }})">
 <div class="max-w-lg mx-auto px-4">
 
     {{-- Header --}}
@@ -40,13 +42,30 @@
                         <span class="font-medium text-gray-900 dark:text-white" x-text="new Intl.NumberFormat('fr-FR').format(item.prix * item.quantite) + ' F'"></span>
                     </div>
                 </template>
+                <template x-if="fraisLivraison > 0">
+                    <div class="flex justify-between text-sm text-gray-500 dark:text-gray-400">
+                        <span>Livraison</span>
+                        <span x-text="new Intl.NumberFormat('fr-FR').format(fraisLivraison) + ' F'"></span>
+                    </div>
+                </template>
                 <div class="border-t border-gray-200 dark:border-slate-700 pt-2 mt-2 flex justify-between font-bold">
                     <span class="text-gray-900 dark:text-white">Total</span>
                     <span class="text-primary-600 dark:text-primary-400" x-text="new Intl.NumberFormat('fr-FR').format(total) + ' F'"></span>
                 </div>
             </div>
 
+            {{-- Zone de livraison --}}
             <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 space-y-4">
+                <div x-show="zones.length > 0">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">Zone de livraison</label>
+                    <select x-model="zoneIndex" @change="updateFrais()" class="form-input">
+                        <option value="">-- Choisir une zone --</option>
+                        <template x-for="(z, i) in zones" :key="i">
+                            <option :value="i" x-text="z.nom + ' — ' + new Intl.NumberFormat('fr-FR').format(z.frais) + ' F' + (z.delai ? ' ('+z.delai+')' : '')"></option>
+                        </template>
+                    </select>
+                </div>
+
                 <div class="grid grid-cols-2 gap-3">
                     <div><label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">Prénom *</label><input type="text" name="prenom" required class="form-input"></div>
                     <div><label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">Nom *</label><input type="text" name="nom" required class="form-input"></div>
@@ -62,6 +81,7 @@
                 <div><p class="text-sm font-semibold text-emerald-900 dark:text-emerald-300">Paiement à la livraison</p><p class="text-xs text-emerald-700 dark:text-emerald-400">Cash à la réception</p></div>
             </div>
             <input type="hidden" name="mode_paiement" value="cash">
+            <input type="hidden" name="zone_index" :value="zoneIndex">
 
             <template x-for="(item, index) in panier" :key="index">
                 <div>
@@ -90,11 +110,36 @@
 
 @push('scripts')
 <script>
-function checkout() {
-    return { panier: [], submitting: false,
-        init() { const raw = localStorage.getItem('panier_{{ $institut->id }}'); if (raw) { try { this.panier = JSON.parse(raw); } catch(e) {} } },
-        get total() { return this.panier.reduce((sum, item) => sum + (item.prix * item.quantite), 0); },
-        handleSubmit(event) { if (this.panier.length === 0) { event.preventDefault(); return; } if (this.submitting) { event.preventDefault(); return; } this.submitting = true; localStorage.removeItem('panier_{{ $institut->id }}'); }
+function checkout(zonesData, fraisDefaut) {
+    return {
+        panier: [],
+        submitting: false,
+        zones: zonesData || [],
+        zoneIndex: '',
+        fraisLivraison: fraisDefaut || 0,
+
+        init() {
+            const raw = localStorage.getItem('panier_{{ $institut->id }}');
+            if (raw) { try { this.panier = JSON.parse(raw); } catch(e) {} }
+        },
+
+        get sousTotal() { return this.panier.reduce((sum, item) => sum + (item.prix * item.quantite), 0); },
+        get total() { return this.sousTotal + this.fraisLivraison; },
+
+        updateFrais() {
+            if (this.zoneIndex !== '' && this.zoneIndex !== null && this.zones[this.zoneIndex]) {
+                this.fraisLivraison = parseInt(this.zones[this.zoneIndex].frais) || 0;
+            } else {
+                this.fraisLivraison = fraisDefaut || 0;
+            }
+        },
+
+        handleSubmit(event) {
+            if (this.panier.length === 0) { event.preventDefault(); return; }
+            if (this.submitting) { event.preventDefault(); return; }
+            this.submitting = true;
+            localStorage.removeItem('panier_{{ $institut->id }}');
+        }
     };
 }
 </script>

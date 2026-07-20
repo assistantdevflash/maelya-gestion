@@ -133,7 +133,9 @@ class BoutiqueController extends Controller
             abort(404, 'Cette boutique n\'est pas disponible.');
         }
 
-        return view('boutique.commander', compact('institut'));
+        $zones = is_array($institut->boutique_zones_livraison) ? $institut->boutique_zones_livraison : [];
+
+        return view('boutique.commander', compact('institut', 'zones'));
     }
 
     /**
@@ -159,6 +161,7 @@ class BoutiqueController extends Controller
             'panier' => 'required|array|min:1',
             'panier.*.produit_id' => 'required|uuid|exists:produits,id',
             'panier.*.quantite' => 'required|integer|min:1|max:999',
+            'zone_index' => 'nullable|integer|min:0',
         ]);
 
         try {
@@ -218,7 +221,12 @@ class BoutiqueController extends Controller
                 ];
             }
 
+            // Calculer les frais de livraison selon la zone choisie
+            $zones = is_array($institut->boutique_zones_livraison) ? $institut->boutique_zones_livraison : [];
             $fraisLivraison = $institut->boutique_frais_livraison ?? 0;
+            if (isset($data['zone_index']) && isset($zones[$data['zone_index']])) {
+                $fraisLivraison = (int) ($zones[$data['zone_index']]['frais'] ?? $fraisLivraison);
+            }
             $total = $sousTotal + $fraisLivraison;
 
             // Créer la commande

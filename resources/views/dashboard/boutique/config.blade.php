@@ -299,15 +299,33 @@
                     >
                 </div>
 
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-3">Zones de livraison (optionnel)</label>
-                    <textarea 
-                        name="boutique_zones_livraison" 
-                        rows="4"
-                        placeholder="Ex: Abidjan Sud, Abidjan Nord, Intérieur du pays"
-                        class="input w-full"
-                    >{{ old('boutique_zones_livraison', is_array($institut->boutique_zones_livraison) ? implode("\n", $institut->boutique_zones_livraison) : $institut->boutique_zones_livraison) }}</textarea>
-                    <p class="text-xs text-gray-500 dark:text-slate-400 mt-2">Listez les quartiers ou zones que vous livrez</p>
+                <div x-data="zoneEditor(@js($institut->boutique_zones_livraison ?? []))">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-3">Zones de livraison</label>
+
+                    <template x-for="(zone, i) in zones" :key="i">
+                        <div class="flex items-start gap-2 mb-2 p-3 bg-gray-50 dark:bg-slate-800 rounded-xl">
+                            <div class="flex-1 space-y-2">
+                                <input type="text" :name="'boutique_zones_livraison['+i+'][nom]'" x-model="zone.nom"
+                                       placeholder="Nom de la zone" class="form-input text-sm" required>
+                                <div class="flex gap-2">
+                                    <input type="number" :name="'boutique_zones_livraison['+i+'][frais]'" x-model="zone.frais"
+                                           placeholder="Frais (FCFA)" min="0" class="form-input text-sm w-1/2" required>
+                                    <input type="text" :name="'boutique_zones_livraison['+i+'][delai]'" x-model="zone.delai"
+                                           placeholder="Délai (ex: 1-3 jours)" class="form-input text-sm w-1/2">
+                                </div>
+                            </div>
+                            <button type="button" @click="zones.splice(i, 1)" class="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+                    </template>
+
+                    <button type="button" @click="zones.push({nom:'',frais:0,delai:''})"
+                            class="mt-2 text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                        Ajouter une zone
+                    </button>
+                    <p class="text-xs text-gray-500 dark:text-slate-400 mt-2">Définissez vos zones avec frais et délais personnalisés.</p>
                 </div>
             </div>
         </div>
@@ -345,3 +363,15 @@
     @endif
 </div>
 </x-dashboard-layout>
+
+@push('scripts')
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('zoneEditor', (initialZones) => ({
+        zones: Array.isArray(initialZones) && initialZones.length > 0
+            ? initialZones.map(z => typeof z === 'object' ? z : {nom: z, frais: 0, delai: ''})
+            : []
+    }));
+});
+</script>
+@endpush
