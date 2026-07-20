@@ -169,15 +169,15 @@
 
             {{-- ✏️ Modifier la commande (avant acceptation) --}}
             @if($commande->statut === 'nouvelle')
-            <div class="card border-2 border-amber-200 dark:border-amber-700" x-data="{ editOpen: false }">
+            <div class="card border-2 border-amber-200 dark:border-amber-700" id="edit-commande-card">
                 <div class="card-header flex items-center justify-between">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white">✏️ Ajuster la commande</h2>
-                    <button @click="editOpen = !editOpen" class="text-sm text-primary-600 hover:text-primary-700 font-medium">
-                        <span x-show="!editOpen">Modifier</span>
-                        <span x-show="editOpen">Annuler</span>
+                    <button type="button" onclick="document.getElementById('edit-commande-body').classList.toggle('hidden')"
+                            class="text-sm text-primary-600 hover:text-primary-700 font-medium">
+                        Modifier
                     </button>
                 </div>
-                <div x-show="editOpen" class="card-body" x-cloak>
+                <div id="edit-commande-body" class="card-body hidden">
                     <form method="POST" action="{{ route('dashboard.boutique.commandes.update', $commande) }}" class="space-y-4">
                         @csrf @method('PUT')
 
