@@ -138,39 +138,10 @@
                             </div>
                         </div>
 
-                        <div class="form-group" x-data="richtext()">
+                        <div class="form-group">
                             <label class="form-label">Description longue</label>
-
-                            {{-- Barre d'outils --}}
-                            <div class="flex items-center gap-0.5 p-1.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-t-xl">
-                                <button type="button" @click="exec('bold')" :class="{ 'bg-white dark:bg-slate-600 shadow-sm': isActive('bold') }"
-                                        class="p-1.5 rounded-md text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition" title="Gras">B</button>
-                                <button type="button" @click="exec('italic')" :class="{ 'bg-white dark:bg-slate-600 shadow-sm': isActive('italic') }"
-                                        class="p-1.5 rounded-md text-sm italic text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition" title="Italique"><i>I</i></button>
-                                <button type="button" @click="exec('underline')" :class="{ 'bg-white dark:bg-slate-600 shadow-sm': isActive('underline') }"
-                                        class="p-1.5 rounded-md text-sm underline text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition" title="Souligné"><u>U</u></button>
-                                <span class="w-px h-5 bg-gray-300 dark:bg-slate-600 mx-0.5"></span>
-                                <button type="button" @click="exec('insertUnorderedList')" :class="{ 'bg-white dark:bg-slate-600 shadow-sm': isActive('insertUnorderedList') }"
-                                        class="p-1.5 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition" title="Liste à puces">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-                                </button>
-                                <button type="button" @click="exec('insertOrderedList')" :class="{ 'bg-white dark:bg-slate-600 shadow-sm': isActive('insertOrderedList') }"
-                                        class="p-1.5 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition" title="Liste numérotée">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20h14M7 12h14M7 4h14M3 20v-1h2v-1H3v-1h3v4H3zm0-7V9h-1v2h1zm0-3V7h3v10H3v-1h2v-3H3z"/></svg>
-                                </button>
-                            </div>
-
-                            {{-- Zone d'édition --}}
-                            <div x-ref="editor"
-                                 contenteditable="true"
-                                 @input="sync()"
-                                 @focus="focused = true"
-                                 @blur="focused = false"
-                                 class="min-h-[140px] px-4 py-3 bg-white dark:bg-slate-700 border border-t-0 border-gray-200 dark:border-slate-600 rounded-b-xl text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500/50"
-                                 x-html="html">
-                            </div>
-
-                            <textarea name="description" class="sr-only" x-ref="textarea">{{ old('description', $produit->description ?? '') }}</textarea>
+                            <div id="desc-editor"></div>
+                            <textarea name="description" id="desc-textarea" class="sr-only">{{ old('description', $produit->description ?? '') }}</textarea>
                         </div>
 
                         <div class="form-group">
@@ -589,40 +560,9 @@
     </script>
     @endif
 
-    {{-- Scanner code-barres + Richtext — chargés AVANT Alpine --}}
+    {{-- Scanner code-barres — inline AVANT Alpine --}}
     <script>
     (function() {
-        // ── Richtext description longue (vanilla, sans dépendance) ─────
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('richtext', () => ({
-                html: '',
-                focused: false,
-
-                init() {
-                    this.html = this.$refs.textarea.value || '';
-                    this.$nextTick(() => {
-                        if (this.$refs.editor) this.$refs.editor.innerHTML = this.html;
-                    });
-                },
-
-                exec(command) {
-                    this.$refs.editor.focus();
-                    document.execCommand(command, false, null);
-                    this.sync();
-                },
-
-                isActive(command) {
-                    return document.queryCommandState(command);
-                },
-
-                sync() {
-                    this.html = this.$refs.editor.innerHTML;
-                    if (this.$refs.textarea) this.$refs.textarea.value = this.html;
-                }
-            }));
-        });
-
-        // ── Scanner code-barres (identique caisse) ─────────────────────
         window.scannerCodeBarre = function() {
             return {
                 modalOuvert: false,
@@ -685,4 +625,63 @@
 </x-dashboard-layout>
 
 @push('styles')
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+<style>
+    .ql-toolbar.ql-snow {
+        background: var(--ql-toolbar-bg, #f9fafb);
+        border-color: #e5e7eb;
+        border-radius: 12px 12px 0 0;
+    }
+    .ql-container.ql-snow {
+        background: var(--ql-bg, #ffffff);
+        border-color: #e5e7eb;
+        border-radius: 0 0 12px 12px;
+        font-size: 14px;
+        min-height: 150px;
+    }
+    .ql-editor { min-height: 150px; color: #111827; }
+    .ql-editor.ql-blank::before { color: #9ca3af; font-style: normal; }
+    .dark .ql-toolbar.ql-snow  { --ql-toolbar-bg: rgb(255 255 255 / 0.05); border-color: rgb(255 255 255 / 0.1); }
+    .dark .ql-container.ql-snow { --ql-bg: rgb(255 255 255 / 0.03); border-color: rgb(255 255 255 / 0.1); }
+    .dark .ql-editor { color: #f3f4f6; }
+    .dark .ql-toolbar button svg .ql-stroke { stroke: #d1d5db; }
+    .dark .ql-toolbar button svg .ql-fill { fill: #d1d5db; }
+    .dark .ql-toolbar .ql-picker-label { color: #d1d5db; }
+    .dark .ql-toolbar .ql-picker-options { background: #1f2937; border-color: rgb(255 255 255 / 0.1); }
+    .dark .ql-toolbar button:hover svg .ql-stroke,
+    .dark .ql-toolbar button.ql-active svg .ql-stroke { stroke: #c084fc; }
+    .dark .ql-toolbar button:hover svg .ql-fill,
+    .dark .ql-toolbar button.ql-active svg .ql-fill { fill: #c084fc; }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const editorEl = document.getElementById('desc-editor');
+    if (!editorEl) return;
+
+    const quill = new Quill('#desc-editor', {
+        theme: 'snow',
+        placeholder: 'Composition, utilisation, conseils…',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline'],
+                [{ list: 'ordered' }, { list: 'bullet' }],
+                ['clean']
+            ]
+        }
+    });
+
+    const oldDesc = document.getElementById('desc-textarea').value;
+    if (oldDesc) {
+        quill.clipboard.dangerouslyPasteHTML(oldDesc);
+    }
+
+    document.getElementById('produit-form').addEventListener('submit', function () {
+        document.getElementById('desc-textarea').value = quill.root.innerHTML;
+    });
+});
+</script>
 @endpush
