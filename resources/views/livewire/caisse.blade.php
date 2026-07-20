@@ -429,10 +429,12 @@
                         </div>
                         <div class="flex items-center gap-1.5">
                             <button @click="decrementer(key)"
-                                    class="w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 text-sm font-bold transition-colors">−</button>
-                            <span class="w-7 text-center text-sm font-bold text-gray-900" x-text="panier[key].quantite"></span>
+                                    class="w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 text-sm font-bold transition-colors flex-shrink-0">−</button>
+                            <input type="number" x-model.number="panier[key].quantite" min="1" max="99999"
+                                   class="w-16 text-center text-sm font-bold text-gray-900 dark:text-gray-100 bg-transparent border border-gray-200 dark:border-slate-600 rounded-lg py-1 px-1 focus:ring-1 focus:ring-primary-400 focus:border-primary-400"
+                                   @change="if (panier[key].quantite < 1) panier[key].quantite = 1">
                             <button @click="incrementer(key)"
-                                    class="w-7 h-7 rounded-lg bg-primary-100 hover:bg-primary-200 flex items-center justify-center text-primary-700 text-sm font-bold transition-colors">+</button>
+                                    class="w-7 h-7 rounded-lg bg-primary-100 hover:bg-primary-200 flex items-center justify-center text-primary-700 text-sm font-bold transition-colors flex-shrink-0">+</button>
                         </div>
                         <span class="text-sm font-bold text-gray-900 w-20 text-right" x-text="formatNumber(panier[key].prix * panier[key].quantite) + ' F'"></span>
                         <button @click="supprimerItem(key)" class="text-gray-300 hover:text-red-500 transition-colors ml-1">
@@ -806,10 +808,12 @@
                             </div>
                             <div class="flex items-center gap-1.5">
                                 <button @click="decrementer(key)"
-                                        class="w-6 h-6 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 text-xs font-bold transition-colors">−</button>
-                                <span class="w-6 text-center text-sm font-bold text-gray-900" x-text="panier[key].quantite"></span>
+                                        class="w-6 h-6 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 text-xs font-bold transition-colors flex-shrink-0">−</button>
+                                <input type="number" x-model.number="panier[key].quantite" min="1" max="99999"
+                                       class="w-14 text-center text-xs font-bold text-gray-900 dark:text-gray-100 bg-transparent border border-gray-200 dark:border-slate-600 rounded-md py-0.5 px-0.5 focus:ring-1 focus:ring-primary-400 focus:border-primary-400"
+                                       @change="if (panier[key].quantite < 1) panier[key].quantite = 1">
                                 <button @click="incrementer(key)"
-                                        class="w-6 h-6 rounded-md bg-primary-100 hover:bg-primary-200 flex items-center justify-center text-primary-700 text-xs font-bold transition-colors">+</button>
+                                        class="w-6 h-6 rounded-md bg-primary-100 hover:bg-primary-200 flex items-center justify-center text-primary-700 text-xs font-bold transition-colors flex-shrink-0">+</button>
                             </div>
                             <span class="text-sm font-bold text-gray-900 w-20 text-right" x-text="formatNumber(panier[key].prix * panier[key].quantite) + ' F'"></span>
                             <button @click="supprimerItem(key)" class="text-gray-300 hover:text-red-500 transition-colors">
