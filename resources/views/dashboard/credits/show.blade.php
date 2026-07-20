@@ -95,15 +95,15 @@
 
         {{-- Articles --}}
         <div class="card p-5">
-            <h2 class="text-sm font-bold text-gray-900 mb-3">Articles vendus</h2>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-white mb-3">Articles vendus</h2>
             <div class="space-y-2">
                 @foreach($credit->vente->items as $item)
-                <div class="flex justify-between text-sm">
+                <div class="flex justify-between text-sm text-gray-700 dark:text-gray-300">
                     <span>{{ $item->nom_snapshot }} ×{{ $item->quantite }}</span>
-                    <span class="font-semibold">{{ number_format($item->sous_total, 0, ',', ' ') }} F</span>
+                    <span class="font-semibold text-gray-900 dark:text-white">{{ number_format($item->sous_total, 0, ',', ' ') }} F</span>
                 </div>
                 @endforeach
-                <div class="flex justify-between text-sm font-bold pt-2 border-t">
+                <div class="flex justify-between text-sm font-bold pt-2 border-t border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white">
                     <span>Total</span>
                     <span>{{ number_format($credit->montant_total, 0, ',', ' ') }} F</span>
                 </div>
@@ -112,30 +112,30 @@
 
         {{-- Échéancier --}}
         <div class="card overflow-hidden">
-            <div class="px-5 py-3 border-b border-gray-100">
-                <h2 class="text-sm font-bold text-gray-900">Échéancier</h2>
+            <div class="px-5 py-3 border-b border-gray-100 dark:border-slate-700">
+                <h2 class="text-sm font-bold text-gray-900 dark:text-white">Échéancier</h2>
             </div>
             <div class="overflow-x-auto -webkit-overflow-scrolling:touch">
             <table class="w-full text-sm min-w-[500px]">
-                <thead class="bg-gray-50">
+                <thead class="bg-gray-50 dark:bg-slate-800">
                     <tr>
-                        <th class="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-gray-500">N°</th>
-                        <th class="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-gray-500">Date prévue</th>
-                        <th class="px-3 sm:px-4 py-2 text-right text-xs font-semibold text-gray-500">Montant</th>
-                        <th class="px-3 sm:px-4 py-2 text-right text-xs font-semibold text-gray-500">Payé</th>
-                        <th class="px-3 sm:px-4 py-2 text-center text-xs font-semibold text-gray-500">Statut</th>
-                        <th class="px-3 sm:px-4 py-2 text-right text-xs font-semibold text-gray-500">Action</th>
+                        <th class="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">N°</th>
+                        <th class="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Date prévue</th>
+                        <th class="px-3 sm:px-4 py-2 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">Montant</th>
+                        <th class="px-3 sm:px-4 py-2 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">Payé</th>
+                        <th class="px-3 sm:px-4 py-2 text-center text-xs font-semibold text-gray-500 dark:text-gray-400">Statut</th>
+                        <th class="px-3 sm:px-4 py-2 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">Action</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-50">
+                <tbody class="divide-y divide-gray-50 dark:divide-slate-700">
                     @foreach($credit->echeances as $echeance)
                     <tr class="{{ $echeance->statut === 'retard' ? 'bg-red-50 dark:bg-red-900/10' : '' }}">
-                        <td class="px-3 sm:px-4 py-3 font-mono text-xs">{{ $echeance->numero }}/{{ $credit->nb_echeances }}</td>
-                        <td class="px-3 sm:px-4 py-3 whitespace-nowrap {{ $echeance->statut === 'retard' ? 'text-red-600 font-semibold' : '' }}">
+                        <td class="px-3 sm:px-4 py-3 font-mono text-xs text-gray-700 dark:text-gray-300">{{ $echeance->numero }}/{{ $credit->nb_echeances }}</td>
+                        <td class="px-3 sm:px-4 py-3 whitespace-nowrap text-gray-700 dark:text-gray-300 {{ $echeance->statut === 'retard' ? 'text-red-600 dark:text-red-400 font-semibold' : '' }}">
                             {{ \Carbon\Carbon::parse($echeance->date_prevue)->format('d/m/Y') }}
                         </td>
-                        <td class="px-3 sm:px-4 py-3 text-right font-mono text-xs whitespace-nowrap">{{ number_format($echeance->montant, 0, ',', ' ') }} F</td>
-                        <td class="px-3 sm:px-4 py-3 text-right font-mono text-xs text-emerald-600 whitespace-nowrap">
+                        <td class="px-3 sm:px-4 py-3 text-right font-mono text-xs whitespace-nowrap text-gray-900 dark:text-white">{{ number_format($echeance->montant, 0, ',', ' ') }} F</td>
+                        <td class="px-3 sm:px-4 py-3 text-right font-mono text-xs text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
                             {{ $echeance->montant_paye > 0 ? number_format($echeance->montant_paye, 0, ',', ' ') . ' F' : '—' }}
                         </td>
                         <td class="px-3 sm:px-4 py-3 text-center">
@@ -154,33 +154,73 @@
                                 Encaisser
                             </button>
 
-                            {{-- Mini dialogue de paiement --}}
-                            <dialog id="payer-{{ $echeance->id }}" class="rounded-2xl shadow-xl border-0 p-0 w-full max-w-sm backdrop:bg-black/50">
-                                <form method="POST" action="{{ route('dashboard.credits.payer', $credit) }}" class="p-5 space-y-4">
+                            {{-- Dialogue de paiement --}}
+                            <dialog id="payer-{{ $echeance->id }}" class="rounded-2xl shadow-2xl border-0 p-0 w-full max-w-sm backdrop:bg-black/50 dark:backdrop:bg-black/70 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100">
+                                <form method="POST" action="{{ route('dashboard.credits.payer', $credit) }}" class="p-6 space-y-5" x-data="{ mode: 'cash' }">
                                     @csrf
                                     <input type="hidden" name="echeance_id" value="{{ $echeance->id }}">
-                                    <h3 class="text-base font-bold text-gray-900">Encaisser échéance {{ $echeance->numero }}/{{ $credit->nb_echeances }}</h3>
+
+                                    {{-- En-tête --}}
+                                    <div class="text-center">
+                                        <div class="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center mx-auto mb-3">
+                                            <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                        </div>
+                                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Encaisser échéance</h3>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                            {{ $echeance->numero }}/{{ $credit->nb_echeances }}
+                                            · <span class="font-semibold text-purple-600 dark:text-purple-400">{{ number_format($echeance->montant - $echeance->montant_paye, 0, ',', ' ') }} FCFA</span> restants
+                                        </p>
+                                    </div>
+
+                                    {{-- Montant --}}
                                     <div>
-                                        <label class="text-xs text-gray-500">Montant à encaisser</label>
-                                        <input type="number" name="montant" value="{{ $echeance->montant - $echeance->montant_paye }}"
-                                               min="1" max="{{ $echeance->montant - $echeance->montant_paye }}"
-                                               class="form-input text-sm mt-1" required>
+                                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Montant à encaisser</label>
+                                        <div class="relative">
+                                            <input type="number" name="montant" value="{{ $echeance->montant - $echeance->montant_paye }}"
+                                                   min="1" max="{{ $echeance->montant - $echeance->montant_paye }}"
+                                                   class="w-full form-input text-sm pr-12 font-mono" required>
+                                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400 dark:text-gray-500">FCFA</span>
+                                        </div>
                                     </div>
-                                    <div class="grid grid-cols-3 gap-2">
-                                        <label class="flex items-center gap-1 text-xs cursor-pointer">
-                                            <input type="radio" name="mode_paiement" value="cash" checked> Espèces
-                                        </label>
-                                        <label class="flex items-center gap-1 text-xs cursor-pointer">
-                                            <input type="radio" name="mode_paiement" value="mobile_money"> Mobile
-                                        </label>
-                                        <label class="flex items-center gap-1 text-xs cursor-pointer">
-                                            <input type="radio" name="mode_paiement" value="carte"> Carte
-                                        </label>
+
+                                    {{-- Mode de paiement — boutons toggle --}}
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Mode de paiement</label>
+                                        <div class="grid grid-cols-3 gap-1.5 p-1 bg-gray-100 dark:bg-slate-700 rounded-xl">
+                                            <label @click="mode = 'cash'" :class="mode === 'cash' ? 'bg-white dark:bg-slate-600 shadow-sm text-gray-900 dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'" class="flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs cursor-pointer transition">
+                                                <input type="radio" name="mode_paiement" value="cash" x-model="mode" class="sr-only">
+                                                <span>💵</span> Espèces
+                                            </label>
+                                            <label @click="mode = 'mobile_money'" :class="mode === 'mobile_money' ? 'bg-white dark:bg-slate-600 shadow-sm text-gray-900 dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'" class="flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs cursor-pointer transition">
+                                                <input type="radio" name="mode_paiement" value="mobile_money" x-model="mode" class="sr-only">
+                                                <span>📱</span> Mobile
+                                            </label>
+                                            <label @click="mode = 'carte'" :class="mode === 'carte' ? 'bg-white dark:bg-slate-600 shadow-sm text-gray-900 dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'" class="flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs cursor-pointer transition">
+                                                <input type="radio" name="mode_paiement" value="carte" x-model="mode" class="sr-only">
+                                                <span>💳</span> Carte
+                                            </label>
+                                        </div>
                                     </div>
-                                    <input type="text" name="reference" placeholder="Référence (optionnel)" class="form-input text-sm">
-                                    <div class="flex gap-2">
-                                        <button type="button" onclick="this.closest('dialog').close()" class="flex-1 btn-outline justify-center text-sm py-2">Annuler</button>
-                                        <button type="submit" class="flex-1 btn-primary justify-center text-sm py-2">Encaisser</button>
+
+                                    {{-- Référence --}}
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Référence <span class="font-normal normal-case text-gray-400">(optionnel)</span></label>
+                                        <input type="text" name="reference" placeholder="Ex: N° transaction..."
+                                               class="w-full form-input text-sm">
+                                    </div>
+
+                                    {{-- Actions --}}
+                                    <div class="flex gap-3 pt-2">
+                                        <button type="button" onclick="this.closest('dialog').close()"
+                                                class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 transition">
+                                            Annuler
+                                        </button>
+                                        <button type="submit"
+                                                class="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 shadow-sm transition">
+                                            Encaisser
+                                        </button>
                                     </div>
                                 </form>
                             </dialog>
@@ -196,31 +236,31 @@
         {{-- Historique des paiements --}}
         @if($credit->paiements->isNotEmpty())
         <div class="card overflow-hidden">
-            <div class="px-5 py-3 border-b border-gray-100">
-                <h2 class="text-sm font-bold text-gray-900">Historique des paiements</h2>
+            <div class="px-5 py-3 border-b border-gray-100 dark:border-slate-700">
+                <h2 class="text-sm font-bold text-gray-900 dark:text-white">Historique des paiements</h2>
             </div>
             <div class="overflow-x-auto -webkit-overflow-scrolling:touch">
             <table class="w-full text-sm min-w-[400px]">
-                <thead class="bg-gray-50">
+                <thead class="bg-gray-50 dark:bg-slate-800">
                     <tr>
-                        <th class="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-gray-500">Date</th>
-                        <th class="px-3 sm:px-4 py-2 text-right text-xs font-semibold text-gray-500">Montant</th>
-                        <th class="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-gray-500">Mode</th>
-                        <th class="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-gray-500">Encaissé par</th>
+                        <th class="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Date</th>
+                        <th class="px-3 sm:px-4 py-2 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">Montant</th>
+                        <th class="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Mode</th>
+                        <th class="px-3 sm:px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">Encaissé par</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-50">
+                <tbody class="divide-y divide-gray-50 dark:divide-slate-700">
                     @foreach($credit->paiements as $p)
                     <tr>
-                        <td class="px-3 sm:px-4 py-2 text-xs whitespace-nowrap">{{ \Carbon\Carbon::parse($p->created_at)->format('d/m/Y H:i') }}</td>
-                        <td class="px-3 sm:px-4 py-2 text-right font-mono text-xs font-semibold whitespace-nowrap">{{ number_format($p->montant, 0, ',', ' ') }} F</td>
-                        <td class="px-3 sm:px-4 py-2 text-xs whitespace-nowrap">
+                        <td class="px-3 sm:px-4 py-2 text-xs whitespace-nowrap text-gray-600 dark:text-gray-300">{{ \Carbon\Carbon::parse($p->created_at)->format('d/m/Y H:i') }}</td>
+                        <td class="px-3 sm:px-4 py-2 text-right font-mono text-xs font-semibold whitespace-nowrap text-gray-900 dark:text-white">{{ number_format($p->montant, 0, ',', ' ') }} F</td>
+                        <td class="px-3 sm:px-4 py-2 text-xs whitespace-nowrap text-gray-600 dark:text-gray-300">
                             @if($p->mode_paiement === 'cash') 💵 Espèces
                             @elseif($p->mode_paiement === 'mobile_money') 📱 Mobile
                             @else 💳 Carte
                             @endif
                         </td>
-                        <td class="px-3 sm:px-4 py-2 text-xs whitespace-nowrap">{{ $p->encaisseur?->prenom ?? '—' }}</td>
+                        <td class="px-3 sm:px-4 py-2 text-xs whitespace-nowrap text-gray-500 dark:text-gray-400">{{ $p->encaisseur?->prenom ?? '—' }}</td>
                     </tr>
                     @endforeach
                 </tbody>
