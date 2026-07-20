@@ -179,7 +179,7 @@
                 </div>
                 <div id="edit-commande-body" class="card-body hidden">
                     <form method="POST" action="{{ route('dashboard.boutique.commandes.update', $commande) }}" class="space-y-4">
-                        @csrf @method('PUT')
+                        @csrf
 
                         {{-- Zone de livraison --}}
                         @php $zones = is_array($commande->institut->boutique_zones_livraison) ? $commande->institut->boutique_zones_livraison : []; @endphp
