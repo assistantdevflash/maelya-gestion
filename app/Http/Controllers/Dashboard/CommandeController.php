@@ -246,6 +246,12 @@ class CommandeController extends Controller
 
             $total = $sousTotal + $fraisLivraison;
 
+            // Vérifier qu'il reste au moins un article
+            if ($commande->items()->count() === 0) {
+                DB::rollBack();
+                return back()->withInput()->withErrors(['items' => 'Vous ne pouvez pas retirer tous les articles.']);
+            }
+
             $commande->update([
                 'sous_total' => $sousTotal,
                 'frais_livraison' => $fraisLivraison,

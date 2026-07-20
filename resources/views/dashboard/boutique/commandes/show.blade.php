@@ -204,7 +204,7 @@
                             </select>
                         </div>
                         @endif
-                        <input type="hidden" name="frais_livraison" value="{{ $commande->frais_livraison }}">
+                        <input type="hidden" name="frais_livraison" value="{{ (int) $commande->frais_livraison }}">
 
                         {{-- Articles --}}
                         <div>
