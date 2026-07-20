@@ -92,9 +92,9 @@
 <script>
 function checkout() {
     return { panier: [], submitting: false,
-        init() { const raw = localStorage.getItem('maelya_panier'); if (raw) { try { this.panier = JSON.parse(raw); } catch(e) {} } },
+        init() { const raw = localStorage.getItem('panier_{{ $institut->id }}'); if (raw) { try { this.panier = JSON.parse(raw); } catch(e) {} } },
         get total() { return this.panier.reduce((sum, item) => sum + (item.prix * item.quantite), 0); },
-        handleSubmit(event) { if (this.panier.length === 0) { event.preventDefault(); return; } if (this.submitting) { event.preventDefault(); return; } this.submitting = true; localStorage.removeItem('maelya_panier'); }
+        handleSubmit(event) { if (this.panier.length === 0) { event.preventDefault(); return; } if (this.submitting) { event.preventDefault(); return; } this.submitting = true; localStorage.removeItem('panier_{{ $institut->id }}'); }
     };
 }
 </script>
