@@ -140,8 +140,9 @@
 
                         <div class="form-group">
                             <label class="form-label">Description longue</label>
-                            <div id="desc-editor"></div>
-                            <textarea name="description" id="desc-textarea" class="sr-only">{{ old('description', $produit->description ?? '') }}</textarea>
+                            <textarea name="description" id="desc-textarea" rows="4"
+                                      class="form-textarea"
+                                      placeholder="Composition, utilisation, conseils...">{{ old('description', $produit->description ?? '') }}</textarea>
                         </div>
 
                         <div class="form-group">
@@ -657,8 +658,14 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const editorEl = document.getElementById('desc-editor');
-    if (!editorEl || typeof window.Quill === 'undefined') return;
+    const textarea = document.getElementById('desc-textarea');
+    if (!textarea || typeof window.Quill === 'undefined') return;
+
+    // Remplacer le textarea par un conteneur Quill
+    const wrapper = document.createElement('div');
+    wrapper.id = 'desc-editor';
+    textarea.parentNode.insertBefore(wrapper, textarea);
+    textarea.style.display = 'none';
 
     const quill = new window.Quill('#desc-editor', {
         theme: 'snow',
@@ -672,13 +679,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    const oldDesc = document.getElementById('desc-textarea').value;
-    if (oldDesc) {
-        quill.clipboard.dangerouslyPasteHTML(oldDesc);
-    }
+    if (textarea.value) quill.clipboard.dangerouslyPasteHTML(textarea.value);
 
     document.getElementById('produit-form').addEventListener('submit', function () {
-        document.getElementById('desc-textarea').value = quill.root.innerHTML;
+        textarea.value = quill.root.innerHTML;
     });
 });
 </script>
