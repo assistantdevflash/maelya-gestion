@@ -625,7 +625,6 @@
 </x-dashboard-layout>
 
 @push('styles')
-<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
 <style>
     .ql-toolbar.ql-snow {
         background: var(--ql-toolbar-bg, #f9fafb);
@@ -656,13 +655,12 @@
 @endpush
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const editorEl = document.getElementById('desc-editor');
-    if (!editorEl) return;
+    if (!editorEl || typeof window.Quill === 'undefined') return;
 
-    const quill = new Quill('#desc-editor', {
+    const quill = new window.Quill('#desc-editor', {
         theme: 'snow',
         placeholder: 'Composition, utilisation, conseils…',
         modules: {

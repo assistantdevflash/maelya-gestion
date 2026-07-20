@@ -1,8 +1,10 @@
 import './bootstrap';
 import caisseApp from './caisse';
+import Quill from 'quill';
 
 // Expose le composant Caisse POS en global pour Alpine x-data
 window.caisseApp = caisseApp;
+window.Quill = Quill;
 
 // ═══════════════════════════════════════════════════════════════
 //  GLOBAL FORM LOADING — disable bouton + spinner au submit
