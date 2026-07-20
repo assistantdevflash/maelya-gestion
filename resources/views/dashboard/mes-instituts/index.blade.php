@@ -550,6 +550,7 @@
                                 <option value="business_center"    {{ old('type') === 'business_center'    ? 'selected' : '' }}>Business center</option>
                                 <option value="depot_gaz"          {{ old('type') === 'depot_gaz'          ? 'selected' : '' }}>Dépôt de gaz</option>
                                 <option value="commerce"           {{ old('type') === 'commerce'           ? 'selected' : '' }}>Commerce / Alimentation</option>
+                                <option value="informatique_telephonie" {{ old('type') === 'informatique_telephonie' ? 'selected' : '' }}>Informatique / Téléphonie</option>
                                 <option value="autre"              {{ old('type') === 'autre'              ? 'selected' : '' }}>Autre</option>
                             </select>
                         </div>
