@@ -129,18 +129,20 @@
                     @endif
                 </div>
 
-                @if($produit->prix_promo)
-                <div class="text-lg text-gray-400 dark:text-gray-500 line-through">
-                    {{ number_format($produit->prix_vente, 0, ',', ' ') }} FCFA
+                <div class="flex items-baseline gap-3">
+                    @if($produit->prix_promo)
+                    <span class="text-lg text-gray-400 dark:text-gray-500 line-through">
+                        {{ number_format($produit->prix_vente, 0, ',', ' ') }} FCFA
+                    </span>
+                    <span class="text-3xl font-bold text-red-500 dark:text-red-400">
+                        {{ number_format($produit->prix_promo, 0, ',', ' ') }} <span class="text-xl font-normal">FCFA</span>
+                    </span>
+                    @else
+                    <span class="text-3xl font-bold text-primary-600 dark:text-primary-400">
+                        {{ number_format($produit->prix_vente, 0, ',', ' ') }} <span class="text-xl font-normal">FCFA</span>
+                    </span>
+                    @endif
                 </div>
-                <div class="text-3xl font-bold text-red-500 dark:text-red-400">
-                    {{ number_format($produit->prix_promo, 0, ',', ' ') }} <span class="text-xl font-normal">FCFA</span>
-                </div>
-                @else
-                <div class="text-3xl font-bold text-primary-600 dark:text-primary-400">
-                    {{ number_format($produit->prix_vente, 0, ',', ' ') }} <span class="text-xl font-normal">FCFA</span>
-                </div>
-                @endif
 
                 {{-- Indicateur stock --}}
                 @if($produit->stock <= 5)

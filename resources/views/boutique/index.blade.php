@@ -516,6 +516,11 @@
                     // Anti double-clic
                     if (this.submitting) { event.preventDefault(); return; }
                     this.submitting = true;
+                    // Vider le panier après soumission
+                    setTimeout(() => {
+                        this.panier = [];
+                        localStorage.removeItem('maelya_panier');
+                    }, 500);
                     // Le formulaire se soumet normalement (pas d'event.preventDefault)
                 }
             }

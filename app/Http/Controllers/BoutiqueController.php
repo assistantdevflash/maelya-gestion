@@ -192,7 +192,7 @@ class BoutiqueController extends Controller
             foreach ($data['panier'] as $item) {
                 $produit = $produits->get($item['produit_id']);
                 $quantite = $item['quantite'];
-                $prixUnitaire = $produit->prix_vente;
+                $prixUnitaire = $produit->prix_promo ?: $produit->prix_vente;
                 $sousTotal += $prixUnitaire * $quantite;
 
                 $items[] = [
