@@ -273,9 +273,9 @@
                         <span x-text="new Intl.NumberFormat('fr-FR').format(total) + ' F'"></span>
                     </div>
                 </div>
-                <button @click="ouvrirCommande()" class="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all">
+                <a href="{{ route('shop.commander.form', $institut->slug) }}" class="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all text-center block">
                     Commander maintenant
-                </button>
+                </a>
             </div>
         </div>
     </div>

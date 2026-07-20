@@ -143,13 +143,13 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
             Route::get('config', [BoutiqueConfigController::class, 'index'])->name('config.index');
             Route::post('config', [BoutiqueConfigController::class, 'update'])->name('config.update');
         });
-        
+
         Route::get('commandes', [CommandeController::class, 'index'])->name('commandes.index');
         Route::get('commandes/export', [CommandeController::class, 'export'])->name('commandes.export');
         Route::get('commandes/count-nouvelles', [CommandeController::class, 'countNouvelles'])->name('commandes.count-nouvelles');
         Route::get('commandes/{commande}', [CommandeController::class, 'show'])->name('commandes.show');
         Route::get('commandes/{commande}/facture', [CommandeController::class, 'facturePdf'])->name('commandes.facture');
-        
+
         Route::middleware('role:admin')->group(function () {
             Route::post('commandes/{commande}/statut', [CommandeController::class, 'updateStatut'])->name('commandes.statut');
             Route::post('commandes/{commande}/payer', [CommandeController::class, 'marquerPayee'])->name('commandes.payer');
@@ -277,7 +277,7 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
             Route::get('fidelite/imprimer-code/{codeReduction}', [FideliteController::class, 'imprimerCode'])->name('fidelite.imprimer-code');
         });
     });
-    
+
     // ── Clients & RDV (accessibles aux employés) ──────────────────────────
     Route::middleware('feature:clients')->group(function () {
         Route::resource('clients', ClientController::class)->except(['show', 'edit']);
