@@ -9,7 +9,7 @@
     <meta property="og:image" content="{{ $institut->logo ? asset('storage/' . $institut->logo) : '' }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-purple-50 dark:bg-slate-900 min-h-screen" x-data="checkout()" x-cloak>
+<body class="bg-purple-50 dark:bg-slate-900 min-h-screen" x-data="checkout()">
 <div class="max-w-lg mx-auto px-4 py-8">
 
     {{-- Header --}}
