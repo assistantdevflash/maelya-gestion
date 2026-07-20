@@ -189,21 +189,21 @@ class FinanceController extends Controller
         // ═══ TRÉSORERIE PRÉVISIONNELLE ═══
         $joursPrevi = (int) $request->input('jours_previ', 30);
         $joursPrevi = max(7, min(90, $joursPrevi));
-        
+
         $debutPrevi = \Carbon\Carbon::today();
         $finPrevi = \Carbon\Carbon::today()->addDays($joursPrevi);
-        
+
         // RDV confirmés ou en attente futurs
         $rdvFuturs = \App\Models\RendezVous::with('prestations')
             ->where('debut_le', '>=', $debutPrevi)
             ->where('debut_le', '<=', $finPrevi)
             ->whereIn('statut', ['confirme', 'en_attente'])
             ->get();
-        
+
         $revenusPrevu = $rdvFuturs->sum(function ($r) {
             return $r->prestations->sum('prix');
         });
-        
+
         // Moyenne quotidienne des ventes des 30 derniers jours (hors crédits non payés)
         $caRecent = Vente::where('statut', 'validee')
             ->where('created_at', '>=', now()->subDays(30))
@@ -211,14 +211,14 @@ class FinanceController extends Controller
             ->value('total_reel') ?? 0;
         $caQuotidien = $caRecent / 30;
         $projectionVentes = (int) round($caQuotidien * $joursPrevi);
-        
+
         // Dépenses moyennes des 90 derniers jours
         $depensesRecentes = Depense::where('date', '>=', now()->subDays(90))->sum('montant');
         $depQuotidienne = $depensesRecentes / 90;
         $projectionDepenses = (int) round($depQuotidienne * $joursPrevi);
-        
+
         $soldePrevi = $revenusPrevu + $projectionVentes - $projectionDepenses;
-        
+
         // Détail par jour pour graphique
         $jourLabel = [];
         $jourEntrees = [];
@@ -238,7 +238,7 @@ class FinanceController extends Controller
             'depensesParCat', 'depenses', 'evolutionMois', 'periode', 'debut', 'fin',
             'valeurStock', 'margePotentielleStock',
             'prestationsParCategorie', 'produitsParCategorie',
-            'joursPrevi', 'revenusPrevu', 'projectionVentes', 'projectionDepenses', 
+            'joursPrevi', 'revenusPrevu', 'projectionVentes', 'projectionDepenses',
             'soldePrevi', 'jourLabel', 'jourEntrees', 'jourSorties', 'rdvFuturs'
         ));
     }
