@@ -562,6 +562,92 @@
     </script>
     @endif
 
+    {{-- Quill richtext + Scanner code-barres — chargés AVANT Alpine pour éviter race condition --}}
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+    <script>
+    (function() {
+        // ── Quill richtext description longue ──────────────────────────
+        const editorEl = document.getElementById('desc-editor');
+        if (editorEl) {
+            const quill = new Quill('#desc-editor', {
+                theme: 'snow',
+                placeholder: 'Composition, utilisation, conseils…',
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline'],
+                        [{ list: 'ordered' }, { list: 'bullet' }],
+                        ['clean']
+                    ]
+                }
+            });
+
+            const oldDesc = document.getElementById('desc-textarea').value;
+            if (oldDesc) quill.clipboard.dangerouslyPasteHTML(oldDesc);
+
+            document.getElementById('produit-form').addEventListener('submit', function () {
+                document.getElementById('desc-textarea').value = quill.root.innerHTML;
+            });
+        }
+
+        // ── Scanner code-barres (identique caisse) ─────────────────────
+        window.scannerCodeBarre = function() {
+            return {
+                modalOuvert: false,
+                hasCamera: false,
+                saisie: '',
+                saisieExterne: @js(old('code_barre', $produit->code_barre ?? '')),
+                scanExterneFocus: false,
+                stream: null,
+                detector: null,
+                intervalScan: null,
+
+                async ouvrir() {
+                    this.modalOuvert = true;
+                    this.saisie = '';
+                    this.hasCamera = 'BarcodeDetector' in window && !!navigator.mediaDevices?.getUserMedia;
+                    if (!this.hasCamera) return;
+                    try {
+                        this.detector = new BarcodeDetector({ formats: ['ean_13','ean_8','code_128','code_39','upc_a','upc_e'] });
+                        this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                        await this.$nextTick();
+                        this.$refs.video.srcObject = this.stream;
+                        this.intervalScan = setInterval(() => this.scanner(), 500);
+                    } catch (e) {
+                        this.hasCamera = false;
+                    }
+                },
+
+                async scanner() {
+                    if (!this.$refs.video || this.$refs.video.readyState < 2) return;
+                    try {
+                        const codes = await this.detector.detect(this.$refs.video);
+                        if (codes.length) this.resoudre(codes[0].rawValue);
+                    } catch (_) {}
+                },
+
+                fermer() {
+                    this.modalOuvert = false;
+                    if (this.intervalScan) { clearInterval(this.intervalScan); this.intervalScan = null; }
+                    if (this.stream) { this.stream.getTracks().forEach(t => t.stop()); this.stream = null; }
+                },
+
+                resoudreExterne() {
+                    this.resoudre(this.saisieExterne);
+                    this.saisieExterne = '';
+                },
+
+                resoudre(code) {
+                    code = (code || '').trim();
+                    if (!code) return;
+                    this.saisieExterne = code;
+                    this.$refs.codeInput.value = code;
+                    this.fermer();
+                }
+            };
+        };
+    })();
+    </script>
+
 </div>
 </x-dashboard-layout>
 
@@ -594,91 +680,4 @@
     .dark .ql-toolbar button:hover svg .ql-fill,
     .dark .ql-toolbar button.ql-active svg .ql-fill { fill: #c084fc; }
 </style>
-@endpush
-
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    // ── Quill richtext description longue ──────────────────────────────
-    const quill = new Quill('#desc-editor', {
-        theme: 'snow',
-        placeholder: 'Composition, utilisation, conseils…',
-        modules: {
-            toolbar: [
-                ['bold', 'italic', 'underline'],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                ['clean']
-            ]
-        }
-    });
-
-    const oldDesc = document.getElementById('desc-textarea').value;
-    if (oldDesc) {
-        quill.clipboard.dangerouslyPasteHTML(oldDesc);
-    }
-
-    document.getElementById('produit-form').addEventListener('submit', function () {
-        document.getElementById('desc-textarea').value = quill.root.innerHTML;
-    });
-});
-
-// ── Scanner code-barres (identique à la caisse) ──────────────────────────
-function scannerCodeBarre() {
-    return {
-        modalOuvert: false,
-        hasCamera: false,
-        saisie: '',
-        saisieExterne: @js(old('code_barre', $produit->code_barre ?? '')),
-        scanExterneFocus: false,
-        stream: null,
-        detector: null,
-        intervalScan: null,
-
-        async ouvrir() {
-            this.modalOuvert = true;
-            this.saisie = '';
-            this.hasCamera = 'BarcodeDetector' in window && !!navigator.mediaDevices?.getUserMedia;
-            if (!this.hasCamera) return;
-            try {
-                this.detector = new BarcodeDetector({ formats: ['ean_13','ean_8','code_128','code_39','upc_a','upc_e'] });
-                this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                await this.$nextTick();
-                this.$refs.video.srcObject = this.stream;
-                this.intervalScan = setInterval(() => this.scanner(), 500);
-            } catch (e) {
-                this.hasCamera = false;
-            }
-        },
-
-        async scanner() {
-            if (!this.$refs.video || this.$refs.video.readyState < 2) return;
-            try {
-                const codes = await this.detector.detect(this.$refs.video);
-                if (codes.length) this.resoudre(codes[0].rawValue);
-            } catch (_) {}
-        },
-
-        fermer() {
-            this.modalOuvert = false;
-            if (this.intervalScan) { clearInterval(this.intervalScan); this.intervalScan = null; }
-            if (this.stream) { this.stream.getTracks().forEach(t => t.stop()); this.stream = null; }
-        },
-
-        resoudreExterne() {
-            this.resoudre(this.saisieExterne);
-            this.saisieExterne = '';
-        },
-
-        resoudre(code) {
-            code = (code || '').trim();
-            if (!code) return;
-            // Remplit le champ code-barres avec la valeur scannée
-            this.saisieExterne = code;
-            this.$refs.codeInput.value = code;
-            this.fermer();
-        }
-    };
-}
-</script>
 @endpush
