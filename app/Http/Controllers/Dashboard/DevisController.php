@@ -90,7 +90,7 @@ class DevisController extends Controller
         foreach ($lignes as $i => $ligne) {
             DevisItem::create(['devis_id' => $devis->id, 'designation' => $ligne['designation'], 'quantite' => $ligne['quantite'], 'prix_unitaire' => $ligne['prix_unitaire'], 'remise_type' => $ligne['remise_type'] ?? null, 'remise_valeur' => $ligne['remise_valeur'] ?? 0, 'tva_taux' => $ligne['tva_taux'] ?? null, 'total_ligne' => $ligne['total_ligne'], 'ordre' => $i]);
         }
-        return redirect()->route('dashboard.devis.show', $devis)->with('success', 'Devis créé avec succès.');
+        return redirect()->route('dashboard.devis.show', $devis->id)->with('success', 'Devis créé avec succès.');
     }
 
     public function show(Devis $devis) { $devis->load(['items','client','createur','facture']); return view('dashboard.devis-factures.devis.show', compact('devis')); }
@@ -113,7 +113,7 @@ class DevisController extends Controller
             DevisItem::create(['devis_id' => $devis->id, 'designation' => $ligne['designation'], 'quantite' => $ligne['quantite'], 'prix_unitaire' => $ligne['prix_unitaire'], 'remise_type' => $ligne['remise_type'] ?? null, 'remise_valeur' => $ligne['remise_valeur'] ?? 0, 'tva_taux' => $ligne['tva_taux'] ?? null, 'total_ligne' => $ligne['total_ligne'], 'ordre' => $i]);
         }
         $devis->update(array_merge($data, ['sous_total' => $sousTotal, 'remise_globale_type' => $data['remise_globale_type'] ?? null, 'remise_globale_valeur' => $data['remise_globale_valeur'] ?? 0, 'total_ht' => $totalHT, 'total_ttc' => $totalTTC, 'tva_applicable' => $data['tva_applicable'] ?? false, 'tva_taux' => $data['tva_taux'] ?? 0]));
-        return redirect()->route('dashboard.devis.show', $devis)->with('success','Devis mis à jour.');
+        return redirect()->route('dashboard.devis.show', $devis->id)->with('success','Devis mis à jour.');
     }
 
     public function destroy(Devis $devis) { $devis->delete(); return redirect()->route('dashboard.devis.index')->with('success','Devis supprimé.'); }
@@ -135,6 +135,6 @@ class DevisController extends Controller
     public function dupliquer(Devis $devis) {
         $new = $devis->replicate(); $new->numero = DevisService::genererNumero(); $new->statut = 'brouillon'; $new->facture_id = null; $new->token = null; $new->save();
         foreach ($devis->items as $item) { DevisItem::create(['devis_id' => $new->id, 'designation' => $item->designation, 'quantite' => $item->quantite, 'prix_unitaire' => $item->prix_unitaire, 'remise_type' => $item->remise_type, 'remise_valeur' => $item->remise_valeur, 'tva_taux' => $item->tva_taux, 'total_ligne' => $item->total_ligne, 'ordre' => $item->ordre]); }
-        return redirect()->route('dashboard.devis.show', $new)->with('success','Devis dupliqué.');
+        return redirect()->route('dashboard.devis.show', $new->id)->with('success','Devis dupliqué.');
     }
 }

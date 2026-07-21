@@ -1,5 +1,6 @@
 <x-dashboard-layout>
 <div class="max-w-4xl mx-auto space-y-6">
+    @php $factureId = $facture->id; @endphp
     <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
             <a href="{{ route('dashboard.factures.index') }}" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition">←</a>
@@ -10,13 +11,13 @@
         <div class="flex gap-2">
             @if(!$facture->estPayee && $facture->statut !== 'annulee')
             <button onclick="document.getElementById('modal-paiement').classList.remove('hidden')" class="btn-primary text-sm">💰 Paiement</button>
-            <form method="POST" action="{{ route('dashboard.factures.marquer-payee', ['facture' => $facture]) }}" class="inline" onsubmit="return confirm('Marquer comme entièrement payée ?')">
+            <form method="POST" action="{{ route('dashboard.factures.marquer-payee', $factureId) }}" class="inline" onsubmit="return confirm('Marquer comme entièrement payée ?')">
                 @csrf<button class="btn-outlined text-sm">✓ Marquer payée</button>
             </form>
             @endif
-            <a href="{{ route('dashboard.factures.pdf', ['facture' => $facture]) }}" target="_blank" class="btn-outlined text-sm">📄 PDF</a>
+            <a href="{{ route('dashboard.factures.pdf', $factureId) }}" target="_blank" class="btn-outlined text-sm">📄 PDF</a>
             @if($facture->statut !== 'annulee')
-            <form method="POST" action="{{ route('dashboard.factures.annuler', ['facture' => $facture]) }}" class="inline" onsubmit="return confirm('Annuler cette facture ?')">
+            <form method="POST" action="{{ route('dashboard.factures.annuler', $factureId) }}" class="inline" onsubmit="return confirm('Annuler cette facture ?')">
                 @csrf<button class="btn-outlined text-sm text-red-600 border-red-200 hover:bg-red-50">Annuler</button>
             </form>
             @endif
@@ -136,7 +137,7 @@
             <h3 class="text-lg font-bold">Nouveau paiement</h3>
             <button onclick="document.getElementById('modal-paiement').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">✕</button>
         </div>
-        <form method="POST" action="{{ route('dashboard.factures.payer', ['facture' => $facture]) }}">
+        <form method="POST" action="{{ route('dashboard.factures.payer', $factureId) }}">
             @csrf
             <div class="space-y-3">
                 <div><label class="form-label">Date</label><input type="date" name="date_paiement" value="{{ now()->toDateString() }}" class="form-input" required></div>
