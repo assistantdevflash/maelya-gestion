@@ -9,17 +9,17 @@
         </div>
         <div class="flex gap-2">
             @if(in_array($devis->statut, ['brouillon','envoye']))
-            <form method="POST" action="{{ route('dashboard.devis.transformer', $devis) }}" class="inline">
+            <form method="POST" action="{{ route('dashboard.devis.transformer', ['devis' => $devis]) }}" class="inline">
                 @csrf<button class="btn-primary text-sm">Transformer en facture</button>
             </form>
             @endif
             @if($devis->statut === 'brouillon')
-            <form method="POST" action="{{ route('dashboard.devis.envoyer', $devis) }}" class="inline">
+            <form method="POST" action="{{ route('dashboard.devis.envoyer', ['devis' => $devis]) }}" class="inline">
                 @csrf<button class="btn-outlined text-sm">Envoyer</button>
             </form>
             @endif
-            <a href="{{ route('dashboard.devis.pdf', $devis) }}" target="_blank" class="btn-outlined text-sm">📄 PDF</a>
-            <a href="{{ route('dashboard.devis.dupliquer', $devis) }}" class="btn-outlined text-sm">📋 Dupliquer</a>
+            <a href="{{ route('dashboard.devis.pdf', ['devis' => $devis]) }}" target="_blank" class="btn-outlined text-sm">📄 PDF</a>
+            <a href="{{ route('dashboard.devis.dupliquer', ['devis' => $devis]) }}" class="btn-outlined text-sm">📋 Dupliquer</a>
         </div>
     </div>
 
@@ -39,7 +39,7 @@
             <div class="card-body text-sm space-y-1">
                 <p><span class="text-gray-500">Créé le :</span> {{ $devis->date_creation->format('d/m/Y') }}</p>
                 <p><span class="text-gray-500">Expire le :</span> {{ $devis->date_expiration->format('d/m/Y') }}</p>
-                @if($devis->facture_id)<p class="text-emerald-600">→ Facture <a href="{{ route('dashboard.factures.show', $devis->facture_id) }}" class="font-medium underline">{{ $devis->facture->numero ?? '—' }}</a></p>@endif
+                @if($devis->facture_id)<p class="text-emerald-600">→ Facture <a href="{{ route('dashboard.factures.show', ['facture' => $devis->facture_id]) }}" class="font-medium underline">{{ $devis->facture->numero ?? '—' }}</a></p>@endif
             </div>
         </div>
     </div>

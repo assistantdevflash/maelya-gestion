@@ -10,13 +10,13 @@
         <div class="flex gap-2">
             @if(!$facture->estPayee && $facture->statut !== 'annulee')
             <button onclick="document.getElementById('modal-paiement').classList.remove('hidden')" class="btn-primary text-sm">💰 Paiement</button>
-            <form method="POST" action="{{ route('dashboard.factures.marquer-payee', $facture) }}" class="inline" onsubmit="return confirm('Marquer comme entièrement payée ?')">
+            <form method="POST" action="{{ route('dashboard.factures.marquer-payee', ['facture' => $facture]) }}" class="inline" onsubmit="return confirm('Marquer comme entièrement payée ?')">
                 @csrf<button class="btn-outlined text-sm">✓ Marquer payée</button>
             </form>
             @endif
-            <a href="{{ route('dashboard.factures.pdf', $facture) }}" target="_blank" class="btn-outlined text-sm">📄 PDF</a>
+            <a href="{{ route('dashboard.factures.pdf', ['facture' => $facture]) }}" target="_blank" class="btn-outlined text-sm">📄 PDF</a>
             @if($facture->statut !== 'annulee')
-            <form method="POST" action="{{ route('dashboard.factures.annuler', $facture) }}" class="inline" onsubmit="return confirm('Annuler cette facture ?')">
+            <form method="POST" action="{{ route('dashboard.factures.annuler', ['facture' => $facture]) }}" class="inline" onsubmit="return confirm('Annuler cette facture ?')">
                 @csrf<button class="btn-outlined text-sm text-red-600 border-red-200 hover:bg-red-50">Annuler</button>
             </form>
             @endif
@@ -136,7 +136,7 @@
             <h3 class="text-lg font-bold">Nouveau paiement</h3>
             <button onclick="document.getElementById('modal-paiement').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">✕</button>
         </div>
-        <form method="POST" action="{{ route('dashboard.factures.payer', $facture) }}">
+        <form method="POST" action="{{ route('dashboard.factures.payer', ['facture' => $facture]) }}">
             @csrf
             <div class="space-y-3">
                 <div><label class="form-label">Date</label><input type="date" name="date_paiement" value="{{ now()->toDateString() }}" class="form-input" required></div>

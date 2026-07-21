@@ -20,7 +20,7 @@ class Client extends Model
     }
 
     protected $fillable = [
-        'institut_id', 'type_client', 'est_patient', 'raison_sociale', 'numero_registre_commerce', 
+        'institut_id', 'type_client', 'est_patient', 'raison_sociale', 'numero_registre_commerce',
         'adresse_entreprise', 'prenom', 'nom', 'telephone', 'adresse', 'piece_identite', 'email',
         'date_naissance', 'notes', 'points_fidelite', 'fidelite_token', 'actif',
     ];
