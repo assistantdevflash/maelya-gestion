@@ -43,10 +43,14 @@
                         <div class="flex justify-between text-sm"><span class="text-gray-500">Total HT</span><span class="font-bold" x-text="format(totalHT) + ' F'"></span></div>
                         <div class="flex items-center gap-3">
                             <label class="flex items-center gap-2 text-sm">
-                                <input type="checkbox" name="tva_applicable" value="1" @change="tva = $el.checked ? {{ $devis->tva_taux }} : 0" {{ $devis->tva_applicable ? 'checked' : '' }}> TVA
+                                <input type="checkbox" name="tva_applicable" value="1" x-model="tvaApplicable" @change="tva = $el.checked ? {{ $devis->tva_taux ?: 18 }} : 0" {{ $devis->tva_applicable ? 'checked' : '' }}> TVA
                             </label>
-                            <input type="number" name="tva_taux" x-model="tva" min="0" max="100" step="0.01" class="form-input text-sm w-20">
-                            <span class="text-sm text-gray-500">%</span>
+                            <template x-if="tvaApplicable">
+                                <span class="inline-flex items-center gap-1">
+                                    <input type="number" name="tva_taux" x-model="tva" min="0" max="100" step="0.01" class="form-input text-sm w-20">
+                                    <span class="text-sm text-gray-500">%</span>
+                                </span>
+                            </template>
                         </div>
                         <div class="flex justify-between text-lg font-bold pt-2 border-t"><span>Total TTC</span><span class="text-primary-600" x-text="format(totalTTC) + ' F'"></span></div>
                     </div>
@@ -77,6 +81,7 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('lignesManager', (initial) => ({
         lignes: initial.length ? initial : [{designation:'', quantite:1, prix_unitaire:0, remise_type:'', remise_valeur:0, tva_taux:null}],
         tva: {{ $devis->tva_taux ?? 0 }},
+        tvaApplicable: {{ $devis->tva_applicable ? 'true' : 'false' }},
         remiseGlobaleType: '{{ $devis->remise_globale_type }}',
         remiseGlobaleValeur: {{ $devis->remise_globale_valeur ?? 0 }},
         ajouter() { this.lignes.push({designation:'', quantite:1, prix_unitaire:0, remise_type:'', remise_valeur:0, tva_taux:null}); },

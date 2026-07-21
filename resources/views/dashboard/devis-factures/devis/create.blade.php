@@ -40,9 +40,15 @@
                         </div>
                         <div class="flex justify-between text-sm"><span class="text-gray-500">Total HT</span><span class="font-bold" x-text="formatPrix(totalHT) + ' F'"></span></div>
                         <div class="flex items-center gap-3">
-                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="tva_applicable" value="1" @change="tva = $el.checked ? {{ auth()->user()->institut->tva_taux ?? 0 }} : 0"> TVA</label>
-                            <input type="number" name="tva_taux" x-model="tva" min="0" max="100" step="0.01" class="form-input text-sm w-20">
-                            <span class="text-sm text-gray-500">%</span>
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" name="tva_applicable" value="1" x-model="tvaApplicable" @change="tva = $el.checked ? 18 : 0"> TVA
+                            </label>
+                            <template x-if="tvaApplicable">
+                                <span class="inline-flex items-center gap-1">
+                                    <input type="number" name="tva_taux" x-model="tva" min="0" max="100" step="0.01" class="form-input text-sm w-20">
+                                    <span class="text-sm text-gray-500">%</span>
+                                </span>
+                            </template>
                         </div>
                         <div class="flex justify-between text-lg font-bold pt-2 border-t"><span>Total TTC</span><span class="text-primary-600" x-text="formatPrix(totalTTC) + ' F'"></span></div>
                     </div>
@@ -275,6 +281,7 @@ document.addEventListener('alpine:init', () => {
         // ── Lignes ──
         lignes: [{designation:'', quantite:1, prix_unitaire:0, remise_type:'', remise_valeur:0, tva_taux:null}],
         tva: 0,
+        tvaApplicable: false,
         remiseGlobaleType: '',
         remiseGlobaleValeur: 0,
         ajouterLigne() { this.lignes.push({designation:'', quantite:1, prix_unitaire:0, remise_type:'', remise_valeur:0, tva_taux:null}); },

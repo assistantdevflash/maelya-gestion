@@ -195,7 +195,7 @@
             </div>
             @endif
             <div class="flex justify-between"><span class="text-gray-500">Total HT</span><span>{{ number_format($facture->total_ht, 0, ',', ' ') }} F</span></div>
-            @if($facture->tva_taux > 0)
+            @if($facture->tva_applicable && $facture->tva_taux > 0)
             <div class="flex justify-between"><span class="text-gray-500">TVA {{ $facture->tva_taux }}%</span><span>{{ number_format($facture->total_tva, 0, ',', ' ') }} F</span></div>
             @endif
             <div class="flex justify-between text-lg font-bold pt-2 border-t"><span>Total TTC</span><span class="text-primary-600">{{ number_format($facture->total_ttc, 0, ',', ' ') }} F</span></div>
