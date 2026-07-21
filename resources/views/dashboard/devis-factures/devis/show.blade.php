@@ -25,6 +25,7 @@
         @php
             $clientTel = $devis->client_telephone ?: ($client->telephone ?? null);
             $clientEmail = $devis->client_email ?: ($client->email ?? null);
+            $clientAdresse = $devis->client_adresse ?: ($client->adresse ?? null);
             $whatsappTel = $clientTel ? preg_replace('/[^0-9]/', '', $clientTel) : '';
             if ($whatsappTel && str_starts_with($whatsappTel, '0')) $whatsappTel = '225' . $whatsappTel;
             $whatsappMsg = "Bonjour " . ($client?->prenom ?? '') . "\n\n"
