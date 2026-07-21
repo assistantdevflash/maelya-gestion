@@ -32,6 +32,7 @@
                 . "Voici votre devis " . $devis->numero . "\n"
                 . "Montant : " . number_format($devis->total_ttc, 0, ',', ' ') . " F CFA\n"
                 . "Valable jusqu'au " . $devis->date_expiration->format('d/m/Y') . "\n\n"
+                . "Télécharger le PDF : " . route('dashboard.devis.pdf', ['devis' => $devisId]) . "\n\n"
                 . "Merci de votre confiance !");
         @endphp
 
