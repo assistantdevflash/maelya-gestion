@@ -163,9 +163,9 @@
                 @endif
 
                 {{-- Description --}}
-                @if($produit->description_courte || $produit->description)
+                @if($produit->description)
                 <div class="prose prose-sm max-w-none text-gray-600 dark:text-slate-300">
-                    <p>{{ $produit->description_courte ?? $produit->description }}</p>
+                    {!! nl2br(e($produit->description)) !!}
                 </div>
                 @endif
 
