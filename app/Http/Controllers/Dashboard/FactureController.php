@@ -70,7 +70,16 @@ class FactureController extends Controller
         [$sousTotal, $remise, $totalHT, $tva, $totalTTC, $lignes] = DevisService::calculerTotaux($lignes, $data);
         if ($totalTTC <= 0) return back()->withInput()->withErrors(['lignes' => 'Le montant total doit être supérieur à 0 F.']);
         $clientId = $data['client_id'] ?? null;
-        if (!$clientId && !empty($data['client_telephone'])) {
+        if ($clientId) {
+            $client = Client::find($clientId);
+            if ($client) {
+                $data['client_prenom'] = $data['client_prenom'] ?? $client->prenom;
+                $data['client_nom'] = $data['client_nom'] ?? $client->nom;
+                $data['client_telephone'] = $data['client_telephone'] ?? $client->telephone;
+                $data['client_email'] = $data['client_email'] ?? $client->email;
+                $data['client_adresse'] = $data['client_adresse'] ?? $client->adresse;
+            }
+        } elseif (!$clientId && !empty($data['client_telephone'])) {
             $client = Client::firstOrCreate(['telephone' => $data['client_telephone'], 'institut_id' => session('current_institut_id', Auth::user()->institut_id)], ['prenom' => $data['client_prenom'] ?? '', 'nom' => $data['client_nom'] ?? '']);
             $clientId = $client->id;
         }
@@ -118,13 +127,19 @@ class FactureController extends Controller
         $facture->update(['montant_paye' => $facture->paiements()->sum('montant')]);
 
         // Créer une Vente pour impacter immédiatement le chiffre d'affaires
+        // Mapper le mode_paiement vers l'ENUM ventes (cash, mobile_money, mixte)
+        $venteMode = match($data['mode_paiement']) {
+            'especes', 'virement', 'cheque', 'carte' => 'cash',
+            'mobile_money' => 'mobile_money',
+            default => 'cash',
+        };
         $vente = \App\Models\Vente::create([
             'institut_id' => $facture->institut_id,
             'client_id' => $facture->client_id,
             'user_id' => Auth::id(),
             'total' => $data['montant'],
             'montant_paye' => $data['montant'],
-            'mode_paiement' => $data['mode_paiement'],
+            'mode_paiement' => $venteMode,
             'statut' => 'validee',
         ]);
 
