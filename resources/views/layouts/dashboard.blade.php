@@ -20,16 +20,16 @@
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-    
+
     {{-- Theme anti-flash (critical inline script - minified) --}}
     <script>(function(){try{var t=localStorage.getItem('maelya-theme'),d=matchMedia('(prefers-color-scheme: dark)').matches;(t==='dark'||(t!=='light'&&d))&&document.documentElement.classList.add('dark')}catch(e){}})();</script>
-    
+
     {{-- Vite assets with preload --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
+
     {{-- Livewire styles --}}
     @livewireStyles
-    
+
     {{ $styles ?? '' }}
     @stack('head')
 </head>
@@ -1173,9 +1173,9 @@
             iframe.style.height = '0';
             iframe.style.border = 'none';
             iframe.style.top = '-9999px';
-            
+
             let loaded = false;
-            
+
             // Timeout de sécurité
             const timeoutId = setTimeout(() => {
                 if (!loaded) {
@@ -1185,12 +1185,12 @@
                     } catch (e) {}
                 }
             }, 10000);
-            
+
             // Quand le PDF est chargé, lancer l'impression
             iframe.onload = function() {
                 loaded = true;
                 clearTimeout(timeoutId);
-                
+
                 setTimeout(function() {
                     try {
                         iframe.contentWindow.focus();
@@ -1202,7 +1202,7 @@
                         window.open(url, '_blank');
                         reject(e);
                     }
-                    
+
                     // Nettoyer l'iframe après l'impression (ou après 1 minute)
                     setTimeout(function() {
                         try {
@@ -1211,7 +1211,7 @@
                     }, 60000);
                 }, 500); // Petit délai pour s'assurer que le PDF est bien rendu
             };
-            
+
             iframe.onerror = function() {
                 loaded = true;
                 clearTimeout(timeoutId);
@@ -1220,20 +1220,20 @@
                     document.body.removeChild(iframe);
                 } catch (e) {}
             };
-            
+
             // Ajouter l'iframe au DOM et charger le PDF
             document.body.appendChild(iframe);
             iframe.src = url;
         });
     }
-    
+
     // Composant Alpine.js pour bouton d'impression avec état de chargement
     function printButton() {
         return {
             loading: false,
             async print(url) {
                 if (this.loading) return;
-                
+
                 this.loading = true;
                 try {
                     await printPDF(url);
