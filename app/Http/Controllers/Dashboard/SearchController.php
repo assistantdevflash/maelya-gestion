@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\CodeReduction;
+use App\Models\Commande;
+use App\Models\Devis;
+use App\Models\Facture;
 use App\Models\Prestation;
 use App\Models\Produit;
 use App\Models\RendezVous;
@@ -111,6 +114,64 @@ class SearchController extends Controller
                 'icone'      => 'produit',
             ]);
 
+        // ── Devis ──
+        $devis = Devis::where('institut_id', $institutId)
+            ->where(function ($sql) use ($q) {
+                $sql->where('numero', 'like', "%{$q}%")
+                    ->orWhere('client_prenom', 'like', "%{$q}%")
+                    ->orWhere('client_nom', 'like', "%{$q}%");
+            })
+            ->with('client:id,prenom,nom')
+            ->latest()
+            ->limit($limit)
+            ->get(['id', 'numero', 'total_ttc', 'statut', 'client_id', 'created_at'])
+            ->map(fn ($d) => [
+                'id'         => $d->id,
+                'label'      => $d->numero . ' — ' . number_format($d->total_ttc, 0, ',', ' ') . ' F',
+                'sous_label' => ($d->client?->nom_complet ?? $d->client_nom_complet) . ' · ' . ucfirst($d->statut),
+                'url'        => route('dashboard.devis.show', ['devis' => $d->id]),
+                'icone'      => 'devis',
+            ]);
+
+        // ── Factures ──
+        $factures = Facture::where('institut_id', $institutId)
+            ->where(function ($sql) use ($q) {
+                $sql->where('numero', 'like', "%{$q}%")
+                    ->orWhere('client_prenom', 'like', "%{$q}%")
+                    ->orWhere('client_nom', 'like', "%{$q}%");
+            })
+            ->with('client:id,prenom,nom')
+            ->latest()
+            ->limit($limit)
+            ->get(['id', 'numero', 'total_ttc', 'statut', 'client_id', 'created_at'])
+            ->map(fn ($f) => [
+                'id'         => $f->id,
+                'label'      => $f->numero . ' — ' . number_format($f->total_ttc, 0, ',', ' ') . ' F',
+                'sous_label' => ($f->client?->nom_complet ?? $f->client_nom_complet) . ' · ' . ucfirst(str_replace('_', ' ', $f->statut)),
+                'url'        => route('dashboard.factures.show', ['facture' => $f->id]),
+                'icone'      => 'facture',
+            ]);
+
+        // ── Commandes boutique ──
+        $commandes = Commande::where('institut_id', $institutId)
+            ->where(function ($sql) use ($q) {
+                $sql->where('numero', 'like', "%{$q}%")
+                    ->orWhere('client_prenom', 'like', "%{$q}%")
+                    ->orWhere('client_nom', 'like', "%{$q}%")
+                    ->orWhere('client_telephone', 'like', "%{$q}%");
+            })
+            ->with('client:id,prenom,nom')
+            ->latest()
+            ->limit($limit)
+            ->get(['id', 'numero', 'total', 'statut', 'client_id', 'created_at'])
+            ->map(fn ($c) => [
+                'id'         => $c->id,
+                'label'      => $c->numero . ' — ' . number_format($c->total, 0, ',', ' ') . ' F',
+                'sous_label' => ($c->client?->nom_complet ?? trim(($c->client_prenom ?? '') . ' ' . ($c->client_nom ?? ''))) . ' · ' . ucfirst(str_replace('_', ' ', $c->statut)),
+                'url'        => route('dashboard.commandes.show', $c),
+                'icone'      => 'commande',
+            ]);
+
         // ── Codes de réduction ──
         $codes = CodeReduction::where('institut_id', $institutId)
             ->where('code', 'like', "%{$q}%")
@@ -127,6 +188,9 @@ class SearchController extends Controller
         $groupes = collect([
             ['cle' => 'clients',    'titre' => 'Clients',         'icone' => 'client',     'resultats' => $clients],
             ['cle' => 'ventes',     'titre' => 'Ventes',          'icone' => 'vente',      'resultats' => $ventes],
+            ['cle' => 'devis',      'titre' => 'Devis',           'icone' => 'devis',      'resultats' => $devis],
+            ['cle' => 'factures',   'titre' => 'Factures',        'icone' => 'facture',    'resultats' => $factures],
+            ['cle' => 'commandes',  'titre' => 'Commandes boutique', 'icone' => 'commande', 'resultats' => $commandes],
             ['cle' => 'rdvs',       'titre' => 'Rendez-vous',     'icone' => 'rdv',        'resultats' => $rdvs],
             ['cle' => 'prestations', 'titre' => 'Prestations',    'icone' => 'prestation', 'resultats' => $prestations],
             ['cle' => 'produits',   'titre' => 'Produits',        'icone' => 'produit',    'resultats' => $produits],

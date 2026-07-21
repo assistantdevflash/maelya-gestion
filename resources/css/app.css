@@ -1008,6 +1008,12 @@ body.admin     { background-color: #f5f3ff; }
     @apply inline-block w-6 h-6 border-2 border-current border-t-transparent rounded-full;
     animation: spinner 0.6s linear infinite;
 }
+/* Forcer le masquage quand combiné avec .hidden (priorité sur inline-block) */
+.spinner.hidden,
+.spinner-sm.hidden,
+.spinner-lg.hidden {
+    display: none !important;
+}
 
 /* Skeleton pulse pour chargement de données */
 @keyframes skeleton-pulse {
