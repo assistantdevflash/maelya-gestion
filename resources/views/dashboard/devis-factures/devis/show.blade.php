@@ -10,17 +10,17 @@
         </div>
         <div class="flex gap-2">
             @if(in_array($devis->statut, ['brouillon','envoye']))
-            <form method="POST" action="{{ route('dashboard.devis.transformer', $devisId) }}" class="inline">
+            <form method="POST" action="{{ route('dashboard.devis.transformer', ['devis' => $devisId]) }}" class="inline">
                 @csrf<button class="btn-primary text-sm">Transformer en facture</button>
             </form>
             @endif
             @if($devis->statut === 'brouillon')
-            <form method="POST" action="{{ route('dashboard.devis.envoyer', $devisId) }}" class="inline">
+            <form method="POST" action="{{ route('dashboard.devis.envoyer', ['devis' => $devisId]) }}" class="inline">
                 @csrf<button class="btn-outlined text-sm">Envoyer</button>
             </form>
             @endif
-            <a href="{{ route('dashboard.devis.pdf', $devisId) }}" target="_blank" class="btn-outlined text-sm">📄 PDF</a>
-            <a href="{{ route('dashboard.devis.dupliquer', $devisId) }}" class="btn-outlined text-sm">📋 Dupliquer</a>
+            <a href="{{ route('dashboard.devis.pdf', ['devis' => $devisId]) }}" target="_blank" class="btn-outlined text-sm">📄 PDF</a>
+            <a href="{{ route('dashboard.devis.dupliquer', ['devis' => $devisId]) }}" class="btn-outlined text-sm">📋 Dupliquer</a>
         </div>
     </div>
 

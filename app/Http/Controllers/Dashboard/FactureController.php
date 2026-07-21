@@ -87,7 +87,7 @@ class FactureController extends Controller
         foreach ($lignes as $i => $ligne) {
             FactureItem::create(['facture_id' => $facture->id, 'designation' => $ligne['designation'], 'quantite' => $ligne['quantite'], 'prix_unitaire' => $ligne['prix_unitaire'], 'remise_type' => $ligne['remise_type'] ?? null, 'remise_valeur' => $ligne['remise_valeur'] ?? 0, 'tva_taux' => $ligne['tva_taux'] ?? null, 'total_ligne' => $ligne['total_ligne'], 'ordre' => $i]);
         }
-        return redirect()->route('dashboard.factures.show', $facture->id)->with('success','Facture créée.');
+        return redirect()->route('dashboard.factures.show', ['facture' => $facture->id])->with('success','Facture créée.');
     }
 
     public function show(Facture $facture) { $facture->load(['items','client','devis','paiements.encaisseur','vente']); return view('dashboard.devis-factures.factures.show', compact('facture')); }
