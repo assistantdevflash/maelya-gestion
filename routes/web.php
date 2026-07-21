@@ -305,6 +305,7 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         Route::post('clients/{client}/cadeau-anniversaire', [ClientController::class, 'cadeauAnniversaire'])->name('clients.cadeau-anniversaire');
         Route::post('clients/{client}/fidelite/regenerer', [ClientController::class, 'regenererTokenFidelite'])->name('clients.fidelite.regenerer');
         Route::get('clients/{client}/fidelite/pdf', [ClientController::class, 'carteFidelitePdf'])->name('clients.fidelite.pdf');
+        Route::post('clients/quick-store', [ClientController::class, 'quickStore'])->name('clients.quick-store');
         Route::post('clients/{client}/photos', [\App\Http\Controllers\Dashboard\ClientPhotoController::class, 'store'])->name('clients.photos.store');
         Route::delete('clients/{client}/photos/{photo}', [\App\Http\Controllers\Dashboard\ClientPhotoController::class, 'destroy'])->name('clients.photos.destroy');
     });

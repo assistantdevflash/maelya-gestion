@@ -120,6 +120,38 @@ class ClientController extends Controller
             ->with('success', 'Client ajouté avec succès.');
     }
 
+    /**
+     * Création rapide d'un client (AJAX) — utilisé par Caisse et Devis.
+     */
+    public function quickStore(Request $request)
+    {
+        $data = $request->validate([
+            'prenom'    => ['required', 'string', 'max:50'],
+            'nom'       => ['required', 'string', 'max:50'],
+            'telephone' => ['required', 'string', 'max:30'],
+            'email'     => ['nullable', 'email', 'max:255'],
+            'adresse'   => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $data['institut_id'] = $this->institutId();
+        $data['type_client'] = 'personne_physique';
+
+        $client = Client::create($data);
+        $client->loadCount('ventes');
+
+        return response()->json([
+            'id'        => $client->id,
+            'prenom'    => $client->prenom,
+            'nom'       => $client->nom,
+            'nom_affichage' => $client->nom_complet,
+            'telephone' => $client->telephone,
+            'email'     => $client->email,
+            'adresse'   => $client->adresse,
+            'initiale'  => strtoupper(substr($client->prenom ?: $client->nom, 0, 1)),
+            'search'    => Str::lower($client->nom . ' ' . $client->prenom . ' ' . $client->telephone),
+        ]);
+    }
+
     public function show(Client $client)
     {
         $ventes = $client->ventes()->with('items')->where('statut', 'validee')->latest()->paginate(20);

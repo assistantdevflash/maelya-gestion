@@ -29,7 +29,25 @@ class DevisController extends Controller
         return view('dashboard.devis-factures.index', compact('devis','stats','clients'))->with('tab','devis');
     }
 
-    public function create() { return view('dashboard.devis-factures.devis.create', ['clients' => Client::where('institut_id', session('current_institut_id', Auth::user()->institut_id))->orderBy('nom')->get()]); }
+    public function create()
+    {
+        $institutId = session('current_institut_id', Auth::user()->institut_id);
+        $allClients = Client::where('institut_id', $institutId)
+            ->orderBy('nom')
+            ->get()
+            ->map(fn($c) => [
+                'id'        => $c->id,
+                'prenom'    => $c->prenom,
+                'nom'       => $c->nom,
+                'nom_affichage' => $c->nom_complet,
+                'telephone' => $c->telephone,
+                'email'     => $c->email,
+                'adresse'   => $c->adresse,
+                'initiale'  => strtoupper(substr($c->prenom ?: $c->nom, 0, 1)),
+                'search'    => strtolower($c->nom . ' ' . $c->prenom . ' ' . $c->telephone),
+            ]);
+        return view('dashboard.devis-factures.devis.create', compact('allClients'));
+    }
 
     public function store(Request $request)
     {

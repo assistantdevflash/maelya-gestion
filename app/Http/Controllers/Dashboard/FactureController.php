@@ -30,12 +30,26 @@ class FactureController extends Controller
 
     public function create(Request $request)
     {
-        $clients = Client::where('institut_id', session('current_institut_id', Auth::user()->institut_id))->orderBy('nom')->get();
+        $institutId = session('current_institut_id', Auth::user()->institut_id);
+        $allClients = Client::where('institut_id', $institutId)
+            ->orderBy('nom')
+            ->get()
+            ->map(fn($c) => [
+                'id'        => $c->id,
+                'prenom'    => $c->prenom,
+                'nom'       => $c->nom,
+                'nom_affichage' => $c->nom_complet,
+                'telephone' => $c->telephone,
+                'email'     => $c->email,
+                'adresse'   => $c->adresse,
+                'initiale'  => strtoupper(substr($c->prenom ?: $c->nom, 0, 1)),
+                'search'    => strtolower($c->nom . ' ' . $c->prenom . ' ' . $c->telephone),
+            ]);
         $devis = null;
         if ($request->filled('devis_id')) {
             $devis = \App\Models\Devis::with('items')->find($request->devis_id);
         }
-        return view('dashboard.devis-factures.factures.create', compact('clients','devis'));
+        return view('dashboard.devis-factures.factures.create', compact('allClients','devis'));
     }
 
     public function store(Request $request)
