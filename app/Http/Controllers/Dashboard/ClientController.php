@@ -211,11 +211,16 @@ class ClientController extends Controller
         // Crédits du client
         $credits = $client->credits()->with(['vente.items'])->latest()->take(20)->get();
 
+        // Devis, Factures & Commandes boutique
+        $devis = $client->devis()->latest()->take(20)->get();
+        $factures = $client->factures()->with('paiements')->latest()->take(20)->get();
+        $commandes = $client->commandes()->latest()->take(20)->get();
+
         // Codes de réduction et avoirs du client
         $codesReduction = $client->codesReduction()->latest()->take(50)->get();
         $avoirs = $client->avoirs()->with(['vente', 'codeReduction'])->latest()->take(20)->get();
 
-        return view('dashboard.clients.show', compact('client', 'ventes', 'rdvAVenir', 'rdvPasses', 'timeline', 'credits', 'codesReduction', 'avoirs'));
+        return view('dashboard.clients.show', compact('client', 'ventes', 'rdvAVenir', 'rdvPasses', 'timeline', 'credits', 'devis', 'factures', 'commandes', 'codesReduction', 'avoirs'));
     }
 
     public function update(Request $request, Client $client)

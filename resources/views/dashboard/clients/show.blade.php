@@ -250,6 +250,24 @@
                         <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $credits->count() }}</span>
                     </button>
                     @endif
+                    <button type="button" x-on:click="onglet = 'devis'"
+                            class="px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all flex-shrink-0 whitespace-nowrap"
+                            :class="onglet === 'devis' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
+                        📄 Devis
+                        <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $devis->count() }}</span>
+                    </button>
+                    <button type="button" x-on:click="onglet = 'factures'"
+                            class="px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all flex-shrink-0 whitespace-nowrap"
+                            :class="onglet === 'factures' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
+                        🧾 Factures
+                        <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $factures->count() }}</span>
+                    </button>
+                    <button type="button" x-on:click="onglet = 'commandes'"
+                            class="px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all flex-shrink-0 whitespace-nowrap"
+                            :class="onglet === 'commandes' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
+                        🛍️ Commandes
+                        <span class="ml-1 text-[10px] font-bold text-gray-400">{{ $commandes->count() }}</span>
+                    </button>
                     <button type="button" x-on:click="onglet = 'photos'"
                             class="px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all flex-shrink-0 whitespace-nowrap"
                             :class="onglet === 'photos' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'">
@@ -412,6 +430,83 @@
                     @endif
                 </div>
                 @endif
+
+                {{-- Onglet Devis --}}
+                <div x-show="onglet === 'devis'" x-cloak class="divide-y divide-gray-50 dark:divide-slate-700 max-h-96 overflow-y-auto">
+                    @forelse($devis as $d)
+                    <a href="{{ route('dashboard.devis.show', ['devis' => $d->id]) }}" class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ $d->numero }}</p>
+                            <p class="text-xs text-gray-500">{{ $d->date_creation->format('d/m/Y') }} · Expire le {{ $d->date_expiration->format('d/m/Y') }}</p>
+                        </div>
+                        <div class="text-right flex-shrink-0 ml-3">
+                            <p class="text-sm font-bold text-gray-900 dark:text-white">{{ number_format($d->total_ttc, 0, ',', ' ') }} F</p>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full font-bold
+                                @switch($d->statut)
+                                    @case('brouillon') bg-gray-100 text-gray-700 @break
+                                    @case('envoye') bg-blue-100 text-blue-700 @break
+                                    @case('accepte') bg-emerald-100 text-emerald-700 @break
+                                    @case('refuse') bg-red-100 text-red-700 @break
+                                    @default bg-gray-100 text-gray-600
+                                @endswitch">{{ ucfirst($d->statut) }}</span>
+                        </div>
+                    </a>
+                    @empty
+                    <div class="px-5 py-8 text-center text-sm text-gray-400">Aucun devis.</div>
+                    @endforelse
+                </div>
+
+                {{-- Onglet Factures --}}
+                <div x-show="onglet === 'factures'" x-cloak class="divide-y divide-gray-50 dark:divide-slate-700 max-h-96 overflow-y-auto">
+                    @forelse($factures as $f)
+                    <a href="{{ route('dashboard.factures.show', ['facture' => $f->id]) }}" class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ $f->numero }}</p>
+                            <p class="text-xs text-gray-500">Émise le {{ $f->date_emission->format('d/m/Y') }} · Échéance {{ $f->date_echeance->format('d/m/Y') }}</p>
+                        </div>
+                        <div class="text-right flex-shrink-0 ml-3">
+                            <p class="text-sm font-bold {{ $f->estPayee ? 'text-emerald-600' : ($f->resteAPayer > 0 && $f->date_echeance->isPast() ? 'text-red-600' : 'text-gray-900 dark:text-white') }}">{{ number_format($f->total_ttc, 0, ',', ' ') }} F</p>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full font-bold
+                                @switch($f->statut)
+                                    @case('payee') bg-emerald-100 text-emerald-700 @break
+                                    @case('en_attente') bg-amber-100 text-amber-700 @break
+                                    @case('annulee') bg-red-100 text-red-700 @break
+                                    @default bg-gray-100 text-gray-600
+                                @endswitch">{{ $f->estPayee ? 'Payée' : ucfirst(str_replace('_', ' ', $f->statut)) }}</span>
+                        </div>
+                    </a>
+                    @empty
+                    <div class="px-5 py-8 text-center text-sm text-gray-400">Aucune facture.</div>
+                    @endforelse
+                </div>
+
+                {{-- Onglet Commandes boutique --}}
+                <div x-show="onglet === 'commandes'" x-cloak class="divide-y divide-gray-50 dark:divide-slate-700 max-h-96 overflow-y-auto">
+                    @forelse($commandes as $cmd)
+                    <a href="{{ route('dashboard.boutique.commandes.show', $cmd) }}" class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ $cmd->numero }}</p>
+                            <p class="text-xs text-gray-500">{{ $cmd->created_at->format('d/m/Y H:i') }} · {{ $cmd->items->count() }} article(s)</p>
+                        </div>
+                        <div class="text-right flex-shrink-0 ml-3">
+                            <p class="text-sm font-bold text-gray-900 dark:text-white">{{ number_format($cmd->total, 0, ',', ' ') }} F</p>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full font-bold
+                                @switch($cmd->statut)
+                                    @case('nouvelle') bg-blue-100 text-blue-700 @break
+                                    @case('acceptee') bg-amber-100 text-amber-700 @break
+                                    @case('en_preparation') bg-purple-100 text-purple-700 @break
+                                    @case('en_livraison') bg-sky-100 text-sky-700 @break
+                                    @case('livree') bg-emerald-100 text-emerald-700 @break
+                                    @case('annulee') bg-red-100 text-red-700 @break
+                                    @case('refusee') bg-red-100 text-red-700 @break
+                                    @default bg-gray-100 text-gray-600
+                                @endswitch">{{ ucfirst(str_replace('_', ' ', $cmd->statut)) }}</span>
+                        </div>
+                    </a>
+                    @empty
+                    <div class="px-5 py-8 text-center text-sm text-gray-400">Aucune commande en ligne.</div>
+                    @endforelse
+                </div>
 
                 {{-- Onglet Galerie photos & fichiers --}}
                 <div x-show="onglet === 'photos'" x-cloak

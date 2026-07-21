@@ -65,6 +65,21 @@ class Client extends Model
         return $this->hasMany(HistoriquePoints::class, 'client_id');
     }
 
+    public function devis()
+    {
+        return $this->hasMany(Devis::class);
+    }
+
+    public function factures()
+    {
+        return $this->hasMany(Facture::class);
+    }
+
+    public function commandes()
+    {
+        return $this->hasMany(Commande::class);
+    }
+
     public function getNomCompletAttribute(): string
     {
         if ($this->isEntreprise()) {
