@@ -109,6 +109,7 @@ class FactureController extends Controller
         ]);
         Paiement::create([
             'facture_id' => $facture->id,
+            'user_id' => Auth::id(),
             'montant' => $data['montant'],
             'mode_paiement' => $data['mode_paiement'],
             'reference' => $data['reference'] ?? null,
