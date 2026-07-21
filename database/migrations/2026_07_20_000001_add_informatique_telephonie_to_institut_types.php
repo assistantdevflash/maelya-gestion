@@ -12,15 +12,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Convertir la colonne 'type' de ENUM vers VARCHAR(50)
-        // Cela préserve toutes les données existantes
+        if (DB::getDriverName() === 'sqlite') {
+            // SQLite ne supporte pas MODIFY COLUMN, la colonne est déjà VARCHAR
+            return;
+        }
         DB::statement("ALTER TABLE instituts MODIFY COLUMN type VARCHAR(50) NOT NULL DEFAULT 'autre'");
     }
 
     public function down(): void
     {
-        // Restaurer l'ENUM avec les valeurs connues (attention : les types
-        // ajoutés depuis seront perdus côté contrainte mais pas en données)
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
         DB::statement("ALTER TABLE instituts MODIFY COLUMN type ENUM(
             'salon_coiffure','institut_beaute','centre_esthetique','boutique_mode',
             'auto_ecole','cabinet_medical','atelier_technique','centre_formation',

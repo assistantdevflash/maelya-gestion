@@ -42,6 +42,7 @@ return [
             'mes_transactions',
             'parrainage',
             'boutique',
+            'devis_factures',
         ],
 
         // Premium+ : tout + multi-etablissements (3 max, 10 employés max)

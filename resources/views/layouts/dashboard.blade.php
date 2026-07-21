@@ -423,6 +423,48 @@
                     </div>
                 </div>
 
+                {{-- Devis & Factures --}}
+                @if(auth()->user()->aFonctionnalite('devis_factures'))
+                @php $devisFacturesOpen = request()->routeIs('dashboard.devis.*') || request()->routeIs('dashboard.factures.*'); @endphp
+                <div x-data="{ open: {{ $devisFacturesOpen ? 'true' : 'false' }} }">
+                    <button @click="open = !open"
+                            class="sidebar-link w-full {{ $devisFacturesOpen ? 'active' : '' }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                        <span class="flex-1 text-left">Devis &amp; Factures</span>
+                        <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="open ? 'rotate-180' : ''"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div x-show="open" x-collapse class="pl-8 mt-1 space-y-1">
+                        <a href="{{ route('dashboard.devis.index') }}"
+                           class="sidebar-link text-sm {{ request()->routeIs('dashboard.devis.*') ? 'active' : '' }}">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/>
+                            </svg>
+                            <span class="flex-1">Devis</span>
+                        </a>
+                        <a href="{{ route('dashboard.factures.index') }}"
+                           class="sidebar-link text-sm {{ request()->routeIs('dashboard.factures.*') ? 'active' : '' }}">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+                            </svg>
+                            <span class="flex-1">Factures</span>
+                        </a>
+                    </div>
+                </div>
+                @else
+                <a href="{{ route('abonnement.upgrade', ['feature' => 'devis_factures']) }}" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                    <span class="flex-1 text-left">Devis &amp; Factures</span>
+                    <svg class="ml-auto w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1a5 5 0 00-5 5v4H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2v-9a2 2 0 00-2-2h-2V6a5 5 0 00-5-5zm-3 9V6a3 3 0 016 0v4H9z"/></svg>
+                </a>
+                @endif
+
                 @php $alertesStock = \App\Models\Produit::where('actif', true)->whereColumn('stock', '<=', 'seuil_alerte')->count(); @endphp
                 @php $stockOpen = request()->routeIs('dashboard.stock.*') || request()->routeIs('dashboard.produits.*') || request()->routeIs('dashboard.categories-produits.*') || request()->routeIs('dashboard.fournisseurs.*') || request()->routeIs('dashboard.bons-commande.*') || request()->routeIs('dashboard.inventaires.*'); @endphp
 
