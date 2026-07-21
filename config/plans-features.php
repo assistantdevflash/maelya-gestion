@@ -42,7 +42,6 @@ return [
             'mes_transactions',
             'parrainage',
             'boutique',
-            'devis_factures',
         ],
 
         // Premium+ : tout + multi-etablissements (3 max, 10 employés max)
@@ -255,6 +254,22 @@ return [
                 'Compatible scanners externes USB et Bluetooth',
                 'Ajout instantané au panier',
                 'Gain de temps considérable en caisse',
+            ],
+        ],
+
+        'devis_factures' => [
+            'titre' => 'Devis & Factures',
+            'plan_requis' => 'premium-plus',
+            'icon' => 'file-text',
+            'accroche' => 'Créez des devis et factures professionnels en quelques clics',
+            'description' => 'Générez des devis personnalisés pour vos clientes, transformez-les en factures, suivez les paiements et partagez-les par email ou WhatsApp avec un PDF joint.',
+            'avantages' => [
+                'Devis personnalisés avec vos prestations/produits',
+                'Transformation devis → facture en un clic',
+                'Suivi des paiements et relances automatiques',
+                'PDF généré automatiquement avec votre logo',
+                'Partage par email (PDF joint) et WhatsApp',
+                'Gestion des remises et TVA',
             ],
         ],
     ],
