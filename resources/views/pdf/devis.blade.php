@@ -1,49 +1,107 @@
 <!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>Devis {{ $devis->numero }}</title>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Devis {{ $devis->numero }}</title>
 <style>
-body{font-family:'DejaVu Sans',sans-serif;font-size:12px;color:#333;margin:40px}
-.header{border-bottom:3px solid #6F49B8;padding-bottom:20px;margin-bottom:30px;display:flex;justify-content:space-between;align-items:start}
-.header h1{font-size:24px;color:#6F49B8;margin:0}.header p{margin:4px 0;color:#555}
-.devis-badge{display:inline-block;padding:6px 16px;border-radius:4px;font-weight:bold;font-size:14px;color:#6F49B8;border:2px solid #6F49B8}
-.info{display:flex;gap:40px;margin-bottom:30px}.info>div{flex:1}
-.info h3{font-size:12px;text-transform:uppercase;color:#999;margin:0 0 8px}.info p{margin:2px 0;font-size:13px}
-table{width:100%;border-collapse:collapse;margin:20px 0}
-th{background:#6F49B8;color:#fff;padding:10px;font-size:11px;text-align:left;text-transform:uppercase}
-td{padding:10px;border-bottom:1px solid #eee}.t-right{text-align:right}.t-center{text-align:center}
-.totals{width:280px;margin-left:auto}.totals div{display:flex;justify-content:space-between;padding:6px 0;font-size:13px}.totals .total{border-top:2px solid #6F49B8;font-size:16px;font-weight:bold;padding-top:10px;margin-top:6px}
-.footer{position:fixed;bottom:40px;left:40px;right:40px;text-align:center;font-size:10px;color:#aaa;border-top:1px solid #eee;padding-top:12px}
-.notes{margin-top:30px;padding:12px;background:#f8f4ff;border-radius:6px;font-size:11px}
-</style></head><body>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DejaVu Sans', sans-serif; font-size: 11px; color: #1f2937; padding: 30px 35px; }
+    .header { display: table; width: 100%; margin-bottom: 24px; }
+    .header-left, .header-right { display: table-cell; vertical-align: top; }
+    .header-right { text-align: right; }
+    .institut-nom { font-size: 18px; font-weight: bold; color: #8B5CF6; margin-bottom: 4px; }
+    .institut-meta { font-size: 10px; color: #6b7280; line-height: 1.5; }
+    .badge { display: inline-block; background: #8B5CF6; color: #fff; padding: 6px 14px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .numero { font-size: 14px; font-weight: bold; color: #111827; }
+    .date-info { font-size: 10px; color: #6b7280; margin-top: 4px; }
+    .parties { display: table; width: 100%; margin-top: 16px; }
+    .partie { display: table-cell; width: 50%; vertical-align: top; padding-right: 12px; }
+    .partie:last-child { padding-right: 0; padding-left: 12px; }
+    .partie-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; font-weight: bold; margin-bottom: 4px; }
+    .partie-nom { font-size: 12px; font-weight: bold; color: #111827; margin-bottom: 2px; }
+    .partie-meta { font-size: 10px; color: #4b5563; line-height: 1.5; }
+    table.items { width: 100%; border-collapse: collapse; margin-top: 18px; }
+    table.items thead th { font-size: 10px; text-transform: uppercase; color: #6b7280; padding: 8px 6px; background: #f9fafb; border-bottom: 2px solid #e5e7eb; text-align: left; }
+    table.items thead th.num { text-align: center; width: 50px; }
+    table.items thead th.right { text-align: right; }
+    table.items tbody td { padding: 8px 6px; font-size: 11px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+    table.items tbody td.num { text-align: center; color: #9ca3af; }
+    table.items tbody td.right { text-align: right; }
+    .totals { width: 50%; margin-left: 50%; margin-top: 16px; border-collapse: collapse; }
+    .totals td { padding: 6px 8px; font-size: 11px; }
+    .totals td.label { color: #6b7280; text-align: right; }
+    .totals td.value { text-align: right; font-weight: bold; color: #111827; }
+    .totals tr.total td { background: #f5f3ff; border-top: 2px solid #8B5CF6; border-bottom: 2px solid #8B5CF6; font-size: 13px; padding: 10px 8px; color: #6d28d9; }
+    .infobox { margin-top: 16px; padding: 10px 14px; background: #f9fafb; border-left: 3px solid #8B5CF6; font-size: 10px; color: #4b5563; }
+    .mentions { margin-top: 28px; padding-top: 14px; border-top: 1px dashed #d1d5db; font-size: 8.5px; color: #6b7280; line-height: 1.6; }
+    .footer { position: fixed; bottom: 15px; left: 35px; right: 35px; text-align: center; font-size: 8.5px; color: #9ca3af; padding-top: 8px; border-top: 1px solid #e5e7eb; }
+</style>
+</head>
+<body>
 <div class="header">
-    <div>
-        <h1>{{ $institut->nom ?? config('app.name') }}</h1>
-        <p>{{ $institut->adresse ?? '' }}</p>
-        <p>Tél : {{ $institut->telephone ?? '' }} | Email : {{ $institut->email ?? '' }}</p>
-        @if($institut->rccm ?? null)<p>RCCM : {{ $institut->rccm }}</p>@endif
+    <div class="header-left">
+        <div class="institut-nom">{{ $institut->nom ?? config('app.name') }}</div>
+        <div class="institut-meta">
+            @if($institut->ville ?? null){{ $institut->ville }}<br>@endif
+            @if($institut->telephone ?? null)Tél : {{ $institut->telephone }}<br>@endif
+            @if($institut->email ?? null){{ $institut->email }}@endif
+        </div>
     </div>
-    <div><span class="devis-badge">DEVIS</span><p style="font-size:16px;font-weight:bold;margin-top:8px">{{ $devis->numero }}</p></div>
-</div>
-<div class="info">
-    <div><h3>Client</h3><p style="font-weight:bold">{{ $devis->client_nom_complet ?: ($devis->client->nom_complet ?? '—') }}</p>
-        @if($devis->client_telephone)<p>Tél : {{ $devis->client_telephone }}</p>@endif
-        @if($devis->client_adresse)<p>{{ $devis->client_adresse }}</p>@endif
+    <div class="header-right">
+        <div class="badge">Devis</div>
+        <div class="numero">N° {{ $devis->numero }}</div>
+        <div class="date-info">Créé le {{ $devis->date_creation->format('d/m/Y') }} · Valable jusqu'au {{ $devis->date_expiration->format('d/m/Y') }}</div>
     </div>
-    <div><h3>Dates</h3><p>Date : {{ $devis->date_creation->format('d/m/Y') }}</p><p>Expiration : {{ $devis->date_expiration->format('d/m/Y') }}</p></div>
 </div>
-<table>
-    <thead><tr><th>Désignation</th><th class="t-center w-60">Qté</th><th class="t-right w-100">Prix unitaire</th><th class="t-right w-100">Total</th></tr></thead>
+<div class="parties">
+    <div class="partie">
+        <div class="partie-label">Émetteur</div>
+        <div class="partie-nom">{{ $institut->nom ?? config('app.name') }}</div>
+        <div class="partie-meta">
+            @if($institut->adresse ?? null){{ $institut->adresse }}<br>@endif
+            @if($institut->ville ?? null){{ $institut->ville }}<br>@endif
+            @if($institut->telephone ?? null)Tél : {{ $institut->telephone }}<br>@endif
+            @if($institut->email ?? null){{ $institut->email }}@endif
+        </div>
+    </div>
+    <div class="partie">
+        <div class="partie-label">Client</div>
+        @php $client = $devis->client; @endphp
+        @if($client && $client->isEntreprise())
+            <div class="partie-nom">{{ $client->raison_sociale ?: $client->nom_complet }}</div>
+            <div class="partie-meta">
+                @if($client->numero_registre_commerce)RC : {{ $client->numero_registre_commerce }}<br>@endif
+                @if($devis->client_telephone)Tél : {{ $devis->client_telephone }}<br>@endif
+                @if($devis->client_email){{ $devis->client_email }}@endif
+            </div>
+        @else
+            <div class="partie-nom">{{ $devis->client_nom_complet ?: '—' }}</div>
+            <div class="partie-meta">
+                @if($devis->client_telephone){{ $devis->client_telephone }}<br>@endif
+                @if($devis->client_email){{ $devis->client_email }}@endif
+            </div>
+        @endif
+    </div>
+</div>
+<table class="items">
+    <thead><tr><th>Désignation</th><th class="num">Qté</th><th class="right">Prix unitaire</th><th class="right">Total</th></tr></thead>
     <tbody>@foreach($devis->items as $item)<tr>
-        <td>{{ $item->designation }}</td><td class="t-center">{{ $item->quantite }}</td>
-        <td class="t-right">{{ number_format($item->prix_unitaire, 0, ',', ' ') }} F</td>
-        <td class="t-right"><strong>{{ number_format($item->total_ligne, 0, ',', ' ') }} F</strong></td>
+        <td>{{ $item->designation }}</td><td class="num">{{ $item->quantite }}</td>
+        <td class="right">{{ number_format($item->prix_unitaire, 0, ',', ' ') }} F</td>
+        <td class="right"><strong>{{ number_format($item->total_ligne, 0, ',', ' ') }} F</strong></td>
     </tr>@endforeach</tbody>
 </table>
-<div class="totals">
-    <div><span>Total HT</span><span>{{ number_format($devis->total_ht, 0, ',', ' ') }} F</span></div>
-    @if($devis->remise_globale > 0)<div><span>Remise</span><span>−{{ number_format($devis->remise_globale, 0, ',', ' ') }} F</span></div>@endif
-    @if($devis->tva_taux > 0)<div><span>TVA {{ $devis->tva_taux }}%</span><span>{{ number_format($devis->total_tva, 0, ',', ' ') }} F</span></div>@endif
-    <div class="total"><span>Total TTC</span><span>{{ number_format($devis->total_ttc, 0, ',', ' ') }} F</span></div>
+<table class="totals">
+    <tr><td class="label">Total HT</td><td class="value">{{ number_format($devis->total_ht, 0, ',', ' ') }} F</td></tr>
+    @if($devis->remise_globale > 0)<tr><td class="label">Remise</td><td class="value" style="color:#dc2626;">−{{ number_format($devis->remise_globale, 0, ',', ' ') }} F</td></tr>@endif
+    @if($devis->tva_applicable && $devis->tva_taux > 0)<tr><td class="label">TVA {{ $devis->tva_taux }}%</td><td class="value">{{ number_format($devis->total_tva, 0, ',', ' ') }} F</td></tr>@endif
+    <tr class="total"><td class="label">Total TTC</td><td class="value">{{ number_format($devis->total_ttc, 0, ',', ' ') }} F</td></tr>
+</table>
+@if($devis->notes)<div class="infobox"><strong>Notes :</strong> {{ $devis->notes }}</div>@endif
+<div class="mentions">
+    <p>Ce devis est valable jusqu'au {{ $devis->date_expiration->format('d/m/Y') }}.</p>
+    <p>Pour toute question, contactez-nous au {{ $institut->telephone ?? '—' }}.</p>
 </div>
-@if($devis->notes)<div class="notes"><strong>Notes :</strong> {{ $devis->notes }}</div>@endif
 <div class="footer">{{ config('app.name') }} — Devis généré le {{ now()->format('d/m/Y à H:i') }}</div>
-</body></html>
+</body>
+</html>

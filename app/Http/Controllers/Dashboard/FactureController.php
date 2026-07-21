@@ -116,7 +116,19 @@ class FactureController extends Controller
             'date_paiement' => $data['date_paiement'],
         ]);
         $facture->update(['montant_paye' => $facture->paiements()->sum('montant')]);
-        if ($facture->fresh()->estPayee) $facture->update(['statut' => 'payee']);
+
+        // Créer une Vente pour impacter immédiatement le chiffre d'affaires
+        $vente = \App\Models\Vente::create([
+            'institut_id' => $facture->institut_id,
+            'client_id' => $facture->client_id,
+            'user_id' => Auth::id(),
+            'total' => $data['montant'],
+            'montant_paye' => $data['montant'],
+            'mode_paiement' => $data['mode_paiement'],
+            'statut' => 'validee',
+        ]);
+
+        if ($facture->fresh()->estPayee) $facture->update(['statut' => 'payee', 'vente_id' => $vente->id]);
         elseif ($facture->montant_paye > 0 && !$facture->fresh()->estPayee) $facture->update(['statut' => 'partiellement_payee']);
         return back()->with('success','Paiement enregistré.');
     }
