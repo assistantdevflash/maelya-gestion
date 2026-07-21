@@ -49,7 +49,7 @@
                 </tr></thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
                     @forelse($devis as $d)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50">
+                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 cursor-pointer" onclick="window.location='{{ route('dashboard.devis.show', ['devis' => $d->id]) }}'">
                         <td class="px-4 py-3 font-mono text-xs font-semibold text-primary-600">{{ $d->numero }}</td>
                         <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ $d->client_nom_complet ?: ($d->client->nom_complet ?? '—') }}</td>
                         <td class="px-4 py-3 text-gray-500 hidden sm:table-cell">{{ $d->date_creation->format('d/m/Y') }}</td>
@@ -92,7 +92,7 @@
                 </tr></thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
                     @forelse($factures as $f)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50">
+                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 cursor-pointer" onclick="window.location='{{ route('dashboard.factures.show', ['facture' => $f->id]) }}'">
                         <td class="px-4 py-3 font-mono text-xs font-semibold text-primary-600">{{ $f->numero }}</td>
                         <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ $f->client_nom_complet ?: ($f->client->nom_complet ?? '—') }}</td>
                         <td class="px-4 py-3 text-gray-500 hidden sm:table-cell">{{ $f->date_echeance->format('d/m/Y') }}</td>

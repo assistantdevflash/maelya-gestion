@@ -68,6 +68,7 @@ class FactureController extends Controller
         $lignes = json_decode($data['lignes'], true);
         if (empty($lignes)) return back()->withInput()->withErrors(['lignes' => 'Ajoutez au moins une ligne.']);
         [$sousTotal, $remise, $totalHT, $tva, $totalTTC, $lignes] = DevisService::calculerTotaux($lignes, $data);
+        if ($totalTTC <= 0) return back()->withInput()->withErrors(['lignes' => 'Le montant total doit être supérieur à 0 F.']);
         $clientId = $data['client_id'] ?? null;
         if (!$clientId && !empty($data['client_telephone'])) {
             $client = Client::firstOrCreate(['telephone' => $data['client_telephone'], 'institut_id' => session('current_institut_id', Auth::user()->institut_id)], ['prenom' => $data['client_prenom'] ?? '', 'nom' => $data['client_nom'] ?? '']);

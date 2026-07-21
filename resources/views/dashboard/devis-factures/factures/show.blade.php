@@ -1,60 +1,123 @@
 <x-dashboard-layout>
-<div class="max-w-4xl mx-auto space-y-6">
-    @php $factureId = $facture->id; @endphp
-    <div class="flex items-center justify-between">
-        <div class="flex items-center gap-4">
-            <a href="{{ route('dashboard.factures.index') }}" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition">←</a>
-            <div><h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $facture->numero }}</h1>
-                <div class="mt-1">@include('dashboard.devis-factures.partials.statut-badge', ['statut' => $facture->statut, 'type' => 'facture'])</div>
+<div class="max-w-5xl mx-auto space-y-6">
+    @php
+        $factureId = $facture->id;
+        $client = $facture->client;
+    @endphp
+
+    {{-- ═══ EN-TÊTE ═══ --}}
+    <div class="flex flex-col gap-5">
+        <div class="flex items-center gap-3">
+            <a href="{{ route('dashboard.factures.index') }}" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            </a>
+            <div>
+                <div class="flex items-center gap-3">
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ $facture->numero }}</h1>
+                    @include('dashboard.devis-factures.partials.statut-badge', ['statut' => $facture->statut, 'type' => 'facture'])
+                </div>
+                <p class="text-sm text-gray-500 mt-0.5">Émise le {{ $facture->date_emission->format('d/m/Y') }} · Échéance {{ $facture->date_echeance->format('d/m/Y') }}</p>
             </div>
         </div>
-        <div class="flex gap-2">
+
+        {{-- ═══ BARRE D'ACTIONS ═══ --}}
+        <div class="flex flex-wrap items-center gap-2">
             @if(!$facture->estPayee && $facture->statut !== 'annulee')
-            <button onclick="document.getElementById('modal-paiement').classList.remove('hidden')" class="btn-primary text-sm">💰 Paiement</button>
-            <form method="POST" action="{{ route('dashboard.factures.marquer-payee', ['facture' => $factureId]) }}" class="inline" onsubmit="return confirm('Marquer comme entièrement payée ?')">
-                @csrf<button class="btn-outlined text-sm">✓ Marquer payée</button>
+            <button onclick="document.getElementById('modal-paiement').classList.remove('hidden')"
+               class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-sm shadow-emerald-500/20 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Enregistrer un paiement
+            </button>
+            <form method="POST" action="{{ route('dashboard.factures.marquer-payee', ['facture' => $factureId]) }}" class="inline">
+                @csrf
+                <button onclick="return confirm('Marquer comme entièrement payée ?')"
+                   class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Marquer payée
+                </button>
             </form>
             @endif
-            <a href="{{ route('dashboard.factures.pdf', ['facture' => $factureId]) }}" target="_blank" class="btn-outlined text-sm">📄 PDF</a>
+
+            <span class="w-px h-8 bg-gray-200 dark:bg-slate-700 mx-1 hidden sm:block"></span>
+
+            <a href="{{ route('dashboard.factures.pdf', ['facture' => $factureId]) }}" target="_blank"
+               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                PDF
+            </a>
+
             @if($facture->statut !== 'annulee')
-            <form method="POST" action="{{ route('dashboard.factures.annuler', ['facture' => $factureId]) }}" class="inline" onsubmit="return confirm('Annuler cette facture ?')">
-                @csrf<button class="btn-outlined text-sm text-red-600 border-red-200 hover:bg-red-50">Annuler</button>
-            </form>
+            <button onclick="openModal('modal-annuler')"
+               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-700/30 hover:bg-red-100 dark:hover:bg-red-900/40 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                Annuler
+            </button>
             @endif
         </div>
     </div>
 
-    {{-- Infos --}}
+    {{-- ═══ INFOS CLIENT ═══ --}}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="card">
-            <div class="card-header"><h2 class="font-semibold">Client</h2></div>
-            <div class="card-body text-sm space-y-1">
-                <p class="font-bold text-gray-900 dark:text-white">{{ $facture->client_nom_complet ?: ($facture->client->nom_complet ?? '—') }}</p>
-                @if($facture->client_telephone)<p>📞 {{ $facture->client_telephone }}</p>@endif
-                @if($facture->client_email)<p>✉️ {{ $facture->client_email }}</p>@endif
-                @if($facture->client_adresse)<p class="text-gray-500">{{ $facture->client_adresse }}</p>@endif
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-header"><h2 class="font-semibold">Dates</h2></div>
-            <div class="card-body text-sm space-y-1">
-                <p><span class="text-gray-500">Émise le :</span> {{ $facture->date_emission->format('d/m/Y') }}</p>
-                <p><span class="text-gray-500">Échéance :</span> {{ $facture->date_echeance->format('d/m/Y') }}</p>
-                @if($facture->statut === 'payee')
-                <p><span class="text-gray-500">Payée le :</span> {{ $facture->date_paiement->format('d/m/Y') }}</p>
-                @endif
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-header"><h2 class="font-semibold">Paiement</h2></div>
-            <div class="card-body text-sm space-y-1">
-                <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2.5 mb-2">
-                    <div class="bg-emerald-500 h-2.5 rounded-full" style="width: {{ $facture->total_ttc > 0 ? min(100, ($facture->montant_paye / $facture->total_ttc) * 100) : 0 }}%"></div>
+        <div class="md:col-span-2 card overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-slate-700">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-100 to-secondary-100 dark:from-primary-900/30 dark:to-secondary-900/30 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Client</p>
+                        @if($client)
+                        <a href="{{ route('dashboard.clients.show', $client) }}" class="text-lg font-bold text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition">
+                            {{ $facture->client_nom_complet ?: $client->nom_complet }}
+                        </a>
+                        @else
+                        <p class="text-lg font-bold text-gray-900 dark:text-white">{{ $facture->client_nom_complet ?: '—' }}</p>
+                        @endif
+                    </div>
                 </div>
-                <p class="text-lg font-bold text-gray-900 dark:text-white">{{ number_format($facture->montant_paye, 0, ',', ' ') }} / {{ number_format($facture->total_ttc, 0, ',', ' ') }} F</p>
-                @if($facture->resteAPayer > 0)
-                <p class="text-red-500 font-semibold">Reste à payer : {{ number_format($facture->resteAPayer, 0, ',', ' ') }} F</p>
+                @if($client)
+                <a href="{{ route('dashboard.clients.show', $client) }}" class="text-xs text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
+                    Voir la fiche
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
                 @endif
+            </div>
+            <div class="p-5 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                @if($facture->client_telephone)
+                <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                    <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                    <span>{{ $facture->client_telephone }}</span>
+                </div>
+                @endif
+                @if($facture->client_email)
+                <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                    <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    <span>{{ $facture->client_email }}</span>
+                </div>
+                @endif
+                @if($facture->client_adresse)
+                <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400 col-span-full">
+                    <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span>{{ $facture->client_adresse }}</span>
+                </div>
+                @endif
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-700">
+                <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Dates & Paiement</p>
+            </div>
+            <div class="p-5 space-y-3 text-sm">
+                <div class="flex justify-between"><span class="text-gray-500">Émission</span><span class="font-semibold text-gray-900 dark:text-white">{{ $facture->date_emission->format('d/m/Y') }}</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Échéance</span><span class="font-semibold {{ $facture->date_echeance->isPast() && !$facture->estPayee ? 'text-red-500' : 'text-gray-900 dark:text-white' }}">{{ $facture->date_echeance->format('d/m/Y') }}</span></div>
+                <div class="pt-3 border-t border-gray-100 dark:border-slate-700">
+                    <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2 mb-2">
+                        <div class="bg-emerald-500 h-2 rounded-full" style="width: {{ $facture->total_ttc > 0 ? min(100, ($facture->montant_paye / $facture->total_ttc) * 100) : 0 }}%"></div>
+                    </div>
+                    <p class="font-bold text-gray-900 dark:text-white">{{ number_format($facture->montant_paye, 0, ',', ' ') }} / {{ number_format($facture->total_ttc, 0, ',', ' ') }} F</p>
+                    @if($facture->resteAPayer > 0)<p class="text-red-500 font-semibold text-xs mt-0.5">Reste : {{ number_format($facture->resteAPayer, 0, ',', ' ') }} F</p>@endif
+                </div>
             </div>
         </div>
     </div>
@@ -153,4 +216,13 @@
         </form>
     </div>
 </div>
+
+{{-- ═══ MODALS ═══ --}}
+<x-modal-confirm id="modal-annuler" title="Annuler cette facture ?"
+    message="La facture &laquo;&nbsp;{{ $facture->numero }}&nbsp;&raquo; sera marquée comme annulée."
+    action="{{ route('dashboard.factures.annuler', ['facture' => $factureId]) }}" method="POST" confirm="Annuler la facture" danger="true" />
+
+@push('scripts')
+<script>function openModal(id){document.getElementById(id).classList.remove('hidden');}</script>
+@endpush
 </x-dashboard-layout>
