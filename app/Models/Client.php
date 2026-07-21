@@ -67,7 +67,10 @@ class Client extends Model
 
     public function getNomCompletAttribute(): string
     {
-        return $this->prenom . ' ' . $this->nom;
+        if ($this->isEntreprise()) {
+            return $this->raison_sociale ?: ($this->prenom . ' ' . $this->nom);
+        }
+        return trim($this->prenom . ' ' . $this->nom);
     }
 
     public function isEntreprise(): bool

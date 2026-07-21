@@ -39,7 +39,7 @@ class DevisController extends Controller
                 'id'        => $c->id,
                 'prenom'    => $c->prenom,
                 'nom'       => $c->nom,
-                'nom_affichage' => $c->nom_complet,
+                'nom_affichage' => $c->nom_affichage,
                 'telephone' => $c->telephone,
                 'email'     => $c->email,
                 'adresse'   => $c->adresse,
