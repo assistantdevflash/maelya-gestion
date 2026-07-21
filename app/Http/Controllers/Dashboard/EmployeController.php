@@ -17,13 +17,14 @@ class EmployeController extends Controller
         $institutId = $user->currentInstitutId();
 
         $employes = User::where('institut_id', $institutId)
-            ->whereIn('role', ['employe', 'gerant'])
+            ->whereIn('role', ['employe', 'gerant', 'admin'])
+            ->where('id', '!=', $user->id) // ne pas lister le propriétaire lui-même
             ->orderBy('prenom')
             ->paginate(20);
 
         $abonnement  = $user->abonnementActif;
         $maxEmployes = $abonnement?->plan?->max_employes; // null = illimité
-        $nbEmployes  = User::where('institut_id', $institutId)->whereIn('role', ['employe', 'gerant'])->count();
+        $nbEmployes  = User::where('institut_id', $institutId)->whereIn('role', ['employe', 'gerant', 'admin'])->where('id', '!=', $user->id)->count();
         $limitAtteinte = $maxEmployes !== null && $nbEmployes >= $maxEmployes;
 
         return view('dashboard.employes.index', compact('employes', 'maxEmployes', 'nbEmployes', 'limitAtteinte'));
@@ -50,7 +51,7 @@ class EmployeController extends Controller
         $institutId = $user->currentInstitutId();
         $abonnement = $user->abonnementActif;
         if ($abonnement && $abonnement->plan && $abonnement->plan->max_employes !== null) {
-            $nbEmployes = User::where('institut_id', $institutId)->whereIn('role', ['employe', 'gerant'])->count();
+            $nbEmployes = User::where('institut_id', $institutId)->whereIn('role', ['employe', 'gerant', 'admin'])->where('id', '!=', $user->id)->count();
             if ($nbEmployes >= $abonnement->plan->max_employes) {
                 return back()->with('error', "Limite atteinte : votre plan autorise {$abonnement->plan->max_employes} employé(s). Passez au plan supérieur.");
             }
