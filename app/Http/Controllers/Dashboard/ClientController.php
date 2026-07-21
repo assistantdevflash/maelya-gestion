@@ -121,34 +121,38 @@ class ClientController extends Controller
     }
 
     /**
-     * Création rapide d'un client (AJAX) — utilisé par Caisse et Devis.
+     * Création rapide d'un client (AJAX) — utilisé par Caisse et Devis/Factures.
      */
     public function quickStore(Request $request)
     {
         $data = $request->validate([
-            'prenom'    => ['required', 'string', 'max:50'],
-            'nom'       => ['required', 'string', 'max:50'],
-            'telephone' => ['required', 'string', 'max:30'],
-            'email'     => ['nullable', 'email', 'max:255'],
-            'adresse'   => ['nullable', 'string', 'max:255'],
+            'type_client'           => ['required', 'in:personne_physique,entreprise'],
+            'prenom'                => ['required_if:type_client,personne_physique', 'nullable', 'string', 'max:50'],
+            'nom'                   => ['required_if:type_client,personne_physique', 'nullable', 'string', 'max:50'],
+            'raison_sociale'        => ['required_if:type_client,entreprise', 'nullable', 'string', 'max:255'],
+            'telephone'             => ['required', 'string', 'max:30'],
+            'email'                 => ['nullable', 'email', 'max:255'],
+            'date_naissance'        => ['nullable', 'string', 'max:5'],
+            'notes'                 => ['nullable', 'string', 'max:1000'],
+            'adresse'               => ['nullable', 'string', 'max:255'],
+            'piece_identite'        => ['nullable', 'string', 'max:100'],
         ]);
 
         $data['institut_id'] = $this->institutId();
-        $data['type_client'] = 'personne_physique';
 
         $client = Client::create($data);
         $client->loadCount('ventes');
 
         return response()->json([
-            'id'        => $client->id,
-            'prenom'    => $client->prenom,
-            'nom'       => $client->nom,
-            'nom_affichage' => $client->nom_complet,
-            'telephone' => $client->telephone,
-            'email'     => $client->email,
-            'adresse'   => $client->adresse,
-            'initiale'  => strtoupper(substr($client->prenom ?: $client->nom, 0, 1)),
-            'search'    => Str::lower($client->nom . ' ' . $client->prenom . ' ' . $client->telephone),
+            'id'             => $client->id,
+            'prenom'         => $client->prenom,
+            'nom'            => $client->nom,
+            'nom_affichage'  => $client->nom_complet,
+            'telephone'      => $client->telephone,
+            'email'          => $client->email,
+            'adresse'        => $client->adresse,
+            'initiale'       => strtoupper(substr($client->nom_complet, 0, 1)),
+            'search'         => Str::lower(($client->raison_sociale ?? '') . ' ' . $client->nom . ' ' . $client->prenom . ' ' . $client->telephone),
         ]);
     }
 
