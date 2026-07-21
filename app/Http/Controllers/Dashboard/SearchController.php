@@ -31,11 +31,12 @@ class SearchController extends Controller
             ->where(function ($sql) use ($q) {
                 $sql->where('prenom', 'like', "%{$q}%")
                     ->orWhere('nom', 'like', "%{$q}%")
+                    ->orWhere('raison_sociale', 'like', "%{$q}%")
                     ->orWhere('telephone', 'like', "%{$q}%")
                     ->orWhere('email', 'like', "%{$q}%");
             })
             ->limit($limit)
-            ->get(['id', 'prenom', 'nom', 'telephone', 'email'])
+            ->get(['id', 'prenom', 'nom', 'type_client', 'raison_sociale', 'telephone', 'email'])
             ->map(fn ($c) => [
                 'id'         => $c->id,
                 'label'      => $c->nom_complet,
@@ -50,7 +51,7 @@ class SearchController extends Controller
                 $sql->where('numero', 'like', "%{$q}%")
                     ->orWhere('numero_facture', 'like', "%{$q}%");
             })
-            ->with('client:id,prenom,nom')
+            ->with('client:id,prenom,nom,type_client,raison_sociale')
             ->latest()
             ->limit($limit)
             ->get(['id', 'numero', 'numero_facture', 'total', 'client_id', 'created_at'])
@@ -67,10 +68,11 @@ class SearchController extends Controller
             ->where(function ($sql) use ($q) {
                 $sql->whereHas('client', function ($q2) use ($q) {
                     $q2->where('prenom', 'like', "%{$q}%")
-                       ->orWhere('nom', 'like', "%{$q}%");
+                       ->orWhere('nom', 'like', "%{$q}%")
+                       ->orWhere('raison_sociale', 'like', "%{$q}%");
                 });
             })
-            ->with('client:id,prenom,nom')
+            ->with('client:id,prenom,nom,type_client,raison_sociale')
             ->latest('debut_le')
             ->limit($limit)
             ->get(['id', 'client_id', 'debut_le', 'statut'])
@@ -121,7 +123,7 @@ class SearchController extends Controller
                     ->orWhere('client_prenom', 'like', "%{$q}%")
                     ->orWhere('client_nom', 'like', "%{$q}%");
             })
-            ->with('client:id,prenom,nom')
+            ->with('client:id,prenom,nom,type_client,raison_sociale')
             ->latest()
             ->limit($limit)
             ->get(['id', 'numero', 'total_ttc', 'statut', 'client_id', 'client_prenom', 'client_nom', 'created_at'])
@@ -140,7 +142,7 @@ class SearchController extends Controller
                     ->orWhere('client_prenom', 'like', "%{$q}%")
                     ->orWhere('client_nom', 'like', "%{$q}%");
             })
-            ->with('client:id,prenom,nom')
+            ->with('client:id,prenom,nom,type_client,raison_sociale')
             ->latest()
             ->limit($limit)
             ->get(['id', 'numero', 'total_ttc', 'statut', 'client_id', 'client_prenom', 'client_nom', 'created_at'])
@@ -160,7 +162,7 @@ class SearchController extends Controller
                     ->orWhere('client_nom', 'like', "%{$q}%")
                     ->orWhere('client_telephone', 'like', "%{$q}%");
             })
-            ->with('client:id,prenom,nom')
+            ->with('client:id,prenom,nom,type_client,raison_sociale')
             ->latest()
             ->limit($limit)
             ->get(['id', 'numero', 'total', 'statut', 'client_id', 'created_at'])
