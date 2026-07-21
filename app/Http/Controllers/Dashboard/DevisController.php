@@ -46,7 +46,17 @@ class DevisController extends Controller
                 'initiale'  => strtoupper(substr($c->prenom ?: $c->nom, 0, 1)),
                 'search'    => strtolower($c->nom . ' ' . $c->prenom . ' ' . $c->telephone),
             ]);
-        return view('dashboard.devis-factures.devis.create', compact('allClients'));
+
+        // Catalogue : prestations + produits existants
+        $prestations = \App\Models\Prestation::where('institut_id', $institutId)->where('actif', true)
+            ->orderBy('nom')->get(['id', 'nom', 'prix'])
+            ->map(fn($p) => ['id' => 'p_'.$p->id, 'type' => 'prestation', 'designation' => $p->nom, 'prix' => $p->prix, 'search' => strtolower($p->nom)]);
+        $produits = \App\Models\Produit::where('institut_id', $institutId)->where('actif', true)
+            ->orderBy('nom')->get(['id', 'nom', 'prix_vente'])
+            ->map(fn($p) => ['id' => 'prod_'.$p->id, 'type' => 'produit', 'designation' => $p->nom, 'prix' => $p->prix_vente, 'search' => strtolower($p->nom)]);
+        $catalogue = $prestations->concat($produits)->values();
+
+        return view('dashboard.devis-factures.devis.create', compact('allClients', 'catalogue'));
     }
 
     public function store(Request $request)
@@ -105,7 +115,19 @@ class DevisController extends Controller
     }
 
     public function show(Devis $devis) { $devis->load(['items','client','createur','facture']); return view('dashboard.devis-factures.devis.show', compact('devis')); }
-    public function edit(Devis $devis) { $devis->load('items'); return view('dashboard.devis-factures.devis.edit', compact('devis')); }
+    public function edit(Devis $devis)
+    {
+        $devis->load('items');
+        $institutId = session('current_institut_id', Auth::user()->institut_id);
+        $prestations = \App\Models\Prestation::where('institut_id', $institutId)->where('actif', true)
+            ->orderBy('nom')->get(['id', 'nom', 'prix'])
+            ->map(fn($p) => ['id' => 'p_'.$p->id, 'type' => 'prestation', 'designation' => $p->nom, 'prix' => $p->prix, 'search' => strtolower($p->nom)]);
+        $produits = \App\Models\Produit::where('institut_id', $institutId)->where('actif', true)
+            ->orderBy('nom')->get(['id', 'nom', 'prix_vente'])
+            ->map(fn($p) => ['id' => 'prod_'.$p->id, 'type' => 'produit', 'designation' => $p->nom, 'prix' => $p->prix_vente, 'search' => strtolower($p->nom)]);
+        $catalogue = $prestations->concat($produits)->values();
+        return view('dashboard.devis-factures.devis.edit', compact('devis', 'catalogue'));
+    }
 
     public function update(Request $request, Devis $devis)
     {

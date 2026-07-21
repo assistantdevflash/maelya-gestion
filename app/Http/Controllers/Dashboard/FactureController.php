@@ -45,11 +45,21 @@ class FactureController extends Controller
                 'initiale'  => strtoupper(substr($c->prenom ?: $c->nom, 0, 1)),
                 'search'    => strtolower($c->nom . ' ' . $c->prenom . ' ' . $c->telephone),
             ]);
+
+        // Catalogue : prestations + produits existants
+        $prestations = \App\Models\Prestation::where('institut_id', $institutId)->where('actif', true)
+            ->orderBy('nom')->get(['id', 'nom', 'prix'])
+            ->map(fn($p) => ['id' => 'p_'.$p->id, 'type' => 'prestation', 'designation' => $p->nom, 'prix' => $p->prix, 'search' => strtolower($p->nom)]);
+        $produits = \App\Models\Produit::where('institut_id', $institutId)->where('actif', true)
+            ->orderBy('nom')->get(['id', 'nom', 'prix_vente'])
+            ->map(fn($p) => ['id' => 'prod_'.$p->id, 'type' => 'produit', 'designation' => $p->nom, 'prix' => $p->prix_vente, 'search' => strtolower($p->nom)]);
+        $catalogue = $prestations->concat($produits)->values();
+
         $devis = null;
         if ($request->filled('devis_id')) {
             $devis = \App\Models\Devis::with('items')->find($request->devis_id);
         }
-        return view('dashboard.devis-factures.factures.create', compact('allClients','devis'));
+        return view('dashboard.devis-factures.factures.create', compact('allClients','devis','catalogue'));
     }
 
     public function store(Request $request)

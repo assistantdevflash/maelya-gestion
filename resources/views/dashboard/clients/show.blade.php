@@ -531,7 +531,7 @@
                          ])->values()->all()),
                          current: 0,
                          open: false,
-                         openAt(i) { 
+                         openAt(i) {
                              // Si c'est un PDF, ouvrir dans un nouvel onglet au lieu du lightbox
                              if (this.photos[i].isPdf) {
                                  window.open(this.photos[i].url, '_blank');
@@ -540,12 +540,12 @@
                                  this.open = true;
                              }
                          },
-                         prev() { 
+                         prev() {
                              do {
                                  this.current = (this.current - 1 + this.photos.length) % this.photos.length;
                              } while (this.photos[this.current].isPdf && this.photos.some(p => !p.isPdf));
                          },
-                         next() { 
+                         next() {
                              do {
                                  this.current = (this.current + 1) % this.photos.length;
                              } while (this.photos[this.current].isPdf && this.photos.some(p => !p.isPdf));
@@ -860,26 +860,26 @@
                     <form method="POST" action="{{ route('dashboard.clients.update', $client) }}" class="space-y-4" x-data="{ typeClient: '{{ old('type_client', $client->type_client ?? 'personne_physique') }}' }">
                         @csrf
                         @method('PUT')
-                        
+
                         {{-- Type de client --}}
                         <div class="form-group mb-0">
                             <label class="form-label">Type de client *</label>
                             <div class="grid grid-cols-2 gap-2">
                                 <label class="flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition"
                                        :class="typeClient === 'personne_physique' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'">
-                                    <input type="radio" name="type_client" value="personne_physique" class="text-primary-600" 
+                                    <input type="radio" name="type_client" value="personne_physique" class="text-primary-600"
                                            x-model="typeClient">
                                     <span class="text-sm font-medium">👤 Personne physique</span>
                                 </label>
                                 <label class="flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition"
                                        :class="typeClient === 'entreprise' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'">
-                                    <input type="radio" name="type_client" value="entreprise" class="text-primary-600" 
+                                    <input type="radio" name="type_client" value="entreprise" class="text-primary-600"
                                            x-model="typeClient">
                                     <span class="text-sm font-medium">🏢 Entreprise</span>
                                 </label>
                             </div>
                         </div>
-                        
+
                         <div class="grid grid-cols-2 gap-3">
                             {{-- Champs pour personne physique --}}
                             <template x-if="typeClient === 'personne_physique'">
@@ -933,7 +933,7 @@
                                     </div>
                                 </div>
                             </template>
-                            
+
                             {{-- Champs pour entreprise --}}
                             <template x-if="typeClient === 'entreprise'">
                                 <div class="col-span-2 space-y-3">
@@ -965,7 +965,7 @@
                                     </div>
                                 </div>
                             </template>
-                            
+
                             {{-- Champs communs --}}
                             <div class="form-group mb-0">
                                 <label class="form-label">Téléphone *</label>
@@ -977,14 +977,14 @@
                                 <input type="email" name="email" maxlength="255" class="form-input"
                                        value="{{ old('email', $client->email) }}">
                             </div>
-                            
+
                             <div class="col-span-2 form-group mb-0">
                                 <label class="form-label">Notes</label>
                                 <textarea name="notes" rows="3" class="form-input resize-none"
                                           placeholder="Informations complémentaires, allergies, préférences...">{{ old('notes', $client->notes) }}</textarea>
                                 <p class="text-xs text-gray-500 mt-1">Vous pouvez utiliser le HTML basique (gras, italique, listes...)</p>
                             </div>
-                            
+
                             {{-- Informations supplémentaires (collapsible) - uniquement pour personne physique --}}
                             <template x-if="typeClient === 'personne_physique'">
                                 <div class="col-span-2" x-data="{ showExtraShowEdit: false }">
@@ -1010,7 +1010,7 @@
                                 </div>
                             </template>
                         </div>
-                        
+
                         {{-- Script pour synchroniser la date de naissance --}}
                         <script>
                         (function() {
@@ -1028,7 +1028,7 @@
                             });
                         })();
                         </script>
-                        
+
                         <div class="flex gap-3 pt-1">
                             <button type="button" @click="show = false" class="btn btn-outline flex-1 justify-center">Annuler</button>
                             <button type="submit" class="btn-primary flex-1 justify-center">Enregistrer</button>
