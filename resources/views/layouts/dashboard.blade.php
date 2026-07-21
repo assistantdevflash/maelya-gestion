@@ -471,7 +471,7 @@
                 @if(!$featureHas('stock') && !$featureHas('produits'))
                     {{-- Bloc verrouillé : redirige directement vers la page d'upgrade --}}
                     <a href="{{ route('abonnement.upgrade', ['feature' => 'stock']) }}" class="sidebar-link">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                             <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
                         </svg>
@@ -482,27 +482,21 @@
                 <div x-data="{ open: {{ $stockOpen ? 'true' : 'false' }} }">
                     <button @click="open = !open"
                             class="sidebar-link w-full {{ $stockOpen ? 'active' : '' }}">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                             <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
                         </svg>
-                        <span class="flex-1">Gestion stocks</span>
+                        <span class="flex-1 text-left">Gestion stocks</span>
                         @if($alertesStock > 0)
                             <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold">{{ $alertesStock }}</span>
                         @endif
-                        <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                        <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="open ? 'rotate-180' : ''"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
                     </button>
 
-                    <div x-show="open"
-                         x-transition:enter="transition-all duration-200 ease-out"
-                         x-transition:enter-start="opacity-0 -translate-y-1"
-                         x-transition:enter-end="opacity-100 translate-y-0"
-                         x-transition:leave="transition-all duration-150 ease-in"
-                         x-transition:leave-start="opacity-100 translate-y-0"
-                         x-transition:leave-end="opacity-0 -translate-y-1"
-                         class="pl-8 mt-1 space-y-1">
+                    <div x-show="open" x-collapse class="pl-8 mt-1 space-y-1">
                         @if(auth()->user()->isAdmin())
                         <a href="{{ route('dashboard.produits.index') }}"
                            class="sidebar-link text-sm {{ request()->routeIs('dashboard.produits.*') || request()->routeIs('dashboard.categories-produits.*') ? 'active' : '' }}">
