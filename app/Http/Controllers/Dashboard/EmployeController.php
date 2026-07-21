@@ -42,7 +42,7 @@ class EmployeController extends Controller
             'email' => ['required', 'email', 'unique:users,email'],
             'telephone' => ['nullable', 'string', 'max:30'],
             'password' => ['required', 'confirmed', Rules\Password::min(8)],
-            'role' => ['nullable', 'in:employe,gerant'],
+            'role' => ['nullable', 'in:employe,gerant,admin'],
         ]);
 
         // Vérifier la limite d'employés selon le plan (employés + gérants)
@@ -84,7 +84,7 @@ class EmployeController extends Controller
             'nom_famille' => ['required', 'string', 'max:50'],
             'email' => ['required', 'email', 'unique:users,email,' . $employe->id],
             'telephone' => ['nullable', 'string', 'max:30'],
-            'role' => ['nullable', 'in:employe,gerant'],
+            'role' => ['nullable', 'in:employe,gerant,admin'],
         ]);
 
         $employe->update([
