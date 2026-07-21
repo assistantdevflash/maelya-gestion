@@ -124,7 +124,7 @@ class SearchController extends Controller
             ->with('client:id,prenom,nom')
             ->latest()
             ->limit($limit)
-            ->get(['id', 'numero', 'total_ttc', 'statut', 'client_id', 'created_at'])
+            ->get(['id', 'numero', 'total_ttc', 'statut', 'client_id', 'client_prenom', 'client_nom', 'created_at'])
             ->map(fn ($d) => [
                 'id'         => $d->id,
                 'label'      => $d->numero . ' — ' . number_format($d->total_ttc, 0, ',', ' ') . ' F',
@@ -143,7 +143,7 @@ class SearchController extends Controller
             ->with('client:id,prenom,nom')
             ->latest()
             ->limit($limit)
-            ->get(['id', 'numero', 'total_ttc', 'statut', 'client_id', 'created_at'])
+            ->get(['id', 'numero', 'total_ttc', 'statut', 'client_id', 'client_prenom', 'client_nom', 'created_at'])
             ->map(fn ($f) => [
                 'id'         => $f->id,
                 'label'      => $f->numero . ' — ' . number_format($f->total_ttc, 0, ',', ' ') . ' F',
@@ -168,7 +168,7 @@ class SearchController extends Controller
                 'id'         => $c->id,
                 'label'      => $c->numero . ' — ' . number_format($c->total, 0, ',', ' ') . ' F',
                 'sous_label' => ($c->client?->nom_complet ?? trim(($c->client_prenom ?? '') . ' ' . ($c->client_nom ?? ''))) . ' · ' . ucfirst(str_replace('_', ' ', $c->statut)),
-                'url'        => route('dashboard.commandes.show', $c),
+                'url'        => route('dashboard.boutique.commandes.show', $c),
                 'icone'      => 'commande',
             ]);
 
