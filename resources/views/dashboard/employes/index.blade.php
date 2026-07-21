@@ -209,11 +209,12 @@
 
                     <div class="form-group">
                         <label class="form-label">Rôle *</label>
-                        <select name="role" required x-model="form.role" class="form-select">
+                        <select name="role" required x-model="form.role" class="form-input">
                             <option value="employe">Employé (accès limité)</option>
+                            <option value="gerant">Gérant (accès intermédiaire)</option>
                             <option value="admin">Admin (accès complet)</option>
                         </select>
-                        <p class="text-xs text-gray-400 mt-1">Les employés peuvent vendre et voir les stocks. Les admins gèrent tout.</p>
+                        <p class="text-xs text-gray-400 mt-1">Employé : caisse & clients. Gérant : + stocks, finances, équipe. Admin : tout.</p>
                     </div>
 
                     <template x-if="!isEdit">
