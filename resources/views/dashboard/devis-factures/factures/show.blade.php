@@ -182,10 +182,19 @@
     {{-- Totaux --}}
     <div class="card ml-auto w-full max-w-sm">
         <div class="card-body space-y-2 text-sm">
-            <div class="flex justify-between"><span class="text-gray-500">Total HT</span><span>{{ number_format($facture->total_ht, 0, ',', ' ') }} F</span></div>
+            <div class="flex justify-between"><span class="text-gray-500">Sous-total</span><span>{{ number_format($facture->sous_total, 0, ',', ' ') }} F</span></div>
             @if($facture->remise_globale > 0)
-            <div class="flex justify-between"><span class="text-gray-500">Remise</span><span class="text-red-500">−{{ number_format($facture->remise_globale, 0, ',', ' ') }} F</span></div>
+            <div class="flex justify-between">
+                <span class="text-gray-500">
+                    Remise
+                    @if($facture->remise_globale_type === 'pourcentage')
+                        ({{ (int) $facture->remise_globale_valeur }}%)
+                    @endif
+                </span>
+                <span class="text-red-500">−{{ number_format($facture->remise_globale, 0, ',', ' ') }} F</span>
+            </div>
             @endif
+            <div class="flex justify-between"><span class="text-gray-500">Total HT</span><span>{{ number_format($facture->total_ht, 0, ',', ' ') }} F</span></div>
             @if($facture->tva_taux > 0)
             <div class="flex justify-between"><span class="text-gray-500">TVA {{ $facture->tva_taux }}%</span><span>{{ number_format($facture->total_tva, 0, ',', ' ') }} F</span></div>
             @endif

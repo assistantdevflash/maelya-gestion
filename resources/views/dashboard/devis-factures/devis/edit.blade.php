@@ -33,12 +33,12 @@
                         <div class="flex justify-between text-sm"><span class="text-gray-500">Sous-total</span><span class="font-bold" x-text="format(sousTotal) + ' F'"></span></div>
                         <div class="flex items-center gap-3">
                             <span class="text-sm text-gray-500">Remise globale</span>
-                            <select name="remise_globale_type" class="form-input text-sm w-32">
+                            <select name="remise_globale_type" x-model="remiseGlobaleType" class="form-input text-sm w-32">
                                 <option value="" {{ $devis->remise_globale_type === null ? 'selected' : '' }}>Aucune</option>
                                 <option value="pourcentage" {{ $devis->remise_globale_type === 'pourcentage' ? 'selected' : '' }}>%</option>
                                 <option value="montant_fixe" {{ $devis->remise_globale_type === 'montant_fixe' ? 'selected' : '' }}>Fixe</option>
                             </select>
-                            <input type="number" name="remise_globale_valeur" min="0" value="{{ $devis->remise_globale_valeur }}" placeholder="0" class="form-input text-sm w-24">
+                            <input type="number" name="remise_globale_valeur" x-model.number="remiseGlobaleValeur" min="0" value="{{ $devis->remise_globale_valeur }}" placeholder="0" class="form-input text-sm w-24">
                         </div>
                         <div class="flex justify-between text-sm"><span class="text-gray-500">Total HT</span><span class="font-bold" x-text="format(totalHT) + ' F'"></span></div>
                         <div class="flex items-center gap-3">
@@ -77,9 +77,16 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('lignesManager', (initial) => ({
         lignes: initial.length ? initial : [{designation:'', quantite:1, prix_unitaire:0, remise_type:'', remise_valeur:0, tva_taux:null}],
         tva: {{ $devis->tva_taux ?? 0 }},
+        remiseGlobaleType: '{{ $devis->remise_globale_type }}',
+        remiseGlobaleValeur: {{ $devis->remise_globale_valeur ?? 0 }},
         ajouter() { this.lignes.push({designation:'', quantite:1, prix_unitaire:0, remise_type:'', remise_valeur:0, tva_taux:null}); },
         get sousTotal() { return this.lignes.reduce((s, l) => s + ((l.prix_unitaire||0) * (l.quantite||1)), 0); },
-        get totalHT() { return this.sousTotal; },
+        get remiseGlobale() {
+            if (!this.remiseGlobaleType || !this.remiseGlobaleValeur) return 0;
+            if (this.remiseGlobaleType === 'pourcentage') return Math.round(this.sousTotal * this.remiseGlobaleValeur / 100);
+            return this.remiseGlobaleValeur;
+        },
+        get totalHT() { return Math.max(0, this.sousTotal - this.remiseGlobale); },
         get totalTTC() { return Math.round(this.totalHT * (1 + (this.tva || 0) / 100)); },
         format(v) { return new Intl.NumberFormat('fr-FR').format(v); }
     }));

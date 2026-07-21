@@ -92,8 +92,11 @@
     </tr>@endforeach</tbody>
 </table>
 <table class="totals">
+    <tr><td class="label">Sous-total</td><td class="value">{{ number_format($devis->sous_total, 0, ',', ' ') }} F</td></tr>
+    @if($devis->remise_globale > 0)
+    <tr><td class="label">Remise @if($devis->remise_globale_type === 'pourcentage')({{ (int) $devis->remise_globale_valeur }}%)@endif</td><td class="value" style="color:#dc2626;">−{{ number_format($devis->remise_globale, 0, ',', ' ') }} F</td></tr>
+    @endif
     <tr><td class="label">Total HT</td><td class="value">{{ number_format($devis->total_ht, 0, ',', ' ') }} F</td></tr>
-    @if($devis->remise_globale > 0)<tr><td class="label">Remise</td><td class="value" style="color:#dc2626;">−{{ number_format($devis->remise_globale, 0, ',', ' ') }} F</td></tr>@endif
     @if($devis->tva_applicable && $devis->tva_taux > 0)<tr><td class="label">TVA {{ $devis->tva_taux }}%</td><td class="value">{{ number_format($devis->total_tva, 0, ',', ' ') }} F</td></tr>@endif
     <tr class="total"><td class="label">Total TTC</td><td class="value">{{ number_format($devis->total_ttc, 0, ',', ' ') }} F</td></tr>
 </table>

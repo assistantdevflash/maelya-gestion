@@ -220,15 +220,24 @@
         <div class="card w-full max-w-sm">
             <div class="p-5 space-y-2.5">
                 <div class="flex justify-between text-sm">
-                    <span class="text-gray-500">Total HT</span>
-                    <span class="font-semibold text-gray-900 dark:text-white">{{ number_format($devis->total_ht, 0, ',', ' ') }} F</span>
+                    <span class="text-gray-500">Sous-total</span>
+                    <span class="font-semibold text-gray-900 dark:text-white">{{ number_format($devis->sous_total, 0, ',', ' ') }} F</span>
                 </div>
                 @if($devis->remise_globale > 0)
                 <div class="flex justify-between text-sm">
-                    <span class="text-gray-500">Remise</span>
+                    <span class="text-gray-500">
+                        Remise
+                        @if($devis->remise_globale_type === 'pourcentage')
+                            ({{ (int) $devis->remise_globale_valeur }}%)
+                        @endif
+                    </span>
                     <span class="font-semibold text-red-500">−{{ number_format($devis->remise_globale, 0, ',', ' ') }} F</span>
                 </div>
                 @endif
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Total HT</span>
+                    <span class="font-semibold text-gray-900 dark:text-white">{{ number_format($devis->total_ht, 0, ',', ' ') }} F</span>
+                </div>
                 @if($devis->tva_applicable && $devis->tva_taux > 0)
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-500">TVA {{ $devis->tva_taux }}%</span>

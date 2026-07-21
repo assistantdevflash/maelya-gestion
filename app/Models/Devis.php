@@ -59,6 +59,10 @@ class Devis extends Model
 
     public function getRemiseGlobaleAttribute(): int
     {
+        if (!$this->remise_globale_type || !$this->remise_globale_valeur) return 0;
+        if ($this->remise_globale_type === 'pourcentage') {
+            return (int) round($this->sous_total * (int) $this->remise_globale_valeur / 100);
+        }
         return (int) $this->remise_globale_valeur;
     }
 

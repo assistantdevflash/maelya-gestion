@@ -82,8 +82,11 @@
     </tr>@endforeach</tbody>
 </table>
 <table class="totals">
+    <tr><td class="label">Sous-total</td><td class="value">{{ number_format($facture->sous_total, 0, ',', ' ') }} F</td></tr>
+    @if($facture->remise_globale > 0)
+    <tr><td class="label">Remise @if($facture->remise_globale_type === 'pourcentage')({{ (int) $facture->remise_globale_valeur }}%)@endif</td><td class="value" style="color:#dc2626;">−{{ number_format($facture->remise_globale, 0, ',', ' ') }} F</td></tr>
+    @endif
     <tr><td class="label">Total HT</td><td class="value">{{ number_format($facture->total_ht, 0, ',', ' ') }} F</td></tr>
-    @if($facture->remise_globale > 0)<tr><td class="label">Remise</td><td class="value" style="color:#dc2626;">−{{ number_format($facture->remise_globale, 0, ',', ' ') }} F</td></tr>@endif
     @if($facture->tva_applicable && $facture->tva_taux > 0)<tr><td class="label">TVA {{ $facture->tva_taux }}%</td><td class="value">{{ number_format($facture->total_tva, 0, ',', ' ') }} F</td></tr>@endif
     <tr class="total"><td class="label">Total TTC</td><td class="value">{{ number_format($facture->total_ttc, 0, ',', ' ') }} F</td></tr>
     @if($facture->montant_paye > 0)
