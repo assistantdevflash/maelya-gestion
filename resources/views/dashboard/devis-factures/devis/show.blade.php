@@ -38,7 +38,7 @@
         @endphp
 
         {{-- ═══ BARRE D'ACTIONS ═══ --}}
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2 justify-end">
             {{-- Actions principales (toujours visibles) --}}
             @if($estModifiable)
             <button onclick="openModal('modal-transformer')"

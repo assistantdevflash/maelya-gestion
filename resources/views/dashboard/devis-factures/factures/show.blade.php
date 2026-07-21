@@ -34,7 +34,7 @@
         </div>
 
         {{-- ═══ BARRE D'ACTIONS ═══ --}}
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2 justify-end">
             {{-- Actions principales (toujours visibles) --}}
             @if(!$facture->estPayee && $facture->statut !== 'annulee')
             <button onclick="document.getElementById('modal-paiement').classList.remove('hidden')"
