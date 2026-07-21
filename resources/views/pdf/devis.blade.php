@@ -71,14 +71,14 @@
             <div class="partie-nom">{{ $client->raison_sociale ?: $client->nom_complet }}</div>
             <div class="partie-meta">
                 @if($client->numero_registre_commerce)RC : {{ $client->numero_registre_commerce }}<br>@endif
-                @if($devis->client_telephone)Tél : {{ $devis->client_telephone }}<br>@endif
-                @if($devis->client_email){{ $devis->client_email }}@endif
+                @if($devis->client_telephone ?: $client->telephone ?? null)Tél : {{ $devis->client_telephone ?: $client->telephone }}<br>@endif
+                @if($devis->client_email ?: $client->email ?? null){{ $devis->client_email ?: $client->email }}@endif
             </div>
         @else
-            <div class="partie-nom">{{ $devis->client_nom_complet ?: '—' }}</div>
+            <div class="partie-nom">{{ $devis->client_nom_complet ?: ($client->nom_complet ?? '—') }}</div>
             <div class="partie-meta">
-                @if($devis->client_telephone){{ $devis->client_telephone }}<br>@endif
-                @if($devis->client_email){{ $devis->client_email }}@endif
+                @if($devis->client_telephone ?: $client->telephone ?? null){{ $devis->client_telephone ?: $client->telephone }}<br>@endif
+                @if($devis->client_email ?: $client->email ?? null){{ $devis->client_email ?: $client->email }}@endif
             </div>
         @endif
     </div>

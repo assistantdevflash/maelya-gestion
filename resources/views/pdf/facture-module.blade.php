@@ -66,10 +66,10 @@
         @php $client = $facture->client; @endphp
         @if($client && $client->isEntreprise())
             <div class="partie-nom">{{ $client->raison_sociale ?: $client->nom_complet }}</div>
-            <div class="partie-meta">@if($client->numero_registre_commerce)RC : {{ $client->numero_registre_commerce }}<br>@endif@if($facture->client_telephone)Tél : {{ $facture->client_telephone }}<br>@endif@if($facture->client_email){{ $facture->client_email }}@endif</div>
+            <div class="partie-meta">@if($client->numero_registre_commerce)RC : {{ $client->numero_registre_commerce }}<br>@endif@if($facture->client_telephone ?: $client->telephone ?? null)Tél : {{ $facture->client_telephone ?: $client->telephone }}<br>@endif@if($facture->client_email ?: $client->email ?? null){{ $facture->client_email ?: $client->email }}@endif</div>
         @else
-            <div class="partie-nom">{{ $facture->client_nom_complet ?: '—' }}</div>
-            <div class="partie-meta">@if($facture->client_telephone){{ $facture->client_telephone }}<br>@endif@if($facture->client_email){{ $facture->client_email }}@endif</div>
+            <div class="partie-nom">{{ $facture->client_nom_complet ?: ($client->nom_complet ?? '—') }}</div>
+            <div class="partie-meta">@if($facture->client_telephone ?: $client->telephone ?? null){{ $facture->client_telephone ?: $client->telephone }}<br>@endif@if($facture->client_email ?: $client->email ?? null){{ $facture->client_email ?: $client->email }}@endif</div>
         @endif
     </div>
 </div>

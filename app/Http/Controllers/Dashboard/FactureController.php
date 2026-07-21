@@ -145,6 +145,11 @@ class FactureController extends Controller
 
         if ($facture->fresh()->estPayee) $facture->update(['statut' => 'payee', 'vente_id' => $vente->id]);
         elseif ($facture->montant_paye > 0 && !$facture->fresh()->estPayee) $facture->update(['statut' => 'partiellement_payee']);
+
+        // Invalider le cache du dashboard pour refléter le CA immédiatement
+        \Illuminate\Support\Facades\Cache::forget("dashboard_full:{$facture->institut_id}:" . now()->toDateString());
+        \Illuminate\Support\Facades\Cache::forget("dashboard_basic:{$facture->institut_id}:" . now()->toDateString());
+
         return back()->with('success','Paiement enregistré.');
     }
 
