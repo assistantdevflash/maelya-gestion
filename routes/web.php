@@ -169,6 +169,7 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         Route::post('devis/{devis}/transformer', [\App\Http\Controllers\Dashboard\DevisController::class, 'transformerEnFacture'])->name('devis.transformer');
         Route::get('devis/{devis}/pdf', [\App\Http\Controllers\Dashboard\DevisController::class, 'pdf'])->name('devis.pdf');
         Route::get('devis/{devis}/dupliquer', [\App\Http\Controllers\Dashboard\DevisController::class, 'dupliquer'])->name('devis.dupliquer');
+        Route::post('devis/{devis}/envoyer-email', [\App\Http\Controllers\Dashboard\DevisController::class, 'envoyerEmail'])->name('devis.envoyer-email');
 
         Route::resource('factures', \App\Http\Controllers\Dashboard\FactureController::class)
             ->except(['index'])
@@ -178,6 +179,7 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         Route::post('factures/{facture}/payer', [\App\Http\Controllers\Dashboard\FactureController::class, 'ajouterPaiement'])->name('factures.payer');
         Route::post('factures/{facture}/marquer-payee', [\App\Http\Controllers\Dashboard\FactureController::class, 'marquerPayee'])->name('factures.marquer-payee');
         Route::post('factures/{facture}/annuler', [\App\Http\Controllers\Dashboard\FactureController::class, 'annuler'])->name('factures.annuler');
+        Route::post('factures/{facture}/envoyer-email', [\App\Http\Controllers\Dashboard\FactureController::class, 'envoyerEmail'])->name('factures.envoyer-email');
     });
 
     // Crédits clients & échéanciers (essai 14j + Premium+ uniquement)

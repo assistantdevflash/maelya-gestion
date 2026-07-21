@@ -149,4 +149,27 @@ class DevisController extends Controller
         foreach ($devis->items as $item) { DevisItem::create(['devis_id' => $new->id, 'designation' => $item->designation, 'quantite' => $item->quantite, 'prix_unitaire' => $item->prix_unitaire, 'remise_type' => $item->remise_type, 'remise_valeur' => $item->remise_valeur, 'tva_taux' => $item->tva_taux, 'total_ligne' => $item->total_ligne, 'ordre' => $item->ordre]); }
         return redirect()->route('dashboard.devis.show', ['devis' => $new->id])->with('success','Devis dupliqué.');
     }
+
+    /** Envoyer le devis par email au client */
+    public function envoyerEmail(Devis $devis)
+    {
+        $clientEmail = $devis->client_email ?: ($devis->client->email ?? null);
+        if (!$clientEmail) return back()->with('error', 'Aucune adresse email pour ce client.');
+
+        $devis->load('items', 'client', 'institut');
+        $institut = $devis->institut;
+        $pdf = Pdf::loadView('pdf.devis', ['devis' => $devis, 'institut' => $institut]);
+
+        \Illuminate\Support\Facades\Mail::send('emails.devis', ['devis' => $devis], function ($message) use ($devis, $institut, $pdf, $clientEmail) {
+            $message->to($clientEmail, $devis->client_nom_complet ?: ($devis->client->nom_complet ?? 'Client'))
+                    ->subject('Devis ' . $devis->numero . ' — ' . ($institut?->nom ?? 'Maelya Gestion'))
+                    ->attachData($pdf->output(), "devis-{$devis->numero}.pdf", ['mime' => 'application/pdf']);
+        });
+
+        if ($devis->statut === 'brouillon') {
+            $devis->update(['statut' => 'envoye', 'token' => \Illuminate\Support\Str::random(32)]);
+        }
+
+        return back()->with('success', 'Devis envoyé par email à ' . ($devis->client_nom_complet ?: 'votre client') . '.');
+    }
 }

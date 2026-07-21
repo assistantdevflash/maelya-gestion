@@ -161,4 +161,23 @@ class FactureController extends Controller
 
     public function annuler(Facture $facture) { $facture->update(['statut' => 'annulee']); return back()->with('success','Facture annulée.'); }
     public function destroy(Facture $facture) { $facture->delete(); return redirect()->route('dashboard.factures.index')->with('success','Facture supprimée.'); }
+
+    /** Envoyer la facture par email au client */
+    public function envoyerEmail(Facture $facture)
+    {
+        $clientEmail = $facture->client_email ?: ($facture->client->email ?? null);
+        if (!$clientEmail) return back()->with('error', 'Aucune adresse email pour ce client.');
+
+        $facture->load('items', 'client', 'institut');
+        $institut = $facture->institut;
+        $pdf = Pdf::loadView('pdf.facture-module', ['facture' => $facture, 'institut' => $institut]);
+
+        \Illuminate\Support\Facades\Mail::send('emails.facture', ['facture' => $facture], function ($message) use ($facture, $institut, $pdf, $clientEmail) {
+            $message->to($clientEmail, $facture->client_nom_complet ?: ($facture->client->nom_complet ?? 'Client'))
+                    ->subject('Facture ' . $facture->numero . ' — ' . ($institut?->nom ?? 'Maelya Gestion'))
+                    ->attachData($pdf->output(), "facture-{$facture->numero}.pdf", ['mime' => 'application/pdf']);
+        });
+
+        return back()->with('success', 'Facture envoyée par email à ' . ($facture->client_nom_complet ?: 'votre client') . '.');
+    }
 }
