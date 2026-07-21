@@ -55,7 +55,7 @@
                         <td class="px-4 py-3 text-gray-500 hidden sm:table-cell">{{ $d->date_creation->format('d/m/Y') }}</td>
                         <td class="px-4 py-3 text-right font-bold">{{ number_format($d->total_ttc, 0, ',', ' ') }} F</td>
                         <td class="px-4 py-3 text-center">@include('dashboard.devis-factures.partials.statut-badge', ['statut' => $d->statut, 'type' => 'devis'])</td>
-                        <td class="px-4 py-3 text-right"><a href="{{ route('dashboard.devis.show', ['devi' => $d->id]) }}" class="text-xs text-primary-600 hover:text-primary-700 font-medium">Voir</a></td>
+                        <td class="px-4 py-3 text-right"><a href="{{ route('dashboard.devis.show', ['devis' => $d->id]) }}" class="text-xs text-primary-600 hover:text-primary-700 font-medium">Voir</a></td>
                     </tr>
                     @empty
                     <tr><td colspan="6" class="px-4 py-12 text-center text-gray-400">Aucun devis. <a href="{{ route('dashboard.devis.create') }}" class="text-primary-600 font-medium">Créer un devis</a></td></tr>

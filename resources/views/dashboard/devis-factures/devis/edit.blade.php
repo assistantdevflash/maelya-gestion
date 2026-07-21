@@ -1,11 +1,11 @@
 <x-dashboard-layout>
 <div class="max-w-4xl mx-auto space-y-6">
     <div class="flex items-center gap-4">
-        <a href="{{ route('dashboard.devis.show', ['devi' => $devis->id]) }}" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition">←</a>
+        <a href="{{ route('dashboard.devis.show', ['devis' => $devis->id]) }}" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition">←</a>
         <div><h1 class="text-2xl font-bold text-gray-900 dark:text-white">Modifier {{ $devis->numero }}</h1></div>
     </div>
 
-    <form method="POST" action="{{ route('dashboard.devis.update', ['devi' => $devis->id]) }}" x-data="lignesManager(@js($devis->items->map(fn($i) => ['designation'=>$i->designation,'quantite'=>$i->quantite,'prix_unitaire'=>$i->prix_unitaire,'remise_type'=>$i->remise_type,'remise_valeur'=>$i->remise_valeur,'tva_taux'=>$i->tva_taux])->toArray()))">
+    <form method="POST" action="{{ route('dashboard.devis.update', ['devis' => $devis->id]) }}" x-data="lignesManager(@js($devis->items->map(fn($i) => ['designation'=>$i->designation,'quantite'=>$i->quantite,'prix_unitaire'=>$i->prix_unitaire,'remise_type'=>$i->remise_type,'remise_valeur'=>$i->remise_valeur,'tva_taux'=>$i->tva_taux])->toArray()))">
         @csrf @method('PUT')
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2 space-y-5">

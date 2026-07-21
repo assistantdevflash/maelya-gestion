@@ -161,14 +161,18 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
 
     // ─── Devis & Factures (essai + premium-plus + ultra) ────────────────────
     Route::middleware('feature:devis_factures')->group(function () {
-        Route::resource('devis', \App\Http\Controllers\Dashboard\DevisController::class)->except(['index']);
+        Route::resource('devis', \App\Http\Controllers\Dashboard\DevisController::class)
+            ->except(['index'])
+            ->parameters(['devis' => 'devis']);
         Route::get('devis', [\App\Http\Controllers\Dashboard\DevisController::class, 'index'])->name('devis.index');
         Route::post('devis/{devis}/envoyer', [\App\Http\Controllers\Dashboard\DevisController::class, 'envoyer'])->name('devis.envoyer');
         Route::post('devis/{devis}/transformer', [\App\Http\Controllers\Dashboard\DevisController::class, 'transformerEnFacture'])->name('devis.transformer');
         Route::get('devis/{devis}/pdf', [\App\Http\Controllers\Dashboard\DevisController::class, 'pdf'])->name('devis.pdf');
         Route::get('devis/{devis}/dupliquer', [\App\Http\Controllers\Dashboard\DevisController::class, 'dupliquer'])->name('devis.dupliquer');
 
-        Route::resource('factures', \App\Http\Controllers\Dashboard\FactureController::class)->except(['index']);
+        Route::resource('factures', \App\Http\Controllers\Dashboard\FactureController::class)
+            ->except(['index'])
+            ->parameters(['factures' => 'facture']);
         Route::get('factures', [\App\Http\Controllers\Dashboard\FactureController::class, 'index'])->name('factures.index');
         Route::get('factures/{facture}/pdf', [\App\Http\Controllers\Dashboard\FactureController::class, 'pdf'])->name('factures.pdf');
         Route::post('factures/{facture}/payer', [\App\Http\Controllers\Dashboard\FactureController::class, 'ajouterPaiement'])->name('factures.payer');
