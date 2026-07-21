@@ -9,7 +9,7 @@
         @csrf @method('PUT')
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2 space-y-5">
-                <div class="card">
+                <div class="card !overflow-visible">
                     <div class="card-header flex items-center justify-between">
                         <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Articles / Prestations</h2>
                         <button type="button" @click="ajouter()" class="text-sm text-primary-600 hover:text-primary-700 font-medium">+ Ajouter une ligne</button>
