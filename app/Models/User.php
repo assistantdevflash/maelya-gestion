@@ -114,6 +114,11 @@ class User extends Authenticatable
         return $this->role === 'employe';
     }
 
+    public function isGerant(): bool
+    {
+        return $this->role === 'gerant';
+    }
+
     public function isCommercial(): bool
     {
         return $this->role === 'commercial';
@@ -138,7 +143,7 @@ class User extends Authenticatable
      */
     public function planActuelSlug(): ?string
     {
-        if ($this->isEmploye()) {
+        if ($this->isEmploye() || $this->isGerant()) {
             $owner = $this->institut?->proprietaire_id
                 ? static::with('abonnementActif.plan')->find($this->institut->proprietaire_id)
                 : null;

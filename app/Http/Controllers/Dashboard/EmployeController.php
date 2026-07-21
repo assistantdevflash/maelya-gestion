@@ -17,13 +17,13 @@ class EmployeController extends Controller
         $institutId = $user->currentInstitutId();
 
         $employes = User::where('institut_id', $institutId)
-            ->where('role', 'employe')
+            ->whereIn('role', ['employe', 'gerant'])
             ->orderBy('prenom')
             ->paginate(20);
 
         $abonnement  = $user->abonnementActif;
         $maxEmployes = $abonnement?->plan?->max_employes; // null = illimité
-        $nbEmployes  = User::where('institut_id', $institutId)->where('role', 'employe')->count();
+        $nbEmployes  = User::where('institut_id', $institutId)->whereIn('role', ['employe', 'gerant'])->count();
         $limitAtteinte = $maxEmployes !== null && $nbEmployes >= $maxEmployes;
 
         return view('dashboard.employes.index', compact('employes', 'maxEmployes', 'nbEmployes', 'limitAtteinte'));
@@ -42,14 +42,15 @@ class EmployeController extends Controller
             'email' => ['required', 'email', 'unique:users,email'],
             'telephone' => ['nullable', 'string', 'max:30'],
             'password' => ['required', 'confirmed', Rules\Password::min(8)],
+            'role' => ['nullable', 'in:employe,gerant'],
         ]);
 
-        // Vérifier la limite d'employés selon le plan
+        // Vérifier la limite d'employés selon le plan (employés + gérants)
         $user = Auth::user();
         $institutId = $user->currentInstitutId();
         $abonnement = $user->abonnementActif;
         if ($abonnement && $abonnement->plan && $abonnement->plan->max_employes !== null) {
-            $nbEmployes = User::where('institut_id', $institutId)->where('role', 'employe')->count();
+            $nbEmployes = User::where('institut_id', $institutId)->whereIn('role', ['employe', 'gerant'])->count();
             if ($nbEmployes >= $abonnement->plan->max_employes) {
                 return back()->with('error', "Limite atteinte : votre plan autorise {$abonnement->plan->max_employes} employé(s). Passez au plan supérieur.");
             }
@@ -63,7 +64,7 @@ class EmployeController extends Controller
             'email' => $request->email,
             'telephone' => $request->telephone,
             'password' => Hash::make($request->password),
-            'role' => 'employe',
+            'role' => $request->role ?: 'employe',
             'actif' => true,
         ]);
 
@@ -83,6 +84,7 @@ class EmployeController extends Controller
             'nom_famille' => ['required', 'string', 'max:50'],
             'email' => ['required', 'email', 'unique:users,email,' . $employe->id],
             'telephone' => ['nullable', 'string', 'max:30'],
+            'role' => ['nullable', 'in:employe,gerant'],
         ]);
 
         $employe->update([
@@ -91,6 +93,7 @@ class EmployeController extends Controller
             'name' => $request->prenom . ' ' . $request->nom_famille,
             'email' => $request->email,
             'telephone' => $request->telephone,
+            'role' => $request->role ?: $employe->role,
         ]);
 
         return redirect()->route('dashboard.employes.index')

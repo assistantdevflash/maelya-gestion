@@ -67,8 +67,11 @@
                             </td>
                             <td class="px-4 py-3 text-gray-500 hidden sm:table-cell">{{ $employe->email }}</td>
                             <td class="px-4 py-3 hidden md:table-cell">
-                                <span class="badge {{ $employe->role === 'admin' ? 'badge-primary' : 'badge-secondary' }} text-xs">
-                                    {{ $employe->role === 'admin' ? 'Admin' : 'Employé' }}
+                                <span class="badge text-xs
+                                    {{ $employe->role === 'admin' ? 'badge-primary' : '' }}
+                                    {{ $employe->role === 'gerant' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' : '' }}
+                                    {{ $employe->role === 'employe' ? 'badge-secondary' : '' }}">
+                                    {{ match($employe->role) { 'admin' => 'Admin', 'gerant' => 'Gérant', default => 'Employé' } }}
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-center">

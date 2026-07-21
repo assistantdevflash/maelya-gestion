@@ -54,11 +54,12 @@
 
                 <div class="form-group">
                     <label class="form-label">Rôle *</label>
-                    <select name="role" required class="form-select">
+                    <select name="role" required class="form-input">
                         <option value="employe" {{ old('role', $employe->role ?? 'employe') === 'employe' ? 'selected' : '' }}>Employé (accès limité)</option>
+                        <option value="gerant" {{ old('role', $employe->role ?? '') === 'gerant' ? 'selected' : '' }}>Gérant (accès intermédiaire)</option>
                         <option value="admin" {{ old('role', $employe->role ?? '') === 'admin' ? 'selected' : '' }}>Admin (accès complet)</option>
                     </select>
-                    <p class="text-xs text-gray-400 mt-1">Les employés peuvent vendre et voir les stocks. Les admins gèrent tout.</p>
+                    <p class="text-xs text-gray-400 mt-1">Employé : caisse & clients. Gérant : + stocks, finances, équipe. Admin : tout.</p>
                 </div>
 
                 @if(!isset($employe))

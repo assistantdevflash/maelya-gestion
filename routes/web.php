@@ -150,7 +150,7 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         Route::get('commandes/{commande}', [CommandeController::class, 'show'])->name('commandes.show');
         Route::get('commandes/{commande}/facture', [CommandeController::class, 'facturePdf'])->name('commandes.facture');
 
-        Route::middleware('role:admin')->group(function () {
+        Route::middleware('role:admin,gerant')->group(function () {
             Route::post('commandes/{commande}/statut', [CommandeController::class, 'updateStatut'])->name('commandes.statut');
             Route::post('commandes/{commande}/payer', [CommandeController::class, 'marquerPayee'])->name('commandes.payer');
             Route::post('commandes/{commande}/notes', [CommandeController::class, 'updateNotes'])->name('commandes.notes');
@@ -194,14 +194,14 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
     Route::get('profil', [ProfilController::class, 'edit'])->name('profil.edit');
     Route::put('profil', [ProfilController::class, 'update'])->name('profil.update');
 
-    // ── Admin uniquement ──────────────────────────────────────────────
-    Route::middleware('role:admin')->group(function () {
+    // ── Admin & Gérant ─────────────────────────────────────────────────
+    Route::middleware('role:admin,gerant')->group(function () {
         // Journal d'activité — intégré dans la page profil
         Route::get('audit', fn() => redirect()->route('dashboard.profil.edit'))->name('audit.index');
 
-        // Comparatif multi-instituts (feature: multi_instituts)
+        // Comparatif multi-instituts (feature: multi_instituts) — admin uniquement
         Route::get('comparatif', [\App\Http\Controllers\Dashboard\ComparatifInstitutsController::class, 'index'])
-            ->middleware('feature:multi_instituts')->name('comparatif.index');
+            ->middleware(['feature:multi_instituts', 'role:admin'])->name('comparatif.index');
 
         // Fournisseurs (admin)
         Route::resource('fournisseurs', \App\Http\Controllers\Dashboard\FournisseurController::class)
@@ -274,19 +274,21 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
             Route::patch('employes/{employe}/toggle', [EmployeController::class, 'toggle'])->name('employes.toggle');
         });
 
-        // Mes instituts : paramètres OK pour tous, création/switch = multi_instituts
-        Route::get('mes-instituts', [MesInstitutsController::class, 'index'])->name('mes-instituts.index');
-        Route::put('mes-instituts/{institut}', [MesInstitutsController::class, 'update'])->name('mes-instituts.update');
-        Route::post('mes-instituts/{institut}/logo', [MesInstitutsController::class, 'updateLogo'])->name('mes-instituts.logo');
-        Route::patch('mes-instituts/{institut}/vitrine', [MesInstitutsController::class, 'toggleVitrine'])->name('mes-instituts.vitrine');
-        Route::patch('mes-instituts/{institut}/reservation', [MesInstitutsController::class, 'toggleReservation'])->name('mes-instituts.reservation');
-        Route::middleware('feature:multi_instituts')->group(function () {
-            Route::post('mes-instituts', [MesInstitutsController::class, 'store'])->name('mes-instituts.store');
-            Route::post('mes-instituts/{institut}/switch', [MesInstitutsController::class, 'switch'])->name('mes-instituts.switch');
-        });
+        // Mes instituts : paramètres & config → admin uniquement
+        Route::middleware('role:admin')->group(function () {
+            Route::get('mes-instituts', [MesInstitutsController::class, 'index'])->name('mes-instituts.index');
+            Route::put('mes-instituts/{institut}', [MesInstitutsController::class, 'update'])->name('mes-instituts.update');
+            Route::post('mes-instituts/{institut}/logo', [MesInstitutsController::class, 'updateLogo'])->name('mes-instituts.logo');
+            Route::patch('mes-instituts/{institut}/vitrine', [MesInstitutsController::class, 'toggleVitrine'])->name('mes-instituts.vitrine');
+            Route::patch('mes-instituts/{institut}/reservation', [MesInstitutsController::class, 'toggleReservation'])->name('mes-instituts.reservation');
+            Route::middleware('feature:multi_instituts')->group(function () {
+                Route::post('mes-instituts', [MesInstitutsController::class, 'store'])->name('mes-instituts.store');
+                Route::post('mes-instituts/{institut}/switch', [MesInstitutsController::class, 'switch'])->name('mes-instituts.switch');
+            });
 
-        // Parrainage (Basic + Premium)
-        Route::get('parrainage', [ParrainageController::class, 'index'])->name('parrainage.index');
+            // Parrainage (Basic + Premium)
+            Route::get('parrainage', [ParrainageController::class, 'index'])->name('parrainage.index');
+        });
 
         // FAQ & documentation
         Route::get('faq', [DashboardController::class, 'faq'])->name('faq');

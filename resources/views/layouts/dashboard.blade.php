@@ -558,6 +558,7 @@
                 </a>
                 @endif
 
+                @if(!auth()->user()->isGerant())
                 <a href="{{ route('abonnement.plans') }}"
                    class="sidebar-link {{ request()->routeIs('abonnement.plans') || request()->routeIs('abonnement.expire') ? 'active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -574,6 +575,7 @@
                     </svg>
                     Mes transactions
                 </a>
+                @endif
 
                 <a href="{{ $featureHref('equipe', route('dashboard.employes.index')) }}"
                    class="sidebar-link {{ request()->routeIs('dashboard.employes.*') ? 'active' : '' }}">
