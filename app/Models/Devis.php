@@ -56,4 +56,15 @@ class Devis extends Model
     {
         return trim(($this->client_prenom ?? '') . ' ' . ($this->client_nom ?? ''));
     }
+
+    public function getRemiseGlobaleAttribute(): int
+    {
+        return (int) $this->remise_globale_valeur;
+    }
+
+    public function getTotalTvaAttribute(): int
+    {
+        if (!$this->tva_applicable || $this->tva_taux <= 0) return 0;
+        return (int) round($this->total_ht * (float) $this->tva_taux / 100);
+    }
 }
