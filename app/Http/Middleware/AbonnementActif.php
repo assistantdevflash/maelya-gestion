@@ -50,11 +50,11 @@ class AbonnementActif
 
         // ── Abonnement : vérifier le cache session en priorité ────────────
         $aboStatus = session('abo_status');
-        if ($aboStatus !== null && $aboStatus['user_id'] === $user->id) {
+        if ($aboStatus !== null && ($aboStatus['user_id'] ?? null) === $user->id && isset($aboStatus['en_sursis'])) {
             // Si le cache dit que l'abonnement est expiré/sursis, vérifier si un
             // nouvel abonnement a été activé entre-temps (ex: renouvellement).
             if (!empty($aboStatus['en_sursis'])) {
-                $abonnement = $user->isEmploye()
+                $abonnement = ($user->isEmploye() || $user->isGerant())
                     ? $this->getOwnerAbonnement($user)
                     : $user->abonnementActif;
                 if ($abonnement) {
@@ -72,7 +72,7 @@ class AbonnementActif
 
         // Pour les employés, vérifier l'abonnement du propriétaire (via proprietaire_id de l'institut)
         $abonnementUser = $user; // utilisateur référent pour l'historique d'abonnement
-        if ($user->isEmploye()) {
+        if ($user->isEmploye() || $user->isGerant()) {
             $institut = \App\Models\Institut::find($user->currentInstitutId());
             $owner = $institut?->proprietaire_id
                 ? \App\Models\User::find($institut->proprietaire_id)
