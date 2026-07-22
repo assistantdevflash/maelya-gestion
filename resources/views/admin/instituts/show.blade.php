@@ -29,6 +29,7 @@
                             'business_center' => 'Business center',
                             'depot_gaz'       => 'Dépôt de gaz',
                             'commerce'        => 'Commerce / Alimentation',
+                            'evenementiel'   => 'Évènementiel',
                             'informatique_telephonie' => 'Informatique / Téléphonie',
                             'autre'           => 'Autre',
                         ];

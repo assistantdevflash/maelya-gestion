@@ -30,7 +30,7 @@ class InscriptionController extends Controller
     {
         $request->validate([
             'nom_institut' => ['required', 'string', 'min:2', 'max:100'],
-            'type_institut' => ['required', 'in:salon_coiffure,institut_beaute,centre_esthetique,boutique_mode,auto_ecole,cabinet_medical,atelier_technique,centre_formation,imprimerie,lavage_auto,pressing,business_center,depot_gaz,commerce,informatique_telephonie,autre'],
+            'type_institut' => ['required', 'in:salon_coiffure,institut_beaute,centre_esthetique,boutique_mode,auto_ecole,cabinet_medical,atelier_technique,centre_formation,imprimerie,lavage_auto,pressing,business_center,depot_gaz,commerce,informatique_telephonie,evenementiel,autre'],
             'ville' => ['required', 'string', 'max:100'],
             'telephone_institut' => ['nullable', 'string', 'max:30'],
             'prenom' => ['required', 'string', 'min:2', 'max:50'],
