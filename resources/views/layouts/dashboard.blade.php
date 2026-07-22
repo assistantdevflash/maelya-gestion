@@ -613,8 +613,11 @@
             <div class="border-t border-gray-100 dark:border-slate-700/60 p-3 flex-shrink-0 space-y-2">
                 @php
                     $__user = auth()->user();
-                    if ($__user->isEmploye()) {
-                        $__owner = \App\Models\User::where('institut_id', $__user->institut_id)->where('role', 'admin')->first();
+                    // Si l'utilisateur n'est PAS le propriétaire de l'institut,
+                    // utiliser l'abonnement du propriétaire
+                    $__institut = \App\Models\Institut::find($__user->currentInstitutId());
+                    if ($__institut && $__institut->proprietaire_id !== $__user->id) {
+                        $__owner = \App\Models\User::find($__institut->proprietaire_id);
                         $abonnement = $__owner?->abonnementActif;
                     } else {
                         $abonnement = $__user->abonnementActif;
