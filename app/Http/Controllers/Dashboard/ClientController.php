@@ -122,7 +122,7 @@ class ClientController extends Controller
         );
         if ($existing) {
             return back()->withInput()
-                ->with('error', "Un client existe déjà avec ce téléphone ou email : {$existing->nom_complet}. <a href=\"" . route('dashboard.clients.show', $existing) . "\" class=\"underline font-semibold\">Voir la fiche</a>");
+                ->with('error', "Un client existe déjà avec ce téléphone ou email : {$existing->nom_complet}.");
         }
 
         Client::create($data);
