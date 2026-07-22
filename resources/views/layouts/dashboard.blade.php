@@ -748,7 +748,7 @@
             <h1 class="text-base font-semibold text-gray-900 dark:text-white flex-shrink-0 w-48">@yield('page-title', 'Tableau de bord')</h1>
             <div class="flex-1 flex justify-center">
                 <button @click="window.openGlobalSearch()"
-                        class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-sm text-gray-400 hover:border-gray-300 dark:hover:border-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-all duration-200 w-full max-w-md">
+                        class="flex items-center gap-2 px-4 py-1.5 rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-sm text-gray-400 hover:border-gray-300 dark:hover:border-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-all duration-200 w-full max-w-lg">
                     <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
