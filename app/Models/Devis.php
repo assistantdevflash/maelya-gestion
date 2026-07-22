@@ -49,7 +49,7 @@ class Devis extends Model
 
     public function getEstModifiableAttribute(): bool
     {
-        return in_array($this->statut, ['brouillon']);
+        return !$this->facture_id;
     }
 
     public function getClientNomCompletAttribute(): string

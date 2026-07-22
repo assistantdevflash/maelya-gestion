@@ -3,7 +3,7 @@
     @php
         $devisId = $devis->id;
         $estBrouillon = $devis->statut === 'brouillon';
-        $estModifiable = in_array($devis->statut, ['brouillon', 'envoye']);
+        $estModifiable = !$devis->facture_id;
         $client = $devis->client;
     @endphp
 
@@ -69,7 +69,7 @@
 
             {{-- Dropdown actions secondaires --}}
             <x-dropdown-actions>
-                @if($estBrouillon)
+                @if($estModifiable)
                 <a href="{{ route('dashboard.devis.edit', ['devis' => $devisId]) }}"
                    class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition">
                     <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
