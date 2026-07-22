@@ -36,7 +36,7 @@ class BoutiqueController extends Controller
         }
 
         // Récupérer les produits actifs et visibles en boutique
-        $produits = Cache::remember("boutique_{$institut->id}_produits", 3600, function () use ($institut) {
+        $produits = Cache::remember("boutique_{$institut->id}_produits", 600, function () use ($institut) {
             return $institut->produits()
                 ->with(['categorie', 'imagePrincipale'])
                 ->where('actif', true)
