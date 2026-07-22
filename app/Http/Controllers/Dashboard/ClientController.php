@@ -114,6 +114,17 @@ class ClientController extends Controller
             ]);
         }
 
+        // Vérifier l'unicité : téléphone OU email
+        $existing = $this->findExistingClient(
+            session('current_institut_id', Auth::user()->institut_id),
+            $data['telephone'] ?? null,
+            $data['email'] ?? null
+        );
+        if ($existing) {
+            return back()->withInput()
+                ->with('error', "Un client existe déjà avec ce téléphone ou email : {$existing->nom_complet}. <a href=\"" . route('dashboard.clients.show', $existing) . "\" class=\"underline font-semibold\">Voir la fiche</a>");
+        }
+
         Client::create($data);
 
         return redirect()->route('dashboard.clients.index')
@@ -289,6 +300,21 @@ class ClientController extends Controller
             $request->validate([
                 'raison_sociale' => ['required', 'string', 'max:255'],
             ]);
+        }
+
+        // Vérifier l'unicité : téléphone OU email (exclure le client actuel)
+        $existing = Client::where('institut_id', $client->institut_id)
+            ->where('id', '!=', $client->id)
+            ->where(function ($q) use ($data) {
+                $q->where('telephone', $data['telephone']);
+                if (!empty($data['email'])) {
+                    $q->orWhere('email', $data['email']);
+                }
+            })->first();
+
+        if ($existing) {
+            return back()->withInput()
+                ->with('error', "Ce téléphone ou email est déjà utilisé par : {$existing->nom_complet}.");
         }
 
         $client->update($data);
