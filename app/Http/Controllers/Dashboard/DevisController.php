@@ -120,7 +120,7 @@ class DevisController extends Controller
         $devis = Devis::create([
             'institut_id' => session('current_institut_id', Auth::user()->institut_id),
             'client_id' => $clientId, 'user_id' => Auth::id(),
-            'numero' => DevisService::genererNumero(), 'statut' => 'brouillon',
+            'numero' => DevisService::genererNumero(session('current_institut_id', Auth::user()->institut_id)), 'statut' => 'brouillon',
             'date_creation' => $data['date_creation'], 'date_expiration' => $data['date_expiration'],
             'client_prenom' => $data['client_prenom'] ?? null, 'client_nom' => $data['client_nom'] ?? null,
             'client_email' => $data['client_email'] ?? null, 'client_telephone' => $data['client_telephone'] ?? null, 'client_adresse' => $data['client_adresse'] ?? null,

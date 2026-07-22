@@ -8,11 +8,12 @@ use Illuminate\Support\Str;
 
 class DevisService
 {
-    public static function genererNumero(): string
+    public static function genererNumero(string $institutId): string
     {
-        return DB::transaction(function () {
+        return DB::transaction(function () use ($institutId) {
             $date = now()->format('Ymd');
-            $last = Devis::where('numero', 'like', "DEV-{$date}-%")
+            $last = Devis::where('institut_id', $institutId)
+                ->where('numero', 'like', "DEV-{$date}-%")
                 ->orderByRaw('CAST(SUBSTRING_INDEX(numero, \'-\', -1) AS UNSIGNED) DESC')
                 ->lockForUpdate()->first();
             $next = $last ? ((int)substr($last->numero, -6)) + 1 : 1;
@@ -57,7 +58,7 @@ class DevisService
                 'devis_id' => $devis->id,
                 'client_id' => $devis->client_id,
                 'user_id' => auth()->id(),
-                'numero' => FactureService::genererNumero(),
+                'numero' => FactureService::genererNumero($devis->institut_id),
                 'statut' => 'en_attente',
                 'date_emission' => now()->toDateString(),
                 'date_echeance' => now()->addDays(30)->toDateString(),

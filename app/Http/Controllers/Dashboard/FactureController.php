@@ -115,7 +115,7 @@ class FactureController extends Controller
         $facture = Facture::create([
             'institut_id' => session('current_institut_id', Auth::user()->institut_id),
             'client_id' => $clientId, 'user_id' => Auth::id(),
-            'numero' => FactureService::genererNumero(), 'statut' => 'en_attente',
+            'numero' => FactureService::genererNumero(session('current_institut_id', Auth::user()->institut_id)), 'statut' => 'en_attente',
             'date_emission' => $data['date_emission'], 'date_echeance' => $data['date_echeance'],
             'client_prenom' => $data['client_prenom'] ?? null, 'client_nom' => $data['client_nom'] ?? null,
             'client_email' => $data['client_email'] ?? null, 'client_telephone' => $data['client_telephone'] ?? null, 'client_adresse' => $data['client_adresse'] ?? null,

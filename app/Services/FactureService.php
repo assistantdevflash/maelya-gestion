@@ -7,11 +7,12 @@ use Illuminate\Support\Facades\DB;
 
 class FactureService
 {
-    public static function genererNumero(): string
+    public static function genererNumero(string $institutId): string
     {
-        return DB::transaction(function () {
+        return DB::transaction(function () use ($institutId) {
             $date = now()->format('Ymd');
-            $last = Facture::where('numero', 'like', "FAC-{$date}-%")
+            $last = Facture::where('institut_id', $institutId)
+                ->where('numero', 'like', "FAC-{$date}-%")
                 ->orderByRaw('CAST(SUBSTRING_INDEX(numero, \'-\', -1) AS UNSIGNED) DESC')
                 ->lockForUpdate()->first();
             $next = $last ? ((int)substr($last->numero, -6)) + 1 : 1;
