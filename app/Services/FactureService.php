@@ -9,12 +9,14 @@ class FactureService
 {
     public static function genererNumero(): string
     {
-        $date = now()->format('Ymd');
-        $last = Facture::where('numero', 'like', "FAC-{$date}-%")
-            ->orderByRaw('CAST(SUBSTRING_INDEX(numero, \'-\', -1) AS UNSIGNED) DESC')
-            ->lockForUpdate()->first();
-        $next = $last ? ((int)substr($last->numero, -6)) + 1 : 1;
-        return sprintf('FAC-%s-%06d', $date, $next);
+        return DB::transaction(function () {
+            $date = now()->format('Ymd');
+            $last = Facture::where('numero', 'like', "FAC-{$date}-%")
+                ->orderByRaw('CAST(SUBSTRING_INDEX(numero, \'-\', -1) AS UNSIGNED) DESC')
+                ->lockForUpdate()->first();
+            $next = $last ? ((int)substr($last->numero, -6)) + 1 : 1;
+            return sprintf('FAC-%s-%06d', $date, $next);
+        });
     }
 
     public static function marquerPayee(Facture $facture): Vente

@@ -10,12 +10,14 @@ class DevisService
 {
     public static function genererNumero(): string
     {
-        $date = now()->format('Ymd');
-        $last = Devis::where('numero', 'like', "DEV-{$date}-%")
-            ->orderByRaw('CAST(SUBSTRING_INDEX(numero, \'-\', -1) AS UNSIGNED) DESC')
-            ->lockForUpdate()->first();
-        $next = $last ? ((int)substr($last->numero, -6)) + 1 : 1;
-        return sprintf('DEV-%s-%06d', $date, $next);
+        return DB::transaction(function () {
+            $date = now()->format('Ymd');
+            $last = Devis::where('numero', 'like', "DEV-{$date}-%")
+                ->orderByRaw('CAST(SUBSTRING_INDEX(numero, \'-\', -1) AS UNSIGNED) DESC')
+                ->lockForUpdate()->first();
+            $next = $last ? ((int)substr($last->numero, -6)) + 1 : 1;
+            return sprintf('DEV-%s-%06d', $date, $next);
+        });
     }
 
     public static function calculerTotaux(array $lignes, array $data): array

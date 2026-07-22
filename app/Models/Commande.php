@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class Commande extends Model
 {
@@ -71,23 +72,18 @@ class Commande extends Model
      */
     public static function genererNumero(string $institutId): string
     {
-        $prefix = 'CMD';
-        $date = now()->format('Ymd');
+        return DB::transaction(function () use ($institutId) {
+            $prefix = 'CMD';
+            $date = now()->format('Ymd');
 
-        // Recherche GLOBALE (tous instituts) avec lock pour éviter la race condition
-        $lastCommande = self::where('numero', 'like', "$prefix-$date-%")
-            ->lockForUpdate()
-            ->orderByRaw('CAST(SUBSTRING_INDEX(numero, \'-\', -1) AS UNSIGNED) DESC')
-            ->first();
+            $lastCommande = self::where('numero', 'like', "$prefix-$date-%")
+                ->lockForUpdate()
+                ->orderByRaw('CAST(SUBSTRING_INDEX(numero, \'-\', -1) AS UNSIGNED) DESC')
+                ->first();
 
-        if ($lastCommande) {
-            $lastNumber = (int) substr($lastCommande->numero, -4);
-            $newNumber = $lastNumber + 1;
-        } else {
-            $newNumber = 1;
-        }
-
-        return sprintf('%s-%s-%04d', $prefix, $date, $newNumber);
+            $lastNumber = $lastCommande ? ((int) substr($lastCommande->numero, -4)) + 1 : 1;
+            return sprintf('%s-%s-%04d', $prefix, $date, $lastNumber);
+        });
     }
 
     /**
