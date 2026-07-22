@@ -350,10 +350,19 @@
 
         {{-- Actions --}}
         <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-slate-700">
-            <a href="{{ route('dashboard.boutique.commandes.index') }}" class="btn-ghost">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                Retour
-            </a>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('dashboard.boutique.commandes.index') }}" class="btn-ghost">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    Retour
+                </a>
+                <form method="POST" action="{{ route('dashboard.boutique.config.vider-cache') }}" class="inline">
+                    @csrf
+                    <button type="submit" class="btn-ghost text-amber-600 hover:text-amber-700 text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        Vider le cache
+                    </button>
+                </form>
+            </div>
             <button type="submit" class="btn-primary btn-lg">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 Enregistrer les modifications

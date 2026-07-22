@@ -53,4 +53,15 @@ class BoutiqueConfigController extends Controller
 
         return back()->with('success', 'Configuration de la boutique mise à jour avec succès.');
     }
+
+    /**
+     * Vider le cache de la boutique (produits)
+     */
+    public function viderCache()
+    {
+        $institutId = session('current_institut_id', auth()->user()->institut_id);
+        Cache::forget("boutique_{$institutId}_produits");
+
+        return back()->with('success', 'Cache de la boutique vidé avec succès. Les produits seront rechargés à la prochaine visite.');
+    }
 }

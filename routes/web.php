@@ -142,6 +142,7 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         Route::middleware('role:admin')->group(function () {
             Route::get('config', [BoutiqueConfigController::class, 'index'])->name('config.index');
             Route::post('config', [BoutiqueConfigController::class, 'update'])->name('config.update');
+            Route::post('config/vider-cache', [BoutiqueConfigController::class, 'viderCache'])->name('config.vider-cache');
         });
 
         Route::get('commandes', [CommandeController::class, 'index'])->name('commandes.index');
