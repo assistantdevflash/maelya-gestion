@@ -60,7 +60,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-50">
                         @foreach($produits as $produit)
-                        <tr class="hover:bg-gray-50 group transition-colors {{ $produit->isEnAlerte() ? 'bg-amber-50/50' : '' }}">
+                        <tr class="hover:bg-gray-50 dark:hover:bg-slate-700/50 group transition-colors {{ $produit->isEnAlerte() ? 'bg-amber-50/50 dark:bg-red-950/40' : '' }}">
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
                                     @if($produit->isEnAlerte())
