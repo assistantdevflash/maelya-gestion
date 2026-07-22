@@ -95,6 +95,10 @@
                     </div>
                 </div>
                 <div class="card">
+                    <div class="card-header"><h2 class="text-lg font-semibold">Titre (optionnel)</h2></div>
+                    <div class="card-body"><input type="text" name="titre" maxlength="200" value="{{ old('titre', $devis->titre) }}" placeholder="Ex: Mariage de Fatou, Pack coiffure..." class="form-input text-sm"></div>
+                </div>
+                <div class="card">
                     <div class="card-header"><h2 class="text-lg font-semibold">Notes</h2></div>
                     <div class="card-body"><textarea name="notes" rows="3" placeholder="Notes internes..." class="form-textarea text-sm">{{ $devis->notes }}</textarea></div>
                 </div>

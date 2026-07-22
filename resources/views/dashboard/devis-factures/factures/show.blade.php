@@ -28,6 +28,9 @@
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ $facture->numero }}</h1>
                     @include('dashboard.devis-factures.partials.statut-badge', ['statut' => $facture->statut, 'type' => 'facture'])
                 </div>
+                @if($facture->titre)
+                <p class="text-sm font-medium text-primary-600 dark:text-primary-400 mt-0.5">{{ $facture->titre }}</p>
+                @endif
                 <p class="text-sm text-gray-500 mt-0.5">Émise le {{ $facture->date_emission->format('d/m/Y') }} · Échéance {{ $facture->date_echeance->format('d/m/Y') }}</p>
             </div>
         </div>

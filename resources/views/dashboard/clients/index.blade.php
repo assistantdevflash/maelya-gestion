@@ -368,24 +368,24 @@
                     @foreach($errors->all() as $e)<p>• {{ $e }}</p>@endforeach
                 </div>
                 @endif
-                <form method="POST" action="{{ route('dashboard.clients.store') }}" class="space-y-4" 
+                <form method="POST" action="{{ route('dashboard.clients.store') }}" class="space-y-4"
                       x-data="{ typeClient: '{{ old('type_client', 'personne_physique') }}' }">
                     @csrf
                     <input type="hidden" name="_form" value="create">
-                    
+
                     {{-- Type de client --}}
                     <div class="form-group mb-0">
                         <label class="form-label">Type de client *</label>
                         <div class="grid grid-cols-2 gap-2">
                             <label class="flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition"
                                    :class="typeClient === 'personne_physique' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'">
-                                <input type="radio" name="type_client" value="personne_physique" class="text-primary-600" 
+                                <input type="radio" name="type_client" value="personne_physique" class="text-primary-600"
                                        x-model="typeClient" checked>
                                 <span class="text-sm font-medium">👤 Personne physique</span>
                             </label>
                             <label class="flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition"
                                    :class="typeClient === 'entreprise' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'">
-                                <input type="radio" name="type_client" value="entreprise" class="text-primary-600" 
+                                <input type="radio" name="type_client" value="entreprise" class="text-primary-600"
                                        x-model="typeClient">
                                 <span class="text-sm font-medium">🏢 Entreprise</span>
                             </label>
@@ -431,7 +431,7 @@
                                 <div class="form-group mb-0">
                                     <label class="form-label">Raison sociale *</label>
                                     <input type="text" name="raison_sociale" maxlength="255" class="form-input"
-                                           value="{{ old('_form') === 'create' ? old('raison_sociale') : '' }}" 
+                                           value="{{ old('_form') === 'create' ? old('raison_sociale') : '' }}"
                                            placeholder="Entreprise SARL"
                                            :required="typeClient === 'entreprise'">
                                 </div>
@@ -439,13 +439,13 @@
                                     <div class="form-group mb-0">
                                         <label class="form-label">N° Registre Commerce</label>
                                         <input type="text" name="numero_registre_commerce" maxlength="100" class="form-input"
-                                               value="{{ old('_form') === 'create' ? old('numero_registre_commerce') : '' }}" 
+                                               value="{{ old('_form') === 'create' ? old('numero_registre_commerce') : '' }}"
                                                placeholder="RC-123456">
                                     </div>
                                     <div class="form-group mb-0">
                                         <label class="form-label">Contact (Prénom Nom)</label>
                                         <input type="text" name="prenom" maxlength="100" class="form-input"
-                                               value="{{ old('_form') === 'create' ? old('prenom') : '' }}" 
+                                               value="{{ old('_form') === 'create' ? old('prenom') : '' }}"
                                                placeholder="Jean Dupont">
                                     </div>
                                 </div>
@@ -468,7 +468,7 @@
                             <input type="email" name="email" maxlength="255" class="form-input"
                                    value="{{ old('_form') === 'create' ? old('email') : '' }}" placeholder="contact@exemple.ci">
                         </div>
-                        
+
                         <div class="col-span-2 form-group mb-0">
                             <label class="form-label">Notes</label>
                             <textarea name="notes" rows="3" class="form-input resize-none"
@@ -539,20 +539,20 @@
                     @method('PUT')
                     <input type="hidden" name="_form" value="edit">
                     <input type="hidden" name="_client_id" :value="edit.id">
-                    
+
                     {{-- Type de client --}}
                     <div class="form-group mb-0">
                         <label class="form-label">Type de client *</label>
                         <div class="grid grid-cols-2 gap-2">
                             <label class="flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition"
                                    :class="edit.type_client === 'personne_physique' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'">
-                                <input type="radio" name="type_client" value="personne_physique" class="text-primary-600" 
+                                <input type="radio" name="type_client" value="personne_physique" class="text-primary-600"
                                        x-model="edit.type_client">
                                 <span class="text-sm font-medium">👤 Personne physique</span>
                             </label>
                             <label class="flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition"
                                    :class="edit.type_client === 'entreprise' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'">
-                                <input type="radio" name="type_client" value="entreprise" class="text-primary-600" 
+                                <input type="radio" name="type_client" value="entreprise" class="text-primary-600"
                                        x-model="edit.type_client">
                                 <span class="text-sm font-medium">🏢 Entreprise</span>
                             </label>
@@ -650,7 +650,7 @@
                             <input type="email" name="email" maxlength="255" class="form-input"
                                    x-model="edit.email" placeholder="contact@exemple.ci">
                         </div>
-                        
+
                         <div class="col-span-2 form-group mb-0">
                             <label class="form-label">Notes</label>
                             <textarea name="notes" rows="3" class="form-input resize-none"

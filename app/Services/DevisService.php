@@ -73,6 +73,7 @@ class DevisService
                 'total_ttc' => $devis->total_ttc,
                 'notes' => $devis->notes,
                 'conditions' => $devis->conditions,
+                'titre' => $devis->titre,
                 'token' => Str::random(32),
             ]);
             foreach ($devis->items as $item) {

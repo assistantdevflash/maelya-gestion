@@ -18,6 +18,9 @@
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ $devis->numero }}</h1>
                     @include('dashboard.devis-factures.partials.statut-badge', ['statut' => $devis->statut, 'type' => 'devis'])
                 </div>
+                @if($devis->titre)
+                <p class="text-sm font-medium text-primary-600 dark:text-primary-400 mt-0.5">{{ $devis->titre }}</p>
+                @endif
                 <p class="text-sm text-gray-500 mt-0.5">Créé le {{ $devis->date_creation->format('d/m/Y') }} · Expire le {{ $devis->date_expiration->format('d/m/Y') }}</p>
             </div>
         </div>

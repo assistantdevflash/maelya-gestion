@@ -16,7 +16,7 @@ class Devis extends Model
 
     protected $fillable = [
         'institut_id', 'client_id', 'user_id', 'commercial_id',
-        'numero', 'statut', 'token',
+        'numero', 'titre', 'statut', 'token',
         'date_creation', 'date_expiration', 'date_acceptation', 'signature_client',
         'client_prenom', 'client_nom', 'client_email', 'client_telephone', 'client_adresse',
         'sous_total', 'remise_globale_type', 'remise_globale_valeur',

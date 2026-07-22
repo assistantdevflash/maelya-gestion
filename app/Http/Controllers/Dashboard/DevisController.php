@@ -73,6 +73,7 @@ class DevisController extends Controller
             'date_expiration' => 'required|date|after:date_creation',
             'notes' => 'nullable|string|max:5000',
             'conditions' => 'nullable|string|max:5000',
+            'titre' => 'nullable|string|max:200',
             'tva_applicable' => 'boolean',
             'tva_taux' => 'nullable|numeric|min:0|max:100',
             'remise_globale_type' => 'nullable|in:pourcentage,montant_fixe',
@@ -125,7 +126,7 @@ class DevisController extends Controller
             'client_email' => $data['client_email'] ?? null, 'client_telephone' => $data['client_telephone'] ?? null, 'client_adresse' => $data['client_adresse'] ?? null,
             'sous_total' => $sousTotal, 'remise_globale_type' => $data['remise_globale_type'] ?? null, 'remise_globale_valeur' => $data['remise_globale_valeur'] ?? 0,
             'total_ht' => $totalHT, 'tva_applicable' => $data['tva_applicable'] ?? false, 'tva_taux' => $data['tva_taux'] ?? 0, 'total_ttc' => $totalTTC,
-            'notes' => $data['notes'] ?? null, 'conditions' => $data['conditions'] ?? null,
+            'notes' => $data['notes'] ?? null, 'conditions' => $data['conditions'] ?? null, 'titre' => $data['titre'] ?? null,
         ]);
         foreach ($lignes as $i => $ligne) {
             DevisItem::create(['devis_id' => $devis->id, 'designation' => $ligne['designation'], 'quantite' => $ligne['quantite'], 'prix_unitaire' => $ligne['prix_unitaire'], 'remise_type' => $ligne['remise_type'] ?? null, 'remise_valeur' => $ligne['remise_valeur'] ?? 0, 'tva_taux' => $ligne['tva_taux'] ?? null, 'total_ligne' => $ligne['total_ligne'], 'ordre' => $i]);
@@ -152,7 +153,7 @@ class DevisController extends Controller
     {
         if (!$devis->estModifiable) return back()->with('error','Ce devis ne peut plus être modifié.');
         $data = $request->validate([
-            'date_expiration' => 'required|date|after:date_creation', 'notes' => 'nullable|string|max:5000', 'conditions' => 'nullable|string|max:5000',
+            'date_expiration' => 'required|date|after:date_creation', 'notes' => 'nullable|string|max:5000', 'conditions' => 'nullable|string|max:5000', 'titre' => 'nullable|string|max:200',
             'tva_applicable' => 'boolean', 'tva_taux' => 'nullable|numeric|min:0|max:100',
             'remise_globale_type' => 'nullable|in:pourcentage,montant_fixe', 'remise_globale_valeur' => 'nullable|integer|min:0',
             'lignes' => 'required|json',

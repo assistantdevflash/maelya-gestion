@@ -16,7 +16,7 @@ class Facture extends Model
 
     protected $fillable = [
         'institut_id', 'client_id', 'devis_id', 'vente_id', 'user_id',
-        'numero', 'statut', 'token',
+        'numero', 'titre', 'statut', 'token',
         'date_emission', 'date_echeance',
         'client_prenom', 'client_nom', 'client_email', 'client_telephone', 'client_adresse',
         'sous_total', 'remise_globale_type', 'remise_globale_valeur',
