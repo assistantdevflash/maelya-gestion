@@ -64,7 +64,14 @@ class AbonnementController extends Controller
             ->get();
 
         $user = Auth::user();
-        $abonnementActif = $user->abonnementActif;
+        // Pour un non-propriétaire, utiliser l'abonnement du propriétaire
+        $institut = \App\Models\Institut::find($user->currentInstitutId());
+        if ($institut && $institut->proprietaire_id !== $user->id) {
+            $owner = \App\Models\User::find($institut->proprietaire_id);
+            $abonnementActif = $owner?->abonnementActif;
+        } else {
+            $abonnementActif = $user->abonnementActif;
+        }
 
         $demandeEnAttente = Abonnement::where('user_id', $user->id)
             ->where('statut', 'en_attente')

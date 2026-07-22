@@ -80,7 +80,7 @@
             </div>
 
             {{-- Cartes plans --}}
-            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5 max-w-6xl mx-auto">
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
                 @foreach($plans as $plan)
                 @php
                     $estPlanActuel = $abonnementActif && $abonnementActif->plan_id === $plan->id;

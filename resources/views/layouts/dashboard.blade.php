@@ -33,7 +33,7 @@
     {{ $styles ?? '' }}
     @stack('head')
 </head>
-<body class="dashboard min-h-screen font-sans">
+<body class="dashboard min-h-screen font-sans bg-purple-50/50 dark:bg-slate-900">
 
 <div class="flex min-h-screen" x-data='{
     sidebarOpen: false,
