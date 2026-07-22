@@ -169,7 +169,7 @@ class DevisController extends Controller
     public function dupliquer(Devis $devis) {
         $new = $devis->replicate(); $new->numero = DevisService::genererNumero(); $new->statut = 'brouillon'; $new->facture_id = null; $new->token = null; $new->save();
         foreach ($devis->items as $item) { DevisItem::create(['devis_id' => $new->id, 'designation' => $item->designation, 'quantite' => $item->quantite, 'prix_unitaire' => $item->prix_unitaire, 'remise_type' => $item->remise_type, 'remise_valeur' => $item->remise_valeur, 'tva_taux' => $item->tva_taux, 'total_ligne' => $item->total_ligne, 'ordre' => $item->ordre]); }
-        return redirect()->route('dashboard.devis.show', ['devis' => $new->id])->with('success','Devis dupliqué.');
+        return redirect()->route('dashboard.devis.edit', ['devis' => $new->id])->with('success','Devis dupliqué. Vérifiez et enregistrez.');
     }
 
     /** Envoyer le devis par email au client */
