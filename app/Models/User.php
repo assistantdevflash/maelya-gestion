@@ -143,7 +143,9 @@ class User extends Authenticatable
      */
     public function planActuelSlug(): ?string
     {
-        if ($this->isEmploye() || $this->isGerant()) {
+        // Pour les non-propriétaires (employé, gérant, admin secondaire),
+        // utiliser le plan du propriétaire de l'institut.
+        if ($this->institut && $this->institut->proprietaire_id !== $this->id) {
             $owner = $this->institut?->proprietaire_id
                 ? static::with('abonnementActif.plan')->find($this->institut->proprietaire_id)
                 : null;

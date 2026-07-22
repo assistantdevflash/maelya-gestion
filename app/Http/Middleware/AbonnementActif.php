@@ -54,7 +54,7 @@ class AbonnementActif
             // Si le cache dit que l'abonnement est expiré/sursis, vérifier si un
             // nouvel abonnement a été activé entre-temps (ex: renouvellement).
             if (!empty($aboStatus['en_sursis'])) {
-                $abonnement = ($user->isEmploye() || $user->isGerant())
+                $abonnement = $this->isNotOwner($user)
                     ? $this->getOwnerAbonnement($user)
                     : $user->abonnementActif;
                 if ($abonnement) {
@@ -70,9 +70,10 @@ class AbonnementActif
             }
         }
 
-        // Pour les employés, vérifier l'abonnement du propriétaire (via proprietaire_id de l'institut)
-        $abonnementUser = $user; // utilisateur référent pour l'historique d'abonnement
-        if ($user->isEmploye() || $user->isGerant()) {
+        // Pour les non-propriétaires (employé, gérant, admin secondaire),
+        // vérifier l'abonnement du propriétaire de l'institut.
+        $abonnementUser = $user;
+        if ($this->isNotOwner($user)) {
             $institut = \App\Models\Institut::find($user->currentInstitutId());
             $owner = $institut?->proprietaire_id
                 ? \App\Models\User::find($institut->proprietaire_id)
@@ -205,6 +206,16 @@ class AbonnementActif
             ? \App\Models\User::find($institut->proprietaire_id)
             : null;
         return $owner?->abonnementActif;
+    }
+
+    /**
+     * L'utilisateur n'est PAS le propriétaire de l'institut courant.
+     * (employé, gérant, ou admin secondaire)
+     */
+    private function isNotOwner($user): bool
+    {
+        $institut = \App\Models\Institut::find($user->currentInstitutId());
+        return $institut && $institut->proprietaire_id !== $user->id;
     }
 
     /**
