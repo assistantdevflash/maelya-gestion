@@ -95,8 +95,26 @@ class DevisController extends Controller
                 $data['client_adresse'] = $data['client_adresse'] ?? $client->adresse;
             }
         } elseif (!$clientId && !empty($data['client_telephone'])) {
-            $client = Client::firstOrCreate(['telephone' => $data['client_telephone'], 'institut_id' => session('current_institut_id', Auth::user()->institut_id)], ['prenom' => $data['client_prenom'] ?? '', 'nom' => $data['client_nom'] ?? '']);
-            $clientId = $client->id;
+            // Vérifier si un client existe déjà avec le même téléphone ou email
+            $existing = Client::where('institut_id', session('current_institut_id', Auth::user()->institut_id))
+                ->where(function ($q) use ($data) {
+                    $q->where('telephone', $data['client_telephone']);
+                    if (!empty($data['client_email'])) {
+                        $q->orWhere('email', $data['client_email']);
+                    }
+                })->first();
+            if ($existing) {
+                $clientId = $existing->id;
+            } else {
+                $client = Client::create([
+                    'telephone' => $data['client_telephone'],
+                    'institut_id' => session('current_institut_id', Auth::user()->institut_id),
+                    'prenom' => $data['client_prenom'] ?? '',
+                    'nom' => $data['client_nom'] ?? '',
+                    'email' => $data['client_email'] ?? null,
+                ]);
+                $clientId = $client->id;
+            }
         }
         $devis = Devis::create([
             'institut_id' => session('current_institut_id', Auth::user()->institut_id),

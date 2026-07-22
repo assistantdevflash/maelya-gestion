@@ -121,6 +121,28 @@ class ClientController extends Controller
     }
 
     /**
+     * Trouve un client existant par téléphone OU email (critère d'unicité).
+     */
+    private function findExistingClient(string $institutId, ?string $telephone, ?string $email): ?Client
+    {
+        $query = Client::where('institut_id', $institutId);
+
+        if ($telephone && $email) {
+            $query->where(function ($q) use ($telephone, $email) {
+                $q->where('telephone', $telephone)->orWhere('email', $email);
+            });
+        } elseif ($telephone) {
+            $query->where('telephone', $telephone);
+        } elseif ($email) {
+            $query->where('email', $email);
+        } else {
+            return null;
+        }
+
+        return $query->first();
+    }
+
+    /**
      * Création rapide d'un client (AJAX) — utilisé par Caisse et Devis/Factures.
      */
     public function quickStore(Request $request)
@@ -139,6 +161,22 @@ class ClientController extends Controller
         ]);
 
         $data['institut_id'] = $this->institutId();
+
+        // Vérifier si un client existe déjà avec le même téléphone ou email
+        $existing = $this->findExistingClient($data['institut_id'], $data['telephone'] ?? null, $data['email'] ?? null);
+        if ($existing) {
+            return response()->json([
+                'id'             => $existing->id,
+                'prenom'         => $existing->prenom,
+                'nom'            => $existing->nom,
+                'nom_affichage'  => $existing->nom_complet,
+                'telephone'      => $existing->telephone,
+                'email'          => $existing->email,
+                'adresse'        => $existing->adresse,
+                'initiale'       => strtoupper(substr($existing->nom_complet, 0, 1)),
+                'search'         => Str::lower(($existing->raison_sociale ?? '') . ' ' . $existing->nom . ' ' . $existing->prenom . ' ' . $existing->telephone),
+            ]);
+        }
 
         $client = Client::create($data);
         $client->loadCount('ventes');
@@ -261,9 +299,42 @@ class ClientController extends Controller
 
     public function destroy(Client $client)
     {
-        $client->delete();
+        // Vérifier les dépendances avant suppression
+        $ventes = $client->ventes()->count();
+        $rdvs = $client->rendezVous()->count();
+        $credits = $client->credits()->count();
+        $commandes = $client->commandes()->count();
+        $devis = $client->devis()->count();
+        $factures = $client->factures()->count();
+        $photos = $client->photos()->count();
+        $brouillons = \App\Models\CaisseBrouillon::where('client_id', $client->id)->count();
+        $codesReduction = $client->codesReduction()->count();
+        $avoirs = $client->avoirs()->count();
+        $avis = \App\Models\AvisClient::where('client_id', $client->id)->count();
+        $fidelite = $client->historiquePoints()->count();
+
+        $bloqueurs = array_filter([
+            $ventes > 0 ? "$ventes vente(s)" : '',
+            $rdvs > 0 ? "$rdvs rendez-vous" : '',
+            $credits > 0 ? "$credits crédit(s)" : '',
+            $commandes > 0 ? "$commandes commande(s) boutique" : '',
+            $devis > 0 ? "$devis devis" : '',
+            $factures > 0 ? "$factures facture(s)" : '',
+            $brouillons > 0 ? "$brouillons brouillon(s) caisse" : '',
+            $codesReduction > 0 ? "$codesReduction code(s) réduction" : '',
+            $avoirs > 0 ? "$avoirs avoir(s)" : '',
+            $avis > 0 ? "$avis avis" : '',
+            $photos > 0 ? "$photos photo(s)" : '',
+            $fidelite > 0 ? 'historique fidélité' : '',
+        ]);
+
+        if (!empty($bloqueurs)) {
+            return back()->with('error', 'Impossible de supprimer ce client car il est lié à : ' . implode(', ', $bloqueurs) . '.');
+        }
+
+        $client->forceDelete();
         return redirect()->route('dashboard.clients.index')
-            ->with('success', 'Client supprimé.');
+            ->with('success', 'Client définitivement supprimé.');
     }
 
     public function archiver(Client $client)

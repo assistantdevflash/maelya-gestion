@@ -188,19 +188,27 @@ class BoutiqueController extends Controller
                 }
             }
 
-            // Créer ou récupérer le client
-            $client = Client::firstOrCreate(
-                [
-                    'telephone' => $data['telephone'],
+            // Créer ou récupérer le client — unicité par téléphone OU email
+            $client = Client::where('institut_id', $institut->id)
+                ->where(function ($q) use ($data) {
+                    $q->where('telephone', $data['telephone']);
+                    if (!empty($data['email'])) {
+                        $q->orWhere('email', $data['email']);
+                    }
+                })
+                ->first();
+
+            if (!$client) {
+                $client = Client::create([
                     'institut_id' => $institut->id,
-                ],
-                [
+                    'type_client' => 'personne_physique',
                     'prenom' => $data['prenom'],
                     'nom' => $data['nom'],
-                    'email' => $data['email'],
+                    'telephone' => $data['telephone'],
+                    'email' => $data['email'] ?? null,
                     'adresse' => $data['adresse'],
-                ]
-            );
+                ]);
+            }
 
             // Calculer les montants
             $sousTotal = 0;
