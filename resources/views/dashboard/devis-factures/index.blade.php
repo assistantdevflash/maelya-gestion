@@ -50,7 +50,12 @@
                 <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
                     @forelse($devis as $d)
                     <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 cursor-pointer" onclick="window.location='{{ route('dashboard.devis.show', ['devis' => $d->id]) }}'">
-                        <td class="px-4 py-3 font-mono text-xs font-semibold text-primary-600">{{ $d->numero }}</td>
+                        <td class="px-4 py-3">
+                            <span class="font-mono text-xs font-semibold text-primary-600">{{ $d->numero }}</span>
+                            @if($d->titre)
+                                <p class="text-[11px] text-gray-400 dark:text-slate-500 truncate max-w-[180px]">{{ $d->titre }}</p>
+                            @endif
+                        </td>
                         <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ $d->client_nom_complet ?: ($d->client->nom_complet ?? '—') }}</td>
                         <td class="px-4 py-3 text-gray-500 hidden sm:table-cell">{{ $d->date_creation->format('d/m/Y') }}</td>
                         <td class="px-4 py-3 text-right font-bold">{{ number_format($d->total_ttc, 0, ',', ' ') }} F</td>
@@ -93,7 +98,12 @@
                 <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
                     @forelse($factures as $f)
                     <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 cursor-pointer" onclick="window.location='{{ route('dashboard.factures.show', ['facture' => $f->id]) }}'">
-                        <td class="px-4 py-3 font-mono text-xs font-semibold text-primary-600">{{ $f->numero }}</td>
+                        <td class="px-4 py-3">
+                            <span class="font-mono text-xs font-semibold text-primary-600">{{ $f->numero }}</span>
+                            @if($f->titre)
+                                <p class="text-[11px] text-gray-400 dark:text-slate-500 truncate max-w-[180px]">{{ $f->titre }}</p>
+                            @endif
+                        </td>
                         <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ $f->client_nom_complet ?: ($f->client->nom_complet ?? '—') }}</td>
                         <td class="px-4 py-3 text-gray-500 hidden sm:table-cell">{{ $f->date_echeance->format('d/m/Y') }}</td>
                         <td class="px-4 py-3 text-right font-bold">{{ number_format($f->total_ttc, 0, ',', ' ') }} F</td>
