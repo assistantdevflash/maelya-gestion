@@ -17,7 +17,7 @@ class CaisseBrouillonController extends Controller
     public function index()
     {
         $brouillons = CaisseBrouillon::where('institut_id', $this->institutId())
-            ->with(['user:id,prenom,nom_famille', 'client:id,prenom,nom'])
+            ->with(['user:id,prenom,nom_famille', 'client:id,prenom,nom,type_client,raison_sociale'])
             ->latest()
             ->get();
 
