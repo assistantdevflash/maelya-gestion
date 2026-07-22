@@ -56,7 +56,8 @@ class DevisController extends Controller
             ->map(fn($p) => ['id' => 'prod_'.$p->id, 'type' => 'produit', 'designation' => $p->nom, 'prix' => $p->prix_vente, 'search' => strtolower($p->nom)]);
         $catalogue = $prestations->concat($produits)->values();
 
-        return view('dashboard.devis-factures.devis.create', compact('allClients', 'catalogue'));
+        return view('dashboard.devis-factures.devis.create', compact('allClients', 'catalogue'))
+            ->with('duplicateData', session('duplicate_devis'));
     }
 
     public function store(Request $request)
@@ -166,10 +167,38 @@ class DevisController extends Controller
         return $pdf->download("Devis-{$devis->numero}.pdf");
     }
 
-    public function dupliquer(Devis $devis) {
-        $new = $devis->replicate(); $new->numero = DevisService::genererNumero(); $new->statut = 'brouillon'; $new->facture_id = null; $new->token = null; $new->save();
-        foreach ($devis->items as $item) { DevisItem::create(['devis_id' => $new->id, 'designation' => $item->designation, 'quantite' => $item->quantite, 'prix_unitaire' => $item->prix_unitaire, 'remise_type' => $item->remise_type, 'remise_valeur' => $item->remise_valeur, 'tva_taux' => $item->tva_taux, 'total_ligne' => $item->total_ligne, 'ordre' => $item->ordre]); }
-        return redirect()->route('dashboard.devis.edit', ['devis' => $new->id])->with('success','Devis dupliqué. Vérifiez et enregistrez.');
+    public function dupliquer(Devis $devis)
+    {
+        // Stocker les données du devis en session pour pré-remplir le formulaire de création
+        session()->flash('duplicate_devis', [
+            'client_id' => $devis->client_id,
+            'client' => $devis->client ? [
+                'id' => $devis->client->id,
+                'prenom' => $devis->client->prenom,
+                'nom' => $devis->client->nom,
+                'nom_affichage' => $devis->client->nom_affichage,
+                'telephone' => $devis->client->telephone,
+                'email' => $devis->client->email,
+                'adresse' => $devis->client->adresse,
+                'initiale' => strtoupper(substr($devis->client->prenom ?: $devis->client->nom, 0, 1)),
+            ] : null,
+            'date_expiration' => $devis->date_expiration->toDateString(),
+            'notes' => $devis->notes,
+            'tva_applicable' => $devis->tva_applicable,
+            'tva_taux' => $devis->tva_taux,
+            'remise_globale_type' => $devis->remise_globale_type,
+            'remise_globale_valeur' => $devis->remise_globale_valeur,
+            'lignes' => $devis->items->map(fn($i) => [
+                'designation' => $i->designation,
+                'quantite' => $i->quantite,
+                'prix_unitaire' => $i->prix_unitaire,
+                'remise_type' => $i->remise_type,
+                'remise_valeur' => $i->remise_valeur,
+                'tva_taux' => $i->tva_taux,
+            ])->toArray(),
+        ]);
+
+        return redirect()->route('dashboard.devis.create')->with('success', 'Données du devis '.$devis->numero.' prêtes. Vérifiez et créez le nouveau devis.');
     }
 
     /** Envoyer le devis par email au client */

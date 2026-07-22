@@ -1,5 +1,5 @@
 <x-dashboard-layout>
-<div class="max-w-4xl mx-auto space-y-6" x-data="devisForm(@js($allClients->toArray()), @js($catalogue->toArray()))">
+<div class="max-w-4xl mx-auto space-y-6" x-data="devisForm(@js($allClients->toArray()), @js($catalogue->toArray()), @js($duplicateData ?? null))">
     <div class="flex items-center gap-4">
         <a href="{{ route('dashboard.devis.index') }}" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition">←</a>
         <div><h1 class="text-2xl font-bold text-gray-900 dark:text-white">Nouveau devis</h1></div>
@@ -164,13 +164,13 @@
                     <div class="card-header"><h2 class="text-lg font-semibold">Dates</h2></div>
                     <div class="card-body space-y-3">
                         <div><label class="form-label">Date du devis</label><input type="date" name="date_creation" value="{{ now()->toDateString() }}" class="form-input" required></div>
-                        <div><label class="form-label">Expire le</label><input type="date" name="date_expiration" value="{{ now()->addDays(30)->toDateString() }}" class="form-input" required></div>
+                        <div><label class="form-label">Expire le</label><input type="date" name="date_expiration" value="{{ old('date_expiration', $duplicateData['date_expiration'] ?? now()->addDays(30)->toDateString()) }}" class="form-input" required></div>
                     </div>
                 </div>
 
                 <div class="card">
                     <div class="card-header"><h2 class="text-lg font-semibold">Notes</h2></div>
-                    <div class="card-body"><textarea name="notes" rows="3" placeholder="Notes internes..." class="form-textarea text-sm"></textarea></div>
+                    <div class="card-body"><textarea name="notes" rows="3" placeholder="Notes internes..." class="form-textarea text-sm">{{ old('notes', $duplicateData['notes'] ?? '') }}</textarea></div>
                 </div>
 
                 <input type="hidden" name="lignes" :value="JSON.stringify(lignes)">
@@ -307,13 +307,15 @@
 @push('scripts')
 <script>
 document.addEventListener('alpine:init', () => {
-    Alpine.data('devisForm', (clientsInit, catalogueInit) => ({
+    Alpine.data('devisForm', (clientsInit, catalogueInit, duplicateData) => ({
         // ── Lignes ──
-        lignes: [{designation:'', quantite:1, prix_unitaire:0, remise_type:'', remise_valeur:0, tva_taux:null, pickerOpen: false, pickerSearch: ''}],
-        tva: 0,
-        tvaApplicable: false,
-        remiseGlobaleType: '',
-        remiseGlobaleValeur: 0,
+        lignes: duplicateData?.lignes?.length
+            ? duplicateData.lignes.map(l => ({...l, pickerOpen: false, pickerSearch: ''}))
+            : [{designation:'', quantite:1, prix_unitaire:0, remise_type:'', remise_valeur:0, tva_taux:null, pickerOpen: false, pickerSearch: ''}],
+        tva: duplicateData?.tva_applicable ? (duplicateData.tva_taux || 18) : 0,
+        tvaApplicable: duplicateData?.tva_applicable ? true : false,
+        remiseGlobaleType: duplicateData?.remise_globale_type || '',
+        remiseGlobaleValeur: duplicateData?.remise_globale_valeur || 0,
         catalogue: catalogueInit,
         ajouterLigne() { this.lignes.push({designation:'', quantite:1, prix_unitaire:0, remise_type:'', remise_valeur:0, tva_taux:null, pickerOpen: false, pickerSearch: ''}); },
         catalogueFiltered(ligne) {
@@ -344,6 +346,12 @@ document.addEventListener('alpine:init', () => {
         newClientSaving: false,
         newClientError: '',
         newClient: { type_client: 'personne_physique', prenom: '', nom: '', raison_sociale: '', telephone: '', email: '', date_naissance_mois: '', date_naissance_jour: '', notes: '', adresse: '', piece_identite: '' },
+
+        init() {
+            if (duplicateData?.client) {
+                this.clientChoisi = duplicateData.client;
+            }
+        },
 
         selectClient(client) { this.clientChoisi = client; },
         retirerClient() { this.clientChoisi = null; },
