@@ -41,14 +41,11 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <span class="hidden sm:inline">Enregistrer un paiement</span><span class="sm:hidden">Paiement</span>
             </button>
-            <form method="POST" action="{{ route('dashboard.factures.marquer-payee', ['facture' => $factureId]) }}" class="inline">
-                @csrf
-                <button onclick="return confirm('Marquer comme entièrement payée ?')"
-                   class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    <span class="hidden sm:inline">Marquer payée</span><span class="sm:hidden">Payée</span>
-                </button>
-            </form>
+            <button onclick="openModal('modal-marquer-payee')"
+               class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span class="hidden sm:inline">Marquer payée</span><span class="sm:hidden">Payée</span>
+            </button>
             @endif
 
             {{-- Email : envoi réel avec PDF joint --}}
@@ -263,6 +260,10 @@
 <x-modal-confirm id="modal-annuler" title="Annuler cette facture ?"
     message="La facture &laquo;&nbsp;{{ $facture->numero }}&nbsp;&raquo; sera marquée comme annulée."
     action="{{ route('dashboard.factures.annuler', ['facture' => $factureId]) }}" method="POST" confirm="Annuler la facture" danger="true" />
+
+<x-modal-confirm id="modal-marquer-payee" title="Marquer comme payée ?"
+    message="La facture &laquo;&nbsp;{{ $facture->numero }}&nbsp;&raquo; de <strong>{{ number_format($facture->total_ttc, 0, ',', ' ') }} F</strong> sera marquée comme entièrement payée."
+    action="{{ route('dashboard.factures.marquer-payee', ['facture' => $factureId]) }}" method="POST" confirm="Confirmer" />
 
 @push('scripts')
 <script>function openModal(id){document.getElementById(id).classList.remove('hidden');}</script>
