@@ -78,7 +78,7 @@
 <div class="main-header">
     <div class="main-header-title">📱 Documentation Maëlya Gestion</div>
     <div class="main-header-sub">Guide complet — Gestionnaires d'établissements</div>
-    <div class="main-header-meta">maelyagestion.com · Support WhatsApp · Juin 2026 · 26 modules · v2</div>
+    <div class="main-header-meta">maelyagestion.com · Support WhatsApp · Juillet 2026 · 29 modules · v2</div>
 </div>
 
 {{-- Table des matières --}}
@@ -90,7 +90,7 @@
             <div class="toc-cell"><strong>7.</strong> Stock, Produits & Inventaire</div>
         </div>
         <div class="toc-row">
-            <div class="toc-cell"><strong>2.</strong> Tous les modules (26)</div>
+            <div class="toc-cell"><strong>2.</strong> Tous les modules (29)</div>
             <div class="toc-cell"><strong>8.</strong> Vitrine & Réservation en ligne</div>
         </div>
         <div class="toc-row">
@@ -135,7 +135,7 @@
 <div class="section page-break">
     <div class="section-header" style="background:#374151;">
         <span class="section-num">2</span>
-        <span class="section-title">LES 26 MODULES — Vue d'ensemble complète</span>
+        <span class="section-title">LES 29 MODULES — Vue d'ensemble complète</span>
     </div>
     <div class="section-body">
         <table>
@@ -148,6 +148,9 @@
                 <tr><td><strong>Brouillons caisse</strong></td><td>Sauvegarder une vente en cours et la reprendre plus tard.</td><td>Premium</td></tr>
                 <tr><td><strong>Ticket de caisse</strong></td><td>Ticket numérique partageable par WhatsApp, imprimable en PDF (A4).</td><td>Premium</td></tr>
                 <tr><td><strong>Facture PDF</strong></td><td>Facture numérotée téléchargeable pour chaque vente.</td><td>Premium</td></tr>
+                <tr><td><strong>Devis</strong></td><td>Création de devis personnalisés. Prestations/produits, remises, TVA. PDF pro partageable WhatsApp/Email. Transformation en facture.</td><td>Premium+</td></tr>
+                <tr><td><strong>Factures</strong></td><td>Gestion des factures avec suivi des paiements. Paiements partiels, marquage payé, historique. Génération comptable automatique.</td><td>Premium+</td></tr>
+                <tr><td><strong>Boutique en ligne</strong></td><td>Page web publique pour vendre vos produits 24h/24. Gestion des commandes (accepter, préparer, livrer). Frais et zones de livraison.</td><td>Premium (option 3 900 F)</td></tr>
                 <tr><td><strong>Avoir (remboursement)</strong></td><td>Créer un avoir partiel sur une vente → code de réduction réutilisable.</td><td>Premium</td></tr>
                 <tr><td><strong>Sondage satisfaction</strong></td><td>Envoi d'un lien de sondage post-achat par email ou WhatsApp. Note 1-5 étoiles + commentaire.</td><td>Premium</td></tr>
                 <tr><td><strong>Tableau de bord</strong></td><td>CA jour/mois, nombre de ventes, nouveaux clients, alertes stock, anniversaires, graphique 30 jours.</td><td>Premium</td></tr>
@@ -454,7 +457,7 @@
 
 {{-- Footer --}}
 <div class="footer">
-    Maëlya Gestion · maelyagestion.com · Support WhatsApp &lt; 2h · Documentation complète v2 · Juin 2026 · 26 modules
+    Maëlya Gestion · maelyagestion.com · Support WhatsApp &lt; 2h · Documentation complète v2 · Juillet 2026 · 29 modules
 </div>
 
 </div>

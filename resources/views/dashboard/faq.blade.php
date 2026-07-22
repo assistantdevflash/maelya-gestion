@@ -489,6 +489,56 @@ $categories = [
             ],
         ]
     ],
+    [
+        'id'     => 'devis-factures-boutique',
+        'icon'   => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+        'color'  => '#8b5cf6',
+        'bg'     => '#f5f3ff',
+        'label'  => 'Devis, Factures & Boutique',
+        'faqs'   => [
+            [
+                'q' => 'Comment créer un devis ?',
+                'a' => '<p>Allez dans <strong>Devis & Factures → Devis</strong> et cliquez sur <strong>Nouveau devis</strong>.</p>
+                <ol>
+                    <li>Choisissez votre client (recherche ou création rapide)</li>
+                    <li>Ajoutez des articles : saisie manuelle ou via le sélecteur 📦 de vos prestations/produits</li>
+                    <li>Configurez : remise globale (pourcentage ou montant), TVA (18% par défaut)</li>
+                    <li>Définissez la date d\'expiration et ajoutez des notes</li>
+                    <li>Cliquez sur <strong>Créer le devis</strong></li>
+                </ol>
+                <div class="tip">Vous pouvez dupliquer un devis existant : les données sont préremplies, il ne reste qu\'à valider.</div>'
+            ],
+            [
+                'q' => 'Comment partager un devis ou une facture au client ?',
+                'a' => '<p>Depuis la fiche du devis ou de la facture :</p>
+                <ul>
+                    <li><strong>WhatsApp</strong> : message avec résumé et lien du PDF</li>
+                    <li><strong>Email</strong> : PDF en pièce jointe</li>
+                    <li><strong>Télécharger PDF</strong> : document pro avec votre logo, coordonnées, articles et totaux</li>
+                </ul>
+                <div class="tip">Le PDF inclut automatiquement votre RCCM et numéro fiscal (si configurés dans les paramètres).</div>'
+            ],
+            [
+                'q' => 'Comment transformer un devis en facture ?',
+                'a' => '<p>Ouvrez le devis et cliquez sur <strong>Transformer en facture</strong>. La facture est créée avec les mêmes articles, une échéance à J+30 et un nouveau numéro. Vous pouvez ensuite enregistrer des paiements ou marquer la facture payée.</p>
+                <div class="warn">Un devis ne peut être transformé qu\'une seule fois en facture.</div>'
+            ],
+            [
+                'q' => 'Comment fonctionne la boutique en ligne ?',
+                'a' => '<p>La boutique permet à vos clients de commander vos produits depuis une page web publique.</p>
+                <ol>
+                    <li><strong>Activez</strong> la boutique → Mes établissements</li>
+                    <li><strong>Rendez visibles</strong> vos produits → Produits → "Visible en boutique"</li>
+                    <li><strong>Gérez</strong> les commandes → Boutique → Commandes (accepter, préparer, livrer)</li>
+                </ol>
+                <div class="tip">L\'option Boutique est un add-on payant (3 900 F/mois), gratuit pendant l\'essai.</div>'
+            ],
+            [
+                'q' => 'Puis-je modifier un devis après l\'avoir envoyé ?',
+                'a' => '<p><strong>Oui</strong>, tant que le devis n\'a pas été converti en facture, vous pouvez le modifier (articles, prix, dates, TVA). Une fois la facture créée, le devis n\'est plus modifiable.</p>'
+            ],
+        ]
+    ],
 ];
 @endphp
 

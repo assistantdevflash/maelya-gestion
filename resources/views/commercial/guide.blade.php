@@ -196,6 +196,8 @@ Cocody/Riviera → Marcory/Zone 4 → Plateau/Adjamé → Yopougon → Treichvil
 <tr><td><strong>Caisse</strong></td><td>Ventes en 10s, espèces/Wave/OM/carte/mixte/crédit</td><td>«&nbsp;Plus jamais de calcul à la main&nbsp;»</td></tr>
 <tr><td><strong>Ticket de caisse</strong></td><td>Numérique (WhatsApp) ou PDF imprimable</td><td>«&nbsp;Professionnel comme une caisse de supermarché&nbsp;»</td></tr>
 <tr><td><strong>Facture PDF</strong></td><td>Facture numérotée pour chaque vente</td><td>«&nbsp;Vos clients ont une vraie facture&nbsp;»</td></tr>
+<tr><td><strong>Devis & Factures</strong></td><td>Devis pro → facture en 1 clic, suivi paiements, PDF, WhatsApp</td><td>«&nbsp;Vos devis inspirent confiance&nbsp;»</td></tr>
+<tr><td><strong>Boutique en ligne</strong></td><td>Page web publique, commandes 24h/24, gestion livraisons</td><td>«&nbsp;Vendez même quand le salon est fermé&nbsp;»</td></tr>
 <tr><td><strong>Brouillons caisse</strong></td><td>Sauvegarder une vente en cours</td><td>«&nbsp;Reprenez où vous en étiez&nbsp;»</td></tr>
 <tr><td><strong>Tableau de bord</strong></td><td>CA jour/mois, alertes stocks, anniversaires</td><td>«&nbsp;Tout d\'un coup d\'œil&nbsp;»</td></tr>
 <tr><td><strong>Clients</strong></td><td>Fiche + historique complet</td><td>«&nbsp;Vous connaissez vos clients mieux qu\'eux-mêmes&nbsp;»</td></tr>
