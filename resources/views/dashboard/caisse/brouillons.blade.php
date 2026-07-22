@@ -65,7 +65,7 @@
                                 </p>
                                 @if($b->client)
                                     <p class="text-xs text-purple-600 dark:text-purple-400 mt-0.5">
-                                        Client : {{ $b->client->prenom }} {{ $b->client->nom }}
+                                        Client : {{ $b->client->nom_affichage }}
                                     </p>
                                 @endif
                             </div>
