@@ -10,7 +10,7 @@
         prefilledPanier: @js($this->prefilledPanier),
         routeBrouillonStore: @js(route('dashboard.caisse.brouillons.store')),
     })"
-    class="grid lg:grid-cols-5 gap-4 lg:gap-5 min-h-0 max-w-full overflow-x-hidden"
+    class="grid lg:grid-cols-5 gap-4 lg:gap-5 min-h-0"
 >
     @php $hasCredits = auth()->user()->aFonctionnalite('credits'); @endphp
     {{-- Succès vente crédit --}}
@@ -422,26 +422,32 @@
 
             <div class="flex-1 overflow-y-auto divide-y divide-gray-50 max-h-52">
                 <template x-for="key in panierKeys" :key="key">
-                    <div class="px-3 sm:px-4 py-3 flex items-center gap-1.5 sm:gap-3 hover:bg-gray-50/50 transition-colors">
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-semibold text-gray-900 truncate" x-text="panier[key].nom"></p>
-                            <p class="text-xs text-gray-400" x-text="formatNumber(panier[key].prix) + ' F × ' + panier[key].quantite"></p>
+                    <div class="px-3 sm:px-4 py-3 hover:bg-gray-50/50 transition-colors">
+                        {{-- Ligne 1 : nom + supprimer --}}
+                        <div class="flex items-center gap-2">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-semibold text-gray-900 truncate" x-text="panier[key].nom"></p>
+                                <p class="text-xs text-gray-400" x-text="formatNumber(panier[key].prix) + ' F × ' + panier[key].quantite"></p>
+                            </div>
+                            <button @click="supprimerItem(key)" class="text-gray-300 hover:text-red-500 transition-colors flex-shrink-0">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
                         </div>
-                        <div class="flex items-center gap-1">
-                            <button @click="decrementer(key)"
-                                    class="w-6 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 text-sm font-bold transition-colors flex-shrink-0">−</button>
-                            <input type="number" x-model.number="panier[key].quantite" min="1" max="99999"
-                                   class="w-11 sm:w-14 text-center text-sm font-bold text-gray-900 dark:text-gray-100 bg-transparent border border-gray-200 dark:border-slate-600 rounded-lg py-1 px-0.5 focus:ring-1 focus:ring-primary-400 focus:border-primary-400"
-                                   @change="if (panier[key].quantite < 1) panier[key].quantite = 1">
-                            <button @click="incrementer(key)"
-                                    class="w-6 h-7 rounded-lg bg-primary-100 hover:bg-primary-200 flex items-center justify-center text-primary-700 text-sm font-bold transition-colors flex-shrink-0">+</button>
+                        {{-- Ligne 2 : quantité + total --}}
+                        <div class="flex items-center justify-between mt-2 gap-2">
+                            <div class="flex items-center gap-1.5">
+                                <button @click="decrementer(key)"
+                                        class="w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 text-sm font-bold transition-colors flex-shrink-0">−</button>
+                                <input type="number" x-model.number="panier[key].quantite" min="1" max="99999"
+                                       class="w-14 text-center text-sm font-bold text-gray-900 dark:text-gray-100 bg-transparent border border-gray-200 dark:border-slate-600 rounded-lg py-1 px-1 focus:ring-1 focus:ring-primary-400 focus:border-primary-400"
+                                       @change="if (panier[key].quantite < 1) panier[key].quantite = 1">
+                                <button @click="incrementer(key)"
+                                        class="w-7 h-7 rounded-lg bg-primary-100 hover:bg-primary-200 flex items-center justify-center text-primary-700 text-sm font-bold transition-colors flex-shrink-0">+</button>
+                            </div>
+                            <span class="text-sm font-bold text-gray-900 text-right" x-text="formatNumber(panier[key].prix * panier[key].quantite) + ' F'"></span>
                         </div>
-                        <span class="text-sm font-bold text-gray-900 w-16 sm:w-20 text-right flex-shrink-0" x-text="formatNumber(panier[key].prix * panier[key].quantite) + ' F'"></span>
-                        <button @click="supprimerItem(key)" class="text-gray-300 hover:text-red-500 transition-colors ml-0.5 flex-shrink-0">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
                     </div>
                 </template>
                 <div x-show="panierVide" class="py-14 text-center">
