@@ -35,17 +35,15 @@ class BoutiqueController extends Controller
             abort(404, 'Cette boutique n\'est pas disponible.');
         }
 
-        // Récupérer les produits actifs et visibles en boutique
-        $produits = Cache::remember("boutique_{$institut->id}_produits", 600, function () use ($institut) {
-            return $institut->produits()
-                ->with(['categorie', 'imagePrincipale'])
-                ->where('actif', true)
-                ->where('visible_boutique', true)
-                ->where('stock', '>', 0)
-                ->orderByDesc('featured')
-                ->orderBy('nom')
-                ->get();
-        });
+        // Récupérer les produits directement (pas de cache — source de bugs)
+        $produits = $institut->produits()
+            ->with(['categorie', 'imagePrincipale'])
+            ->where('actif', true)
+            ->where('visible_boutique', true)
+            ->where('stock', '>', 0)
+            ->orderByDesc('featured')
+            ->orderBy('nom')
+            ->get();
 
         // Récupérer les catégories avec au moins un produit
         $categories = $produits->pluck('categorie')->unique()->filter();
@@ -96,12 +94,16 @@ class BoutiqueController extends Controller
         $produit = Produit::where('id', $id)
             ->where('institut_id', $institut->id)
             ->where('actif', true)
-            ->where(function ($q) {
-                // Compatibilité : produits sans colonne visible_boutique (avant migration)
-                $q->where('visible_boutique', true)->orWhereNull('visible_boutique');
-            })
+            ->where('visible_boutique', true)
             ->with(['categorie', 'images'])
-            ->firstOrFail();
+            ->first();
+
+        if (!$produit) {
+            return view('boutique.produit-indisponible', [
+                'institut' => $institut,
+                'ogTitle' => 'Produit indisponible - ' . $institut->nom,
+            ]);
+        }
 
         // Produits similaires (même catégorie)
         $produitsSimilaires = Produit::where('institut_id', $institut->id)

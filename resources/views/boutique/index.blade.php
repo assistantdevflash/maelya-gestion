@@ -120,7 +120,7 @@
                     {{-- Image produit --}}
                     <a :href="'/shop/{{ $institut->slug }}/produit/' + produit.id" class="relative block aspect-square bg-gray-100 dark:bg-slate-900 overflow-hidden">
                         <template x-if="produit.photo">
-                            <img :src="'/storage/' + produit.photo" :alt="produit.nom" class="w-full h-full object-cover">
+                            <img :src="'/storage/' + produit.photo" :alt="produit.nom" class="w-full h-full object-cover" loading="lazy">
                         </template>
                         <template x-if="!produit.photo">
                             <div class="w-full h-full flex items-center justify-center">

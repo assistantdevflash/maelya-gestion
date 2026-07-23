@@ -10,6 +10,7 @@ use Illuminate\Notifications\Notifiable;
 use App\Notifications\ResetPasswordMaelya;
 use App\Notifications\VerifyEmailMaelya;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -196,24 +197,28 @@ class User extends Authenticatable
             return true;
         }
 
-        // Vérifier la feature de base dans le plan
-        if (!$this->aFonctionnalite('boutique')) {
-            return false;
-        }
+        // Cache 5 minutes pour éviter les vérifications répétées qui peuvent
+        // causer des 404 intempestifs si l'abonnement est temporairement inaccessible
+        return Cache::remember("user_{$this->id}_boutique_access", 300, function () {
+            // Vérifier la feature de base dans le plan
+            if (!$this->aFonctionnalite('boutique')) {
+                return false;
+            }
 
-        // Période d'essai : boutique gratuite
-        $abo = $this->abonnementActif;
-        if (!$abo) {
-            return false;
-        }
+            // Période d'essai : boutique gratuite
+            $abo = $this->abonnementActif;
+            if (!$abo) {
+                return false;
+            }
 
-        // Plan essai → boutique offerte
-        if ($abo->plan->slug === 'essai') {
-            return true;
-        }
+            // Plan essai → boutique offerte
+            if ($abo->plan->slug === 'essai') {
+                return true;
+            }
 
-        // Plan payant → vérifier l'option boutique dans les métadonnées
-        return $abo->hasBoutique();
+            // Plan payant → vérifier l'option boutique dans les métadonnées
+            return $abo->hasBoutique();
+        });
     }
 
     /**
