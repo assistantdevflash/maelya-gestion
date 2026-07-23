@@ -153,13 +153,13 @@ class Commande extends Model
     public function changerStatut(string $nouveauStatut): void
     {
         $this->statut = $nouveauStatut;
-        
+
         // Mettre à jour les timestamps
         $field = $nouveauStatut . '_at';
         if (in_array($field, ['acceptee_at', 'en_preparation_at', 'en_livraison_at', 'livree_at', 'annulee_at'])) {
             $this->$field = now();
         }
-        
+
         $this->save();
     }
 }

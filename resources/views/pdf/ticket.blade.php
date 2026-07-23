@@ -28,6 +28,9 @@
 </head>
 <body>
 <div class="logo-zone center">
+    @if($vente->institut->logo ?? null)
+        <img src="{{ storage_path('app/public/' . $vente->institut->logo) }}" style="max-height: 50px; max-width: 140px; margin: 0 auto 4px; display: block;">
+    @endif
     <h1>{{ $vente->institut->nom ?? 'Maëlya Gestion' }}</h1>
     @if($vente->institut->telephone ?? null)
         <p>Tél : {{ $vente->institut->telephone }}</p>

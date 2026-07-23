@@ -40,7 +40,12 @@
 <body>
 <div class="header">
     <div class="header-left">
-        <div class="institut-nom">{{ $institut->nom ?? config('app.name') }}</div>
+        <div class="institut-nom">
+            @if($institut->logo ?? null)
+                <img src="{{ storage_path('app/public/' . $institut->logo) }}" style="max-height: 50px; max-width: 140px; margin-bottom: 4px; display: block;">
+            @endif
+            {{ $institut->nom ?? config('app.name') }}
+        </div>
         <div class="institut-meta">
             @if($institut->ville ?? null){{ $institut->ville }}<br>@endif
             @if($institut->telephone ?? null)Tél : {{ $institut->telephone }}<br>@endif
