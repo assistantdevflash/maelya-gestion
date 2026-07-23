@@ -54,7 +54,12 @@
 
 <div class="header">
     <div class="header-left">
-        <div class="institut-nom">{{ $vente->institut->nom ?? config('app.name') }}</div>
+        <div class="institut-nom">
+            @if($vente->institut->logo ?? null)
+                <img src="{{ storage_path('app/public/' . $vente->institut->logo) }}" style="max-height: 50px; max-width: 140px; margin-bottom: 4px; display: block;">
+            @endif
+            {{ $vente->institut->nom ?? config('app.name') }}
+        </div>
         <div class="institut-meta">
             @if($vente->institut->ville ?? null){{ $vente->institut->ville }}<br>@endif
             @if($vente->institut->telephone ?? null)Tél : {{ $vente->institut->telephone }}<br>@endif

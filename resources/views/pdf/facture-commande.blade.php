@@ -50,7 +50,12 @@
 
 <div class="header">
     <div class="header-left">
-        <div class="institut-nom">{{ $commande->institut->nom ?? 'Institut' }}</div>
+        <div class="institut-nom">
+            @if($commande->institut->logo ?? null)
+                <img src="{{ storage_path('app/public/' . $commande->institut->logo) }}" style="max-height: 50px; max-width: 140px; margin-bottom: 4px; display: block;">
+            @endif
+            {{ $commande->institut->nom ?? 'Institut' }}
+        </div>
         @if($commande->institut->adresse ?? null)
             <div class="institut-meta">{{ $commande->institut->adresse }}</div>
         @endif
