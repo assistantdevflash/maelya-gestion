@@ -260,17 +260,18 @@
 </div>
 
 {{-- ═══ MODALS ═══ --}}
+@php
+    $msgAnnuler = $facture->montant_paye > 0
+        ? "⚠️ Cette facture a déjà <strong>" . number_format($facture->montant_paye, 0, ',', ' ') . " F</strong> de paiements enregistrés.<br><br>"
+          . "En l'annulant :<br>"
+          . "• Les <strong>" . $facture->paiements->count() . " paiement(s)</strong> seront supprimés<br>"
+          . "• Les ventes associées seront <strong>retirées du chiffre d'affaires</strong><br>"
+          . "• Le montant de <strong>" . number_format($facture->montant_paye, 0, ',', ' ') . " F</strong> ne sera plus comptabilisé<br><br>"
+          . "Cette action est <strong>irréversible</strong>."
+        : "La facture &laquo;&nbsp;" . $facture->numero . "&nbsp;&raquo; sera marquée comme annulée. Cette action est irréversible.";
+@endphp
 <x-modal-confirm id="modal-annuler" title="Annuler cette facture ?"
-    message="@if($facture->montant_paye > 0)
-        ⚠️ Cette facture a déjà <strong>{{ number_format($facture->montant_paye, 0, ',', ' ') }} F</strong> de paiements enregistrés.<br><br>
-        En l'annulant :<br>
-        • Les <strong>{{ $facture->paiements->count() }} paiement(s)</strong> seront supprimés<br>
-        • Les ventes associées seront <strong>retirées du chiffre d'affaires</strong><br>
-        • Le montant de <strong>{{ number_format($facture->montant_paye, 0, ',', ' ') }} F</strong> ne sera plus comptabilisé<br><br>
-        Cette action est <strong>irréversible</strong>.
-    @else
-        La facture &laquo;&nbsp;{{ $facture->numero }}&nbsp;&raquo; sera marquée comme annulée. Cette action est irréversible.
-    @endif"
+    message="{!! $msgAnnuler !!}"
     action="{{ route('dashboard.factures.annuler', ['facture' => $factureId]) }}" method="POST" confirm="Annuler la facture" danger="true" />
 
 <x-modal-confirm id="modal-marquer-payee" title="Marquer comme payée ?"
