@@ -8,7 +8,7 @@ class Paiement extends Model
 {
     use HasUuids;
     protected $table = 'paiements';
-    protected $fillable = ['facture_id','user_id','montant','mode_paiement','reference','date_paiement','notes'];
+    protected $fillable = ['facture_id','vente_id','user_id','montant','mode_paiement','reference','date_paiement','notes'];
     protected $casts = ['montant'=>'integer','date_paiement'=>'date'];
     protected $appends = ['mode_paiement_label'];
 

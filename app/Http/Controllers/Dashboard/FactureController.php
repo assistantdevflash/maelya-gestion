@@ -10,6 +10,8 @@ use App\Services\FactureService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class FactureController extends Controller
@@ -145,7 +147,7 @@ class FactureController extends Controller
             'reference' => 'nullable|string|max:100',
             'date_paiement' => 'required|date',
         ]);
-        Paiement::create([
+        $paiement = Paiement::create([
             'facture_id' => $facture->id,
             'user_id' => Auth::id(),
             'montant' => $data['montant'],
@@ -172,6 +174,9 @@ class FactureController extends Controller
             'statut' => 'validee',
         ]);
 
+        // Lier le paiement à la vente générée
+        $paiement->update(['vente_id' => $vente->id]);
+
         if ($facture->fresh()->estPayee) $facture->update(['statut' => 'payee', 'vente_id' => $vente->id]);
         elseif ($facture->montant_paye > 0 && !$facture->fresh()->estPayee) $facture->update(['statut' => 'partiellement_payee']);
 
@@ -188,7 +193,41 @@ class FactureController extends Controller
         return back()->with('success','Facture marquée payée. Vente créée.');
     }
 
-    public function annuler(Facture $facture) { $facture->update(['statut' => 'annulee']); return back()->with('success','Facture annulée.'); }
+    public function annuler(Facture $facture)
+    {
+        $montantPaye = $facture->montant_paye;
+
+        DB::beginTransaction();
+        try {
+            // Supprimer les ventes générées par les paiements
+            foreach ($facture->paiements as $paiement) {
+                if ($paiement->vente_id) {
+                    \App\Models\Vente::where('id', $paiement->vente_id)->delete();
+                }
+            }
+
+            // Supprimer les paiements
+            $facture->paiements()->delete();
+
+            // Marquer la facture comme annulée
+            $facture->update(['statut' => 'annulee', 'montant_paye' => 0]);
+
+            // Invalider le cache dashboard
+            Cache::forget("dashboard_full:{$facture->institut_id}:" . now()->toDateString());
+            Cache::forget("dashboard_basic:{$facture->institut_id}:" . now()->toDateString());
+
+            DB::commit();
+
+            $msg = $montantPaye > 0
+                ? 'Facture annulée. ' . number_format($montantPaye, 0, ',', ' ') . ' F de paiements ont été annulés et retirés du chiffre d\'affaires.'
+                : 'Facture annulée.';
+
+            return back()->with('success', $msg);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Erreur lors de l\'annulation : ' . $e->getMessage());
+        }
+    }
     public function destroy(Facture $facture) { $facture->delete(); return redirect()->route('dashboard.factures.index')->with('success','Facture supprimée.'); }
 
     /** Envoyer la facture par email au client */
