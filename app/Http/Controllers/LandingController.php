@@ -115,18 +115,40 @@ class LandingController extends Controller
             ];
         }
 
-        // Ajouter toutes les boutiques en ligne actives
+        // Ajouter toutes les boutiques en ligne actives + pages produits + checkout
         $boutiques = \App\Models\Institut::where('boutique_active', true)
             ->where('actif', true)
-            ->get(['slug', 'updated_at']);
+            ->with(['produits' => function ($q) {
+                $q->where('actif', true)->where('visible_boutique', true)->where('stock', '>', 0);
+            }])
+            ->get(['id', 'slug', 'updated_at']);
 
         foreach ($boutiques as $institut) {
+            // Page principale boutique
             $pages[] = [
                 'url' => route('shop.index', $institut->slug),
                 'priority' => '0.9',
                 'changefreq' => 'daily',
                 'lastmod' => $institut->updated_at->toIso8601String(),
             ];
+
+            // Page checkout
+            $pages[] = [
+                'url' => route('shop.commander.form', $institut->slug),
+                'priority' => '0.6',
+                'changefreq' => 'monthly',
+                'lastmod' => $institut->updated_at->toIso8601String(),
+            ];
+
+            // Pages produits individuelles
+            foreach ($institut->produits as $produit) {
+                $pages[] = [
+                    'url' => route('shop.produit', [$institut->slug, $produit->id]),
+                    'priority' => '0.7',
+                    'changefreq' => 'weekly',
+                    'lastmod' => $produit->updated_at->toIso8601String(),
+                ];
+            }
         }
 
         return response()
