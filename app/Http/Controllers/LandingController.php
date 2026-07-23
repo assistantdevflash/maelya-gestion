@@ -115,6 +115,20 @@ class LandingController extends Controller
             ];
         }
 
+        // Ajouter toutes les boutiques en ligne actives
+        $boutiques = \App\Models\Institut::where('boutique_active', true)
+            ->where('actif', true)
+            ->get(['slug', 'updated_at']);
+
+        foreach ($boutiques as $institut) {
+            $pages[] = [
+                'url' => route('shop.index', $institut->slug),
+                'priority' => '0.9',
+                'changefreq' => 'daily',
+                'lastmod' => $institut->updated_at->toIso8601String(),
+            ];
+        }
+
         return response()
             ->view('landing.sitemap', compact('pages'))
             ->header('Content-Type', 'application/xml');
