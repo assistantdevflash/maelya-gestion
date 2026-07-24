@@ -204,6 +204,24 @@ class FinanceController extends Controller
             return $r->prestations->sum('prix');
         });
 
+        // Devis envoyés ou acceptés (non transformés, non refusés)
+        $devisPrevu = \App\Models\Devis::whereIn('statut', ['envoye', 'accepte'])
+            ->whereDate('date_expiration', '>=', $debutPrevi)
+            ->whereDate('date_expiration', '<=', $finPrevi)
+            ->sum('total_ttc');
+        $nbDevisPrevu = \App\Models\Devis::whereIn('statut', ['envoye', 'accepte'])
+            ->whereDate('date_expiration', '>=', $debutPrevi)
+            ->whereDate('date_expiration', '<=', $finPrevi)
+            ->count();
+        $revenusPrevu += $devisPrevu;
+
+        // Commandes boutique en cours (non livrées, non annulées) — toutes les actives
+        $commandesPrevues = \App\Models\Commande::whereIn('statut', ['nouvelle', 'acceptee', 'en_preparation', 'en_livraison'])
+            ->sum('total_ttc');
+        $nbCommandesPrevues = \App\Models\Commande::whereIn('statut', ['nouvelle', 'acceptee', 'en_preparation', 'en_livraison'])
+            ->count();
+        $revenusPrevu += $commandesPrevues;
+
         // Moyenne quotidienne des ventes des 30 derniers jours (hors crédits non payés)
         $caRecent = Vente::where('statut', 'validee')
             ->where('created_at', '>=', now()->subDays(30))
@@ -223,12 +241,35 @@ class FinanceController extends Controller
         $jourLabel = [];
         $jourEntrees = [];
         $jourSorties = [];
+
+        // Pré-charger devis et commandes pour le détail journalier
+        $devisJournaliers = \App\Models\Devis::whereIn('statut', ['envoye', 'accepte'])
+            ->whereDate('date_expiration', '>=', $debutPrevi)
+            ->whereDate('date_expiration', '<=', $finPrevi)
+            ->get(['date_expiration', 'total_ttc']);
+
+        // Commandes actives : réparties uniformément sur l'horizon
+        $commandesJournalieres = \App\Models\Commande::whereIn('statut', ['nouvelle', 'acceptee', 'en_preparation', 'en_livraison'])
+            ->get(['total_ttc']);
+        $cmdQuotidien = $commandesJournalieres->sum('total_ttc') / $joursPrevi;
+
         for ($i = 0; $i < $joursPrevi; $i++) {
             $d = $debutPrevi->copy()->addDays($i);
             $jourLabel[] = $d->format('d/m');
+
+            // RDV du jour
             $entrees = $rdvFuturs->where('debut_le', '>=', $d)
                 ->where('debut_le', '<', $d->copy()->addDay())
                 ->sum(fn ($r) => $r->prestations->sum('prix'));
+
+            // Devis dont l'expiration tombe ce jour
+            $entrees += $devisJournaliers->where('date_expiration', '>=', $d->format('Y-m-d'))
+                ->where('date_expiration', '<', $d->copy()->addDay()->format('Y-m-d'))
+                ->sum('total_ttc');
+
+            // Commandes boutique : lissage uniforme
+            $entrees += $cmdQuotidien;
+
             $jourEntrees[] = (int) ($entrees + $caQuotidien);
             $jourSorties[] = (int) $depQuotidienne;
         }
@@ -239,7 +280,8 @@ class FinanceController extends Controller
             'valeurStock', 'margePotentielleStock',
             'prestationsParCategorie', 'produitsParCategorie',
             'joursPrevi', 'revenusPrevu', 'projectionVentes', 'projectionDepenses',
-            'soldePrevi', 'jourLabel', 'jourEntrees', 'jourSorties', 'rdvFuturs'
+            'soldePrevi', 'jourLabel', 'jourEntrees', 'jourSorties', 'rdvFuturs',
+            'devisPrevu', 'commandesPrevues', 'nbDevisPrevu', 'nbCommandesPrevues'
         ));
     }
 

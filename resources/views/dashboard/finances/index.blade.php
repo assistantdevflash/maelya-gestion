@@ -280,19 +280,23 @@
             {{-- KPI trésorerie --}}
             <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div class="card p-4">
-                    <p class="text-xs text-gray-500 dark:text-slate-400 uppercase">RDV à venir</p>
+                    <p class="text-xs text-gray-500 dark:text-slate-400 uppercase">Entrées prévues</p>
                     <p class="text-2xl font-bold text-emerald-600 mt-1">{{ number_format($revenusPrevu, 0, ',', ' ') }} F</p>
-                    <p class="text-xs text-gray-400 mt-1">{{ $rdvFuturs->count() }} RDV planifiés</p>
+                    <p class="text-xs text-gray-400 mt-1">
+                        {{ $rdvFuturs->count() }} RDV{{ $rdvFuturs->count() > 1 ? 's' : '' }}
+                        @if($nbDevisPrevu > 0) · {{ $nbDevisPrevu }} devis @endif
+                        @if($nbCommandesPrevues > 0) · {{ $nbCommandesPrevues }} cmd @endif
+                    </p>
                 </div>
                 <div class="card p-4">
                     <p class="text-xs text-gray-500 dark:text-slate-400 uppercase">Ventes prévues</p>
                     <p class="text-2xl font-bold text-blue-600 mt-1">{{ number_format($projectionVentes, 0, ',', ' ') }} F</p>
-                    <p class="text-xs text-gray-400 mt-1">Projection 30j</p>
+                    <p class="text-xs text-gray-400 mt-1">Projection {{ $joursPrevi }}j (moy. CA)</p>
                 </div>
                 <div class="card p-4">
                     <p class="text-xs text-gray-500 dark:text-slate-400 uppercase">Dépenses prévues</p>
                     <p class="text-2xl font-bold text-red-600 mt-1">{{ number_format($projectionDepenses, 0, ',', ' ') }} F</p>
-                    <p class="text-xs text-gray-400 mt-1">Projection 90j</p>
+                    <p class="text-xs text-gray-400 mt-1">Projection {{ $joursPrevi }}j (moy. 90j)</p>
                 </div>
                 <div class="card p-4 {{ $soldePrevi >= 0 ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-red-50 dark:bg-red-900/20' }}">
                     <p class="text-xs text-gray-500 dark:text-slate-400 uppercase">Solde net projeté</p>
