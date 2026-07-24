@@ -1,5 +1,5 @@
 <x-dashboard-layout>
-<div class="max-w-4xl mx-auto space-y-6" x-data="creditForm(@js($allClients->toArray()), @js($catalogue->toArray()))">
+<div class="max-w-4xl mx-auto space-y-6" x-data="creditForm(@js($allClients->toArray()), @js($catalogue->toArray()), null)">
     <div class="flex items-center gap-4">
         <a href="{{ route('dashboard.credits.index') }}" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition">←</a>
         <div><h1 class="text-2xl font-bold text-gray-900 dark:text-white">Nouveau crédit client</h1></div>
@@ -296,8 +296,10 @@
 @push('scripts')
 <script>
 document.addEventListener('alpine:init', () => {
-    Alpine.data('creditForm', (clientsInit, catalogueInit) => ({
-        lignes: [{designation:'', quantite:1, prix_unitaire:0, pickerOpen: false, pickerSearch: ''}],
+    Alpine.data('creditForm', (clientsInit, catalogueInit, editData) => ({
+        lignes: (editData?.lignes?.length
+            ? editData.lignes.map(l => ({...l, pickerOpen: false, pickerSearch: ''}))
+            : [{designation:'', quantite:1, prix_unitaire:0, pickerOpen: false, pickerSearch: ''}]),
         catalogue: catalogueInit,
         ajouterLigne() { this.lignes.push({designation:'', quantite:1, prix_unitaire:0, pickerOpen: false, pickerSearch: ''}); },
         catalogueFiltered(ligne) {
@@ -312,11 +314,11 @@ document.addEventListener('alpine:init', () => {
             ligne.pickerSearch = '';
         },
         get sousTotal() { return this.lignes.reduce((s, l) => s + ((l.prix_unitaire||0) * (l.quantite||1)), 0); },
-        apport: {{ old('apport_initial', 0) }},
+        apport: editData?.apport ?? {{ old('apport_initial', 0) }},
         get reste() { return Math.max(0, this.sousTotal - this.apport); },
         formatPrix(v) { return new Intl.NumberFormat('fr-FR').format(v); },
         clientsList: clientsInit,
-        clientChoisi: null,
+        clientChoisi: editData?.client ?? null,
         newClientOpen: false,
         newClientSaving: false,
         newClientError: '',

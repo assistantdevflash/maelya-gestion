@@ -50,16 +50,19 @@
                 </a>
                 @endif
                 @if($credit->paiements->isEmpty())
-                <a href="{{ route('dashboard.credits.edit', $credit) }}" class="btn-outline text-xs py-1.5 px-3 whitespace-nowrap" title="Modifier">
-                    ✏️ <span class="hidden sm:inline">Modifier</span>
-                </a>
-                <form method="POST" action="{{ route('dashboard.credits.destroy', $credit) }}" class="inline"
-                      onsubmit="return confirm('Supprimer définitivement ce crédit ? Cette action est irréversible.')">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="btn-outline text-xs py-1.5 px-3 text-red-600 border-red-200 hover:bg-red-50 whitespace-nowrap" title="Supprimer">
-                        🗑️ <span class="hidden sm:inline">Supprimer</span>
+                <x-dropdown-actions>
+                    <a href="{{ route('dashboard.credits.edit', $credit) }}"
+                       class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition">
+                        <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        Modifier
+                    </a>
+                    <div class="border-t border-gray-100 dark:border-slate-700 my-1"></div>
+                    <button onclick="openModal('modal-supprimer-credit')"
+                       class="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        Supprimer
                     </button>
-                </form>
+                </x-dropdown-actions>
                 @endif
             </div>
         </div>
@@ -281,4 +284,12 @@
         </div>
         @endif
     </div>
+
+    <x-modal-confirm id="modal-supprimer-credit" title="Supprimer ce crédit ?"
+        message="Le crédit de <strong>{{ $credit->client?->nom_complet ?? '—' }}</strong> d'un montant de <strong>{{ number_format($credit->montant_total, 0, ',', ' ') }} F</strong> sera définitivement supprimé. Cette action est <strong>irréversible</strong>."
+        action="{{ route('dashboard.credits.destroy', $credit) }}" method="DELETE" confirm="Supprimer" danger="true" />
 </x-dashboard-layout>
+
+@push('scripts')
+<script>function openModal(id){document.getElementById(id).classList.remove('hidden');}</script>
+@endpush
