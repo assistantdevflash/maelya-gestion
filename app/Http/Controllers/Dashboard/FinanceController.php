@@ -217,7 +217,7 @@ class FinanceController extends Controller
 
         // Commandes boutique en cours (non livrées, non annulées) — toutes les actives
         $commandesPrevues = \App\Models\Commande::whereIn('statut', ['nouvelle', 'acceptee', 'en_preparation', 'en_livraison'])
-            ->sum('total_ttc');
+            ->sum('total');
         $nbCommandesPrevues = \App\Models\Commande::whereIn('statut', ['nouvelle', 'acceptee', 'en_preparation', 'en_livraison'])
             ->count();
         $revenusPrevu += $commandesPrevues;
@@ -250,8 +250,8 @@ class FinanceController extends Controller
 
         // Commandes actives : réparties uniformément sur l'horizon
         $commandesJournalieres = \App\Models\Commande::whereIn('statut', ['nouvelle', 'acceptee', 'en_preparation', 'en_livraison'])
-            ->get(['total_ttc']);
-        $cmdQuotidien = $commandesJournalieres->sum('total_ttc') / $joursPrevi;
+            ->get(['total']);
+        $cmdQuotidien = $commandesJournalieres->sum('total') / $joursPrevi;
 
         for ($i = 0; $i < $joursPrevi; $i++) {
             $d = $debutPrevi->copy()->addDays($i);

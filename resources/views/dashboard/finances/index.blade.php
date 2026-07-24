@@ -445,27 +445,27 @@
                 data: {
                     labels: @json($jourLabel),
                     datasets: [
-                        { 
-                            label: 'Entrées (F)', 
-                            data: @json($jourEntrees), 
-                            borderColor: '#10b981', 
-                            backgroundColor: 'rgba(16,185,129,0.1)', 
-                            tension: 0.3 
+                        {
+                            label: 'Entrées (F)',
+                            data: @json($jourEntrees),
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16,185,129,0.1)',
+                            tension: 0.3
                         },
-                        { 
-                            label: 'Sorties (F)', 
-                            data: @json($jourSorties), 
-                            borderColor: '#ef4444', 
-                            backgroundColor: 'rgba(239,68,68,0.1)', 
-                            tension: 0.3 
+                        {
+                            label: 'Sorties (F)',
+                            data: @json($jourSorties),
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239,68,68,0.1)',
+                            tension: 0.3
                         },
                     ]
                 },
-                options: { 
-                    responsive: true, 
-                    plugins: { 
-                        legend: { position: 'top' } 
-                    } 
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' }
+                    }
                 }
             });
         }
