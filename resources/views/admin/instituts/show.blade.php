@@ -152,6 +152,16 @@
                         <span x-show="periode === 'mois'" x-cloak>{{ $statsCommandes->nb_mois }} commande(s) ce mois</span>
                         <span x-show="periode === 'jour'" x-cloak>{{ $statsCommandes->nb_jour }} commande(s) aujourd'hui</span>
                     </p>
+                    @if($boutiqueActive)
+                    <div class="mt-2 pt-2 border-t border-amber-200 dark:border-amber-700/50 flex items-center gap-2" x-data="{ copied: false }">
+                        <a href="{{ route('shop.index', $institut->slug) }}" target="_blank" class="text-xs text-amber-700 dark:text-amber-300 font-mono underline truncate flex-1">{{ route('shop.index', $institut->slug) }}</a>
+                        <button @click="navigator.clipboard.writeText('{{ route('shop.index', $institut->slug) }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                                class="text-xs px-2 py-1 rounded-lg bg-amber-200 dark:bg-amber-700/50 text-amber-700 dark:text-amber-200 hover:bg-amber-300 dark:hover:bg-amber-600/50 transition flex-shrink-0">
+                            <span x-show="!copied">📋 Copier</span>
+                            <span x-show="copied" x-cloak>✓ Copié</span>
+                        </button>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
