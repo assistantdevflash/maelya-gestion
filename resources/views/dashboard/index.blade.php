@@ -91,7 +91,7 @@
         {{-- ═══ KPI CARDS ═══ --}}
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {{-- CA du jour --}}
-            <div class="stat-card group">
+            <a href="{{ route('dashboard.ventes.index') }}" class="stat-card group block cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, rgba(147,51,234,0.1), rgba(168,85,247,0.15));">
                         <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,10 +106,10 @@
                     <p class="text-xs font-medium text-primary-600">{{ number_format($caMois ?? 0, 0, ',', ' ') }} F ce mois</p>
                     <x-evolution-badge :pct="$evolutionCaMois ?? 0" title="vs mois précédent" />
                 </div>
-            </div>
+            </a>
 
             {{-- Ventes du jour --}}
-            <div class="stat-card group">
+            <a href="{{ route('dashboard.caisse') }}" class="stat-card group block cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, rgba(236,72,153,0.1), rgba(244,114,182,0.15));">
                         <svg class="w-5 h-5 text-secondary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,10 +124,10 @@
                     <p class="text-xs font-medium text-secondary-600">{{ $ventesMois ?? 0 }} ce mois</p>
                     <x-evolution-badge :pct="$evolutionVentesMois ?? 0" title="vs mois précédent" />
                 </div>
-            </div>
+            </a>
 
             {{-- Clients --}}
-            <div class="stat-card group">
+            <a href="{{ route('dashboard.clients.index') }}" class="stat-card group block cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-50">
                         <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,10 +141,10 @@
                 <div class="mt-2 pt-2 border-t border-gray-100/80">
                     <p class="text-xs font-medium text-blue-600">+{{ $nouveauxClientsJour ?? 0 }} aujourd'hui</p>
                 </div>
-            </div>
+            </a>
 
             {{-- Bénéfice --}}
-            <div class="stat-card group">
+            <a href="{{ route('dashboard.ventes.index') }}" class="stat-card group block cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-10 h-10 rounded-xl flex items-center justify-center {{ ($beneficeMois ?? 0) >= 0 ? 'bg-emerald-50' : 'bg-red-50' }}">
                         <svg class="w-5 h-5 {{ ($beneficeMois ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,7 +157,7 @@
                 <div class="mt-2 pt-2 border-t border-gray-100/80">
                     <p class="text-xs font-medium {{ ($beneficeMois ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-600' }}">FCFA net</p>
                 </div>
-            </div>
+            </a>
         </div>
 
         {{-- ═══ GRAPHIQUE + SIDE PANELS ═══ --}}
