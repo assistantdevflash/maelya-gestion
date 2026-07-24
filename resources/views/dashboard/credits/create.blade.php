@@ -1,211 +1,290 @@
 <x-dashboard-layout>
-    <x-slot name="title">Nouveau crédit</x-slot>
-
-    <div class="max-w-2xl mx-auto space-y-5"
-         x-data="creditForm(@json($produits), @json($prestations))">
-        <div>
-            <a href="{{ route('dashboard.credits.index') }}" class="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 mb-3 transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                </svg>
-                Retour aux crédits
-            </a>
-            <h1 class="page-title">Nouveau crédit client</h1>
-            <p class="text-sm text-gray-500 mt-1">Créez un crédit directement avec échéancier</p>
-        </div>
-
-        <form method="POST" action="{{ route('dashboard.credits.store') }}" class="space-y-4"
-              x-on:submit="prepareSubmit">
-            @csrf
-
-            @if($errors->any())
-            <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700 space-y-1">
-                @foreach($errors->all() as $e)<p>• {{ $e }}</p>@endforeach
-            </div>
-            @endif
-
-            {{-- CLIENT --}}
-            <div class="card p-5 space-y-4">
-                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Client <span class="text-red-500">*</span></p>
-                <select name="client_id" required class="form-input"
-                        x-ref="clientSelect"
-                        x-on:change="if($el.value){ const o=$el.options[$el.selectedIndex]; clientNom=o.textContent.trim(); }">
-                    <option value="">— Choisir un client —</option>
-                    @foreach($clients as $c)
-                    <option value="{{ $c->id }}" {{ old('client_id') == $c->id ? 'selected' : '' }}>
-                        {{ $c->nom_complet }}
-                    </option>
-                    @endforeach
-                </select>
-            </div>
-
-            {{-- ARTICLES --}}
-            <div class="card p-5 space-y-4">
-                <div class="flex items-center justify-between">
-                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Articles <span class="text-red-500">*</span></p>
-                    <button type="button" @click="addArticle()"
-                            class="text-xs text-primary-600 hover:text-primary-700 font-medium">
-                        + Ajouter
-                    </button>
-                </div>
-
-                <template x-for="(art, i) in articles" :key="i">
-                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                        {{-- Type --}}
-                        <select x-model="art.type" class="form-input text-xs w-28" @change="art.item_id=null;art.nom='';art.prix=0">
-                            <option value="libre">Libre</option>
-                            <option value="produit">Produit</option>
-                            <option value="prestation">Prestation</option>
-                        </select>
-
-                        {{-- Sélecteur produit/prestation --}}
-                        <template x-if="art.type === 'produit'">
-                            <select x-model="art.item_id" class="form-input text-xs flex-1"
-                                    @change="fillFromCatalog(art, 'produit')">
-                                <option value="">— Produit —</option>
-                                <template x-for="p in produitsData" :key="p.id">
-                                    <option :value="p.id" x-text="p.nom + ' (' + p.prix_vente + ' F)'"></option>
-                                </template>
-                            </select>
-                        </template>
-                        <template x-if="art.type === 'prestation'">
-                            <select x-model="art.item_id" class="form-input text-xs flex-1"
-                                    @change="fillFromCatalog(art, 'prestation')">
-                                <option value="">— Prestation —</option>
-                                <template x-for="p in prestationsData" :key="p.id">
-                                    <option :value="p.id" x-text="p.nom + ' (' + p.prix + ' F)'"></option>
-                                </template>
-                            </select>
-                        </template>
-
-                        {{-- Nom libre --}}
-                        <template x-if="art.type === 'libre'">
-                            <input type="text" x-model="art.nom" placeholder="Nom article" class="form-input text-xs flex-1">
-                        </template>
-
-                        {{-- Prix --}}
-                        <input type="number" x-model="art.prix" min="1" class="form-input text-xs w-24" placeholder="Prix">
-
-                        {{-- Qté --}}
-                        <input type="number" x-model="art.quantite" min="1" class="form-input text-xs w-16" placeholder="Qté">
-
-                        {{-- Sous-total --}}
-                        <span class="text-xs font-semibold text-gray-700 w-20 text-right"
-                              x-text="formatMoney(art.prix * art.quantite) + ' F'"></span>
-
-                        {{-- Supprimer --}}
-                        <button type="button" @click="articles.splice(i,1)" class="text-red-400 hover:text-red-600">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
-                    </div>
-                </template>
-
-                <p x-show="articles.length === 0" class="text-sm text-gray-400 text-center py-4">Aucun article ajouté</p>
-
-                {{-- Total --}}
-                <div class="flex justify-between items-center pt-3 border-t border-gray-100">
-                    <span class="text-sm font-semibold text-gray-700">Total</span>
-                    <span class="text-lg font-bold text-gray-900" x-text="formatMoney(totalBrut) + ' FCFA'"></span>
-                </div>
-            </div>
-
-            <input type="hidden" name="articles" x-model="articlesJson">
-
-            {{-- APPORT + ÉCHÉANCIER --}}
-            <div class="card p-5 space-y-4">
-                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Modalités de crédit</p>
-
-                <div>
-                    <label class="form-label">Apport initial (FCFA)</label>
-                    <input type="number" name="apport_initial" x-model="apport" min="0" :max="totalBrut"
-                           class="form-input" value="{{ old('apport_initial', 0) }}">
-                    <p class="text-xs text-gray-400 mt-1">
-                        Reste à payer : <strong x-text="formatMoney(reste) + ' FCFA'"></strong>
-                    </p>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="form-label">Nombre d'échéances</label>
-                        <input type="number" name="nb_echeances" min="1" max="24"
-                               value="{{ old('nb_echeances', 3) }}"
-                               class="form-input">
-                    </div>
-                    <div>
-                        <label class="form-label">Fréquence</label>
-                        <select name="frequence" class="form-input">
-                            <option value="mensuel" {{ old('frequence') === 'mensuel' ? 'selected' : '' }}>Mensuelle</option>
-                            <option value="hebdomadaire" {{ old('frequence') === 'hebdomadaire' ? 'selected' : '' }}>Hebdomadaire</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            {{-- NOTES --}}
-            <div class="card p-5">
-                <label class="form-label">Notes (optionnel)</label>
-                <textarea name="notes" rows="2" class="form-input" placeholder="Détails du crédit...">{{ old('notes') }}</textarea>
-            </div>
-
-            <button type="submit" class="btn-primary w-full" :disabled="articles.length === 0 || totalBrut <= 0">
-                Créer le crédit
-            </button>
-        </form>
+<div class="max-w-4xl mx-auto space-y-6" x-data="creditForm(@js($allClients->toArray()), @js($catalogue->toArray()))">
+    <div class="flex items-center gap-4">
+        <a href="{{ route('dashboard.credits.index') }}" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition">←</a>
+        <div><h1 class="text-2xl font-bold text-gray-900 dark:text-white">Nouveau crédit client</h1></div>
     </div>
 
-    <script>
-    function creditForm(produits, prestations) {
-        return {
-            produitsData: produits,
-            prestationsData: prestations,
-            articles: [],
-            apport: {{ old('apport_initial', 0) }},
-            clientNom: '',
+    <form method="POST" action="{{ route('dashboard.credits.store') }}">
+        @csrf
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 space-y-5">
+                {{-- Lignes --}}
+                <div class="card" style="overflow: visible">
+                    <div class="card-header flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Articles / Prestations</h2>
+                        <button type="button" @click="ajouterLigne()" class="text-sm text-primary-600 hover:text-primary-700 font-medium">+ Ajouter une ligne</button>
+                    </div>
+                    <div class="card-body space-y-3">
+                        <template x-for="(ligne, i) in lignes" :key="i">
+                            <div class="flex flex-wrap items-center gap-2 p-3 bg-gray-50 dark:bg-slate-800 rounded-xl">
+                                <div class="relative" @click.outside="ligne.pickerOpen = false">
+                                    <button type="button" @click="ligne.pickerOpen = !ligne.pickerOpen"
+                                        class="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-white rounded-lg transition"
+                                        title="Choisir une prestation/produit">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                                    </button>
+                                    <div x-show="ligne.pickerOpen" x-cloak
+                                        class="absolute left-0 top-full mt-1 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 z-20 overflow-hidden">
+                                        <div class="p-2">
+                                            <input type="text" x-model="ligne.pickerSearch" placeholder="Rechercher..."
+                                                class="form-input text-xs w-full" @keydown.escape="ligne.pickerOpen = false">
+                                        </div>
+                                        <div class="max-h-40 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-700">
+                                            <template x-for="item in catalogueFiltered(ligne)" :key="item.id">
+                                                <button type="button" @click="choisirCatalogue(ligne, item)"
+                                                    class="w-full text-left px-3 py-2 text-xs hover:bg-gray-50 dark:hover:bg-slate-700 flex justify-between items-center">
+                                                    <span>
+                                                        <span x-text="item.designation"></span>
+                                                        <span class="ml-1.5 text-[10px] px-1 py-0.5 rounded"
+                                                            :class="item.type === 'prestation' ? 'bg-purple-100 text-purple-700' : 'bg-amber-100 text-amber-700'"
+                                                            x-text="item.type === 'prestation' ? 'Prest.' : 'Prod.'"></span>
+                                                    </span>
+                                                    <span class="font-semibold text-gray-900" x-text="formatPrix(item.prix) + ' F'"></span>
+                                                </button>
+                                            </template>
+                                            <p x-show="catalogueFiltered(ligne).length === 0" class="px-3 py-2 text-xs text-gray-400 text-center">Aucun résultat</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="text" :name="'ligne_'+i+'_designation'" x-model="ligne.designation" placeholder="Désignation" class="form-input text-sm flex-1 min-w-[140px]" required>
+                                <input type="number" :name="'ligne_'+i+'_quantite'" x-model.number="ligne.quantite" min="1" class="form-input text-sm w-16 text-center" required>
+                                <input type="number" :name="'ligne_'+i+'_prix'" x-model.number="ligne.prix_unitaire" min="0" placeholder="PU" class="form-input text-sm w-24" required>
+                                <button type="button" @click="lignes.splice(i,1)" class="p-1.5 text-red-400 hover:text-red-600" title="Supprimer">✕</button>
+                            </div>
+                        </template>
+                        <p x-show="lignes.length === 0" class="text-sm text-gray-400 text-center py-4">Ajoutez au moins un article ou une prestation.</p>
+                    </div>
+                </div>
 
-            get totalBrut() {
-                return this.articles.reduce((sum, a) => sum + ((a.prix || 0) * (a.quantite || 1)), 0);
-            },
+                {{-- Total --}}
+                <div class="card">
+                    <div class="card-header"><h2 class="text-lg font-semibold">Total</h2></div>
+                    <div class="card-body">
+                        <div class="flex justify-between text-lg font-bold">
+                            <span>Total</span>
+                            <span class="text-primary-600" x-text="formatPrix(sousTotal) + ' FCFA'"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            get reste() {
-                return Math.max(0, this.totalBrut - (this.apport || 0));
-            },
+            {{-- Sidebar --}}
+            <div class="space-y-5">
+                {{-- Client --}}
+                <div class="card">
+                    <div class="card-header"><h2 class="text-lg font-semibold">Client</h2></div>
+                    <div class="card-body space-y-3">
+                        <template x-if="clientChoisi">
+                            <div class="flex items-center gap-3 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-xl">
+                                <div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-full flex items-center justify-center text-white text-xs font-bold" x-text="clientChoisi.initiale"></div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-semibold text-gray-900 dark:text-white" x-text="clientChoisi.nom_affichage"></p>
+                                    <p class="text-xs text-gray-500" x-text="clientChoisi.telephone"></p>
+                                </div>
+                                <button type="button" @click="retirerClient()" class="text-xs text-red-500 hover:text-red-700 font-medium">Changer</button>
+                            </div>
+                        </template>
+                        <template x-if="!clientChoisi">
+                            <div>
+                                <div x-data="{
+                                    search: '',
+                                    open: false,
+                                    get filtered() {
+                                        if (this.search.length < 2) return clientsList.slice(0, 8);
+                                        const q = this.search.toLowerCase();
+                                        return clientsList.filter(c => c.search.includes(q)).slice(0, 8);
+                                    },
+                                    choisir(client) {
+                                        this.open = false;
+                                        this.search = '';
+                                        selectClient(client);
+                                    }
+                                }" @click.outside="open = false">
+                                    <input type="text" x-model="search"
+                                        @focus="open = true" @input="open = true"
+                                        @keydown.escape="open = false"
+                                        placeholder="Chercher un client..."
+                                        class="form-input text-sm">
+                                    <div x-show="open && filtered.length > 0" x-cloak
+                                        class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden mt-2 shadow-sm max-h-52 overflow-y-auto bg-white dark:bg-gray-800">
+                                        <template x-for="c in filtered" :key="c.id">
+                                            <button type="button"
+                                                @mousedown.prevent @click="choisir(c)"
+                                                @touchend.prevent="choisir(c)"
+                                                class="w-full text-left px-3 py-2.5 text-sm hover:bg-primary-50/50 dark:hover:bg-gray-700 flex items-center gap-2.5 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors">
+                                                <div class="w-7 h-7 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center text-primary-700 text-xs font-bold" x-text="c.initiale"></div>
+                                                <span class="font-medium text-gray-900 dark:text-white" x-text="c.nom_affichage"></span>
+                                                <span class="text-gray-400 text-xs ml-auto" x-text="c.telephone"></span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                    <p x-show="open && search.length >= 2 && filtered.length === 0" x-cloak
+                                        class="text-xs text-gray-400 mt-2 text-center py-2">Aucun client trouvé</p>
+                                </div>
+                                <button @click="newClientOpen = true" type="button"
+                                    class="mt-2 flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-800 font-medium transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                                    Nouveau client
+                                </button>
+                            </div>
+                        </template>
+                        <input type="hidden" name="client_id" :value="clientChoisi ? clientChoisi.id : ''">
+                    </div>
+                </div>
 
-            get articlesJson() {
-                return JSON.stringify(this.articles.map(a => ({
-                    type: a.type,
-                    item_id: a.item_id || null,
-                    nom: a.nom || '',
-                    prix: a.prix || 0,
-                    quantite: a.quantite || 1,
-                })));
-            },
+                {{-- Modalités --}}
+                <div class="card">
+                    <div class="card-header"><h2 class="text-lg font-semibold">Modalités de crédit</h2></div>
+                    <div class="card-body space-y-3">
+                        <div>
+                            <label class="form-label">Apport initial (FCFA)</label>
+                            <input type="number" name="apport_initial" x-model.number="apport" min="0" :max="sousTotal"
+                                   class="form-input text-sm" value="{{ old('apport_initial', 0) }}">
+                            <p class="text-xs text-gray-400 mt-1">Reste à payer : <strong x-text="formatPrix(reste) + ' FCFA'"></strong></p>
+                        </div>
+                        <div>
+                            <label class="form-label">Nombre d'échéances</label>
+                            <input type="number" name="nb_echeances" min="1" max="24"
+                                   value="{{ old('nb_echeances', 3) }}" class="form-input text-sm">
+                        </div>
+                        <div>
+                            <label class="form-label">Fréquence</label>
+                            <select name="frequence" class="form-input text-sm">
+                                <option value="mensuel" {{ old('frequence') === 'mensuel' ? 'selected' : '' }}>Mensuelle</option>
+                                <option value="hebdomadaire" {{ old('frequence') === 'hebdomadaire' ? 'selected' : '' }}>Hebdomadaire</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
-            addArticle() {
-                this.articles.push({ type: 'libre', item_id: null, nom: '', prix: 0, quantite: 1 });
-            },
+                {{-- Notes --}}
+                <div class="card">
+                    <div class="card-header"><h2 class="text-lg font-semibold">Notes</h2></div>
+                    <div class="card-body"><textarea name="notes" rows="3" placeholder="Notes internes..." class="form-textarea text-sm">{{ old('notes') }}</textarea></div>
+                </div>
 
-            fillFromCatalog(art, catType) {
-                const id = art.item_id;
-                if (!id) return;
-                if (catType === 'produit') {
-                    const p = this.produitsData.find(x => x.id === id);
-                    if (p) { art.nom = p.nom; art.prix = p.prix_vente; }
-                } else {
-                    const p = this.prestationsData.find(x => x.id === id);
-                    if (p) { art.nom = p.nom; art.prix = p.prix; }
-                }
-            },
+                <input type="hidden" name="lignes" :value="JSON.stringify(lignes)">
+                <button type="submit" class="btn-primary w-full" :disabled="lignes.length === 0 || sousTotal <= 0 || !clientChoisi">
+                    Créer le crédit
+                </button>
+            </div>
+        </div>
+    </form>
 
-            formatMoney(n) {
-                return new Intl.NumberFormat('fr-FR').format(n || 0);
-            },
+    {{-- Modal nouveau client --}}
+    <div x-show="newClientOpen" x-cloak class="modal-backdrop"
+         x-on:keydown.escape.window="newClientOpen = false; document.body.classList.remove('overflow-hidden')"
+         x-init="$watch('newClientOpen', v => document.body.classList.toggle('overflow-hidden', v))"
+         @click.self="newClientOpen = false; document.body.classList.remove('overflow-hidden')">
+        <div class="modal max-w-lg" x-transition @click.stop>
+            <div class="modal-header">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, rgba(147,51,234,0.1), rgba(236,72,153,0.1));">
+                        <svg class="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+                    </div>
+                    <h3 class="modal-title">Nouveau client</h3>
+                </div>
+                <button @click="newClientOpen = false; document.body.classList.remove('overflow-hidden')" class="modal-close">✕</button>
+            </div>
+            <div class="modal-body space-y-3">
+                <p x-show="newClientError" x-text="newClientError" class="text-sm text-red-600 bg-red-50 rounded-lg p-3"></p>
+                <div class="flex gap-2">
+                    <label class="flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border cursor-pointer transition-colors"
+                           :class="newClient.type_client === 'personne_physique' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'">
+                        <input type="radio" value="personne_physique" x-model="newClient.type_client" class="sr-only">
+                        <span class="text-sm font-medium">Particulier</span>
+                    </label>
+                    <label class="flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border cursor-pointer transition-colors"
+                           :class="newClient.type_client === 'entreprise' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'">
+                        <input type="radio" value="entreprise" x-model="newClient.type_client" class="sr-only">
+                        <span class="text-sm font-medium">Entreprise</span>
+                    </label>
+                </div>
+                <template x-if="newClient.type_client === 'entreprise'">
+                    <div class="form-group mb-0"><label class="form-label">Raison sociale</label><input type="text" x-model="newClient.raison_sociale" maxlength="255" class="form-input" placeholder="Nom de l'entreprise"></div>
+                </template>
+                <template x-if="newClient.type_client === 'personne_physique'">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="form-group mb-0"><label class="form-label">Prénom</label><input type="text" x-model="newClient.prenom" maxlength="50" class="form-input"></div>
+                        <div class="form-group mb-0"><label class="form-label">Nom</label><input type="text" x-model="newClient.nom" maxlength="50" class="form-input"></div>
+                    </div>
+                </template>
+                <div class="form-group mb-0"><label class="form-label">Téléphone <span class="text-red-500">*</span></label><input type="tel" x-model="newClient.telephone" maxlength="30" class="form-input" placeholder="06 XX XX XX XX"></div>
+                <div class="form-group mb-0"><label class="form-label">Email</label><input type="email" x-model="newClient.email" maxlength="255" class="form-input" placeholder="client@exemple.fr"></div>
+            </div>
+            <div class="modal-footer">
+                <button @click="newClientOpen = false; document.body.classList.remove('overflow-hidden')" type="button" class="btn-outlined">Annuler</button>
+                <button @click="creerClient()" type="button" class="btn-primary" :disabled="newClientSaving">
+                    <span x-show="!newClientSaving">Enregistrer</span>
+                    <span x-show="newClientSaving" class="flex items-center gap-2">
+                        <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        Ajout...
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
-            prepareSubmit() {
-                // rien de spécial
+@push('scripts')
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('creditForm', (clientsInit, catalogueInit) => ({
+        lignes: [{designation:'', quantite:1, prix_unitaire:0, pickerOpen: false, pickerSearch: ''}],
+        catalogue: catalogueInit,
+        ajouterLigne() { this.lignes.push({designation:'', quantite:1, prix_unitaire:0, pickerOpen: false, pickerSearch: ''}); },
+        catalogueFiltered(ligne) {
+            const q = (ligne.pickerSearch || '').toLowerCase();
+            if (q.length < 1) return this.catalogue.slice(0, 10);
+            return this.catalogue.filter(c => c.search.includes(q)).slice(0, 10);
+        },
+        choisirCatalogue(ligne, item) {
+            ligne.designation = item.designation;
+            ligne.prix_unitaire = item.prix;
+            ligne.pickerOpen = false;
+            ligne.pickerSearch = '';
+        },
+        get sousTotal() { return this.lignes.reduce((s, l) => s + ((l.prix_unitaire||0) * (l.quantite||1)), 0); },
+        apport: {{ old('apport_initial', 0) }},
+        get reste() { return Math.max(0, this.sousTotal - this.apport); },
+        formatPrix(v) { return new Intl.NumberFormat('fr-FR').format(v); },
+        clientsList: clientsInit,
+        clientChoisi: null,
+        newClientOpen: false,
+        newClientSaving: false,
+        newClientError: '',
+        newClient: { type_client: 'personne_physique', prenom: '', nom: '', raison_sociale: '', telephone: '', email: '' },
+        selectClient(client) { this.clientChoisi = client; },
+        retirerClient() { this.clientChoisi = null; },
+        async creerClient() {
+            this.newClientError = '';
+            const nc = this.newClient;
+            if (nc.type_client === 'personne_physique') {
+                if (!nc.prenom.trim() || !nc.nom.trim()) { this.newClientError = 'Prénom et nom requis.'; return; }
+            } else {
+                if (!nc.raison_sociale.trim()) { this.newClientError = 'Raison sociale requise.'; return; }
             }
-        }
-    }
-    </script>
+            if (!nc.telephone.trim()) { this.newClientError = 'Téléphone requis.'; return; }
+            this.newClientSaving = true;
+            try {
+                const res = await fetch('{{ route('dashboard.clients.quick-store') }}', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').getAttribute('content'),'Accept':'application/json'},
+                    body: JSON.stringify({ type_client: nc.type_client, prenom: nc.prenom||null, nom: nc.nom||null, raison_sociale: nc.raison_sociale||null, telephone: nc.telephone, email: nc.email||null }),
+                });
+                if (!res.ok) { const err = await res.json(); this.newClientError = err.message || 'Erreur création.'; return; }
+                const client = await res.json();
+                this.clientsList.unshift(client);
+                this.clientChoisi = client;
+                this.newClient = { type_client:'personne_physique', prenom:'',nom:'',raison_sociale:'',telephone:'',email:'' };
+                this.newClientOpen = false;
+                document.body.classList.remove('overflow-hidden');
+            } catch (e) { this.newClientError = 'Erreur réseau.'; }
+            finally { this.newClientSaving = false; }
+        },
+    }));
+});
+</script>
+@endpush
 </x-dashboard-layout>

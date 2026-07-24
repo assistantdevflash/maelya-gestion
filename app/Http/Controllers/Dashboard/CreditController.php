@@ -56,27 +56,47 @@ class CreditController extends Controller
 
     public function create()
     {
-        $clients = \App\Models\Client::where('actif', true)->orderBy('prenom')->orderBy('nom')->limit(300)->get();
-        $produits = \App\Models\Produit::where('actif', true)->where('stock', '>', 0)->orderBy('nom')->get(['id', 'nom', 'prix_vente']);
-        $prestations = \App\Models\Prestation::where('actif', true)->orderBy('nom')->get(['id', 'nom', 'prix']);
+        $institutId = $this->institutId();
+        $allClients = \App\Models\Client::where('institut_id', $institutId)
+            ->orderBy('nom')
+            ->get()
+            ->map(fn($c) => [
+                'id'        => $c->id,
+                'prenom'    => $c->prenom,
+                'nom'       => $c->nom,
+                'nom_affichage' => $c->nom_affichage,
+                'telephone' => $c->telephone,
+                'email'     => $c->email,
+                'adresse'   => $c->adresse,
+                'initiale'  => strtoupper(substr($c->nom_complet, 0, 1)),
+                'search'    => strtolower($c->nom . ' ' . $c->prenom . ' ' . $c->telephone),
+            ]);
 
-        return view('dashboard.credits.create', compact('clients', 'produits', 'prestations'));
+        $prestations = \App\Models\Prestation::where('institut_id', $institutId)->where('actif', true)
+            ->orderBy('nom')->get(['id', 'nom', 'prix'])
+            ->map(fn($p) => ['id' => 'p_'.$p->id, 'type' => 'prestation', 'designation' => $p->nom, 'prix' => $p->prix, 'search' => strtolower($p->nom)]);
+        $produits = \App\Models\Produit::where('institut_id', $institutId)->where('actif', true)
+            ->orderBy('nom')->get(['id', 'nom', 'prix_vente'])
+            ->map(fn($p) => ['id' => 'prod_'.$p->id, 'type' => 'produit', 'designation' => $p->nom, 'prix' => $p->prix_vente, 'search' => strtolower($p->nom)]);
+        $catalogue = $prestations->concat($produits)->values();
+
+        return view('dashboard.credits.create', compact('allClients', 'catalogue'));
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
             'client_id'       => ['required', 'uuid', 'exists:clients,id'],
-            'articles'        => ['required', 'json'],
+            'lignes'          => ['required', 'json'],
             'apport_initial'  => ['required', 'integer', 'min:0'],
             'nb_echeances'    => ['required', 'integer', 'min:1', 'max:24'],
             'frequence'       => ['required', 'in:hebdomadaire,mensuel'],
             'notes'           => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $articles = json_decode($data['articles'], true);
-        if (! is_array($articles) || empty($articles)) {
-            return back()->withErrors(['articles' => 'Ajoutez au moins un article.']);
+        $lignes = json_decode($data['lignes'], true);
+        if (! is_array($lignes) || empty($lignes)) {
+            return back()->withErrors(['lignes' => 'Ajoutez au moins un article.']);
         }
 
         $institutId = $this->institutId();
@@ -84,12 +104,10 @@ class CreditController extends Controller
         $totalBrut = 0;
         $itemsToSave = [];
 
-        foreach ($articles as $art) {
-            $nom   = strip_tags(substr((string) ($art['nom'] ?? ''), 0, 150));
-            $prix  = max(1, min(10_000_000, (int) ($art['prix'] ?? 0)));
-            $qte   = max(1, (int) ($art['quantite'] ?? 1));
-            $type  = in_array($art['type'] ?? null, ['produit', 'prestation', 'libre']) ? $art['type'] : 'libre';
-            $itemId = $type !== 'libre' ? ($art['item_id'] ?? null) : null;
+        foreach ($lignes as $lig) {
+            $nom   = strip_tags(substr((string) ($lig['designation'] ?? ''), 0, 150));
+            $prix  = max(1, min(10_000_000, (int) ($lig['prix_unitaire'] ?? 0)));
+            $qte   = max(1, (int) ($lig['quantite'] ?? 1));
 
             abort_if(! $nom || $prix <= 0, 422, 'Article invalide.');
 
@@ -97,8 +115,7 @@ class CreditController extends Controller
             $totalBrut += $sousTotal;
 
             $itemsToSave[] = [
-                'type'          => $type,
-                'item_id'       => $itemId,
+                'type'          => 'libre',
                 'nom_snapshot'  => $nom,
                 'prix_snapshot' => $prix,
                 'quantite'      => $qte,
