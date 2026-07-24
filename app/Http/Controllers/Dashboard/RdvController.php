@@ -55,7 +55,10 @@ class RdvController extends Controller
 
     public function create(Request $request)
     {
-        $clients     = Client::where('actif', true)->orderBy('prenom')->limit(300)->get();
+        $clients     = Client::where('actif', true)
+                           ->orderByRaw("CASE WHEN type_client = 'entreprise' THEN raison_sociale ELSE CONCAT(prenom, ' ', nom) END")
+                           ->limit(300)
+                           ->get();
         $prestations = Prestation::where('actif', true)->with('categorie')->orderBy('nom')->limit(500)->get();
         $employes    = User::where('institut_id', $this->institutId())
                            ->whereIn('role', ['admin', 'employe'])
@@ -173,7 +176,10 @@ class RdvController extends Controller
         }
         
         $rdv->loadMissing(['prestations']);
-        $clients     = Client::where('actif', true)->orderBy('prenom')->limit(300)->get();
+        $clients     = Client::where('actif', true)
+                           ->orderByRaw("CASE WHEN type_client = 'entreprise' THEN raison_sociale ELSE CONCAT(prenom, ' ', nom) END")
+                           ->limit(300)
+                           ->get();
         $prestations = Prestation::where('actif', true)->with('categorie')->orderBy('nom')->limit(500)->get();
         $employes    = User::where('institut_id', $this->institutId())
                            ->whereIn('role', ['admin', 'employe'])

@@ -35,11 +35,11 @@
                     <option value="">— Conserver les informations saisies —</option>
                     @foreach($clients as $c)
                     <option value="{{ $c->id }}"
-                            data-nom="{{ $c->prenom }} {{ $c->nom }}"
+                            data-nom="{{ $c->nom_complet }}"
                             data-tel="{{ $c->telephone ?? '' }}"
                             data-email="{{ $c->email ?? '' }}"
                             {{ old('client_id', $rdv->client_id) == $c->id ? 'selected' : '' }}>
-                        {{ $c->prenom }} {{ $c->nom }}
+                        {{ $c->nom_complet }}
                     </option>
                     @endforeach
                 </select>

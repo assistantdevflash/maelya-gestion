@@ -36,11 +36,11 @@
                     <option value="">— Choisir un client —</option>
                     @foreach($clients as $c)
                     <option value="{{ $c->id }}"
-                            data-nom="{{ $c->prenom }} {{ $c->nom }}"
+                            data-nom="{{ $c->nom_complet }}"
                             data-tel="{{ $c->telephone ?? '' }}"
                             data-email="{{ $c->email ?? '' }}"
                             {{ old('client_id') == $c->id || ($clientPreselectionne && $clientPreselectionne->id == $c->id) ? 'selected' : '' }}>
-                        {{ $c->prenom }} {{ $c->nom }}
+                        {{ $c->nom_complet }}
                     </option>
                     @endforeach
                 </select>
@@ -230,7 +230,7 @@ function rdvForm(prestations, selectedIds) {
         prestations: prestations,
         prestationsIds: (selectedIds || []).map(String),
         dureeMinutes: {{ old('duree_minutes', 30) }},
-        clientNom:   @json(old('client_nom', $clientPreselectionne ? $clientPreselectionne->prenom . ' ' . $clientPreselectionne->nom : '')),
+        clientNom:   @json(old('client_nom', $clientPreselectionne ? $clientPreselectionne->nom_complet : '')),
         clientTel:   @json(old('client_telephone', $clientPreselectionne?->telephone ?? '')),
         clientEmail: @json(old('client_email', $clientPreselectionne?->email ?? '')),
         recherche: '',
