@@ -144,7 +144,7 @@
             </a>
 
             {{-- Bénéfice --}}
-            <a href="{{ route('dashboard.ventes.index') }}" class="stat-card group block cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+            <a href="{{ route('dashboard.depenses.index') }}" class="stat-card group block cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-10 h-10 rounded-xl flex items-center justify-center {{ ($beneficeMois ?? 0) >= 0 ? 'bg-emerald-50' : 'bg-red-50' }}">
                         <svg class="w-5 h-5 {{ ($beneficeMois ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
