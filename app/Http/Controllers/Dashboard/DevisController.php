@@ -8,6 +8,7 @@ use App\Services\DevisService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class DevisController extends Controller
@@ -24,9 +25,13 @@ class DevisController extends Controller
             });
         }
         $devis = $query->paginate(20);
-        $stats = ['en_cours' => Devis::where('institut_id',$institutId)->enCours()->count(), 'total_ttc' => Devis::where('institut_id',$institutId)->enCours()->sum('total_ttc'), 'acceptes' => Devis::where('institut_id',$institutId)->acceptes()->count()];
-        $clients = Client::where('institut_id',$institutId)->orderBy('nom')->get();
-        return view('dashboard.devis-factures.index', compact('devis','stats','clients'))->with('tab','devis');
+        $stats = Cache::remember("devis_stats:{$institutId}", now()->addMinutes(5), function () use ($institutId) {
+            $row = Devis::where('institut_id', $institutId)
+                ->selectRaw("SUM(CASE WHEN statut IN('brouillon','envoye') THEN 1 ELSE 0 END) as en_cours, COALESCE(SUM(CASE WHEN statut IN('brouillon','envoye') THEN total_ttc ELSE 0 END),0) as total_ttc, SUM(CASE WHEN statut='accepte' THEN 1 ELSE 0 END) as acceptes")
+                ->first();
+            return ['en_cours' => (int) $row->en_cours, 'total_ttc' => (int) $row->total_ttc, 'acceptes' => (int) $row->acceptes];
+        });
+        return view('dashboard.devis-factures.index', compact('devis','stats'))->with('tab','devis');
     }
 
     public function create()

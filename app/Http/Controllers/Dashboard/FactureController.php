@@ -26,7 +26,12 @@ class FactureController extends Controller
             $query->where(function($q) use ($s) { $q->where('numero','like',"%{$s}%")->orWhere('client_nom','like',"%{$s}%")->orWhere('client_prenom','like',"%{$s}%"); });
         }
         $factures = $query->paginate(20);
-        $stats = ['total_ttc' => Facture::where('institut_id',$institutId)->sum('total_ttc'), 'total_paye' => Facture::where('institut_id',$institutId)->sum('montant_paye'), 'en_retard' => Facture::where('institut_id',$institutId)->where('statut','!=','payee')->whereDate('date_echeance','<',now())->count()];
+        $stats = Cache::remember("facture_stats:{$institutId}", now()->addMinutes(5), function () use ($institutId) {
+            $row = Facture::where('institut_id', $institutId)
+                ->selectRaw("COALESCE(SUM(total_ttc),0) as total_ttc, COALESCE(SUM(montant_paye),0) as total_paye, SUM(CASE WHEN statut!='payee' AND date_echeance<NOW() THEN 1 ELSE 0 END) as en_retard")
+                ->first();
+            return ['total_ttc' => (int) $row->total_ttc, 'total_paye' => (int) $row->total_paye, 'en_retard' => (int) $row->en_retard];
+        });
         return view('dashboard.devis-factures.index', compact('factures','stats'))->with('tab','factures');
     }
 

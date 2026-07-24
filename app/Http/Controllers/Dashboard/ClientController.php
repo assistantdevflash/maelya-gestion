@@ -65,6 +65,7 @@ class ClientController extends Controller
         $anniversairesAujourdhui = Client::where('actif', true)
             ->where('date_naissance', now()->format('m-d'))
             ->whereNotIn('id', $cadeauClientIds)
+            ->take(50)
             ->get();
 
         $statutAvis = $request->input('statut_avis');

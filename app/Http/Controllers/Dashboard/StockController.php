@@ -28,9 +28,9 @@ class StockController extends Controller
             ->paginate(30)
             ->withQueryString();
 
-        $nbAlertes = Produit::where('actif', true)->whereColumn('stock', '<=', 'seuil_alerte')->count();
+        $nbAlertes = $alerte ? $produits->total() : Produit::where('actif', true)->whereColumn('stock', '<=', 'seuil_alerte')->count();
 
-        $tousLesProduits = Produit::where('actif', true)->orderBy('nom')->get(['id', 'nom']);
+        $tousLesProduits = Produit::where('actif', true)->orderBy('nom')->limit(500)->get(['id', 'nom']);
 
         return view('dashboard.stock.index', compact('produits', 'nbAlertes', 'search', 'alerte', 'tousLesProduits'));
     }

@@ -11,6 +11,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
@@ -25,7 +26,7 @@ class CommandeController extends Controller
         $institutId = session('current_institut_id', auth()->user()->institut_id);
 
         $query = Commande::where('institut_id', $institutId)
-            ->with(['client', 'items'])
+            ->with(['client', 'items.produit'])
             ->orderBy('created_at', 'desc');
 
         // Filtres
@@ -49,13 +50,13 @@ class CommandeController extends Controller
 
         $commandes = $query->paginate(20);
 
-        // Statistiques
-        $stats = [
-            'nouvelles' => Commande::where('institut_id', $institutId)->nouvelles()->count(),
-            'en_cours' => Commande::where('institut_id', $institutId)->enCours()->count(),
-            'livrees' => Commande::where('institut_id', $institutId)->livrees()->count(),
-            'total_ca' => Commande::where('institut_id', $institutId)->payees()->sum('total'),
-        ];
+        // Statistiques (1 seule requête au lieu de 4)
+        $stats = Cache::remember("cmd_stats:{$institutId}", now()->addMinutes(3), function () use ($institutId) {
+            $row = Commande::where('institut_id', $institutId)
+                ->selectRaw("SUM(CASE WHEN statut='nouvelle' THEN 1 ELSE 0 END) as nouvelles, SUM(CASE WHEN statut IN('acceptee','en_preparation','en_livraison') THEN 1 ELSE 0 END) as en_cours, SUM(CASE WHEN statut='livree' THEN 1 ELSE 0 END) as livrees, COALESCE(SUM(CASE WHEN payee=1 THEN total ELSE 0 END),0) as total_ca")
+                ->first();
+            return ['nouvelles' => (int) $row->nouvelles, 'en_cours' => (int) $row->en_cours, 'livrees' => (int) $row->livrees, 'total_ca' => (int) $row->total_ca];
+        });
 
         return view('dashboard.boutique.commandes.index', compact('commandes', 'stats'));
     }

@@ -24,7 +24,7 @@ class EmployeController extends Controller
 
         $abonnement  = $user->abonnementActif;
         $maxEmployes = $abonnement?->plan?->max_employes; // null = illimité
-        $nbEmployes  = User::where('institut_id', $institutId)->whereIn('role', ['employe', 'gerant', 'admin'])->where('id', '!=', $user->id)->count();
+        $nbEmployes  = $employes->total();
         $limitAtteinte = $maxEmployes !== null && $nbEmployes >= $maxEmployes;
 
         return view('dashboard.employes.index', compact('employes', 'maxEmployes', 'nbEmployes', 'limitAtteinte'));

@@ -41,7 +41,7 @@ class RdvController extends Controller
               ->when($filtre === 'mois', fn($q) => $q->whereBetween('debut_le', [now()->startOfMonth(), now()->endOfMonth()]))
               ->when($statut, fn($q) => $q->where('statut', $statut));
 
-        $rdvs = $query->get()->groupBy(fn($r) => $r->debut_le->toDateString());
+        $rdvs = $query->limit($filtre === 'tous' ? 300 : 500)->get()->groupBy(fn($r) => $r->debut_le->toDateString());
 
         // Prochain RDV si filtre large
         $prochainQuery = RendezVous::with('prestations')->aVenir()->orderBy('debut_le');
@@ -95,7 +95,7 @@ class RdvController extends Controller
             'prestations.*'    => ['uuid', 'exists:prestations,id'],
             'envoyer_confirmation' => ['nullable', 'boolean'],
         ]);
-        
+
         // Si l'utilisateur est un employé, il est automatiquement assigné
         if (Auth::user()->isEmploye()) {
             $data['employe_id'] = Auth::id();
@@ -110,18 +110,18 @@ class RdvController extends Controller
         // Notifications à l'admin et à l'employé assigné
         $user = Auth::user();
         $employe = $rdv->employe_id ? User::find($rdv->employe_id) : null;
-        
+
         // Liste des destinataires (admin + employé si différent)
         $destinataires = collect([$user]);
         if ($employe && $employe->id !== $user->id) {
             $destinataires->push($employe);
         }
-        
+
         foreach ($destinataires as $destinataire) {
             try {
                 Mail::to($destinataire->email)->send(new RdvConfirmeEtablissement($rdv));
             } catch (\Throwable $e) { \Log::warning('[RDV Mail Etablissement] ' . $e->getMessage()); }
-            
+
             try {
                 app(PushNotificationService::class)->sendToUser(
                     $destinataire,
@@ -130,7 +130,7 @@ class RdvController extends Controller
                     '/dashboard/rdv/' . $rdv->id
                 );
             } catch (\Throwable $e) { \Log::warning('[RDV Push] ' . $e->getMessage()); }
-            
+
             \App\Services\NotificationService::notifyUser(
                 $destinataire,
                 'rdv_confirme',
@@ -158,7 +158,7 @@ class RdvController extends Controller
         if (Auth::user()->isEmploye() && $rdv->employe_id !== Auth::id()) {
             abort(403, 'Vous n\'êtes pas autorisé à voir ce rendez-vous.');
         }
-        
+
         $rdv->loadMissing(['client', 'prestations', 'employe']);
         return view('dashboard.rdv.show', compact('rdv'));
     }
@@ -169,12 +169,12 @@ class RdvController extends Controller
         if ($rdv->statut === 'termine') {
             return back()->with('error', 'Impossible de modifier un rendez-vous terminé.');
         }
-        
+
         // Les employés ne peuvent éditer que leurs RDV
         if (Auth::user()->isEmploye() && $rdv->employe_id !== Auth::id()) {
             abort(403, 'Vous n\'êtes pas autorisé à modifier ce rendez-vous.');
         }
-        
+
         $rdv->loadMissing(['prestations']);
         $clients     = Client::where('actif', true)
                            ->orderByRaw("CASE WHEN type_client = 'entreprise' THEN raison_sociale ELSE CONCAT(prenom, ' ', nom) END")
@@ -196,12 +196,12 @@ class RdvController extends Controller
         if ($rdv->statut === 'termine') {
             return back()->with('error', 'Impossible de modifier un rendez-vous terminé.');
         }
-        
+
         // Les employés ne peuvent modifier que leurs RDV
         if (Auth::user()->isEmploye() && $rdv->employe_id !== Auth::id()) {
             abort(403, 'Vous n\'êtes pas autorisé à modifier ce rendez-vous.');
         }
-        
+
         // Fusionner date + heure en datetime
         if ($request->filled('debut_date') && $request->filled('debut_heure')) {
             $request->merge(['debut_le' => $request->input('debut_date') . ' ' . $request->input('debut_heure') . ':00']);
@@ -221,7 +221,7 @@ class RdvController extends Controller
             'prestations'      => ['nullable', 'array'],
             'prestations.*'    => ['uuid', 'exists:prestations,id'],
         ]);
-        
+
         // Les employés ne peuvent pas modifier l'assignation
         if (Auth::user()->isEmploye()) {
             unset($data['employe_id']);
@@ -240,7 +240,7 @@ class RdvController extends Controller
         if (Auth::user()->isEmploye() && $rdv->employe_id !== Auth::id()) {
             abort(403, 'Vous n\'êtes pas autorisé à annuler ce rendez-vous.');
         }
-        
+
         $rdv->update(['statut' => 'annule']);
         $rdv->loadMissing('prestations');
 
@@ -260,7 +260,7 @@ class RdvController extends Controller
         if (Auth::user()->isEmploye() && $rdv->employe_id !== Auth::id()) {
             abort(403, 'Vous n\'êtes pas autorisé à terminer ce rendez-vous.');
         }
-        
+
         $rdv->update(['statut' => 'termine']);
 
         // Générer un avis client (sondage post-visite) si pas déjà créé pour ce RDV
@@ -299,12 +299,12 @@ class RdvController extends Controller
         $end   = $request->query('end');
 
         $q = RendezVous::with('prestations', 'client')->whereNotNull('debut_le');
-        
+
         // Les employés ne voient que leurs RDV
         if (Auth::user()->isEmploye()) {
             $q->where('employe_id', Auth::id());
         }
-        
+
         if ($start) $q->where('debut_le', '>=', $start);
         if ($end)   $q->where('debut_le', '<=', $end);
 

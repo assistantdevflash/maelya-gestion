@@ -332,8 +332,8 @@ class FinanceController extends Controller
             ->when($user->isEmploye(), fn($q) => $q->where('user_id', $user->id))
             ->paginate(30);
 
-        $totalPeriode = Depense::orderBy('date', 'desc')
-            ->when($user->isEmploye(), fn($q) => $q->where('user_id', $user->id))
+        $totalPeriode = Depense::when($user->isEmploye(), fn($q) => $q->where('user_id', $user->id))
+            ->whereDate('date', '>=', now()->startOfYear())
             ->sum('montant');
 
         return view('dashboard.finances.depenses', compact('depenses', 'totalPeriode'));
