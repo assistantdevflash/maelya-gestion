@@ -188,6 +188,9 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         Route::get('credits', [\App\Http\Controllers\Dashboard\CreditController::class, 'index'])->name('credits.index');
         Route::get('credits/create', [\App\Http\Controllers\Dashboard\CreditController::class, 'create'])->name('credits.create');
         Route::post('credits', [\App\Http\Controllers\Dashboard\CreditController::class, 'store'])->name('credits.store');
+        Route::get('credits/{credit}/edit', [\App\Http\Controllers\Dashboard\CreditController::class, 'edit'])->name('credits.edit');
+        Route::put('credits/{credit}', [\App\Http\Controllers\Dashboard\CreditController::class, 'update'])->name('credits.update');
+        Route::delete('credits/{credit}', [\App\Http\Controllers\Dashboard\CreditController::class, 'destroy'])->name('credits.destroy');
         Route::get('credits/{credit}/fiche-pdf', [\App\Http\Controllers\Dashboard\CreditController::class, 'fichePdf'])->name('credits.fiche-pdf');
         Route::get('credits/{credit}', [\App\Http\Controllers\Dashboard\CreditController::class, 'show'])->name('credits.show');
         Route::post('credits/{credit}/payer', [\App\Http\Controllers\Dashboard\CreditController::class, 'payer'])->name('credits.payer');

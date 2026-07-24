@@ -49,6 +49,18 @@
                     💬 <span class="hidden sm:inline">WhatsApp</span>
                 </a>
                 @endif
+                @if($credit->paiements->isEmpty())
+                <a href="{{ route('dashboard.credits.edit', $credit) }}" class="btn-outline text-xs py-1.5 px-3 whitespace-nowrap" title="Modifier">
+                    ✏️ <span class="hidden sm:inline">Modifier</span>
+                </a>
+                <form method="POST" action="{{ route('dashboard.credits.destroy', $credit) }}" class="inline"
+                      onsubmit="return confirm('Supprimer définitivement ce crédit ? Cette action est irréversible.')">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="btn-outline text-xs py-1.5 px-3 text-red-600 border-red-200 hover:bg-red-50 whitespace-nowrap" title="Supprimer">
+                        🗑️ <span class="hidden sm:inline">Supprimer</span>
+                    </button>
+                </form>
+                @endif
             </div>
         </div>
 

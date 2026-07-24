@@ -205,6 +205,164 @@ class CreditController extends Controller
         return $d;
     }
 
+    public function edit(Credit $credit)
+    {
+        abort_if($credit->paiements()->count() > 0, 403, 'Impossible de modifier un crédit ayant déjà reçu des paiements.');
+
+        $institutId = $this->institutId();
+        $allClients = \App\Models\Client::where('institut_id', $institutId)
+            ->orderBy('nom')->get()
+            ->map(fn($c) => [
+                'id' => $c->id, 'prenom' => $c->prenom, 'nom' => $c->nom,
+                'nom_affichage' => $c->nom_affichage, 'telephone' => $c->telephone,
+                'email' => $c->email, 'adresse' => $c->adresse,
+                'initiale' => strtoupper(substr($c->nom_complet, 0, 1)),
+                'search' => strtolower($c->nom . ' ' . $c->prenom . ' ' . $c->telephone),
+            ]);
+
+        $prestations = \App\Models\Prestation::where('institut_id', $institutId)->where('actif', true)
+            ->orderBy('nom')->get(['id', 'nom', 'prix'])
+            ->map(fn($p) => ['id' => 'p_'.$p->id, 'type' => 'prestation', 'designation' => $p->nom, 'prix' => $p->prix, 'search' => strtolower($p->nom)]);
+        $produits = \App\Models\Produit::where('institut_id', $institutId)->where('actif', true)
+            ->orderBy('nom')->get(['id', 'nom', 'prix_vente'])
+            ->map(fn($p) => ['id' => 'prod_'.$p->id, 'type' => 'produit', 'designation' => $p->nom, 'prix' => $p->prix_vente, 'search' => strtolower($p->nom)]);
+        $catalogue = $prestations->concat($produits)->values();
+
+        $credit->load(['vente.items', 'client']);
+        // Préparer les données pour l'edit : lignes, client choisi, etc.
+        $editData = [
+            'client' => $credit->client ? [
+                'id' => $credit->client->id, 'prenom' => $credit->client->prenom,
+                'nom' => $credit->client->nom, 'nom_affichage' => $credit->client->nom_complet,
+                'telephone' => $credit->client->telephone, 'email' => $credit->client->email,
+                'initiale' => strtoupper(substr($credit->client->nom_complet, 0, 1)),
+            ] : null,
+            'lignes' => $credit->vente->items->map(fn($i) => [
+                'designation' => $i->nom_snapshot, 'quantite' => $i->quantite,
+                'prix_unitaire' => $i->prix_snapshot,
+            ])->values()->toArray(),
+            'apport' => $credit->apport_initial,
+            'nb_echeances' => $credit->nb_echeances,
+            'frequence' => $credit->frequence,
+            'notes' => $credit->notes,
+        ];
+
+        return view('dashboard.credits.edit', compact('allClients', 'catalogue', 'credit', 'editData'));
+    }
+
+    public function update(Request $request, Credit $credit)
+    {
+        abort_if($credit->paiements()->count() > 0, 403, 'Impossible de modifier un crédit ayant déjà reçu des paiements.');
+
+        $data = $request->validate([
+            'client_id'       => ['required', 'uuid', 'exists:clients,id'],
+            'lignes'          => ['required', 'json'],
+            'apport_initial'  => ['required', 'integer', 'min:0'],
+            'nb_echeances'    => ['required', 'integer', 'min:1', 'max:24'],
+            'frequence'       => ['required', 'in:hebdomadaire,mensuelle'],
+            'notes'           => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $lignes = json_decode($data['lignes'], true);
+        if (! is_array($lignes) || empty($lignes)) {
+            return back()->withErrors(['lignes' => 'Ajoutez au moins un article.']);
+        }
+
+        $institutId = $this->institutId();
+
+        $totalBrut = 0;
+        $itemsToSave = [];
+        foreach ($lignes as $lig) {
+            $nom  = strip_tags(substr((string) ($lig['designation'] ?? ''), 0, 150));
+            $prix = max(1, min(10_000_000, (int) ($lig['prix_unitaire'] ?? 0)));
+            $qte  = max(1, (int) ($lig['quantite'] ?? 1));
+            abort_if(! $nom || $prix <= 0, 422, 'Article invalide.');
+            $sousTotal = $prix * $qte;
+            $totalBrut += $sousTotal;
+            $itemsToSave[] = ['type' => 'libre', 'nom_snapshot' => $nom, 'prix_snapshot' => $prix, 'quantite' => $qte, 'sous_total' => $sousTotal];
+        }
+
+        $total  = $totalBrut;
+        $apport = $data['apport_initial'];
+        $reste  = max(0, $total - $apport);
+
+        DB::transaction(function () use ($credit, $data, $institutId, $total, $apport, $reste, $itemsToSave) {
+            // Mettre à jour la vente
+            $credit->vente->update([
+                'client_id'     => $data['client_id'],
+                'total'         => $total,
+                'montant_paye'  => $apport,
+                'credit_statut' => $reste > 0 ? 'en_cours' : 'solde',
+            ]);
+
+            // Remplacer les items
+            $credit->vente->items()->delete();
+            foreach ($itemsToSave as $item) {
+                $credit->vente->items()->create($item);
+            }
+
+            // Mettre à jour le crédit
+            $credit->update([
+                'client_id'      => $data['client_id'],
+                'montant_total'  => $total,
+                'apport_initial' => $apport,
+                'reste_a_payer'  => $reste,
+                'nb_echeances'   => $data['nb_echeances'],
+                'frequence'      => $data['frequence'],
+                'date_fin_prevue'=> $this->calculerDateFin(now(), $data['nb_echeances'], $data['frequence']),
+                'notes'          => $data['notes'] ?? null,
+                'statut'         => $reste > 0 ? 'en_cours' : 'solde',
+            ]);
+
+            // Régénérer les échéances
+            \App\Models\Echeance::where('credit_id', $credit->id)->delete();
+            if ($reste > 0) {
+                $parEcheance = (int) round($reste / $data['nb_echeances']);
+                $date = now()->copy();
+                for ($i = 0; $i < $data['nb_echeances']; $i++) {
+                    $date = $data['frequence'] === 'hebdomadaire' ? $date->addWeek() : $date->addMonth();
+                    $montant = ($i === $data['nb_echeances'] - 1)
+                        ? $reste - ($parEcheance * ($data['nb_echeances'] - 1))
+                        : $parEcheance;
+                    \App\Models\Echeance::create([
+                        'credit_id' => $credit->id, 'institut_id' => $institutId,
+                        'numero' => $i + 1, 'date_prevue' => $date->copy(),
+                        'montant' => max(0, $montant), 'statut' => 'en_attente',
+                    ]);
+                }
+            }
+
+            // Si l'apport a changé, supprimer l'ancien paiement d'apport et recréer
+            $credit->paiements()->where('notes', 'Apport initial')->delete();
+            if ($apport > 0) {
+                \App\Models\PaiementCredit::create([
+                    'credit_id' => $credit->id, 'institut_id' => $institutId,
+                    'montant' => $apport, 'mode_paiement' => 'cash',
+                    'encaisse_par' => Auth::id(), 'notes' => 'Apport initial',
+                ]);
+            }
+        });
+
+        return redirect()->route('dashboard.credits.show', $credit)
+            ->with('success', 'Crédit modifié — reste à payer : ' . number_format($reste, 0, ',', ' ') . ' FCFA');
+    }
+
+    public function destroy(Credit $credit)
+    {
+        abort_if($credit->paiements()->where('notes', '!=', 'Apport initial')->count() > 0, 403, 'Impossible de supprimer un crédit ayant déjà reçu des paiements.');
+
+        DB::transaction(function () use ($credit) {
+            $credit->echeances()->delete();
+            $credit->paiements()->delete();
+            $credit->vente->items()->delete();
+            $credit->vente->delete();
+            $credit->delete();
+        });
+
+        return redirect()->route('dashboard.credits.index')
+            ->with('success', 'Crédit supprimé.');
+    }
+
     public function fichePdf(Credit $credit)
     {
         $credit->load(['client', 'vente.items', 'echeances', 'paiements.encaisseur']);
