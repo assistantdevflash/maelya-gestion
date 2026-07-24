@@ -90,7 +90,7 @@ class CreditController extends Controller
             'lignes'          => ['required', 'json'],
             'apport_initial'  => ['required', 'integer', 'min:0'],
             'nb_echeances'    => ['required', 'integer', 'min:1', 'max:24'],
-            'frequence'       => ['required', 'in:hebdomadaire,mensuel'],
+            'frequence'       => ['required', 'in:hebdomadaire,mensuelle'],
             'notes'           => ['nullable', 'string', 'max:1000'],
         ]);
 

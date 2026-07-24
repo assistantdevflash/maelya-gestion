@@ -151,7 +151,7 @@
                         <div>
                             <label class="form-label">Fréquence</label>
                             <select name="frequence" class="form-input text-sm">
-                                <option value="mensuel" {{ old('frequence') === 'mensuel' ? 'selected' : '' }}>Mensuelle</option>
+                                <option value="mensuelle" {{ old('frequence') === 'mensuelle' ? 'selected' : '' }}>Mensuelle</option>
                                 <option value="hebdomadaire" {{ old('frequence') === 'hebdomadaire' ? 'selected' : '' }}>Hebdomadaire</option>
                             </select>
                         </div>
