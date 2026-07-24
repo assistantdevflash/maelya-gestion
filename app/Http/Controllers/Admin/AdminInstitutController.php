@@ -171,7 +171,11 @@ class AdminInstitutController extends Controller
             // Supprimer les utilisateurs liés
             User::whereIn('id', $userIds)->delete();
 
-            // Supprimer l'institut (les FK en cascade couvrent clients, ventes, dépenses, etc.)
+            // Supprimer prestations/produits AVANT leurs catégories (FK bloque la cascade)
+            \App\Models\Prestation::where('institut_id', $institut->id)->delete();
+            \App\Models\Produit::where('institut_id', $institut->id)->delete();
+
+            // Supprimer l'institut (FK en cascade couvrent le reste)
             $institut->delete();
         });
 
