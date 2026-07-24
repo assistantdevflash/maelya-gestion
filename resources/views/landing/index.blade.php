@@ -11,7 +11,7 @@
     <div class="relative max-w-6xl mx-auto px-4 sm:px-6 pt-28 pb-20 lg:pt-32 lg:pb-28 w-full">
         <div class="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
             <div class="text-center lg:text-left animate-fade-in-up">
-                
+
                 <h1 class="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold leading-[1.1] text-white mb-6 tracking-tight">
                     La gestion de votre établissement,
                     <span class="shimmer-text"> enfin simple.</span>
@@ -312,6 +312,7 @@
                                     ];
                                     if ($plan->slug === 'premium-plus' || $plan->slug === 'ultra') $features[] = 'Support prioritaire';
                                     if ($plan->slug === 'premium-plus' || $plan->slug === 'ultra') $features[] = 'Vente à crédit & échéanciers';
+                                    if ($plan->slug === 'premium-plus' || $plan->slug === 'ultra') $features[] = 'Edition et suivi des devis et factures';
                                 }
                             @endphp
                             @foreach($features as $feature)
