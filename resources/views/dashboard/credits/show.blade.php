@@ -288,8 +288,6 @@
     <x-modal-confirm id="modal-supprimer-credit" title="Supprimer ce crédit ?"
         message="Le crédit de <strong>{{ $credit->client?->nom_complet ?? '—' }}</strong> d'un montant de <strong>{{ number_format($credit->montant_total, 0, ',', ' ') }} F</strong> sera définitivement supprimé. Cette action est <strong>irréversible</strong>."
         action="{{ route('dashboard.credits.destroy', $credit) }}" method="DELETE" confirm="Supprimer" danger="true" />
-</x-dashboard-layout>
 
-@push('scripts')
-<script>function openModal(id){document.getElementById(id).classList.remove('hidden');}</script>
-@endpush
+    <script>function openModal(id){document.getElementById(id).classList.remove('hidden');}</script>
+</x-dashboard-layout>

@@ -297,12 +297,10 @@
 @push('scripts')
 <script>
 document.addEventListener('alpine:init', () => {
-    Alpine.data('creditForm', (clientsInit, catalogueInit, editData) => {
-        const initLignes = editData?.lignes?.length
+    Alpine.data('creditForm', (clientsInit, catalogueInit, editData) => ({
+        lignes: (editData?.lignes?.length
             ? editData.lignes.map(l => ({...l, pickerOpen: false, pickerSearch: ''}))
-            : [{designation:'', quantite:1, prix_unitaire:0, pickerOpen: false, pickerSearch: ''}];
-        return {
-        lignes: initLignes,
+            : [{designation:'', quantite:1, prix_unitaire:0, pickerOpen: false, pickerSearch: ''}]),
         catalogue: catalogueInit,
         ajouterLigne() { this.lignes.push({designation:'', quantite:1, prix_unitaire:0, pickerOpen: false, pickerSearch: ''}); },
         catalogueFiltered(ligne) {
