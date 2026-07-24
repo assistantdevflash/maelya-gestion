@@ -172,7 +172,7 @@
         </div>
     </form>
 
-    {{-- Modal nouveau client --}}
+    {{-- Modal nouveau client (identique devis) --}}
     <div x-show="newClientOpen" x-cloak class="modal-backdrop"
          x-on:keydown.escape.window="newClientOpen = false; document.body.classList.remove('overflow-hidden')"
          x-init="$watch('newClientOpen', v => document.body.classList.toggle('overflow-hidden', v))"
@@ -181,37 +181,103 @@
             <div class="modal-header">
                 <div class="flex items-center gap-2.5">
                     <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, rgba(147,51,234,0.1), rgba(236,72,153,0.1));">
-                        <svg class="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+                        <svg class="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                        </svg>
                     </div>
                     <h3 class="modal-title">Nouveau client</h3>
                 </div>
                 <button @click="newClientOpen = false; document.body.classList.remove('overflow-hidden')" class="modal-close">✕</button>
             </div>
-            <div class="modal-body space-y-3">
-                <p x-show="newClientError" x-text="newClientError" class="text-sm text-red-600 bg-red-50 rounded-lg p-3"></p>
-                <div class="flex gap-2">
-                    <label class="flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border cursor-pointer transition-colors"
-                           :class="newClient.type_client === 'personne_physique' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'">
-                        <input type="radio" value="personne_physique" x-model="newClient.type_client" class="sr-only">
-                        <span class="text-sm font-medium">Particulier</span>
-                    </label>
-                    <label class="flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border cursor-pointer transition-colors"
-                           :class="newClient.type_client === 'entreprise' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'">
-                        <input type="radio" value="entreprise" x-model="newClient.type_client" class="sr-only">
-                        <span class="text-sm font-medium">Entreprise</span>
-                    </label>
-                </div>
-                <template x-if="newClient.type_client === 'entreprise'">
-                    <div class="form-group mb-0"><label class="form-label">Raison sociale</label><input type="text" x-model="newClient.raison_sociale" maxlength="255" class="form-input" placeholder="Nom de l'entreprise"></div>
-                </template>
-                <template x-if="newClient.type_client === 'personne_physique'">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="form-group mb-0"><label class="form-label">Prénom</label><input type="text" x-model="newClient.prenom" maxlength="50" class="form-input"></div>
-                        <div class="form-group mb-0"><label class="form-label">Nom</label><input type="text" x-model="newClient.nom" maxlength="50" class="form-input"></div>
+            <div class="modal-body">
+                <div x-show="newClientError" x-cloak class="mb-4 p-3 bg-red-50 rounded-xl text-sm text-red-600" x-text="newClientError"></div>
+                <div class="space-y-4">
+                    {{-- Type de client --}}
+                    <div class="flex gap-2 p-1 bg-gray-100 dark:bg-slate-800 rounded-xl">
+                        <button type="button"
+                            @click="newClient.type_client = 'personne_physique'"
+                            :class="newClient.type_client === 'personne_physique' ? 'bg-white dark:bg-slate-700 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500'"
+                            class="flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition">Personne physique</button>
+                        <button type="button"
+                            @click="newClient.type_client = 'entreprise'"
+                            :class="newClient.type_client === 'entreprise' ? 'bg-white dark:bg-slate-700 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500'"
+                            class="flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition">Entreprise</button>
                     </div>
-                </template>
-                <div class="form-group mb-0"><label class="form-label">Téléphone <span class="text-red-500">*</span></label><input type="tel" x-model="newClient.telephone" maxlength="30" class="form-input" placeholder="06 XX XX XX XX"></div>
-                <div class="form-group mb-0"><label class="form-label">Email</label><input type="email" x-model="newClient.email" maxlength="255" class="form-input" placeholder="client@exemple.fr"></div>
+                    <div class="grid grid-cols-2 gap-3">
+                        {{-- Personne physique --}}
+                        <template x-if="newClient.type_client === 'personne_physique'">
+                            <div class="col-span-2 grid grid-cols-2 gap-3">
+                                <div class="form-group mb-0">
+                                    <label class="form-label">Prénom *</label>
+                                    <input type="text" x-model="newClient.prenom" maxlength="50" class="form-input" placeholder="Fatou">
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label class="form-label">Nom *</label>
+                                    <input type="text" x-model="newClient.nom" maxlength="50" class="form-input" placeholder="Traoré">
+                                </div>
+                            </div>
+                        </template>
+                        {{-- Entreprise --}}
+                        <template x-if="newClient.type_client === 'entreprise'">
+                            <div class="col-span-2 form-group mb-0">
+                                <label class="form-label">Raison sociale *</label>
+                                <input type="text" x-model="newClient.raison_sociale" maxlength="255" class="form-input" placeholder="SARL Exemple & Cie">
+                            </div>
+                        </template>
+                        <div class="form-group mb-0">
+                            <label class="form-label">Téléphone *</label>
+                            <input type="text" x-model="newClient.telephone" maxlength="30" class="form-input" placeholder="+225 07 00 00 00">
+                        </div>
+                        <div class="form-group mb-0">
+                            <label class="form-label">Email</label>
+                            <input type="email" x-model="newClient.email" maxlength="255" class="form-input" placeholder="contact@exemple.ci">
+                        </div>
+                        <template x-if="newClient.type_client === 'personne_physique'">
+                            <div class="col-span-2 form-group mb-0">
+                                <label class="form-label">Anniversaire (jour et mois)</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <select x-model="newClient.date_naissance_mois" class="form-input">
+                                        <option value="">Mois</option>
+                                        <option value="01">Janvier</option><option value="02">Février</option><option value="03">Mars</option>
+                                        <option value="04">Avril</option><option value="05">Mai</option><option value="06">Juin</option>
+                                        <option value="07">Juillet</option><option value="08">Août</option><option value="09">Septembre</option>
+                                        <option value="10">Octobre</option><option value="11">Novembre</option><option value="12">Décembre</option>
+                                    </select>
+                                    <select x-model="newClient.date_naissance_jour" class="form-input">
+                                        <option value="">Jour</option>
+                                        <template x-for="d in 31" :key="d">
+                                            <option :value="String(d).padStart(2,'0')" x-text="d"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                            </div>
+                        </template>
+                        <div class="col-span-2 form-group mb-0">
+                            <label class="form-label">Notes</label>
+                            <textarea x-model="newClient.notes" rows="2" maxlength="1000" class="form-input resize-none" placeholder="Allergies, préférences..."></textarea>
+                        </div>
+                        {{-- Informations supplémentaires --}}
+                        <div class="col-span-2" x-data="{ showExtra: false }">
+                            <button type="button" @click="showExtra = !showExtra"
+                                    class="flex items-center gap-2 text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors">
+                                <svg class="w-3.5 h-3.5 transition-transform" :class="showExtra ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                                Informations supplémentaires
+                            </button>
+                            <div x-show="showExtra" x-collapse class="mt-3 space-y-3">
+                                <div class="form-group mb-0">
+                                    <label class="form-label">Adresse</label>
+                                    <input type="text" x-model="newClient.adresse" maxlength="255" class="form-input" placeholder="Abidjan, Cocody...">
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label class="form-label">Pièce d'identité</label>
+                                    <input type="text" x-model="newClient.piece_identite" maxlength="100" class="form-input" placeholder="N° CNI, Passeport...">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button @click="newClientOpen = false; document.body.classList.remove('overflow-hidden')" type="button" class="btn-outlined">Annuler</button>
@@ -254,30 +320,42 @@ document.addEventListener('alpine:init', () => {
         newClientOpen: false,
         newClientSaving: false,
         newClientError: '',
-        newClient: { type_client: 'personne_physique', prenom: '', nom: '', raison_sociale: '', telephone: '', email: '' },
+        newClient: { type_client: 'personne_physique', prenom: '', nom: '', raison_sociale: '', telephone: '', email: '', date_naissance_mois: '', date_naissance_jour: '', notes: '', adresse: '', piece_identite: '' },
         selectClient(client) { this.clientChoisi = client; },
         retirerClient() { this.clientChoisi = null; },
         async creerClient() {
             this.newClientError = '';
             const nc = this.newClient;
             if (nc.type_client === 'personne_physique') {
-                if (!nc.prenom.trim() || !nc.nom.trim()) { this.newClientError = 'Prénom et nom requis.'; return; }
+                if (!nc.prenom.trim() || !nc.nom.trim()) { this.newClientError = 'Prénom et nom sont requis.'; return; }
             } else {
-                if (!nc.raison_sociale.trim()) { this.newClientError = 'Raison sociale requise.'; return; }
+                if (!nc.raison_sociale.trim()) { this.newClientError = 'La raison sociale est requise.'; return; }
             }
-            if (!nc.telephone.trim()) { this.newClientError = 'Téléphone requis.'; return; }
+            if (!nc.telephone.trim()) { this.newClientError = 'Le téléphone est requis.'; return; }
             this.newClientSaving = true;
             try {
+                const payload = {
+                    type_client: nc.type_client,
+                    prenom: nc.prenom || null,
+                    nom: nc.nom || null,
+                    raison_sociale: nc.raison_sociale || null,
+                    telephone: nc.telephone,
+                    email: nc.email || null,
+                    date_naissance: nc.date_naissance_mois && nc.date_naissance_jour ? nc.date_naissance_mois + '-' + nc.date_naissance_jour : null,
+                    notes: nc.notes || null,
+                    adresse: nc.adresse || null,
+                    piece_identite: nc.piece_identite || null,
+                };
                 const res = await fetch('{{ route('dashboard.clients.quick-store') }}', {
                     method: 'POST',
                     headers: {'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').getAttribute('content'),'Accept':'application/json'},
-                    body: JSON.stringify({ type_client: nc.type_client, prenom: nc.prenom||null, nom: nc.nom||null, raison_sociale: nc.raison_sociale||null, telephone: nc.telephone, email: nc.email||null }),
+                    body: JSON.stringify(payload),
                 });
-                if (!res.ok) { const err = await res.json(); this.newClientError = err.message || 'Erreur création.'; return; }
+                if (!res.ok) { const err = await res.json(); this.newClientError = err.message || 'Erreur lors de la création.'; return; }
                 const client = await res.json();
                 this.clientsList.unshift(client);
                 this.clientChoisi = client;
-                this.newClient = { type_client:'personne_physique', prenom:'',nom:'',raison_sociale:'',telephone:'',email:'' };
+                this.newClient = { type_client:'personne_physique', prenom:'',nom:'',raison_sociale:'',telephone:'',email:'',date_naissance_mois:'',date_naissance_jour:'',notes:'',adresse:'',piece_identite:'' };
                 this.newClientOpen = false;
                 document.body.classList.remove('overflow-hidden');
             } catch (e) { this.newClientError = 'Erreur réseau.'; }
