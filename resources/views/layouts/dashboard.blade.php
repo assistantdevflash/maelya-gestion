@@ -89,10 +89,14 @@
                 @if($__sidebarCanSwitch)
                 <button @click="institutMenu = !institutMenu" @click.away="institutMenu = false"
                         class="flex items-center gap-3 w-full px-4 h-16 border-b border-gray-100/80 dark:border-slate-700/60 hover:bg-gray-50/60 dark:hover:bg-slate-800/40 transition-colors text-left">
+                    @if($__sidebarCurrentInst?->logo)
+                    <img src="{{ $__sidebarCurrentInst->logo_url }}" alt="{{ $__sidebarCurrentInst->nom }}" class="w-9 h-9 rounded-xl object-cover flex-shrink-0">
+                    @else
                     <div class="w-9 h-9 rounded-xl flex items-center justify-center shadow-glow-sm flex-shrink-0 text-white text-sm font-bold"
                          style="background: linear-gradient(135deg, #9333ea, #ec4899);">
                         {{ strtoupper(substr($__sidebarCurrentInst?->nom ?? 'M', 0, 1)) }}
                     </div>
+                    @endif
                     <div class="flex-1 min-w-0">
                         <p class="font-display font-bold text-gray-900 dark:text-white text-sm leading-tight tracking-tight truncate">{{ $__sidebarCurrentInst?->nom ?? 'Mon Établissement' }}</p>
                         @if($__sidebarCurrentInst?->ville)
@@ -107,8 +111,12 @@
                 </button>
                 @else
                 <div class="flex items-center gap-3 px-5 h-16 border-b border-gray-100/80 dark:border-slate-700/60">
+                    @if($__sidebarUser->institut?->logo)
+                    <img src="{{ $__sidebarUser->institut->logo_url }}" alt="{{ $__sidebarUser->institut->nom }}" class="w-9 h-9 rounded-xl object-cover flex-shrink-0">
+                    @else
                     <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white text-base shadow-glow-sm flex-shrink-0"
                          style="background: linear-gradient(135deg, #9333ea, #ec4899);">M</div>
+                    @endif
                     <div class="min-w-0 flex-1">
                         <p class="font-display font-bold text-gray-900 dark:text-white text-sm leading-none tracking-tight">Maëlya Gestion</p>
                         <p class="text-[11px] text-gray-400 mt-0.5 truncate max-w-[140px]">{{ $__sidebarUser->institut?->nom }}</p>
@@ -138,10 +146,14 @@
                         @csrf
                         <button type="submit"
                                 class="flex items-center gap-2.5 w-full px-4 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
+                            @if($__inst->logo)
+                            <img src="{{ $__inst->logo_url }}" alt="{{ $__inst->nom }}" class="w-7 h-7 rounded-lg object-cover flex-shrink-0">
+                            @else
                             <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
                                  style="background: linear-gradient(135deg, #9333ea, #ec4899);">
                                 {{ strtoupper(substr($__inst->nom, 0, 1)) }}
                             </div>
+                            @endif
                             <div class="flex-1 min-w-0">
                                 <p class="text-xs font-semibold text-gray-800 dark:text-white truncate">{{ $__inst->nom }}</p>
                                 @if($__inst->ville)<p class="text-[10px] text-gray-400 truncate">{{ $__inst->ville }}</p>@endif
@@ -153,10 +165,14 @@
                     </form>
                     @else
                     <div class="flex items-center gap-2.5 w-full px-4 py-2.5 bg-primary-50 dark:bg-primary-900/20">
+                        @if($__inst->logo)
+                        <img src="{{ $__inst->logo_url }}" alt="{{ $__inst->nom }}" class="w-7 h-7 rounded-lg object-cover flex-shrink-0">
+                        @else
                         <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
                              style="background: linear-gradient(135deg, #9333ea, #ec4899);">
                             {{ strtoupper(substr($__inst->nom, 0, 1)) }}
                         </div>
+                        @endif
                         <div class="flex-1 min-w-0">
                             <p class="text-xs font-semibold text-primary-700 dark:text-primary-300 truncate">{{ $__inst->nom }}</p>
                             @if($__inst->ville)<p class="text-[10px] text-primary-400 truncate">{{ $__inst->ville }}</p>@endif
