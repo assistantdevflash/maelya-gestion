@@ -163,7 +163,7 @@
                                 <span x-show="periode === 'jour'" x-cloak>{{ $statsVentes->nb_jour }} vente(s) aujourd'hui</span>
                             </p>
                         </div>
-                        <div class="w-10 h-10 rounded-full bg-emerald-200 dark:bg-emerald-500/40 flex items-center justify-center flex-shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-emerald-200 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
                             <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         </div>
                     </div>
@@ -174,11 +174,11 @@
                     <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center gap-2">
                             <p class="text-xs text-amber-600 dark:text-amber-400 font-medium">🛒 Boutique en ligne</p>
-                            <span class="badge text-[10px] {{ $boutiqueActive ? 'badge-success' : 'bg-red-100 text-red-700 dark:bg-red-500/30 dark:text-red-200' }}">
+                            <span class="badge text-[10px] {{ $boutiqueActive ? 'badge-success' : 'bg-red-100 text-red-700 dark:bg-red-900/60 dark:text-red-300' }}">
                                 {{ $boutiqueActive ? 'Activée' : 'Désactivée' }}
                             </span>
                         </div>
-                        <div class="w-10 h-10 rounded-full bg-amber-200 dark:bg-amber-500/40 flex items-center justify-center flex-shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-amber-200 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
                             <svg class="w-5 h-5 text-amber-600 dark:text-amber-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                         </div>
                     </div>
@@ -196,7 +196,7 @@
                     <div class="mt-2 pt-2 border-t border-amber-200 dark:border-slate-700 flex items-center gap-2" x-data="{ copied: false }">
                         <a href="{{ route('shop.index', $institut->slug) }}" target="_blank" class="text-xs text-amber-700 dark:text-amber-200 font-mono underline truncate flex-1">{{ route('shop.index', $institut->slug) }}</a>
                         <button @click="navigator.clipboard.writeText('{{ route('shop.index', $institut->slug) }}'); copied = true; setTimeout(() => copied = false, 2000)"
-                                class="text-xs px-2 py-1 rounded-lg bg-amber-200 dark:bg-amber-500/40 text-amber-800 dark:text-amber-100 hover:bg-amber-300 dark:hover:bg-amber-500/50 transition flex-shrink-0 font-medium">
+                                class="text-xs px-2 py-1 rounded-lg bg-amber-200 dark:bg-slate-700 text-amber-800 dark:text-amber-300 hover:bg-amber-300 dark:hover:bg-slate-600 transition flex-shrink-0 font-medium">
                             <span x-show="!copied">📋 Copier</span>
                             <span x-show="copied" x-cloak>✓ Copié</span>
                         </button>
