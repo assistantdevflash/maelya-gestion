@@ -50,10 +50,14 @@ class AbonnementActif
 
         // ── Abonnement : vérifier le cache session en priorité ────────────
         $aboStatus = session('abo_status');
-        if ($aboStatus !== null && ($aboStatus['user_id'] ?? null) === $user->id && isset($aboStatus['en_sursis'])) {
+        if ($aboStatus !== null && ($aboStatus['user_id'] ?? null) === $user->id) {
+            // Cache corrompu (ancienne version) → ignorer
+            if (!isset($aboStatus['en_sursis'])) {
+                session()->forget('abo_status');
+            }
             // Si le cache dit que l'abonnement est expiré/sursis, vérifier si un
             // nouvel abonnement a été activé entre-temps (ex: renouvellement).
-            if (!empty($aboStatus['en_sursis'])) {
+            elseif (!empty($aboStatus['en_sursis'])) {
                 $abonnement = $this->isNotOwner($user)
                     ? $this->getOwnerAbonnement($user)
                     : $user->abonnementActif;
@@ -162,16 +166,18 @@ class AbonnementActif
      */
     private function applyAboStatus(Request $request, Closure $next, array $aboStatus): Response
     {
-        view()->share('enSursis', $aboStatus['enSursis']);
-        if (!empty($aboStatus['sursis_jours'])) {
-            view()->share('sursisJours', $aboStatus['sursis_jours']);
+        $enSursis = $aboStatus['en_sursis'] ?? false;
+        $sursisJours = $aboStatus['sursis_jours'] ?? 0;
+
+        view()->share('enSursis', $enSursis);
+        if ($sursisJours > 0) {
+            view()->share('sursisJours', $sursisJours);
         }
         if (!empty($aboStatus['expire_bientot'])) {
             session()->flash('abonnement_expire_bientot', $aboStatus['expire_bientot']);
         }
         // Bloquer les mutations uniquement après le sursis (J+3 et plus)
-        $enSursisActif = !empty($aboStatus['en_sursis']) && ($aboStatus['sursis_jours'] ?? 0) <= 2;
-        $apresSursis = !empty($aboStatus['en_sursis']) && ($aboStatus['sursis_jours'] ?? 0) > 2;
+        $apresSursis = $enSursis && $sursisJours > 2;
         if ($apresSursis && !$request->routeIs('abonnement.*')) {
             if (!in_array($request->method(), ['GET', 'HEAD'])) {
                 if ($request->expectsJson()) {
