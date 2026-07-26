@@ -33,12 +33,12 @@ $currentTab = request('onglet', 'achats');
                     <h1 class="text-xl sm:text-2xl font-display font-bold text-gray-900 dark:text-white truncate">{{ $client->nom_affichage }}</h1>
                     @if($client->est_patient)<span class="px-2 py-0.5 text-[10px] font-bold uppercase bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 rounded-full">Patient</span>@endif
                 </div>
-                <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-gray-500 dark:text-gray-400">
-                    @if($client->telephone)<span class="inline-flex items-center gap-1.5"><span class="w-5 h-5 rounded-md bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center text-xs">📞</span>{{ $client->telephone }}</span>@endif
-                    @if($client->email)<span class="inline-flex items-center gap-1.5"><span class="w-5 h-5 rounded-md bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center text-xs">✉️</span>{{ $client->email }}</span>@endif
-                    @if($client->isEntreprise() && $client->numero_registre_commerce)<span class="text-xs bg-gray-100 dark:bg-slate-700 px-2 py-0.5 rounded font-mono">RC: {{ $client->numero_registre_commerce }}</span>@endif
-                    @if(!$client->isEntreprise() && $client->date_naissance)<span class="inline-flex items-center gap-1">🎂 {{ $client->naissance_formatee }}</span>@endif
-                    @if($client->adresse)<span class="inline-flex items-center gap-1 text-xs">📍 {{ $client->isEntreprise() ? ($client->adresse_entreprise ?: $client->adresse) : $client->adresse }}</span>@endif
+                <div class="text-sm text-gray-500 dark:text-gray-400 space-y-1.5">
+                    @if($client->telephone)<p class="inline-flex items-center gap-1.5"><span class="w-5 h-5 rounded-md bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center text-xs">📞</span>{{ $client->telephone }}</p>@endif
+                    @if($client->email)<p class="inline-flex items-center gap-1.5"><span class="w-5 h-5 rounded-md bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center text-xs">✉️</span>{{ $client->email }}</p>@endif
+                    @if($client->adresse)<p class="inline-flex items-center gap-1.5 text-xs"><span class="w-5 h-5 rounded-md bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center text-xs">📍</span>{{ $client->isEntreprise() ? ($client->adresse_entreprise ?: $client->adresse) : $client->adresse }}</p>@endif
+                    @if($client->isEntreprise() && $client->numero_registre_commerce)<p class="text-xs bg-gray-100 dark:bg-slate-700 px-2 py-0.5 rounded font-mono inline-block">RC: {{ $client->numero_registre_commerce }}</p>@endif
+                    @if(!$client->isEntreprise() && $client->date_naissance)<p class="inline-flex items-center gap-1.5"><span class="w-5 h-5 rounded-md bg-pink-100 dark:bg-pink-500/20 flex items-center justify-center text-xs">🎂</span>{{ $client->naissance_formatee }}</p>@endif
                 </div>
                 @if($client->notes)<p class="mt-2.5 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-slate-800 rounded-lg p-2.5 leading-relaxed">📝 {!! nl2br(e($client->notes)) !!}</p>@endif
             </div>
@@ -84,7 +84,7 @@ $currentTab = request('onglet', 'achats');
                     @if(auth()->user()?->aFonctionnalite('rdv'))<a href="{{ route('dashboard.rdv.create') }}?client_id={{ $client->id }}" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-violet-50 dark:hover:bg-violet-900/20 text-sm text-gray-600 dark:text-gray-400 hover:text-violet-700 dark:hover:text-violet-300 transition group"><span class="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-500/20 flex items-center justify-center text-violet-600 dark:text-violet-400 flex-shrink-0 group-hover:scale-105 transition-transform">📅</span>Nouveau RDV</a>@endif
                 </div>
             </div>
-            <a href="{{ route('dashboard.clients.index') }}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-sm text-gray-500 dark:text-gray-400 transition">← Retour aux clients</a>
+            <a href="{{ route('dashboard.clients.index') }}" class="hidden lg:flex items-center justify-center gap-2 p-3 rounded-xl bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-sm text-gray-500 dark:text-gray-400 transition">← Retour aux clients</a>
         </div>
         <div class="lg:col-span-3 card overflow-hidden">
             <div class="flex items-center gap-0.5 px-3 py-2.5 border-b border-gray-100 dark:border-slate-700 overflow-x-auto bg-gray-50/50 dark:bg-slate-800/50">
@@ -130,7 +130,7 @@ $currentTab = request('onglet', 'achats');
 
                 {{-- Photos --}}
                 <div x-show="tab==='photos'" x-transition x-data="{photos:@js($client->photos->map(fn($p)=>['url'=>$p->url,'legende'=>$p->legende??'','isPdf'=>$p->isPdf()])->values()->all()),current:0,open:false,openAt(i){if(this.photos[i].isPdf){window.open(this.photos[i].url,'_blank')}else{this.current=i;this.open=true}},prev(){do{this.current=(this.current-1+this.photos.length)%this.photos.length}while(this.photos[this.current].isPdf)},next(){do{this.current=(this.current+1)%this.photos.length}while(this.photos[this.current].isPdf)}}" @keydown.escape.window="open=false" class="p-5">
-                    <div class="flex items-center justify-between mb-4"><p class="text-xs text-gray-500">{{ $client->photos->count() }} fichier(s)</p><button @click="$dispatch('open-photos-modal')" class="btn-primary text-xs">+ Ajouter</button></div>
+                    <div class="flex items-center justify-between mb-4"><p class="text-xs text-gray-500">{{ $client->photos->count() }} fichier(s)</p><button type="button" @click="$dispatch('open-photos-modal')" class="btn-primary text-xs">+ Ajouter</button></div>
                     @if($client->photos->count()>0)<div class="grid grid-cols-3 sm:grid-cols-5 gap-3">@foreach($client->photos as $i=>$photo)<div class="flex flex-col gap-1">@if($photo->isPdf())<a href="{{ $photo->url }}" target="_blank"><div class="w-full aspect-square bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 rounded-lg hover:opacity-80 transition flex flex-col items-center justify-center border-2 border-red-200 dark:border-red-700"><span class="text-2xl">📄</span><span class="text-[10px] font-bold text-red-600 dark:text-red-400 mt-1">PDF</span></div></a>@else<div class="relative cursor-pointer" @click="openAt({{ $i }})"><img src="{{ $photo->url }}" alt="{{ $photo->legende }}" class="w-full aspect-square object-cover rounded-lg hover:opacity-80 transition">@if(auth()->user()->isAdmin())<form method="POST" action="{{ route('dashboard.clients.photos.destroy',[$client,$photo]) }}?onglet=photos" id="dp-{{ $photo->id }}" class="absolute top-1 right-1 opacity-0 hover:opacity-100 transition" @click.stop>@csrf @method('DELETE')<button type="button" onclick="if(confirm('Supprimer ?'))this.form.submit()" class="w-6 h-6 bg-red-600 text-white rounded-full flex items-center justify-center hover:bg-red-700 text-xs">✕</button></form>@endif</div>@endif @if($photo->legende)<p class="text-[10px] text-gray-500 dark:text-slate-400 truncate leading-tight">{{ $photo->legende }}</p>@endif</div>@endforeach</div>
                     <div x-show="open" x-cloak class="fixed inset-0 z-[80] bg-black/95 flex items-center justify-center" @click="open=false"><div class="relative w-full max-w-3xl mx-4 flex flex-col items-center" @click.stop><button @click="open=false" class="absolute -top-10 right-0 text-white/70 hover:text-white text-3xl">&times;</button><img :src="photos[current].url" class="max-h-[70vh] w-auto max-w-full object-contain rounded-xl"><p class="text-white/80 text-sm mt-4" x-show="photos[current].legende" x-text="photos[current].legende"></p><p class="text-gray-500 text-xs mt-1" x-text="(current+1)+' / '+photos.filter(p=>!p.isPdf).length"></p><button x-show="photos.filter(p=>!p.isPdf).length>1" @click.stop="prev()" class="absolute left-0 top-1/3 -translate-x-14 w-10 h-10 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></button><button x-show="photos.filter(p=>!p.isPdf).length>1" @click.stop="next()" class="absolute right-0 top-1/3 translate-x-14 w-10 h-10 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button></div></div>@else<p class="py-12 text-center text-gray-400 text-sm">Aucun fichier</p>@endif
                 </div>
@@ -146,7 +146,46 @@ $currentTab = request('onglet', 'achats');
         </div>
     </div>
 
-    {{-- Modal --}}
+    {{-- Retour mobile --}}
+    <div class="lg:hidden"><a href="{{ route('dashboard.clients.index') }}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-sm text-gray-500 dark:text-gray-400 transition">← Retour aux clients</a></div>
+
+    {{-- Modal Photos --}}
+    <div x-data="{show:false}" @open-photos-modal.window="show=true" x-show="show" x-cloak class="modal-backdrop" @keydown.escape.window="show=false" @click.self="show=false">
+        <div class="modal max-w-md" x-transition @click.stop>
+            <div class="modal-header"><h3 class="modal-title">Ajouter des fichiers</h3><button @click="show=false" class="modal-close">✕</button></div>
+            <form method="POST" action="{{ route('dashboard.clients.photos.store', $client) }}?onglet={{ $currentTab }}" enctype="multipart/form-data" class="modal-body space-y-4">
+                @csrf
+                <div>
+                    <label class="form-label">Fichiers (JPG, PNG, PDF)</label>
+                    <input type="file" name="photos[]" multiple accept="image/jpeg,image/png,image/webp,application/pdf" class="form-input" required>
+                    <p class="text-[11px] text-gray-400 mt-1">Max 10 Mo par fichier</p>
+                </div>
+                <div>
+                    <label class="form-label">Type *</label>
+                    <select name="type" required class="form-input">
+                        <option value="autre">Autre</option>
+                        <option value="avant">Avant</option>
+                        <option value="apres">Après</option>
+                        <option value="avant_apres">Avant/Après</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Légende</label>
+                    <input type="text" name="legende" maxlength="255" class="form-input" placeholder="Description du fichier…">
+                </div>
+                <div>
+                    <label class="form-label">Date de prise</label>
+                    <input type="date" name="date_prise" class="form-input">
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="btn-primary flex-1">📤 Téléverser</button>
+                    <button type="button" @click="show=false" class="btn-outline">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Modal Édition --}}
     <div x-data="{show:false}" @open-edit-show.window="show=true" x-init="{{ $errors->any()?'show=true':'' }}" x-show="show" x-cloak class="modal-backdrop" @keydown.escape.window="show=false" @click.self="show=false">
         <div class="modal max-w-lg" x-transition @click.stop>
             <div class="modal-header"><h3 class="modal-title">Modifier le client</h3><button @click="show=false" class="modal-close">✕</button></div>
