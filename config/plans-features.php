@@ -272,5 +272,21 @@ return [
                 'Gestion des remises et TVA',
             ],
         ],
+
+        'credits' => [
+            'titre' => 'Crédits clients',
+            'plan_requis' => 'premium-plus',
+            'icon' => 'credit-card',
+            'accroche' => 'Vendez à crédit et suivez les remboursements',
+            'description' => 'Proposez des ventes à crédit à vos clientes, définissez un échéancier (hebdomadaire ou mensuel), suivez les paiements et relancez automatiquement en cas de retard.',
+            'avantages' => [
+                'Vente à crédit depuis la caisse',
+                'Échéancier personnalisable (hebdomadaire/mensuel)',
+                'Suivi des paiements et historique',
+                'Détection automatique des retards de paiement',
+                'Fiche de crédit imprimable (PDF)',
+                'Partage de la fiche par WhatsApp',
+            ],
+        ],
     ],
 ];
