@@ -31,7 +31,7 @@ class ClientPhotoController extends Controller
         foreach ($request->file('photos') as $file) {
             $mimeType = $file->getMimeType();
             $extension = $file->getClientOriginalExtension();
-            
+
             // Si c'est un PDF, stocker directement sans redimensionnement
             if ($mimeType === 'application/pdf' || $extension === 'pdf') {
                 $path = $file->store("clients/{$client->id}/photos", 'public');
@@ -39,7 +39,7 @@ class ClientPhotoController extends Controller
                 // Image : redimensionner
                 $path = $this->storeResized($file, "clients/{$client->id}/photos");
             }
-            
+
             ClientPhoto::create([
                 'institut_id' => $institutId,
                 'client_id'   => $client->id,
@@ -55,7 +55,7 @@ class ClientPhotoController extends Controller
 
         $count = count($request->file('photos'));
         $message = $count === 1 ? 'Fichier ajouté.' : "{$count} fichiers ajoutés.";
-        
+
         return redirect()->route('dashboard.clients.show', ['client' => $client, 'onglet' => 'photos'])
             ->with('success', $message);
     }
