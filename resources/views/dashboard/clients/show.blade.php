@@ -84,7 +84,7 @@ $currentTab = request('onglet', 'achats');
                     @php $wq=preg_replace('/\D/','',$client->telephone??'');@endphp
                     @if($wq)<a href="https://wa.me/{{ $wq }}" target="_blank" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-green-50 dark:hover:bg-green-900/20 text-sm text-gray-600 dark:text-gray-400 hover:text-green-700 dark:hover:text-green-300 transition group"><span class="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-500/20 flex items-center justify-center text-green-600 dark:text-green-400 flex-shrink-0 group-hover:scale-105 transition-transform">💬</span>WhatsApp</a>@endif
                     @if(auth()->user()?->aFonctionnalite('rdv'))<a href="{{ route('dashboard.rdv.create') }}?client_id={{ $client->id }}" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-violet-50 dark:hover:bg-violet-900/20 text-sm text-gray-600 dark:text-gray-400 hover:text-violet-700 dark:hover:text-violet-300 transition group"><span class="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-500/20 flex items-center justify-center text-violet-600 dark:text-violet-400 flex-shrink-0 group-hover:scale-105 transition-transform">📅</span>Nouveau RDV</a>@endif
-                    <a href="{{ route('dashboard.clients.fiche-pdf', $client) }}" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/20 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition group"><span class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-gray-600 dark:text-gray-400 flex-shrink-0 group-hover:scale-105 transition-transform">🖨️</span>Imprimer la fiche</a>
+                    <button @click="$dispatch('open-print-modal')" class="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/20 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition group text-left"><span class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-gray-600 dark:text-gray-400 flex-shrink-0 group-hover:scale-105 transition-transform">🖨️</span>Imprimer la fiche</button>
                 </div>
             </div>
             <a href="{{ route('dashboard.clients.index') }}" class="hidden lg:flex items-center justify-center gap-2 p-3 rounded-xl bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-sm text-gray-500 dark:text-gray-400 transition">← Retour aux clients</a>
@@ -228,6 +228,41 @@ $currentTab = request('onglet', 'achats');
                     <div class="flex gap-3 pt-2"><button class="btn-primary flex-1">Enregistrer</button><button type="button" @click="show=false" class="btn-outline">Annuler</button></div>
                 </form>
             </div>
+        </div>
+    </div>
+
+    {{-- Modal Impression --}}
+    <div x-data="{show:false,sections:['achats','rdv']}" @open-print-modal.window="show=true" x-show="show" x-cloak class="modal-backdrop" @keydown.escape.window="show=false" @click.self="show=false">
+        <div class="modal max-w-sm" x-transition @click.stop>
+            <div class="modal-header"><h3 class="modal-title">🖨️ Imprimer la fiche</h3><button @click="show=false" class="modal-close">✕</button></div>
+            <form method="GET" action="{{ route('dashboard.clients.fiche-pdf', $client) }}" class="modal-body space-y-4">
+                <p class="text-sm text-gray-500 dark:text-gray-400">Sélectionnez les sections à inclure :</p>
+                <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer transition">
+                    <input type="checkbox" name="sections[]" value="achats" x-model="sections" class="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200">🛍️ Achats</span>
+                </label>
+                <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer transition">
+                    <input type="checkbox" name="sections[]" value="rdv" x-model="sections" class="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200">📅 Rendez-vous</span>
+                </label>
+                <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer transition">
+                    <input type="checkbox" name="sections[]" value="credits" x-model="sections" class="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200">🕐 Crédits</span>
+                </label>
+                <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer transition">
+                    <input type="checkbox" name="sections[]" value="factures" x-model="sections" class="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200">🧾 Factures</span>
+                </label>
+                <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer transition">
+                    <input type="checkbox" name="sections[]" value="commandes" x-model="sections" class="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200">📦 Commandes en ligne</span>
+                </label>
+                <p class="text-xs text-gray-400">Les informations générales (identité, contacts, statistiques) sont toujours incluses.</p>
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="btn-primary flex-1">📄 Générer le PDF</button>
+                    <button type="button" @click="show=false" class="btn-outline">Annuler</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

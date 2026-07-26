@@ -69,7 +69,7 @@
         </tr>
     </table>
 
-    @if($ventes->isNotEmpty())
+    @if($show['achats'] && $ventes->isNotEmpty())
     <div class="title">Derniers achats</div>
     <table class="data">
         <thead><tr><th>Date</th><th>Article(s)</th><th style="text-align:right;">Total</th><th style="text-align:center;">Mode</th></tr></thead>
@@ -86,7 +86,7 @@
     </table>
     @endif
 
-    @if($rdvs->isNotEmpty())
+    @if($show['rdv'] && $rdvs->isNotEmpty())
     <div class="title">Rendez-vous</div>
     <table class="data">
         <thead><tr><th>Date</th><th>Prestations</th><th style="text-align:center;">Statut</th></tr></thead>
@@ -98,6 +98,60 @@
                 <td style="text-align:center;">
                     @php $b=$r->statut_badge; @endphp
                     <span class="badge {{ $r->statut==='termine'?'badge-paid':($r->statut==='annule'?'badge-cancelled':'badge-pending') }}">{{ $b['label'] }}</span>
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @endif
+
+    @if($show['credits'] && $credits->isNotEmpty())
+    <div class="title">Crédits</div>
+    <table class="data">
+        <thead><tr><th>Date début</th><th>Articles</th><th style="text-align:right;">Restant</th><th style="text-align:center;">Statut</th></tr></thead>
+        <tbody>
+            @foreach($credits as $c)
+            <tr>
+                <td class="date">{{ $c->date_debut->format('d/m/Y') }}</td>
+                <td>{{ $c->vente->items->pluck('nom_snapshot')->take(2)->implode(', ') ?: '—' }}</td>
+                <td class="amount">{{ number_format($c->reste_a_payer,0,',',' ') }} F</td>
+                <td style="text-align:center;"><span class="badge {{ $c->statut==='solde'?'badge-paid':($c->statut==='retard'?'badge-cancelled':'badge-pending') }}">{{ $c->statut==='solde'?'Soldé':($c->statut==='retard'?'Retard':'En cours') }}</span></td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @endif
+
+    @if($show['factures'] && $factures->isNotEmpty())
+    <div class="title">Factures</div>
+    <table class="data">
+        <thead><tr><th>N°</th><th>Émission</th><th style="text-align:right;">Total</th><th style="text-align:center;">Statut</th></tr></thead>
+        <tbody>
+            @foreach($factures as $f)
+            <tr>
+                <td>{{ $f->numero }}</td>
+                <td class="date">{{ $f->date_emission->format('d/m/Y') }}</td>
+                <td class="amount">{{ number_format($f->total_ttc,0,',',' ') }} F</td>
+                <td style="text-align:center;"><span class="badge {{ $f->estPayee?'badge-paid':'badge-pending' }}">{{ $f->estPayee?'Payée':'En attente' }}</span></td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @endif
+
+    @if($show['commandes'] && $commandes->isNotEmpty())
+    <div class="title">Commandes en ligne</div>
+    <table class="data">
+        <thead><tr><th>N°</th><th>Date</th><th style="text-align:right;">Total</th><th style="text-align:center;">Statut</th></tr></thead>
+        <tbody>
+            @foreach($commandes as $cmd)
+            <tr>
+                <td>{{ $cmd->numero }}</td>
+                <td class="date">{{ $cmd->created_at->format('d/m/Y') }}</td>
+                <td class="amount">{{ number_format($cmd->total,0,',',' ') }} F</td>
+                <td style="text-align:center;">
+                    @php $sl = str_replace('_',' ',$cmd->statut); @endphp
+                    <span class="badge {{ $cmd->statut==='livree'?'badge-paid':($cmd->statut==='annulee'||$cmd->statut==='refusee'?'badge-cancelled':'badge-pending') }}">{{ ucfirst($sl) }}</span>
                 </td>
             </tr>
             @endforeach
