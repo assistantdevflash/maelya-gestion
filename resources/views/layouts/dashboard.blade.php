@@ -777,8 +777,8 @@
             </div>
         </header>
 
-        {{-- Bannière sursis (abonnement expiré, période de grâce de 2 jours) --}}
-        @if(isset($enSursis) && $enSursis)
+        {{-- Bannière post-sursis (J+3, lecture seule) --}}
+        @if(isset($enSursis) && $enSursis && ($sursisJours ?? 0) > 2)
         <div class="px-3 sm:px-6 lg:px-8 pt-4">
             <div class="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/40 rounded-xl text-sm text-red-700 dark:text-red-300">
                 <div class="flex items-start gap-3 flex-1">
@@ -788,7 +788,7 @@
                     <div>
                         <p class="font-semibold">Mode lecture seule — Abonnement expiré</p>
                         <p class="text-red-600 dark:text-red-400 mt-0.5">
-                            Votre abonnement a expiré il y a {{ $sursisJours ?? 0 }} jour(s).
+                            Votre abonnement a expiré il y a {{ $sursisJours }} jour(s).
                             Vous ne pouvez plus enregistrer de ventes, ajouter des clients ni modifier vos données.
                         </p>
                     </div>
