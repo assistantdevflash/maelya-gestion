@@ -85,9 +85,11 @@ class User extends Authenticatable
      */
     public function abonnementEnSursis(): ?Abonnement
     {
-        // Le sursis de 2 jours ne s'applique qu'aux plans payants (pas aux essais)
+        // Le sursis de 2 jours s'applique aux plans payants (pas aux essais).
+        // On cherche dans les statuts 'actif' (pas encore traité par abonnements:expirer)
+        // ET 'expire' (déjà traité par la tâche planifiée mais dans les 2 jours).
         return $this->abonnements()
-            ->where('statut', 'actif')
+            ->whereIn('statut', ['actif', 'expire'])
             ->where('expire_le', '<', now()->toDateString())
             ->where('expire_le', '>=', now()->subDays(2)->toDateString())
             ->whereHas('plan', fn ($q) => $q->where('duree_type', '!=', 'essai'))

@@ -56,7 +56,7 @@ class Abonnement extends Model
      */
     public function enPeriodeSursis(): bool
     {
-        if (!$this->expire_le || $this->statut !== 'actif') {
+        if (!$this->expire_le || !in_array($this->statut, ['actif', 'expire'])) {
             return false;
         }
         // expire_le est dans le passé ET au plus 2 jours avant aujourd'hui
