@@ -17,7 +17,7 @@ $currentTab = request('onglet', 'achats');
 <div x-data="{ tab: '{{ $currentTab }}', setTab(t) { this.tab = t; history.replaceState(null, '', '?onglet=' + t); } }" class="max-w-6xl mx-auto space-y-5 py-4">
 
     {{-- ═══ IDENTITY CARD ═══ --}}
-    <div class="card !overflow-visible">
+    <div class="card overflow-hidden">
         <div class="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-5">
             <div class="flex-shrink-0">
                 @if($client->isEntreprise())
@@ -46,19 +46,21 @@ $currentTab = request('onglet', 'achats');
                 <a href="{{ route('dashboard.caisse') }}?client={{ $client->id }}" class="btn-primary text-sm gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>Nouvelle vente</a>
                 <button @click="$dispatch('open-edit-show')" class="btn-outline text-sm gap-1.5">✏️ Modifier</button>
                 @if($client->fidelite_token)
-                <div x-data="{open:false}" class="relative"><button @click="open=!open" class="btn-outline text-sm gap-1 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-600">🎫 Carte</button>
-                    <div x-show="open" @click.away="open=false" x-cloak class="absolute left-0 sm:left-auto sm:right-0 mt-2 w-64 max-h-64 overflow-y-auto bg-white dark:bg-slate-800 rounded-xl shadow-lg border dark:border-slate-700 py-1.5 z-50">
+                <div x-data="{open:false, ddStyle:{top:0,left:0}}" class="relative"><button @click="open=!open;if(open){const r=$el.getBoundingClientRect();ddStyle={top:r.bottom+window.scrollY+8,left:Math.min(r.left,window.innerWidth-272)}}" class="btn-outline text-sm gap-1 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-600">🎫 Carte</button>
+                    <template x-teleport="body">
+                    <div x-show="open" @click.away="open=false" x-cloak :style="'position:fixed;top:'+ddStyle.top+'px;left:'+ddStyle.left+'px'" class="w-64 max-h-64 overflow-y-auto bg-white dark:bg-slate-800 rounded-xl shadow-lg border dark:border-slate-700 py-1.5 z-50">
                         @php $cu=route('public.carte-fidelite',$client->fidelite_token);$wp=preg_replace('/\D/','',$client->telephone??'');@endphp
                         <a href="{{ $cu }}" target="_blank" class="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition">🔗 Ouvrir la carte</a>
                         <a href="{{ route('dashboard.clients.fidelite.pdf',$client) }}" class="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition">📄 Télécharger PDF</a>
                         @if($wp)<a href="https://wa.me/{{ $wp }}?text={{ urlencode("Bonjour {$client->prenom}, votre carte: {$cu}") }}" target="_blank" class="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-slate-700 text-green-600 transition">💬 WhatsApp</a>@endif
                         <hr class="my-1 dark:border-slate-700"><form method="POST" action="{{ route('dashboard.clients.fidelite.regenerer',$client) }}" onsubmit="return confirm('Régénérer ?')">@csrf<button class="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-slate-700 text-red-600 transition">🔄 Régénérer</button></form>
                     </div>
+                    </template>
                 </div>
                 @endif
             </div>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-4 divide-x dark:divide-slate-700 divide-y sm:divide-y-0 divide-gray-100 border-t border-gray-100 dark:border-slate-700 rounded-b-2xl overflow-hidden">
+        <div class="grid grid-cols-2 sm:grid-cols-4 divide-x dark:divide-slate-700 divide-y sm:divide-y-0 divide-gray-100 border-t border-gray-100 dark:border-slate-700">
             <div class="px-5 py-3.5 text-center sm:text-left"><p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $client->nombre_visites }}</p><p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Visites totales</p></div>
             <div class="px-5 py-3.5 text-center sm:text-left"><p class="text-2xl font-bold text-gray-900 dark:text-white">{{ number_format($client->total_depense,0,',',' ') }}</p><p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">FCFA dépensés</p></div>
             <div class="px-5 py-3.5 text-center sm:text-left"><p class="text-2xl font-bold {{ $client->points_fidelite>0?'text-amber-600 dark:text-amber-400':'text-gray-400' }}">{{ number_format($client->points_fidelite,0,',',' ') }}</p><p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Points fidélité</p></div>
