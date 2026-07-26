@@ -259,7 +259,7 @@ $currentTab = request('onglet', 'achats');
                 </label>
                 <p class="text-xs text-gray-400">Les informations générales (identité, contacts, statistiques) sont toujours incluses.</p>
                 <div class="flex gap-3 pt-2">
-                    <button type="button" @click="generate()" :disabled="sections.length===0" class="btn-primary flex-1" :class="sections.length===0?'opacity-50 cursor-not-allowed':''">📄 Générer le PDF</button>
+                    <button type="button" @click="generate()" class="btn-primary flex-1">📄 Générer le PDF</button>
                     <button type="button" @click="show=false" class="btn-outline">Annuler</button>
                 </div>
             </div>

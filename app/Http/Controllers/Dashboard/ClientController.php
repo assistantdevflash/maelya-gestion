@@ -407,7 +407,7 @@ class ClientController extends Controller
         abort_unless($client->institut_id === $this->institutId(), 403);
         $institut = \App\Models\Institut::find($client->institut_id);
 
-        $sections = request('sections', 'achats,rdv');
+        $sections = request('sections', []);
         $sections = is_array($sections) ? $sections : explode(',', $sections);
         $show = [
             'achats'    => in_array('achats', $sections),
