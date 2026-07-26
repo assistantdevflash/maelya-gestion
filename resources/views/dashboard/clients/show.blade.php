@@ -232,7 +232,7 @@ $currentTab = request('onglet', 'achats');
     </div>
 
     {{-- Modal Impression --}}
-    <div x-data="{show:false,sections:['achats','rdv'],generate(){if(this.sections.length===0)return;const u=new URL('{{ route('dashboard.clients.fiche-pdf', $client) }}');this.sections.forEach(s=>u.searchParams.append('sections[]',s));window.open(u.toString(),'_blank');this.show=false}}" @open-print-modal.window="show=true" x-show="show" x-cloak class="modal-backdrop" @keydown.escape.window="show=false" @click.self="show=false">
+    <div x-data="{show:false,sections:['achats','rdv'],generate(){const u=new URL('{{ route('dashboard.clients.fiche-pdf', $client) }}');this.sections.forEach(s=>u.searchParams.append('sections[]',s));window.open(u.toString(),'_blank');this.show=false}}" @open-print-modal.window="show=true" x-show="show" x-cloak class="modal-backdrop" @keydown.escape.window="show=false" @click.self="show=false">
         <div class="modal max-w-sm" x-transition @click.stop>
             <div class="modal-header"><h3 class="modal-title">🖨️ Imprimer la fiche</h3><button @click="show=false" class="modal-close">✕</button></div>
             <div class="modal-body space-y-4">
