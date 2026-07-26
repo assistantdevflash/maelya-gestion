@@ -17,7 +17,7 @@ $currentTab = request('onglet', 'achats');
 <div x-data="{ tab: '{{ $currentTab }}', setTab(t) { this.tab = t; history.replaceState(null, '', '?onglet=' + t); } }" class="max-w-6xl mx-auto space-y-5 py-4">
 
     {{-- ═══ IDENTITY CARD ═══ --}}
-    <div class="card">
+    <div class="card !overflow-visible">
         <div class="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-5">
             <div class="flex-shrink-0">
                 @if($client->isEntreprise())
@@ -58,7 +58,7 @@ $currentTab = request('onglet', 'achats');
                 @endif
             </div>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-4 divide-x dark:divide-slate-700 divide-y sm:divide-y-0 divide-gray-100 border-t border-gray-100 dark:border-slate-700">
+        <div class="grid grid-cols-2 sm:grid-cols-4 divide-x dark:divide-slate-700 divide-y sm:divide-y-0 divide-gray-100 border-t border-gray-100 dark:border-slate-700 rounded-b-2xl overflow-hidden">
             <div class="px-5 py-3.5 text-center sm:text-left"><p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $client->nombre_visites }}</p><p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Visites totales</p></div>
             <div class="px-5 py-3.5 text-center sm:text-left"><p class="text-2xl font-bold text-gray-900 dark:text-white">{{ number_format($client->total_depense,0,',',' ') }}</p><p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">FCFA dépensés</p></div>
             <div class="px-5 py-3.5 text-center sm:text-left"><p class="text-2xl font-bold {{ $client->points_fidelite>0?'text-amber-600 dark:text-amber-400':'text-gray-400' }}">{{ number_format($client->points_fidelite,0,',',' ') }}</p><p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Points fidélité</p></div>
