@@ -104,28 +104,13 @@ class AbonnementActif
         }
 
         // ── Période de sursis (expiré depuis ≤ 2 jours) ────────────────────────
+        // Pendant le sursis, tout fonctionne normalement. L'alerte est juste visuelle.
         if ($abonnementSursis) {
             view()->share('enSursis', true);
             view()->share('sursisJours', $abonnementSursis->joursDepuisExpiration());
             $aboStatusData['en_sursis'] = true;
             $aboStatusData['sursis_jours'] = $abonnementSursis->joursDepuisExpiration();
             $this->cacheAboStatus($aboStatusData);
-
-            // Les routes abonnement restent toujours accessibles (pour pouvoir renouveler)
-            if ($request->routeIs('abonnement.*')) {
-                return $next($request);
-            }
-
-            // Bloquer toutes les mutations (POST, PUT, PATCH, DELETE)
-            if (!in_array($request->method(), ['GET', 'HEAD'])) {
-                if ($request->expectsJson()) {
-                    return response()->json([
-                        'message' => 'Accès restreint. Renouvelez votre abonnement pour enregistrer des données.',
-                    ], 403);
-                }
-                return back()->with('error', 'Votre abonnement a expiré. Renouvelez-le pour enregistrer des données.');
-            }
-
             return $next($request);
         }
 
@@ -177,15 +162,17 @@ class AbonnementActif
      */
     private function applyAboStatus(Request $request, Closure $next, array $aboStatus): Response
     {
-        view()->share('enSursis', $aboStatus['en_sursis']);
+        view()->share('enSursis', $aboStatus['enSursis']);
         if (!empty($aboStatus['sursis_jours'])) {
             view()->share('sursisJours', $aboStatus['sursis_jours']);
         }
         if (!empty($aboStatus['expire_bientot'])) {
             session()->flash('abonnement_expire_bientot', $aboStatus['expire_bientot']);
         }
-        // Bloquer les mutations si en sursis ou expiré
-        if ($aboStatus['en_sursis'] && !$request->routeIs('abonnement.*')) {
+        // Bloquer les mutations uniquement après le sursis (J+3 et plus)
+        $enSursisActif = !empty($aboStatus['en_sursis']) && ($aboStatus['sursis_jours'] ?? 0) <= 2;
+        $apresSursis = !empty($aboStatus['en_sursis']) && ($aboStatus['sursis_jours'] ?? 0) > 2;
+        if ($apresSursis && !$request->routeIs('abonnement.*')) {
             if (!in_array($request->method(), ['GET', 'HEAD'])) {
                 if ($request->expectsJson()) {
                     return response()->json(['message' => 'Accès restreint. Renouvelez votre abonnement.'], 403);
