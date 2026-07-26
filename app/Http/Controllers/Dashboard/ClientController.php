@@ -401,6 +401,20 @@ class ClientController extends Controller
         return back()->with('success', 'Token de la carte de fidélité régénéré. L\'ancien lien n\'est plus valide.');
     }
 
+    /** PDF fiche client */
+    public function fichePdf(Client $client)
+    {
+        abort_unless($client->institut_id === $this->institutId(), 403);
+        $institut = \App\Models\Institut::find($client->institut_id);
+
+        $ventes = $client->ventes()->with('items')->where('statut', 'validee')->latest()->take(30)->get();
+        $rdvs = $client->rendezVous()->with('prestations')->latest('debut_le')->take(20)->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.fiche-client', compact('client', 'institut', 'ventes', 'rdvs'))
+            ->setPaper('a4');
+        return $pdf->download('fiche-client-' . \Illuminate\Support\Str::slug($client->nom_affichage) . '.pdf');
+    }
+
     /** PDF carte de visite fidélité */
     public function carteFidelitePdf(Client $client)
     {

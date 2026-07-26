@@ -45,6 +45,7 @@ $currentTab = request('onglet', 'achats');
             <div class="flex items-center gap-2 flex-shrink-0 flex-wrap">
                 <a href="{{ route('dashboard.caisse') }}?client={{ $client->id }}" class="btn-primary text-sm gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>Nouvelle vente</a>
                 <button @click="$dispatch('open-edit-show')" class="btn-outline text-sm gap-1.5">✏️ Modifier</button>
+                <a href="{{ route('dashboard.clients.fiche-pdf', $client) }}" class="btn-outline text-sm gap-1.5" title="Imprimer la fiche">🖨️</a>
                 @if($client->fidelite_token)
                 <div x-data="{open:false, ddStyle:{top:0,left:0}}" class="relative"><button @click="open=!open;if(open){const r=$el.getBoundingClientRect();ddStyle={top:r.bottom+window.scrollY+8,left:Math.min(r.left,window.innerWidth-272)}}" class="btn-outline text-sm gap-1 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-600">🎫 Carte</button>
                     <template x-teleport="body">
