@@ -17,7 +17,7 @@ $currentTab = request('onglet', 'achats');
 <div x-data="{ tab: '{{ $currentTab }}', setTab(t) { this.tab = t; history.replaceState(null, '', '?onglet=' + t); } }" class="max-w-6xl mx-auto space-y-5 py-4">
 
     {{-- ═══ IDENTITY CARD ═══ --}}
-    <div class="card overflow-hidden">
+    <div class="card">
         <div class="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-5">
             <div class="flex-shrink-0">
                 @if($client->isEntreprise())
@@ -47,7 +47,7 @@ $currentTab = request('onglet', 'achats');
                 <button @click="$dispatch('open-edit-show')" class="btn-outline text-sm gap-1.5">✏️ Modifier</button>
                 @if($client->fidelite_token)
                 <div x-data="{open:false}" class="relative"><button @click="open=!open" class="btn-outline text-sm gap-1 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-600">🎫 Carte</button>
-                    <div x-show="open" @click.away="open=false" x-cloak class="absolute right-0 mt-2 w-64 max-h-64 overflow-y-auto bg-white dark:bg-slate-800 rounded-xl shadow-lg border dark:border-slate-700 py-1.5 z-50">
+                    <div x-show="open" @click.away="open=false" x-cloak class="absolute left-0 sm:left-auto sm:right-0 mt-2 w-64 max-h-64 overflow-y-auto bg-white dark:bg-slate-800 rounded-xl shadow-lg border dark:border-slate-700 py-1.5 z-50">
                         @php $cu=route('public.carte-fidelite',$client->fidelite_token);$wp=preg_replace('/\D/','',$client->telephone??'');@endphp
                         <a href="{{ $cu }}" target="_blank" class="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition">🔗 Ouvrir la carte</a>
                         <a href="{{ route('dashboard.clients.fidelite.pdf',$client) }}" class="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition">📄 Télécharger PDF</a>
