@@ -100,11 +100,41 @@ class AdminInstitutController extends Controller
             ", [$debutMois, $debutMois, $debutJour, $debutJour])
             ->first();
 
+        // Commandes en ligne (toutes)
+        $totalCommandes = $institut->commandes()->count();
+        $commandesMois = $institut->commandes()->where('created_at', '>=', $debutMois)->count();
+        $commandesJour = $institut->commandes()->where('created_at', '>=', $debutJour)->count();
+
+        // Factures
+        $totalFactures = $institut->factures()->count();
+        $facturesMois = $institut->factures()->where('created_at', '>=', $debutMois)->count();
+        $facturesJour = $institut->factures()->where('created_at', '>=', $debutJour)->count();
+
+        // Devis
+        $totalDevis = $institut->devis()->count();
+        $devisMois = $institut->devis()->where('created_at', '>=', $debutMois)->count();
+        $devisJour = $institut->devis()->where('created_at', '>=', $debutJour)->count();
+
+        // RDV
+        $totalRdv = $institut->rendezVous()->count();
+        $rdvMois = $institut->rendezVous()->where('created_at', '>=', $debutMois)->count();
+        $rdvJour = $institut->rendezVous()->where('created_at', '>=', $debutJour)->count();
+
+        // Crédits clients
+        $totalCredits = $institut->credits()->count();
+        $creditsMois = $institut->credits()->where('created_at', '>=', $debutMois)->count();
+        $creditsJour = $institut->credits()->where('created_at', '>=', $debutJour)->count();
+
         return view('admin.instituts.show', compact(
             'institut', 'owner', 'abonnementActif', 'abonnementSursis', 'plans', 'historique',
             'totalProduits', 'totalPrestations', 'totalClients',
             'clientsMois', 'clientsJour',
-            'statsVentes', 'statsCommandes', 'boutiqueActive'
+            'statsVentes', 'statsCommandes', 'boutiqueActive',
+            'totalCommandes', 'commandesMois', 'commandesJour',
+            'totalFactures', 'facturesMois', 'facturesJour',
+            'totalDevis', 'devisMois', 'devisJour',
+            'totalRdv', 'rdvMois', 'rdvJour',
+            'totalCredits', 'creditsMois', 'creditsJour',
         ));
     }
 

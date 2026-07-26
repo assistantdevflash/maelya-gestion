@@ -163,6 +163,50 @@
                     </div>
                     @endif
                 </div>
+
+                {{-- Ligne 4 : Commandes, Factures, Devis, RDV, Crédits --}}
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                    <div class="bg-pink-50 dark:bg-pink-900/30 rounded-xl p-3">
+                        <p class="text-xs text-pink-600 dark:text-pink-200 font-medium mb-1">🛒 Cmd en ligne</p>
+                        <p class="text-xl font-bold text-pink-700 dark:text-white">
+                            <span x-show="periode === 'total'" x-cloak>{{ $totalCommandes }}</span>
+                            <span x-show="periode === 'mois'" x-cloak>{{ $commandesMois }}</span>
+                            <span x-show="periode === 'jour'" x-cloak>{{ $commandesJour }}</span>
+                        </p>
+                    </div>
+                    <div class="bg-teal-50 dark:bg-teal-900/30 rounded-xl p-3">
+                        <p class="text-xs text-teal-600 dark:text-teal-200 font-medium mb-1">📄 Factures</p>
+                        <p class="text-xl font-bold text-teal-700 dark:text-white">
+                            <span x-show="periode === 'total'" x-cloak>{{ $totalFactures }}</span>
+                            <span x-show="periode === 'mois'" x-cloak>{{ $facturesMois }}</span>
+                            <span x-show="periode === 'jour'" x-cloak>{{ $facturesJour }}</span>
+                        </p>
+                    </div>
+                    <div class="bg-orange-50 dark:bg-orange-900/30 rounded-xl p-3">
+                        <p class="text-xs text-orange-600 dark:text-orange-200 font-medium mb-1">📝 Devis</p>
+                        <p class="text-xl font-bold text-orange-700 dark:text-white">
+                            <span x-show="periode === 'total'" x-cloak">{{ $totalDevis }}</span>
+                            <span x-show="periode === 'mois'" x-cloak>{{ $devisMois }}</span>
+                            <span x-show="periode === 'jour'" x-cloak>{{ $devisJour }}</span>
+                        </p>
+                    </div>
+                    <div class="bg-blue-50 dark:bg-blue-900/30 rounded-xl p-3">
+                        <p class="text-xs text-blue-600 dark:text-blue-200 font-medium mb-1">📅 RDV</p>
+                        <p class="text-xl font-bold text-blue-700 dark:text-white">
+                            <span x-show="periode === 'total'" x-cloak>{{ $totalRdv }}</span>
+                            <span x-show="periode === 'mois'" x-cloak>{{ $rdvMois }}</span>
+                            <span x-show="periode === 'jour'" x-cloak>{{ $rdvJour }}</span>
+                        </p>
+                    </div>
+                    <div class="bg-rose-50 dark:bg-rose-900/30 rounded-xl p-3">
+                        <p class="text-xs text-rose-600 dark:text-rose-200 font-medium mb-1">💳 Crédits</p>
+                        <p class="text-xl font-bold text-rose-700 dark:text-white">
+                            <span x-show="periode === 'total'" x-cloak>{{ $totalCredits }}</span>
+                            <span x-show="periode === 'mois'" x-cloak>{{ $creditsMois }}</span>
+                            <span x-show="periode === 'jour'" x-cloak>{{ $creditsJour }}</span>
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
 

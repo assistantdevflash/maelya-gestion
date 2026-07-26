@@ -80,6 +80,26 @@ class Institut extends Model
         return $this->hasMany(Commande::class, 'institut_id');
     }
 
+    public function factures()
+    {
+        return $this->hasMany(Facture::class, 'institut_id');
+    }
+
+    public function devis()
+    {
+        return $this->hasMany(\App\Models\Devis::class, 'institut_id');
+    }
+
+    public function rendezVous()
+    {
+        return $this->hasMany(\App\Models\RendezVous::class, 'institut_id');
+    }
+
+    public function credits()
+    {
+        return $this->hasMany(\App\Models\Credit::class, 'institut_id');
+    }
+
     public function getLogoUrlAttribute(): string
     {
         return $this->logo ? asset('storage/' . $this->logo) : asset('images/logo-placeholder.png');
