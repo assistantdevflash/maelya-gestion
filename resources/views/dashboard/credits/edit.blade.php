@@ -60,10 +60,9 @@
 
                 {{-- Total --}}
                 <div class="card">
-                    <div class="card-header"><h2 class="text-lg font-semibold">Total</h2></div>
                     <div class="card-body">
                         <div class="flex justify-between text-lg font-bold">
-                            <span>Total</span>
+                            <span class="text-gray-500">Total</span>
                             <span class="text-primary-600" x-text="formatPrix(sousTotal) + ' FCFA'"></span>
                         </div>
                     </div>
