@@ -21,7 +21,7 @@ class ClientPhotoController extends Controller
     {
         $data = $request->validate([
             'photos.*'   => ['required', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:10240'],
-            'type'       => ['required', 'in:avant,apres,avant_apres,autre'],
+            'type'       => ['required', 'in:avant,apres,avant_apres,autre,cni,passeport,permis_conduire'],
             'legende'    => ['nullable', 'string', 'max:255'],
             'date_prise' => ['nullable', 'date'],
         ]);
