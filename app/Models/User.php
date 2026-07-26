@@ -207,8 +207,8 @@ class User extends Authenticatable
                 return false;
             }
 
-            // Période d'essai : boutique gratuite
-            $abo = $this->abonnementActif;
+            // Abonnement actif OU en période de sursis (≤ 2 jours expiré)
+            $abo = $this->abonnementActif ?? $this->abonnementEnSursis();
             if (!$abo) {
                 return false;
             }
