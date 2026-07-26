@@ -235,7 +235,7 @@ $currentTab = request('onglet', 'achats');
     <div x-data="{show:false,sections:['achats','rdv']}" @open-print-modal.window="show=true" x-show="show" x-cloak class="modal-backdrop" @keydown.escape.window="show=false" @click.self="show=false">
         <div class="modal max-w-sm" x-transition @click.stop>
             <div class="modal-header"><h3 class="modal-title">🖨️ Imprimer la fiche</h3><button @click="show=false" class="modal-close">✕</button></div>
-            <form method="GET" action="{{ route('dashboard.clients.fiche-pdf', $client) }}" class="modal-body space-y-4">
+            <form method="GET" action="{{ route('dashboard.clients.fiche-pdf', $client) }}" @submit="setTimeout(() => show = false, 300)" class="modal-body space-y-4">
                 <p class="text-sm text-gray-500 dark:text-gray-400">Sélectionnez les sections à inclure :</p>
                 <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer transition">
                     <input type="checkbox" name="sections[]" value="achats" x-model="sections" class="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500">
