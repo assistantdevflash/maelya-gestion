@@ -232,10 +232,10 @@ $currentTab = request('onglet', 'achats');
     </div>
 
     {{-- Modal Impression --}}
-    <div x-data="{show:false,sections:['achats','rdv']}" @open-print-modal.window="show=true" x-show="show" x-cloak class="modal-backdrop" @keydown.escape.window="show=false" @click.self="show=false">
+    <div x-data="{show:false,sections:['achats','rdv'],generate(){if(this.sections.length===0)return;const u=new URL('{{ route('dashboard.clients.fiche-pdf', $client) }}');this.sections.forEach(s=>u.searchParams.append('sections[]',s));window.open(u.toString(),'_blank');this.show=false}}" @open-print-modal.window="show=true" x-show="show" x-cloak class="modal-backdrop" @keydown.escape.window="show=false" @click.self="show=false">
         <div class="modal max-w-sm" x-transition @click.stop>
             <div class="modal-header"><h3 class="modal-title">🖨️ Imprimer la fiche</h3><button @click="show=false" class="modal-close">✕</button></div>
-            <form method="GET" action="{{ route('dashboard.clients.fiche-pdf', $client) }}" @submit="setTimeout(() => show = false, 300)" class="modal-body space-y-4">
+            <div class="modal-body space-y-4">
                 <p class="text-sm text-gray-500 dark:text-gray-400">Sélectionnez les sections à inclure :</p>
                 <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer transition">
                     <input type="checkbox" name="sections[]" value="achats" x-model="sections" class="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500">
@@ -259,10 +259,10 @@ $currentTab = request('onglet', 'achats');
                 </label>
                 <p class="text-xs text-gray-400">Les informations générales (identité, contacts, statistiques) sont toujours incluses.</p>
                 <div class="flex gap-3 pt-2">
-                    <button type="submit" class="btn-primary flex-1">📄 Générer le PDF</button>
+                    <button type="button" @click="generate()" :disabled="sections.length===0" class="btn-primary flex-1" :class="sections.length===0?'opacity-50 cursor-not-allowed':''">📄 Générer le PDF</button>
                     <button type="button" @click="show=false" class="btn-outline">Annuler</button>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
