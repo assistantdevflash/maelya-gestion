@@ -407,10 +407,23 @@ class ClientController extends Controller
         abort_unless($client->institut_id === $this->institutId(), 403);
         $institut = \App\Models\Institut::find($client->institut_id);
 
-        $ventes = $client->ventes()->with('items')->where('statut', 'validee')->latest()->take(30)->get();
-        $rdvs = $client->rendezVous()->with('prestations')->latest('debut_le')->take(20)->get();
+        $sections = request('sections', 'achats,rdv');
+        $sections = is_array($sections) ? $sections : explode(',', $sections);
+        $show = [
+            'achats'    => in_array('achats', $sections),
+            'rdv'       => in_array('rdv', $sections),
+            'credits'   => in_array('credits', $sections),
+            'factures'  => in_array('factures', $sections),
+            'commandes' => in_array('commandes', $sections),
+        ];
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.fiche-client', compact('client', 'institut', 'ventes', 'rdvs'))
+        $ventes     = $show['achats']    ? $client->ventes()->with('items')->where('statut', 'validee')->latest()->take(30)->get() : collect();
+        $rdvs       = $show['rdv']       ? $client->rendezVous()->with('prestations')->latest('debut_le')->take(20)->get() : collect();
+        $credits    = $show['credits']   ? $client->credits()->with('vente.items')->latest()->take(20)->get() : collect();
+        $factures   = $show['factures']  ? $client->factures()->with('paiements')->latest()->take(20)->get() : collect();
+        $commandes  = $show['commandes'] ? $client->commandes()->latest()->take(20)->get() : collect();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.fiche-client', compact('client', 'institut', 'show', 'ventes', 'rdvs', 'credits', 'factures', 'commandes'))
             ->setPaper('a4');
         return $pdf->download('fiche-client-' . \Illuminate\Support\Str::slug($client->nom_affichage) . '.pdf');
     }
