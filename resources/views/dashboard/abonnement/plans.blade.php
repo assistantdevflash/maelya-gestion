@@ -48,6 +48,25 @@
         </div>
         @endif
 
+        {{-- Abonnement en sursis / expiré --}}
+        @if(!$abonnementActif && ($abonnementSursis ?? false))
+        <div class="card p-5 bg-red-50 border-red-200 flex items-center gap-4">
+            <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center text-red-600 flex-shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <div class="flex-1">
+                <p class="font-semibold text-red-900">
+                    {{ $abonnementSursis->plan->nom ?? 'Abonnement' }} — {{ $abonnementSursis->joursDepuisExpiration() <= 2 ? 'Période de sursis' : 'Expiré' }}
+                </p>
+                <p class="text-sm text-red-700">
+                    Expiré depuis {{ $abonnementSursis->joursDepuisExpiration() }} jour(s)
+                    ({{ $abonnementSursis->expire_le->format('d/m/Y') }})
+                    · Choisissez un plan ci-dessous pour renouveler.
+                </p>
+            </div>
+        </div>
+        @endif
+
         {{-- Demande en attente --}}
         @if($demandeEnAttente)
         <div class="card p-5 bg-amber-50 border-amber-200 flex items-center gap-4">

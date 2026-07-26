@@ -78,7 +78,9 @@ class AbonnementController extends Controller
             ->with('plan')
             ->first();
 
-        return view('dashboard.abonnement.plans', compact('plans', 'abonnementActif', 'demandeEnAttente'));
+        $abonnementSursis = $abonnementActif ? null : $user->abonnementEnSursis();
+
+        return view('dashboard.abonnement.plans', compact('plans', 'abonnementActif', 'demandeEnAttente', 'abonnementSursis'));
     }
 
     /**

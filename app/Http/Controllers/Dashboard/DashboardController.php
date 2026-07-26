@@ -46,10 +46,11 @@ class DashboardController extends Controller
             $ventesMois = (int) ($stats->ventes_mois ?? 0);
 
             $abonnement = $user->abonnementActif;
+            $abonnementSursis = $abonnement ? null : $user->abonnementEnSursis();
             $joursRestants = $abonnement?->expire_le ? (int) now()->diffInDays($abonnement->expire_le, false) : null;
 
             return view('dashboard.index-basic', compact(
-                'caJour', 'caMois', 'ventesJour', 'ventesMois', 'abonnement', 'joursRestants'
+                'caJour', 'caMois', 'ventesJour', 'ventesMois', 'abonnement', 'joursRestants', 'abonnementSursis'
             ));
         }
 
@@ -172,7 +173,9 @@ class DashboardController extends Controller
 
         // ── 8. Abonnement ────────────────────────────────────────────────────
         $abonnement = $user->abonnementActif;
+        $abonnementSursis = $abonnement ? null : $user->abonnementEnSursis();
         $joursRestants = $abonnement?->expire_le ? (int) now()->diffInDays($abonnement->expire_le, false) : null;
+        $sursisJours = $abonnementSursis ? $abonnementSursis->joursDepuisExpiration() : 0;
 
         // ── 9. Évolutions ────────────────────────────────────────────────────
         $pct = function ($actuel, $prec) {
@@ -211,7 +214,7 @@ class DashboardController extends Controller
             'nouveauxClientsJour', 'produitsEnAlerte', 'depensesMois', 'beneficeEstime', 'beneficeMois',
             'paiementsCash', 'paiementsMobile', 'paiementsCarte', 'paiementsMixte', 'paiementsCredit',
             'labels', 'data', 'chartData', 'dernieresVentes', 'alertesStock',
-            'abonnement', 'joursRestants', 'anniversairesAujourdhui',
+            'abonnement', 'joursRestants', 'anniversairesAujourdhui', 'abonnementSursis', 'sursisJours',
             'caJourPrec', 'caMoisPrec', 'ventesJourPrec', 'ventesMoisPrec',
             'evolutionCa', 'evolutionCaJour', 'evolutionCaMois',
             'evolutionVentesJour', 'evolutionVentesMois', 'evolutionClientsJour'
