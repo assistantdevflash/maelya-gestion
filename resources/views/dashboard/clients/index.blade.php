@@ -11,6 +11,7 @@
         onglet: '{{ request()->hasAny(['statut_avis']) ? 'avis' : 'clients' }}',
         createOpen: {{ ($errors->any() && old('_form') === 'create') ? 'true' : 'false' }},
         editOpen:   {{ ($editErrorClient ? 'true' : 'false') }},
+        viewMode: 'grid',
         edit: {
             id:                       @js(old('_client_id', $editErrorClient?->id ?? '')),
             action:                   @js($editErrorClient ? route('dashboard.clients.update', $editErrorClient) : ''),
@@ -149,10 +150,19 @@
 
     {{-- Liste --}}
     @if($clients->count() > 0)
-    <div class="flex items-center justify-between mb-2">
+    <div class="flex items-center justify-between mb-3">
         <p class="text-sm text-gray-500 dark:text-gray-400">{{ $clients->total() }} client(s)</p>
+        <div class="flex rounded-lg bg-gray-100 dark:bg-slate-700 p-0.5">
+            <button @click="viewMode='grid'" :class="viewMode==='grid'?'bg-white dark:bg-slate-500 shadow-sm text-gray-900 dark:text-white':'text-gray-500 dark:text-gray-400'" class="px-3 py-1.5 rounded-md text-xs font-semibold transition">
+                <svg class="w-3.5 h-3.5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>Grille
+            </button>
+            <button @click="viewMode='table'" :class="viewMode==='table'?'bg-white dark:bg-slate-500 shadow-sm text-gray-900 dark:text-white':'text-gray-500 dark:text-gray-400'" class="px-3 py-1.5 rounded-md text-xs font-semibold transition">
+                <svg class="w-3.5 h-3.5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>Tableau
+            </button>
+        </div>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {{-- ═══ VUE GRILLE ═══ --}}
+    <div x-show="viewMode==='grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         @foreach($clients as $client)
         @php
             $daysSince = $client->derniere_visite ? $client->derniere_visite->diffInDays(now()) : 999;
@@ -230,6 +240,65 @@
         </div>
         @endforeach
     </div>
+
+    {{-- ═══ VUE TABLEAU ═══ --}}
+    <div x-show="viewMode==='table'" class="card overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 dark:bg-slate-800 border-b border-gray-100 dark:border-slate-700">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Client</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300 hidden sm:table-cell">Téléphone</th>
+                        <th class="px-4 py-3 text-right font-semibold text-gray-600 dark:text-gray-300 hidden md:table-cell">Visites</th>
+                        <th class="px-4 py-3 text-right font-semibold text-gray-600 dark:text-gray-300 hidden lg:table-cell">Total dépensé</th>
+                        <th class="px-4 py-3 text-right font-semibold text-gray-600 dark:text-gray-300">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 dark:divide-slate-700">
+                    @foreach($clients as $client)
+                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors group">
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-3">
+                                @if($client->isEntreprise())<div class="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">🏢</div>
+                                @else<div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">{{ strtoupper(substr($client->prenom ?? '', 0, 1)) }}{{ strtoupper(substr($client->nom ?? '', 0, 1)) }}</div>@endif
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <a href="{{ route('dashboard.clients.show', $client) }}" class="font-semibold text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors">{{ $client->nom_affichage }}@if($client->date_naissance === now()->format('m-d')) 🎂@endif</a>
+                                        @if($client->est_patient)<span class="px-1.5 py-0.5 text-[9px] font-bold uppercase bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 rounded">Patient</span>@endif
+                                    </div>
+                                    @if($client->isEntreprise() && $client->prenom)<p class="text-xs text-gray-500 dark:text-gray-400">Contact : {{ $client->prenom }}</p>@endif
+                                    @if($client->email)<p class="text-xs text-gray-400 dark:text-gray-500">{{ $client->email }}</p>@endif
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400 hidden sm:table-cell">{{ $client->telephone ?? '—' }}</td>
+                        <td class="px-4 py-3 text-right hidden md:table-cell"><span class="badge badge-secondary">{{ $client->ventes_count ?? 0 }}</span></td>
+                        <td class="px-4 py-3 text-right hidden lg:table-cell font-semibold text-gray-900 dark:text-white">{{ number_format($client->total_depense ?? 0, 0, ',', ' ') }} FCFA</td>
+                        <td class="px-4 py-3">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <a href="{{ route('dashboard.clients.show', $client) }}" class="btn-icon" title="Voir fiche"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></a>
+                                <button type="button" title="Modifier"
+                                    @click="openEdit({id:@js($client->id),action:@js(route('dashboard.clients.update',$client)),type_client:@js($client->type_client??'personne_physique'),est_patient:@js($client->est_patient?true:false),prenom:@js($client->prenom??''),nom:@js($client->nom??''),raison_sociale:@js($client->raison_sociale??''),numero_registre_commerce:@js($client->numero_registre_commerce??''),adresse_entreprise:@js($client->adresse_entreprise??''),telephone:@js($client->telephone??''),email:@js($client->email??''),date_naissance:@js($client->date_naissance??''),notes:@js($client->notes??''),adresse:@js($client->adresse??''),piece_identite:@js($client->piece_identite??'')})" class="btn-icon"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+                                <form id="form-archiver-t-{{ $client->id }}" method="POST" action="{{ route('dashboard.clients.archiver', $client) }}">@csrf
+                                    <button type="button" class="btn-icon text-amber-500 hover:text-amber-700" title="{{ $client->actif ? 'Archiver' : 'Réactiver' }}"
+                                        onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-archiver-t-{{ $client->id }}',title:'{{ $client->actif ? 'Archiver' : 'Réactiver' }} ce client',message:'{{ $client->actif ? 'Ce client sera archivé et ne sera plus visible.' : 'Ce client sera réactivé.' }}',confirmLabel:'{{ $client->actif ? 'Archiver' : 'Réactiver' }}',danger:{{ $client->actif ? 'true' : 'false' }}}}))">
+                                        @if($client->actif)<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2L19 8m-9 4v4m4-4v4"/></svg>
+                                        @else<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>@endif
+                                    </button>
+                                </form>
+                                <form id="form-delete-t-{{ $client->id }}" method="POST" action="{{ route('dashboard.clients.destroy', $client) }}">@csrf @method('DELETE')
+                                    <button type="button" class="btn-icon text-red-400 hover:text-red-600" title="Supprimer définitivement"
+                                        onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-delete-t-{{ $client->id }}',title:'Supprimer ce client',message:'Cette action est irréversible. Le client ne pourra être supprimé que s\'il n\'est lié à aucune vente, RDV, crédit, commande, devis ou facture.',confirmLabel:'Supprimer',danger:true}}))"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     @if($clients->hasPages())
     <div class="mt-4">{{ $clients->withQueryString()->links() }}</div>
     @endif
