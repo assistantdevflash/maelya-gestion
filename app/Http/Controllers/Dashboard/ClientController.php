@@ -77,7 +77,13 @@ class ClientController extends Controller
             ->paginate(25)
             ->withQueryString();
 
-        return view('dashboard.clients.index', compact('clients', 'search', 'anniversairesAujourdhui', 'avis', 'statutAvis'));
+        // KPIs globaux (tous les clients, pas seulement la page courante)
+        $totalClients  = Client::count();
+        $vipTotal      = Client::whereHas('ventes', fn($q) => $q->where('statut','validee'), '>=', 10)->count();
+        $inactifTotal  = Client::whereDoesntHave('ventes', fn($q) => $q->where('statut','validee')->where('created_at','>=',now()->subDays(90)))->count();
+        $annivMoisTotal = Client::whereNotNull('date_naissance')->where('date_naissance','like',now()->format('m').'-%')->count();
+
+        return view('dashboard.clients.index', compact('clients', 'search', 'anniversairesAujourdhui', 'avis', 'statutAvis', 'totalClients', 'vipTotal', 'inactifTotal', 'annivMoisTotal'));
     }
 
     public function create()
