@@ -129,7 +129,7 @@
         $inactifCount = $clients->getCollection()->filter(fn($c) => $c->derniere_visite && $c->derniere_visite->diffInDays(now()) > 90)->count();
         $annivMoisCount = $clients->getCollection()->filter(fn($c) => $c->date_naissance && substr($c->date_naissance,0,2) === now()->format('m'))->count();
     @endphp
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         <div class="bg-white dark:bg-slate-800 rounded-xl p-3 border border-gray-100 dark:border-slate-700 text-center">
             <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $clients->total() }}</p>
             <p class="text-[11px] text-gray-500 dark:text-gray-400">Total</p>
@@ -150,7 +150,7 @@
 
     {{-- Liste --}}
     @if($clients->count() > 0)
-    <div class="flex items-center justify-end mb-3">
+    <div class="flex items-center justify-end mb-4">
         <div class="flex rounded-lg bg-gray-100 dark:bg-slate-700 p-0.5">
             <button @click="viewMode='grid'" :class="viewMode==='grid'?'bg-white dark:bg-slate-500 shadow-sm text-gray-900 dark:text-white':'text-gray-500 dark:text-gray-400'" class="px-3 py-1.5 rounded-md text-xs font-semibold transition">
                 <svg class="w-3.5 h-3.5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>Grille
