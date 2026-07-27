@@ -321,8 +321,35 @@
 
     {{-- ═══ ONGLET AVIS ═══ --}}
     <div x-show="onglet === 'avis'">
+        @php
+            $avisColl = $avis->getCollection();
+            $totalAvis = $avis->total();
+            $enAttente = $avisColl->where('statut','en_attente')->count();
+            $approuves = $avisColl->where('statut','approuve')->count();
+            $rejetes   = $avisColl->where('statut','rejete')->count();
+        @endphp
+        {{-- KPIs --}}
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            <div class="bg-white dark:bg-slate-800 rounded-xl p-3 border border-gray-100 dark:border-slate-700 text-center">
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $totalAvis }}</p>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400">Total avis</p>
+            </div>
+            <a href="{{ route('dashboard.clients.index', ['onglet' => 'avis', 'statut_avis' => 'en_attente']) }}" class="bg-amber-50 dark:bg-amber-500/20 rounded-xl p-3 border border-amber-100 dark:border-amber-500/30 text-center hover:bg-amber-100 dark:hover:bg-amber-500/30 transition cursor-pointer">
+                <p class="text-2xl font-bold text-amber-700 dark:text-amber-300">{{ $enAttente }}</p>
+                <p class="text-[11px] text-amber-600 dark:text-amber-400">⏳ En attente</p>
+            </a>
+            <a href="{{ route('dashboard.clients.index', ['onglet' => 'avis', 'statut_avis' => 'approuve']) }}" class="bg-emerald-50 dark:bg-emerald-500/20 rounded-xl p-3 border border-emerald-100 dark:border-emerald-500/30 text-center hover:bg-emerald-100 dark:hover:bg-emerald-500/30 transition cursor-pointer">
+                <p class="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{{ $approuves }}</p>
+                <p class="text-[11px] text-emerald-600 dark:text-emerald-400">✅ Approuvés</p>
+            </a>
+            <a href="{{ route('dashboard.clients.index', ['onglet' => 'avis', 'statut_avis' => 'rejete']) }}" class="bg-red-50 dark:bg-red-500/20 rounded-xl p-3 border border-red-100 dark:border-red-500/30 text-center hover:bg-red-100 dark:hover:bg-red-500/30 transition cursor-pointer">
+                <p class="text-2xl font-bold text-red-600 dark:text-red-300">{{ $rejetes }}</p>
+                <p class="text-[11px] text-red-500 dark:text-red-400">🚫 Rejetés</p>
+            </a>
+        </div>
+
         <div class="flex items-center justify-between mb-4">
-            <p class="text-sm text-gray-500">Approuvez les avis pour les afficher sur votre vitrine publique.</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Approuvez les avis pour les afficher sur votre vitrine publique.</p>
             <form method="GET" action="{{ route('dashboard.clients.index') }}">
                 <input type="hidden" name="onglet" value="avis">
                 <select name="statut_avis" class="form-input text-sm" onchange="this.form.submit()">
@@ -337,46 +364,42 @@
         @if($avis->count())
         <div class="space-y-3">
             @foreach($avis as $a)
-            <div class="card p-4">
+            <div class="card p-4 dark:bg-slate-800 dark:border-slate-700">
                 <div class="flex justify-between items-start gap-4">
                     <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-1">
+                        <div class="flex items-center gap-2 mb-1 flex-wrap">
                             <span class="text-yellow-500 text-lg">{{ str_repeat('★', (int)$a->note) }}{{ str_repeat('☆', 5 - (int)$a->note) }}</span>
-                            <span class="font-semibold text-sm text-gray-800">{{ $a->client_nom_snap ?: 'Anonyme' }}</span>
-                            <span class="text-xs text-gray-400">· {{ $a->repondu_le?->format('d/m/Y') }}</span>
+                            <span class="font-semibold text-sm text-gray-800 dark:text-white">{{ $a->client_nom_snap ?: 'Anonyme' }}</span>
+                            <span class="text-xs text-gray-400 dark:text-gray-500">· {{ $a->repondu_le?->format('d/m/Y') }}</span>
+                            <span class="inline-block px-2 py-0.5 text-[10px] rounded-full font-medium
+                                {{ $a->statut==='approuve' ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' :
+                                   ($a->statut==='rejete' ? 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300' : 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300') }}">
+                                {{ $a->statut === 'en_attente' ? 'En attente' : ($a->statut === 'approuve' ? 'Approuvé' : 'Rejeté') }}
+                            </span>
                         </div>
                         @if($a->commentaire)
-                            <p class="text-gray-700 text-sm mb-2">« {{ $a->commentaire }} »</p>
+                            <p class="text-gray-700 dark:text-gray-300 text-sm mb-2">« {{ $a->commentaire }} »</p>
                         @endif
                         @if($a->rdv && $a->rdv->prestations->isNotEmpty())
                             <div class="flex flex-wrap gap-1.5 mb-2">
                                 @foreach($a->rdv->prestations as $p)
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-purple-50 text-purple-700 border border-purple-200">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                                        </svg>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                                         {{ $p->nom }}
                                     </span>
                                 @endforeach
                             </div>
                         @endif
-                        <span class="inline-block px-2 py-0.5 text-xs rounded-full font-medium
-                            {{ $a->statut==='approuve' ? 'bg-green-100 text-green-800' :
-                               ($a->statut==='rejete' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800') }}">
-                            {{ $a->statut === 'en_attente' ? 'En attente' : ($a->statut === 'approuve' ? 'Approuvé' : 'Rejeté') }}
-                        </span>
                     </div>
                     <div class="flex gap-2 shrink-0">
                         @if($a->statut !== 'approuve')
-                        <form method="POST" action="{{ route('dashboard.avis.approuver', $a) }}">
-                            @csrf
-                            <button class="btn-primary text-xs px-3 py-1">✓ Approuver</button>
+                        <form method="POST" action="{{ route('dashboard.avis.approuver', $a) }}">@csrf
+                            <button class="btn-primary text-xs px-3 py-1.5">✓ Approuver</button>
                         </form>
                         @endif
                         @if($a->statut !== 'rejete')
-                        <form method="POST" action="{{ route('dashboard.avis.rejeter', $a) }}">
-                            @csrf
-                            <button class="btn-outline text-xs px-3 py-1">✕ Rejeter</button>
+                        <form method="POST" action="{{ route('dashboard.avis.rejeter', $a) }}">@csrf
+                            <button class="btn-outline text-xs px-3 py-1.5">✕ Rejeter</button>
                         </form>
                         @endif
                     </div>
@@ -388,9 +411,12 @@
         <div class="mt-4">{{ $avis->links() }}</div>
         @endif
         @else
-        <div class="card p-12 text-center">
-            <p class="text-gray-500">Aucun avis reçu pour le moment.</p>
-            <p class="text-sm text-gray-400 mt-1">Les avis apparaissent automatiquement lorsqu'un client répond au sondage post-visite.</p>
+        <div class="card p-12 text-center dark:bg-slate-800 dark:border-slate-700">
+            <div class="w-16 h-16 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-500/20 dark:to-yellow-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-amber-400 dark:text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+            </div>
+            <p class="font-semibold text-gray-900 dark:text-white mb-1">Aucun avis reçu</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Les avis apparaissent lorsqu'un client répond au sondage post-visite.</p>
         </div>
         @endif
     </div>{{-- end onglet avis --}}
