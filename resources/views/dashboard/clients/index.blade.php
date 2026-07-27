@@ -191,8 +191,8 @@
                 </div>
             </div>
             <div class="space-y-1.5 mb-3">
-                @if($client->telephone)<p class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5"><span class="w-4 h-4 rounded bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center text-[10px]">📞</span>{{ $client->telephone }}</p>@endif
-                @if($client->email)<p class="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1.5 truncate"><span class="w-4 h-4 rounded bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center text-[10px]">✉️</span>{{ $client->email }}</p>@endif
+                @if($client->telephone)<a href="tel:{{ $client->telephone }}" class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5 hover:text-emerald-600 dark:hover:text-emerald-400 transition"><span class="w-4 h-4 rounded bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center text-[10px]">📞</span>{{ $client->telephone }}</a>@endif
+                @if($client->email)<a href="mailto:{{ $client->email }}" class="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1.5 truncate hover:text-blue-600 dark:hover:text-blue-400 transition"><span class="w-4 h-4 rounded bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center text-[10px]">✉️</span>{{ $client->email }}</a>@endif
             </div>
             <div class="grid grid-cols-3 gap-2 mb-3">
                 <div class="bg-gray-50 dark:bg-slate-700/50 rounded-lg p-2 text-center">
