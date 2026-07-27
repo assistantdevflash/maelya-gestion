@@ -83,7 +83,7 @@
     <x-banniere-anniversaire :clients="$anniversairesAujourdhui" />
 
     {{-- Recherche --}}
-    <div class="card p-4">
+    <div class="card p-4 mb-4">
         <form method="GET" action="{{ route('dashboard.clients.index') }}" class="space-y-3">
             <div class="flex flex-col sm:flex-row gap-3">
                 <div class="relative flex-1">
