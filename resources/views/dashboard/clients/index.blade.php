@@ -513,27 +513,184 @@
     {{-- ═══ MODAL ÉDITION ═══ --}}
     <div x-show="editOpen" x-cloak class="modal-backdrop" @keydown.escape.window="editOpen = false" @click.self="editOpen = false">
         <div class="modal max-w-lg" x-transition @click.stop>
-            <div class="modal-header"><h3 class="modal-title">Modifier le client</h3><button @click="editOpen = false" class="modal-close">✕</button></div>
+            <div class="modal-header">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, rgba(147,51,234,0.1), rgba(236,72,153,0.1));">
+                        <svg class="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                    </div>
+                    <h3 class="modal-title">Modifier le client</h3>
+                </div>
+                <button @click="editOpen = false" class="btn-icon">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
             <div class="modal-body">
                 @if($errors->any() && old('_form') === 'edit')
-                <div class="mb-4 p-3 bg-red-50 dark:bg-red-900/30 rounded-xl text-sm text-red-600 dark:text-red-400">@foreach($errors->all() as $e)<p>• {{ $e }}</p>@endforeach</div>
+                <div class="mb-4 p-3 bg-red-50 rounded-xl text-sm text-red-600 space-y-0.5">
+                    @foreach($errors->all() as $e)<p>• {{ $e }}</p>@endforeach
+                </div>
                 @endif
-                <form method="POST" :action="edit.action" class="space-y-4">@csrf @method('PUT')
+                <form method="POST" :action="edit.action" class="space-y-4">
+                    @csrf
+                    @method('PUT')
                     <input type="hidden" name="_form" value="edit">
                     <input type="hidden" name="_client_id" :value="edit.id">
-                    <div class="flex gap-2 p-1 bg-gray-100 dark:bg-slate-800 rounded-xl">
-                        <button type="button" @click="edit.type_client='personne_physique'" :class="edit.type_client==='personne_physique'?'bg-white dark:bg-slate-700 shadow-sm text-gray-900 dark:text-white':'text-gray-500'" class="flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition">Personne physique</button>
-                        <button type="button" @click="edit.type_client='entreprise'" :class="edit.type_client==='entreprise'?'bg-white dark:bg-slate-700 shadow-sm text-gray-900 dark:text-white':'text-gray-500'" class="flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition">Entreprise</button>
+
+                    {{-- Type de client --}}
+                    <div class="form-group mb-0">
+                        <label class="form-label">Type de client *</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition"
+                                   :class="edit.type_client === 'personne_physique' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'">
+                                <input type="radio" name="type_client" value="personne_physique" class="text-primary-600"
+                                       x-model="edit.type_client">
+                                <span class="text-sm font-medium">👤 Personne physique</span>
+                            </label>
+                            <label class="flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition"
+                                   :class="edit.type_client === 'entreprise' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'">
+                                <input type="radio" name="type_client" value="entreprise" class="text-primary-600"
+                                       x-model="edit.type_client">
+                                <span class="text-sm font-medium">🏢 Entreprise</span>
+                            </label>
+                        </div>
                     </div>
-                    <template x-if="edit.type_client==='personne_physique'"><div class="grid grid-cols-2 gap-3"><div><label class="form-label">Prénom *</label><input type="text" name="prenom" maxlength="50" class="form-input" x-model="edit.prenom"></div><div><label class="form-label">Nom *</label><input type="text" name="nom" maxlength="50" class="form-input" x-model="edit.nom"></div></div></template>
-                    <template x-if="edit.type_client==='entreprise'"><div><label class="form-label">Raison sociale *</label><input type="text" name="raison_sociale" maxlength="255" class="form-input" x-model="edit.raison_sociale"><div class="grid grid-cols-2 gap-3 mt-3"><div><label class="form-label">RC</label><input type="text" name="numero_registre_commerce" maxlength="100" class="form-input" x-model="edit.numero_registre_commerce"></div><div><label class="form-label">Contact</label><input type="text" name="prenom" maxlength="50" class="form-input" x-model="edit.prenom"></div></div></div></template>
-                    <div><label class="form-label">Téléphone *</label><input type="tel" name="telephone" maxlength="30" required class="form-input" x-model="edit.telephone"></div>
-                    <div><label class="form-label">Email</label><input type="email" name="email" maxlength="255" class="form-input" x-model="edit.email"></div>
-                    <template x-if="edit.type_client==='personne_physique'"><div><label class="form-label">Date naissance (JJ-MM)</label><input type="text" name="date_naissance" placeholder="JJ-MM" class="form-input w-28" x-model="edit.date_naissance"></div></template>
-                    <div><label class="form-label">Adresse</label><input type="text" name="adresse" maxlength="255" class="form-input" x-model="edit.adresse"></div>
-                    <div><label class="form-label">Pièce identité</label><input type="text" name="piece_identite" maxlength="100" class="form-input" x-model="edit.piece_identite"></div>
-                    <div><label class="form-label">Notes</label><textarea name="notes" rows="2" maxlength="1000" class="form-input resize-none" x-model="edit.notes"></textarea></div>
-                    <div class="flex gap-3 pt-2"><button type="submit" class="btn-primary flex-1">Enregistrer</button><button type="button" @click="editOpen=false" class="btn-outline">Annuler</button></div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        {{-- Champs pour personne physique --}}
+                        <template x-if="edit.type_client === 'personne_physique'">
+                            <div class="col-span-2 space-y-3">
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="form-group mb-0">
+                                        <label class="form-label">Prénom *</label>
+                                        <input type="text" name="prenom" maxlength="50" class="form-input"
+                                               x-model="edit.prenom" placeholder="Fatou"
+                                               :required="edit.type_client === 'personne_physique'">
+                                    </div>
+                                    <div class="form-group mb-0">
+                                        <label class="form-label">Nom *</label>
+                                        <input type="text" name="nom" maxlength="50" class="form-input"
+                                               x-model="edit.nom" placeholder="Traoré"
+                                               :required="edit.type_client === 'personne_physique'">
+                                    </div>
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label class="flex items-center gap-2">
+                                        <input type="checkbox" name="est_patient" value="1" class="rounded text-primary-600"
+                                               :checked="edit.est_patient">
+                                        <span class="text-sm font-medium text-gray-700">Ce client est un patient</span>
+                                    </label>
+                                    <p class="text-xs text-gray-500 mt-1">Affichera "Patient" sur les factures</p>
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label class="form-label">Anniversaire (jour et mois)</label>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <select name="date_naissance_mois" class="form-input"
+                                                @change="edit.date_naissance = $el.value ? $el.value + '-' + ($refs.joureditsel?.value||'01') : ''">
+                                            <option value="">Mois</option>
+                                            @foreach(['01'=>'Janvier','02'=>'Février','03'=>'Mars','04'=>'Avril','05'=>'Mai','06'=>'Juin','07'=>'Juillet','08'=>'Août','09'=>'Septembre','10'=>'Octobre','11'=>'Novembre','12'=>'Décembre'] as $n=>$m)
+                                            <option value="{{ $n }}" :selected="edit.date_naissance && edit.date_naissance.substring(0,2) === '{{ $n }}'">{{ $m }}</option>
+                                            @endforeach
+                                        </select>
+                                        <select name="date_naissance_jour" x-ref="joureditsel" class="form-input"
+                                                @change="edit.date_naissance = ($refs.moissel?.value||edit.date_naissance.substring(0,2)||'01') + '-' + $el.value">
+                                            <option value="">Jour</option>
+                                            @for($d=1;$d<=31;$d++)
+                                            @php $ds=str_pad($d,2,'0',STR_PAD_LEFT) @endphp
+                                            <option value="{{ $ds }}" :selected="edit.date_naissance && edit.date_naissance.substring(3,5) === '{{ $ds }}'">{{ $d }}</option>
+                                            @endfor
+                                        </select>
+                                    </div>
+                                    <input type="hidden" name="date_naissance" :value="edit.date_naissance">
+                                </div>
+                            </div>
+                        </template>
+
+                        {{-- Champs pour entreprise --}}
+                        <template x-if="edit.type_client === 'entreprise'">
+                            <div class="col-span-2 space-y-3">
+                                <div class="form-group mb-0">
+                                    <label class="form-label">Raison sociale *</label>
+                                    <input type="text" name="raison_sociale" maxlength="255" class="form-input"
+                                           x-model="edit.raison_sociale" placeholder="Entreprise SARL"
+                                           :required="edit.type_client === 'entreprise'">
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="form-group mb-0">
+                                        <label class="form-label">N° Registre Commerce</label>
+                                        <input type="text" name="numero_registre_commerce" maxlength="100" class="form-input"
+                                               x-model="edit.numero_registre_commerce" placeholder="RC-123456">
+                                    </div>
+                                    <div class="form-group mb-0">
+                                        <label class="form-label">Contact (Prénom Nom)</label>
+                                        <input type="text" name="prenom" maxlength="100" class="form-input"
+                                               x-model="edit.prenom" placeholder="Jean Dupont">
+                                    </div>
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label class="form-label">Adresse entreprise</label>
+                                    <textarea name="adresse_entreprise" rows="2" maxlength="500" class="form-input resize-none"
+                                              x-model="edit.adresse_entreprise"
+                                              placeholder="Adresse complète de l'entreprise..."></textarea>
+                                </div>
+                            </div>
+                        </template>
+
+                        {{-- Champs communs --}}
+                        <div class="form-group mb-0">
+                            <label class="form-label">Téléphone *</label>
+                            <input type="text" name="telephone" required maxlength="30" class="form-input"
+                                   x-model="edit.telephone" placeholder="+225 07 00 00 00">
+                        </div>
+                        <div class="form-group mb-0">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" maxlength="255" class="form-input"
+                                   x-model="edit.email" placeholder="contact@exemple.ci">
+                        </div>
+
+                        <div class="col-span-2 form-group mb-0">
+                            <label class="form-label">Notes</label>
+                            <textarea name="notes" rows="3" class="form-input resize-none"
+                                      x-model="edit.notes"
+                                      placeholder="Informations complémentaires, allergies, préférences..."></textarea>
+                            <p class="text-xs text-gray-500 mt-1">Vous pouvez utiliser le HTML basique (gras, italique, listes...)</p>
+                        </div>
+
+                        {{-- Informations supplémentaires (collapsible) - uniquement pour personne physique --}}
+                        <template x-if="edit.type_client === 'personne_physique'">
+                            <div class="col-span-2" x-data="{ showExtraEdit: false }">
+                                <button type="button" @click="showExtraEdit = !showExtraEdit"
+                                        class="flex items-center gap-2 text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors">
+                                    <svg class="w-3.5 h-3.5 transition-transform" :class="showExtraEdit ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                    Informations supplémentaires
+                                </button>
+                                <div x-show="showExtraEdit" x-collapse class="mt-3 space-y-3">
+                                    <div class="form-group mb-0">
+                                        <label class="form-label">Adresse</label>
+                                        <input type="text" name="adresse" maxlength="255" class="form-input"
+                                               x-model="edit.adresse" placeholder="Abidjan, Cocody...">
+                                    </div>
+                                    <div class="form-group mb-0">
+                                        <label class="form-label">Pièce d'identité</label>
+                                        <input type="text" name="piece_identite" maxlength="100" class="form-input"
+                                               x-model="edit.piece_identite" placeholder="N° CNI, Passeport...">
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="flex gap-3 pt-1">
+                        <button type="button" @click="editOpen = false" class="btn btn-outline flex-1 justify-center">Annuler</button>
+                        <button type="submit" class="btn-primary flex-1 justify-center">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+                    </div>
                 </form>
             </div>
         </div>
