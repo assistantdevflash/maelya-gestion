@@ -18,9 +18,36 @@
     @php
         $hasBoutique = auth()->user()->hasBoutiqueAccess();
         $isEssai = auth()->user()->abonnementActif?->plan?->slug === 'essai';
+        $aboActif = auth()->user()->abonnementActif;
+        $enSursis = $aboActif && $aboActif->enPeriodeSursis();
+        $estExpire = !$aboActif || ($aboActif->date_fin && $aboActif->date_fin->isPast());
+        $aboInactif = $estExpire || $enSursis;
     @endphp
 
-    @if(!$hasBoutique && !$isEssai)
+    @if($aboInactif)
+    {{-- Abonnement expiré ou en sursis — impossible d'activer la boutique --}}
+    <div class="p-6 bg-red-50 dark:bg-red-950/30 border-2 border-red-300 dark:border-red-700 rounded-2xl">
+        <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-red-500 dark:bg-red-600 rounded-xl flex items-center justify-center text-white flex-shrink-0">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-lg font-bold text-red-900 dark:text-red-200">{{ $enSursis ? 'Abonnement en sursis' : 'Abonnement expiré' }}</h3>
+                <p class="text-red-800 dark:text-red-300 mt-2">
+                    {{ $enSursis ? 'Votre abonnement est en période de sursis. Certaines fonctionnalités sont limitées.' : 'Votre abonnement a expiré. Renouvelez-le pour accéder à toutes les fonctionnalités.' }}
+                </p>
+                <p class="text-sm text-red-700 dark:text-red-400 mt-3">
+                    Le module <strong>Boutique en ligne</strong> nécessite un abonnement actif. Veuillez renouveler votre abonnement pour pouvoir l'activer.
+                </p>
+                <a href="{{ route('dashboard.abonnement.index') }}" class="btn-primary mt-4 inline-flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                    Gérer mon abonnement
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @elseif(!$hasBoutique && !$isEssai)
 
     {{-- Bannière demande en attente --}}
     @if($demandeEnAttente ?? false)
