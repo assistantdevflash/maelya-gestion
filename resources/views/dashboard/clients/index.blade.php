@@ -150,8 +150,7 @@
 
     {{-- Liste --}}
     @if($clients->count() > 0)
-    <div class="flex items-center justify-between mb-3">
-        <p class="text-sm text-gray-500 dark:text-gray-400">{{ $clients->total() }} client(s)</p>
+    <div class="flex items-center justify-end mb-3">
         <div class="flex rounded-lg bg-gray-100 dark:bg-slate-700 p-0.5">
             <button @click="viewMode='grid'" :class="viewMode==='grid'?'bg-white dark:bg-slate-500 shadow-sm text-gray-900 dark:text-white':'text-gray-500 dark:text-gray-400'" class="px-3 py-1.5 rounded-md text-xs font-semibold transition">
                 <svg class="w-3.5 h-3.5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>Grille
