@@ -8,7 +8,7 @@
     }
 @endphp
 <div x-data="{
-        onglet: '{{ request()->hasAny(['statut_avis']) ? 'avis' : 'clients' }}',
+        onglet: '{{ request('onglet', request()->hasAny(['statut_avis']) ? 'avis' : 'clients') }}',
         createOpen: {{ ($errors->any() && old('_form') === 'create') ? 'true' : 'false' }},
         editOpen:   {{ ($editErrorClient ? 'true' : 'false') }},
         viewMode: 'grid',
@@ -61,12 +61,12 @@
 
     {{-- Onglets --}}
     <div class="flex gap-1 border-b border-gray-200">
-        <button @click="onglet = 'clients'"
+        <button @click="onglet='clients';const u=new URL(window.location);u.searchParams.set('onglet','clients');history.replaceState(null,'',u)"
                 :class="onglet === 'clients' ? 'border-b-2 border-primary-600 text-primary-600 font-semibold' : 'text-gray-500 hover:text-gray-700'"
                 class="px-4 py-2 text-sm transition-colors">
             Clients
         </button>
-        <button @click="onglet = 'avis'"
+        <button @click="onglet='avis';const u=new URL(window.location);u.searchParams.set('onglet','avis');history.replaceState(null,'',u)"
                 :class="onglet === 'avis' ? 'border-b-2 border-primary-600 text-primary-600 font-semibold' : 'text-gray-500 hover:text-gray-700'"
                 class="px-4 py-2 text-sm transition-colors flex items-center gap-1.5">
             Avis clients
@@ -85,6 +85,7 @@
     {{-- Recherche --}}
     <div class="card p-4 mb-4">
         <form method="GET" action="{{ route('dashboard.clients.index') }}" class="space-y-3">
+            <input type="hidden" name="onglet" value="clients">
             <div class="flex flex-col sm:flex-row gap-3">
                 <div class="relative flex-1">
                     <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
