@@ -129,18 +129,18 @@
             <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $totalClients }}</p>
             <p class="text-[11px] text-gray-500 dark:text-gray-400">Total</p>
         </div>
-        <div class="bg-amber-50 dark:bg-amber-500/20 rounded-xl p-3 border border-amber-100 dark:border-amber-500/30 text-center">
+        <a href="{{ route('dashboard.clients.index', ['segment' => 'vip']) }}" class="bg-amber-50 dark:bg-amber-500/20 rounded-xl p-3 border border-amber-100 dark:border-amber-500/30 text-center hover:bg-amber-100 dark:hover:bg-amber-500/30 transition cursor-pointer">
             <p class="text-2xl font-bold text-amber-700 dark:text-amber-300">{{ $vipTotal }}</p>
             <p class="text-[11px] text-amber-600 dark:text-amber-400">⭐ VIP (10+)</p>
-        </div>
-        <div class="bg-red-50 dark:bg-red-500/20 rounded-xl p-3 border border-red-100 dark:border-red-500/30 text-center">
+        </a>
+        <a href="{{ route('dashboard.clients.index', ['inactif_jours' => 90]) }}" class="bg-red-50 dark:bg-red-500/20 rounded-xl p-3 border border-red-100 dark:border-red-500/30 text-center hover:bg-red-100 dark:hover:bg-red-500/30 transition cursor-pointer">
             <p class="text-2xl font-bold text-red-600 dark:text-red-300">{{ $inactifTotal }}</p>
             <p class="text-[11px] text-red-500 dark:text-red-400">Inactifs 90j+</p>
-        </div>
-        <div class="bg-pink-50 dark:bg-pink-500/20 rounded-xl p-3 border border-pink-100 dark:border-pink-500/30 text-center">
+        </a>
+        <a href="{{ route('dashboard.clients.index', ['mois_anniv' => now()->format('m')]) }}" class="bg-pink-50 dark:bg-pink-500/20 rounded-xl p-3 border border-pink-100 dark:border-pink-500/30 text-center hover:bg-pink-100 dark:hover:bg-pink-500/30 transition cursor-pointer">
             <p class="text-2xl font-bold text-pink-600 dark:text-pink-300">{{ $annivMoisTotal }}</p>
             <p class="text-[11px] text-pink-500 dark:text-pink-400">🎂 Ce mois</p>
-        </div>
+        </a>
     </div>
 
     {{-- Liste --}}
