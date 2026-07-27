@@ -155,6 +155,12 @@
             </button>
         </div>
     </div>
+    {{-- Légende des pastilles --}}
+    <div x-show="viewMode==='grid'" class="flex items-center gap-4 text-[11px] text-gray-400 dark:text-gray-500 mb-3">
+        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Actif (&lt; 7j)</span>
+        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-400"></span> Modéré (7-30j)</span>
+        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-400"></span> Inactif (&gt; 30j)</span>
+    </div>
     {{-- ═══ VUE GRILLE ═══ --}}
     <div x-show="viewMode==='grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         @foreach($clients as $client)
