@@ -394,13 +394,15 @@
                     </div>
                     <div class="flex gap-2 shrink-0">
                         @if($a->statut !== 'approuve')
-                        <form method="POST" action="{{ route('dashboard.avis.approuver', $a) }}">@csrf
-                            <button class="btn-primary text-xs px-3 py-1.5">✓ Approuver</button>
+                        <form id="form-approuver-{{ $a->id }}" method="POST" action="{{ route('dashboard.avis.approuver', $a) }}">@csrf
+                            <button type="button" class="btn-primary text-xs px-3 py-1.5"
+                                onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-approuver-{{ $a->id }}',title:'Approuver cet avis',message:'L\\'avis sera visible sur votre vitrine publique.',confirmLabel:'Approuver',confirmClass:'!bg-emerald-600 hover:!bg-emerald-700'}}))">✓ Approuver</button>
                         </form>
                         @endif
                         @if($a->statut !== 'rejete')
-                        <form method="POST" action="{{ route('dashboard.avis.rejeter', $a) }}">@csrf
-                            <button class="btn-outline text-xs px-3 py-1.5">✕ Rejeter</button>
+                        <form id="form-rejeter-{{ $a->id }}" method="POST" action="{{ route('dashboard.avis.rejeter', $a) }}">@csrf
+                            <button type="button" class="btn-outline text-xs px-3 py-1.5"
+                                onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-rejeter-{{ $a->id }}',title:'Rejeter cet avis',message:'L\\'avis ne sera plus visible.',confirmLabel:'Rejeter',danger:true}}))">✕ Rejeter</button>
                         </form>
                         @endif
                     </div>
