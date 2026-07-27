@@ -11,13 +11,12 @@
             <div class="lg:col-span-2 space-y-5">
                 {{-- Lignes --}}
                 <div class="card" style="overflow: visible">
-                    <div class="card-header flex items-center justify-between">
+                    <div class="card-header">
                         <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Articles / Prestations</h2>
-                        <button type="button" @click="ajouterLigne()" class="text-sm text-primary-600 hover:text-primary-700 font-medium">+ Ajouter une ligne</button>
                     </div>
                     <div class="card-body space-y-3">
                         <template x-for="(ligne, i) in lignes" :key="i">
-                            <div class="flex flex-wrap items-center gap-2 p-3 bg-gray-50 dark:bg-slate-800 rounded-xl">
+                            <div class="flex flex-wrap items-center gap-2 p-3 bg-gray-50 dark:bg-slate-800 rounded-xl" x-transition>
                                 {{-- Sélecteur catalogue --}}
                                 <div class="relative" @click.outside="ligne.pickerOpen = false">
                                     <button type="button" @click="ligne.pickerOpen = !ligne.pickerOpen"
@@ -55,6 +54,12 @@
                             </div>
                         </template>
                         <p x-show="lignes.length === 0" class="text-sm text-gray-400 text-center py-4">Ajoutez au moins un article ou une prestation.</p>
+                        <div class="text-center pt-1">
+                            <button type="button" @click="ajouterLigne()" class="inline-flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-700 font-medium transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                                Ajouter une ligne
+                            </button>
+                        </div>
                     </div>
                 </div>
 
