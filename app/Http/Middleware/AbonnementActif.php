@@ -66,7 +66,12 @@ class AbonnementActif
                     session()->forget('abo_status');
                     // Continuer sans le cache (passera par la vérification DB ci-dessous)
                 } else {
-                    // Cache toujours valide : appliquer les restrictions
+                    // Recalculer les jours de sursis depuis la DB (le cache peut être stale)
+                    $dernier = ($this->isNotOwner($user) ? $abonnementUser : $user)
+                        ->abonnements()->whereIn('statut', ['actif','expire'])->latest('expire_le')->first();
+                    $aboStatus['sursis_jours'] = $dernier?->joursDepuisExpiration() ?? 999;
+                    // Mettre à jour le cache
+                    $this->cacheAboStatus($aboStatus);
                     return $this->applyAboStatus($request, $next, $aboStatus);
                 }
             } else {
