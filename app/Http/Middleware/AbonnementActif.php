@@ -75,7 +75,18 @@ class AbonnementActif
                     return $this->applyAboStatus($request, $next, $aboStatus);
                 }
             } else {
-                return $this->applyAboStatus($request, $next, $aboStatus);
+                // Cache dit que l'abonnement est actif (en_sursis=false)
+                // Vérifier si l'abonnement a expiré entre-temps (le cache est stale)
+                $abonnement = $this->isNotOwner($user)
+                    ? $this->getOwnerAbonnement($user)
+                    : $user->abonnementActif;
+                if (!$abonnement) {
+                    // L'abonnement a expiré depuis la dernière mise en cache
+                    session()->forget('abo_status');
+                    // Continuer sans le cache → va recalculer ci-dessous
+                } else {
+                    return $this->applyAboStatus($request, $next, $aboStatus);
+                }
             }
         }
 
