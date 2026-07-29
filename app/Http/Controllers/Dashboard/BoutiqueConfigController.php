@@ -98,14 +98,14 @@ class BoutiqueConfigController extends Controller
 
         $data = $request->validate([
             'facebook_pixel_id'     => 'required|string|max:255',
-            'facebook_access_token' => 'required|string|max:500',
+            'facebook_access_token' => 'nullable|string|max:500',
             'facebook_test_code'    => 'nullable|string|max:100',
             'facebook_pixel_name'   => 'nullable|string|max:255',
         ]);
 
         $institut->update([
             'facebook_pixel_id'      => $data['facebook_pixel_id'],
-            'facebook_access_token'  => $data['facebook_access_token'],
+            'facebook_access_token'  => $data['facebook_access_token'] ?? null,
             'facebook_test_code'     => $data['facebook_test_code'] ?? null,
             'facebook_pixel_name'    => $data['facebook_pixel_name'] ?? null,
             'facebook_connected_at'  => $institut->facebook_connected_at ?? now(),

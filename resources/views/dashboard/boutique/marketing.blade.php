@@ -67,9 +67,9 @@
                     <p class="text-xs text-gray-400 mt-1">Identifiant unique de votre pixel Meta.</p>
                 </div>
                 <div>
-                    <label class="form-label">Access Token (Conversions API)</label>
-                    <input type="password" name="facebook_access_token" maxlength="500" class="form-input" placeholder="EAA..." value="{{ old('facebook_access_token') }}" autocomplete="new-password">
-                    <p class="text-xs text-gray-400 mt-1">Token d'accès pour l'envoi des événements côté serveur. Ne sera pas réaffiché.</p>
+                    <label class="form-label">Access Token (Conversions API) <span class="text-gray-400 font-normal">(optionnel)</span></label>
+                    <input type="password" name="facebook_access_token" maxlength="500" class="form-input" placeholder="EAA..." autocomplete="new-password">
+                    <p class="text-xs text-gray-400 mt-1">Requis uniquement pour le suivi des achats côté serveur (CAPI).</p>
                 </div>
                 <div>
                     <label class="form-label">Code de test <span class="text-gray-400 font-normal">(optionnel)</span></label>
