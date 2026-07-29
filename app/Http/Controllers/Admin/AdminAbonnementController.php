@@ -55,7 +55,7 @@ class AdminAbonnementController extends Controller
         // ── Cas spécial : ajout d'option boutique en cours d'abonnement ───────
         if (($abonnement->metadata['type'] ?? '') === 'ajout_option_boutique') {
             $aboSource = Abonnement::find($abonnement->metadata['abonnement_source_id'] ?? null);
-            
+
             if (!$aboSource || $aboSource->statut !== 'actif') {
                 return back()->with('error', 'L\'abonnement source n\'est plus actif.');
             }

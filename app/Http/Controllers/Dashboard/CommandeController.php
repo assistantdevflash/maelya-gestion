@@ -171,6 +171,9 @@ class CommandeController extends Controller
 
             DB::commit();
 
+            // Envoyer l'événement Purchase au Pixel Facebook
+            \App\Jobs\SendFacebookPurchaseEvent::dispatch($commande);
+
             return back()->with('success', 'Commande marquée comme payée et vente créée avec succès.');
 
         } catch (\Exception $e) {

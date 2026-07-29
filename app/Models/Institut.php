@@ -24,6 +24,8 @@ class Institut extends Model
         'boutique_active' => 'boolean',
         'boutique_frais_livraison' => 'decimal:2',
         'boutique_zones_livraison' => 'array',
+        'facebook_access_token' => 'encrypted',
+        'facebook_connected_at' => 'datetime',
     ];
 
     protected static function boot(): void

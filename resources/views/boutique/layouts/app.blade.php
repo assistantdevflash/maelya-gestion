@@ -37,6 +37,26 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
     
     @stack('styles')
+
+    {{-- Meta Pixel --}}
+    @if($institut->facebook_pixel_id)
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '{{ $institut->facebook_pixel_id }}');
+    @if($institut->facebook_test_code)
+    fbq('init', '{{ $institut->facebook_pixel_id }}', { external_id: 'test-{{ $institut->facebook_test_code }}' });
+    @endif
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{ $institut->facebook_pixel_id }}&ev=PageView&noscript=1"/></noscript>
+    @endif
 </head>
 <body class="antialiased bg-gray-50 dark:bg-gray-900">
     @yield('content')

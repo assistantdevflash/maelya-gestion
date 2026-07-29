@@ -266,6 +266,9 @@ class BoutiqueController extends Controller
 
             DB::commit();
 
+            // Envoyer l'événement Purchase au Pixel Facebook
+            \App\Jobs\SendFacebookPurchaseEvent::dispatch($commande);
+
             // Envoyer les emails
             try {
                 Mail::to($data['email'] ?? $data['telephone'] . '@temp.maelya.com')
