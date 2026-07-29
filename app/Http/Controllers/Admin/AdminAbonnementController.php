@@ -11,6 +11,7 @@ use App\Models\Parrainage;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 
 class AdminAbonnementController extends Controller
@@ -62,6 +63,9 @@ class AdminAbonnementController extends Controller
             // Activer l'option boutique sur l'abonnement source
             $aboSource->setBoutique(true, 3900);
             $aboSource->save();
+
+            // Invalider le cache d'accès boutique pour cet utilisateur
+            Cache::forget("user_{$aboSource->user_id}_boutique_access");
 
             // Marquer cette demande comme traitée
             $abonnement->update([
