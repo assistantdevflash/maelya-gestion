@@ -56,26 +56,29 @@
             @endif
         </div>
         <div class="card-body space-y-4">
-            <form method="POST" action="{{ route('dashboard.boutique.config.facebook.save') }}" class="space-y-4">
+            <form method="POST" action="{{ route('dashboard.boutique.config.facebook.save') }}" class="space-y-4" autocomplete="off">
                 @csrf
+                {{-- Champs factices pour empêcher l'autofill du navigateur --}}
+                <input type="text" name="fake_username" autocomplete="off" style="display:none" aria-hidden="true">
+                <input type="password" name="fake_password" autocomplete="off" style="display:none" aria-hidden="true">
                 <div>
                     <label class="form-label">Pixel ID</label>
-                    <input type="text" name="facebook_pixel_id" maxlength="255" class="form-input" placeholder="123456789012345" value="{{ old('facebook_pixel_id', $institut->facebook_pixel_id) }}">
+                    <input type="text" name="facebook_pixel_id" maxlength="255" class="form-input" placeholder="123456789012345" value="{{ old('facebook_pixel_id', $institut->facebook_pixel_id) }}" autocomplete="off">
                     <p class="text-xs text-gray-400 mt-1">Identifiant unique de votre pixel Meta.</p>
                 </div>
                 <div>
                     <label class="form-label">Access Token (Conversions API)</label>
-                    <input type="password" name="facebook_access_token" maxlength="500" class="form-input" placeholder="EAA..." value="{{ old('facebook_access_token') }}">
+                    <input type="password" name="facebook_access_token" maxlength="500" class="form-input" placeholder="EAA..." value="{{ old('facebook_access_token') }}" autocomplete="new-password">
                     <p class="text-xs text-gray-400 mt-1">Token d'accès pour l'envoi des événements côté serveur. Ne sera pas réaffiché.</p>
                 </div>
                 <div>
                     <label class="form-label">Code de test <span class="text-gray-400 font-normal">(optionnel)</span></label>
-                    <input type="text" name="facebook_test_code" maxlength="100" class="form-input" placeholder="TEST12345" value="{{ old('facebook_test_code', $institut->facebook_test_code) }}">
+                    <input type="text" name="facebook_test_code" maxlength="100" class="form-input" placeholder="TEST12345" value="{{ old('facebook_test_code', $institut->facebook_test_code) }}" autocomplete="off">
                     <p class="text-xs text-gray-400 mt-1">Code fourni par Meta Events Manager pour tester votre pixel.</p>
                 </div>
                 <div>
                     <label class="form-label">Nom du pixel <span class="text-gray-400 font-normal">(optionnel)</span></label>
-                    <input type="text" name="facebook_pixel_name" maxlength="255" class="form-input" placeholder="Pixel boutique" value="{{ old('facebook_pixel_name', $institut->facebook_pixel_name) }}">
+                    <input type="text" name="facebook_pixel_name" maxlength="255" class="form-input" placeholder="Pixel boutique" value="{{ old('facebook_pixel_name', $institut->facebook_pixel_name) }}" autocomplete="off">
                 </div>
                 <div class="flex gap-3 pt-2">
                     <button type="submit" class="btn-primary">💾 {{ $institut->facebook_pixel_id ? 'Mettre à jour' : 'Connecter' }}</button>
