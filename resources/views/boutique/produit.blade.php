@@ -20,6 +20,18 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    {{-- Meta Pixel --}}
+    @if($institut->facebook_pixel_id)
+    <script>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init','{{ $institut->facebook_pixel_id }}');
+    @if($institut->facebook_test_code)fbq('init','{{ $institut->facebook_pixel_id }}',{external_id:'test-{{ $institut->facebook_test_code }}'});@endif
+    fbq('track','PageView');
+    fbq('track','ViewContent',{content_name:'{{ $produit->nom }}',content_ids:['{{ $produit->id }}'],content_type:'product',value:{{ $produit->prix_promo ?: $produit->prix_vente }},currency:'XOF'});
+    </script>
+    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{ $institut->facebook_pixel_id }}&ev=PageView&noscript=1"/></noscript>
+    @endif
 </head>
 <body class="bg-purple-50 dark:bg-slate-900 min-h-screen" x-data="ficheProduit()" x-cloak>
 
@@ -289,6 +301,7 @@
                     this.panier.push({ ...this.produit, quantite: this.quantite });
                 }
                 localStorage.setItem('panier_{{ $institut->id }}', JSON.stringify(this.panier));
+                if(typeof fbq !== 'undefined') fbq('track','AddToCart',{content_name:this.produit.nom,content_ids:[this.produit.id],content_type:'product',value:this.produit.prix_promo||this.produit.prix_vente,currency:'XOF'});
                 window.location.href = '{{ route('shop.index', $institut->slug) }}?panier=1';
             },
 

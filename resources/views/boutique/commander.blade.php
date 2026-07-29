@@ -138,6 +138,7 @@ function checkout(zonesData, fraisDefaut) {
             if (this.panier.length === 0) { event.preventDefault(); return; }
             if (this.submitting) { event.preventDefault(); return; }
             this.submitting = true;
+            if(typeof fbq !== 'undefined') fbq('track','InitiateCheckout',{value:this.total,currency:'XOF',content_ids:this.panier.map(p=>p.id),content_type:'product',num_items:this.panier.reduce((s,p)=>s+p.quantite,0)});
             localStorage.removeItem('panier_{{ $institut->id }}');
         }
     };
