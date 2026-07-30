@@ -105,7 +105,7 @@ class BoutiqueConfigController extends Controller
 
         $institut->update([
             'facebook_pixel_id'      => $data['facebook_pixel_id'],
-            'facebook_access_token'  => $data['facebook_access_token'] ?? null,
+            'facebook_access_token'  => $data['facebook_access_token'] ?: $institut->facebook_access_token,
             'facebook_test_code'     => $data['facebook_test_code'] ?? null,
             'facebook_pixel_name'    => $data['facebook_pixel_name'] ?? null,
             'facebook_connected_at'  => $institut->facebook_connected_at ?? now(),

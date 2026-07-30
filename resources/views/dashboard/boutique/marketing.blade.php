@@ -46,9 +46,17 @@
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Meta (Facebook & Instagram)</h2>
             </div>
             @if($institut->facebook_pixel_id)
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Connecté
-                </span>
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Connecté
+                    </span>
+                    @if($institut->facebook_connected_at)
+                    <span class="text-xs text-gray-400 dark:text-gray-500">depuis le {{ $institut->facebook_connected_at->format('d/m/Y') }}</span>
+                    @endif
+                    @if($institut->facebook_pixel_name)
+                    <span class="text-xs text-gray-400 dark:text-gray-500">· {{ $institut->facebook_pixel_name }}</span>
+                    @endif
+                </div>
             @else
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400">
                     <span class="w-2 h-2 rounded-full bg-gray-400"></span> Non connecté
@@ -63,22 +71,30 @@
                 <input type="password" name="fake_password" autocomplete="off" style="display:none" aria-hidden="true">
                 <div>
                     <label class="form-label">Pixel ID</label>
-                    <input type="text" name="facebook_pixel_id" maxlength="255" class="form-input" placeholder="123456789012345" value="{{ old('facebook_pixel_id', $institut->facebook_pixel_id) }}" autocomplete="off">
+                    <input type="text" name="facebook_pixel_id" maxlength="255" class="form-input" placeholder="123456789012345" value="{{ $institut->facebook_pixel_id }}" autocomplete="off">
                     <p class="text-xs text-gray-400 mt-1">Identifiant unique de votre pixel Meta.</p>
                 </div>
-                <div>
+                <div x-data="{ showToken: false }">
                     <label class="form-label">Access Token (Conversions API) <span class="text-gray-400 font-normal">(optionnel)</span></label>
-                    <input type="password" name="facebook_access_token" maxlength="500" class="form-input" placeholder="EAA..." autocomplete="new-password">
+                    <div class="relative">
+                        <input :type="showToken ? 'text' : 'password'" name="facebook_access_token" maxlength="500" class="form-input pr-10" placeholder="EAA..." autocomplete="new-password" value="{{ old('facebook_access_token') }}">
+                        @if($institut->facebook_access_token)
+                        <button type="button" @click="showToken = !showToken" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="Afficher/Masquer le token">
+                            <svg x-show="!showToken" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            <svg x-show="showToken" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243a9.97 9.97 0 01-3.435 2.058M15 12a3 3 0 01-3-3m0 0V4m0 0L9 6m6-2l3 3"/></svg>
+                        </button>
+                        @endif
+                    </div>
                     <p class="text-xs text-gray-400 mt-1">Requis uniquement pour le suivi des achats côté serveur (CAPI).</p>
                 </div>
                 <div>
                     <label class="form-label">Code de test <span class="text-gray-400 font-normal">(optionnel)</span></label>
-                    <input type="text" name="facebook_test_code" maxlength="100" class="form-input" placeholder="TEST12345" value="{{ old('facebook_test_code', $institut->facebook_test_code) }}" autocomplete="off">
+                    <input type="text" name="facebook_test_code" maxlength="100" class="form-input" placeholder="TEST12345" value="{{ $institut->facebook_test_code }}" autocomplete="off">
                     <p class="text-xs text-gray-400 mt-1">Code fourni par Meta Events Manager pour tester votre pixel.</p>
                 </div>
                 <div>
                     <label class="form-label">Nom du pixel <span class="text-gray-400 font-normal">(optionnel)</span></label>
-                    <input type="text" name="facebook_pixel_name" maxlength="255" class="form-input" placeholder="Pixel boutique" value="{{ old('facebook_pixel_name', $institut->facebook_pixel_name) }}" autocomplete="off">
+                    <input type="text" name="facebook_pixel_name" maxlength="255" class="form-input" placeholder="Pixel boutique" value="{{ $institut->facebook_pixel_name }}" autocomplete="off">
                 </div>
                 <div class="flex gap-3 pt-2">
                     <button type="submit" class="btn-primary">💾 {{ $institut->facebook_pixel_id ? 'Mettre à jour' : 'Connecter' }}</button>
