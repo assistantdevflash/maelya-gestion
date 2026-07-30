@@ -15,6 +15,7 @@ class Institut extends Model
     protected $fillable = [
         'nom', 'slug', 'email', 'telephone', 'ville', 'type', 'logo', 'actif', 'vitrine_active', 'reservation_en_ligne',
         'boutique_active', 'boutique_frais_livraison', 'boutique_zones_livraison', 'boutique_delai_livraison', 'boutique_conditions',
+        'facebook_pixel_id', 'facebook_access_token', 'facebook_test_code', 'facebook_pixel_name', 'facebook_connected_at',
     ];
 
     protected $casts = [
