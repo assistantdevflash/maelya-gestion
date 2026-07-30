@@ -139,6 +139,7 @@ function checkout(zonesData, fraisDefaut) {
             if (this.submitting) { event.preventDefault(); return; }
             this.submitting = true;
             if(typeof fbq !== 'undefined') fbq('track','InitiateCheckout',{value:this.total,currency:'XOF',content_ids:this.panier.map(p=>p.id),content_type:'product',num_items:this.panier.reduce((s,p)=>s+p.quantite,0)});
+            fetch('{{ route('fb.event.log', $institut->slug) }}',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},body:JSON.stringify({event:'InitiateCheckout',data:{value:this.total,content_ids:this.panier.map(p=>p.id),num_items:this.panier.reduce((s,p)=>s+p.quantite,0)}})}).catch(()=>{});
             localStorage.removeItem('panier_{{ $institut->id }}');
         }
     };

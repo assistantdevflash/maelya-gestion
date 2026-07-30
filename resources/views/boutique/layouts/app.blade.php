@@ -54,6 +54,8 @@
     fbq('init', '{{ $institut->facebook_pixel_id }}', { external_id: 'test-{{ $institut->facebook_test_code }}' });
     @endif
     fbq('track', 'PageView');
+    // Logger aussi côté Maëlya pour les stats dashboard
+    fetch('{{ route('fb.event.log', $institut->slug) }}',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},body:JSON.stringify({event:'PageView'})}).catch(()=>{});
     </script>
     <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{ $institut->facebook_pixel_id }}&ev=PageView&noscript=1"/></noscript>
     @endif

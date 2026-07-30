@@ -73,6 +73,10 @@ Route::prefix('shop')->name('shop.')->group(function () {
     Route::get('/{slug}/commande/{numero}', [BoutiqueController::class, 'suivreCommande'])->name('suivi');
 });
 
+// ─── Logging événements Facebook (navigateur → serveur) ──────────────────────
+Route::post('/fb-event/{slug}', [\App\Http\Controllers\FacebookEventController::class, 'log'])->name('fb.event.log');
+
+
 // ─── Avis client public (sondage post-visite) ────────────────────────────────
 Route::get('/avis/{token}', [\App\Http\Controllers\AvisPublicController::class, 'show'])
     ->middleware('throttle:30,1')
