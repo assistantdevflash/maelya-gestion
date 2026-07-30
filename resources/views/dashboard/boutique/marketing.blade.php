@@ -100,7 +100,7 @@
                     <button type="submit" class="btn-primary">💾 {{ $institut->facebook_pixel_id ? 'Mettre à jour' : 'Connecter' }}</button>
                     @if($institut->facebook_pixel_id)
                     <button type="button"
-                            onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-disconnect-fb',title:'Déconnecter Facebook',message:'Le pixel ne recevra plus d\\'événements.',confirmLabel:'Déconnecter',danger:true}}))"
+                            onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-disconnect-fb',title:'Deconnecter Facebook',message:'Le pixel ne recevra plus de donnees.',confirmLabel:'Deconnecter',danger:true}}))"
                             class="btn-outline text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10">🔌 Déconnecter</button>
                     <form id="form-disconnect-fb" method="POST" action="{{ route('dashboard.boutique.config.facebook.disconnect') }}" class="hidden">@csrf @method('DELETE')</form>
                     @endif
