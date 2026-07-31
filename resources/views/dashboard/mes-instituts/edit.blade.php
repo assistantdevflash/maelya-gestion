@@ -74,15 +74,15 @@
                             {{ strtoupper(substr($institut->nom, 0, 2)) }}
                         </div>
                         @endif
-                        <form method="POST" action="{{ route('dashboard.mes-instituts.logo', $institut) }}" enctype="multipart/form-data" class="flex-1">
-                            @csrf
+                        <div class="flex-1">
                             <label class="form-label">Nouvelle image</label>
                             <div class="flex gap-3">
-                                <input type="file" name="logo" accept="image/*" required class="form-input flex-1">
-                                <button type="submit" class="btn-outline flex-shrink-0">📤 Uploader</button>
+                                <input type="file" name="logo" accept="image/*" form="form-logo"
+                                       class="form-input flex-1">
+                                <button type="submit" form="form-logo" class="btn-outline flex-shrink-0">📤 Uploader</button>
                             </div>
                             <p class="text-xs text-gray-400 mt-1">Carrée recommandée · JPG, PNG · Max 2 Mo</p>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -156,6 +156,10 @@
             </div>
         </div>
     </div>
+    </form>
+
+    <form id="form-logo" method="POST" action="{{ route('dashboard.mes-instituts.logo', $institut) }}" enctype="multipart/form-data" class="hidden">
+        @csrf
     </form>
 
     <form id="form-reset-couleurs" method="POST" action="{{ route('dashboard.mes-instituts.apparence.reset') }}" class="hidden">
