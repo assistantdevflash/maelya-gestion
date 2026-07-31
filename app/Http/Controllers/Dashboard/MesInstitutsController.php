@@ -212,7 +212,8 @@ class MesInstitutsController extends Controller
     public function updateApparence(Request $request)
     {
         $user = Auth::user();
-        $institut = Institut::findOrFail(session('current_institut_id', $user->institut_id));
+        $institutId = $request->input('institut_id') ?: session('current_institut_id', $user->institut_id);
+        $institut = Institut::findOrFail($institutId);
         abort_unless($institut->proprietaire_id === $user->id || $user->institut_id === $institut->id, 403);
 
         $data = $request->validate([
@@ -226,10 +227,11 @@ class MesInstitutsController extends Controller
         return back()->with('success', 'Couleurs mises à jour avec succès.');
     }
 
-    public function resetApparence()
+    public function resetApparence(Request $request)
     {
         $user = Auth::user();
-        $institut = Institut::findOrFail(session('current_institut_id', $user->institut_id));
+        $institutId = $request->input('institut_id') ?: session('current_institut_id', $user->institut_id);
+        $institut = Institut::findOrFail($institutId);
         abort_unless($institut->proprietaire_id === $user->id || $user->institut_id === $institut->id, 403);
 
         $institut->update([

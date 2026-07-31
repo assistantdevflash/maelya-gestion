@@ -97,6 +97,7 @@
 
                     <form method="POST" action="{{ route('dashboard.mes-instituts.apparence.update') }}" class="space-y-4">
                         @csrf @method('PUT')
+                        <input type="hidden" name="institut_id" value="{{ $institut->id }}">
                         <div>
                             <label class="form-label">Principale</label>
                             <div class="flex items-center gap-3">
@@ -126,13 +127,13 @@
                         </div>
                         <div class="flex gap-3 pt-2">
                             <button type="submit" class="btn-primary text-sm">💾 Appliquer</button>
-                        </div>
                     </form>
-
-                    <form method="POST" action="{{ route('dashboard.mes-instituts.apparence.reset') }}">
-                        @csrf
-                        <button type="submit" class="btn-outline text-sm">↺ Défaut</button>
-                    </form>
+                        <form method="POST" action="{{ route('dashboard.mes-instituts.apparence.reset') }}">
+                            @csrf
+                            <input type="hidden" name="institut_id" value="{{ $institut->id }}">
+                            <button type="submit" class="btn-outline text-sm">↺ Défaut</button>
+                        </form>
+                    </div>
                 </div>
             </div>
 
