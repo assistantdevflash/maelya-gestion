@@ -103,7 +103,7 @@ class MesInstitutsController extends Controller
 
         $institut->update($data);
 
-        return redirect()->route('dashboard.mes-instituts.index')
+        return redirect()->route('dashboard.mes-instituts.edit', $institut)
             ->with('success', "Fiche de \"" . $data['nom'] . "\" mise à jour.");
     }
 
@@ -125,7 +125,7 @@ class MesInstitutsController extends Controller
         $logo = $request->file('logo')->store('logos', 'public');
         $institut->update(['logo' => $logo]);
 
-        return redirect()->route('dashboard.mes-instituts.index')
+        return redirect()->route('dashboard.mes-instituts.edit', $institut)
             ->with('success', "Logo de \"{$institut->nom}\" mis à jour.");
     }
 
@@ -189,6 +189,15 @@ class MesInstitutsController extends Controller
     }
 
     // ─── Apparence (couleurs) ───────────────────────────────────────────────
+
+    public function edit(Institut $institut)
+    {
+        $user = Auth::user();
+        $aAcces = $institut->proprietaire_id === $user->id || $user->institut_id === $institut->id;
+        abort_unless($aAcces, 403);
+
+        return view('dashboard.mes-instituts.edit', compact('institut'));
+    }
 
     public function apparence()
     {

@@ -292,6 +292,7 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
         // Mes instituts : paramètres & config → admin uniquement
         Route::middleware('role:admin')->group(function () {
             Route::get('mes-instituts', [MesInstitutsController::class, 'index'])->name('mes-instituts.index');
+            Route::get('mes-instituts/{institut}/edit', [MesInstitutsController::class, 'edit'])->name('mes-instituts.edit');
             Route::put('mes-instituts/{institut}', [MesInstitutsController::class, 'update'])->name('mes-instituts.update');
             Route::post('mes-instituts/{institut}/logo', [MesInstitutsController::class, 'updateLogo'])->name('mes-instituts.logo');
             Route::patch('mes-instituts/{institut}/vitrine', [MesInstitutsController::class, 'toggleVitrine'])->name('mes-instituts.vitrine');
