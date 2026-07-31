@@ -101,7 +101,8 @@
                             <label class="form-label">Principale</label>
                             <div class="flex items-center gap-3">
                                 <input type="color" x-model="primaire" name="couleur_primaire" class="w-12 h-12 rounded-xl cursor-pointer border-0 p-0">
-                                <code class="text-sm font-mono text-gray-500 dark:text-gray-400" x-text="primaire"></code>
+                                <input type="text" x-model="primaire" name="couleur_primaire" maxlength="7" placeholder="#7c3aed"
+                                       class="form-input w-28 font-mono text-sm">
                             </div>
                             <p class="text-xs text-gray-400 mt-1">Boutons, en-têtes, titres</p>
                         </div>
@@ -109,7 +110,8 @@
                             <label class="form-label">Secondaire</label>
                             <div class="flex items-center gap-3">
                                 <input type="color" x-model="secondaire" name="couleur_secondaire" class="w-12 h-12 rounded-xl cursor-pointer border-0 p-0">
-                                <code class="text-sm font-mono text-gray-500 dark:text-gray-400" x-text="secondaire"></code>
+                                <input type="text" x-model="secondaire" name="couleur_secondaire" maxlength="7" placeholder="#ec4899"
+                                       class="form-input w-28 font-mono text-sm">
                             </div>
                             <p class="text-xs text-gray-400 mt-1">Badges, accents, survols</p>
                         </div>
@@ -117,17 +119,19 @@
                             <label class="form-label">Accent</label>
                             <div class="flex items-center gap-3">
                                 <input type="color" x-model="accent" name="couleur_accent" class="w-12 h-12 rounded-xl cursor-pointer border-0 p-0">
-                                <code class="text-sm font-mono text-gray-500 dark:text-gray-400" x-text="accent"></code>
+                                <input type="text" x-model="accent" name="couleur_accent" maxlength="7" placeholder="#f59e0b"
+                                       class="form-input w-28 font-mono text-sm">
                             </div>
                             <p class="text-xs text-gray-400 mt-1">Icônes, liens, mises en avant</p>
                         </div>
                         <div class="flex gap-3 pt-2">
                             <button type="submit" class="btn-primary text-sm">💾 Appliquer</button>
-                            <form method="POST" action="{{ route('dashboard.mes-instituts.apparence.reset') }}" class="inline">
-                                @csrf
-                                <button type="submit" class="btn-outline text-sm">↺ Défaut</button>
-                            </form>
                         </div>
+                    </form>
+
+                    <form method="POST" action="{{ route('dashboard.mes-instituts.apparence.reset') }}">
+                        @csrf
+                        <button type="submit" class="btn-outline text-sm">↺ Défaut</button>
                     </form>
                 </div>
             </div>
