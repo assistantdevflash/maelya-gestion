@@ -95,7 +95,7 @@
                 <div class="card-body space-y-5">
                     <p class="text-sm text-gray-500 dark:text-gray-400">Appliquées sur vos factures, emails et boutique en ligne.</p>
 
-                    <form method="POST" action="{{ route('dashboard.mes-instituts.apparence.update') }}" class="space-y-4">
+                    <form id="form-couleurs" method="POST" action="{{ route('dashboard.mes-instituts.apparence.update') }}" class="space-y-4">
                         @csrf @method('PUT')
                         <input type="hidden" name="institut_id" value="{{ $institut->id }}">
                         <div>
@@ -127,13 +127,14 @@
                         </div>
                         <div class="flex gap-3 pt-2">
                             <button type="submit" class="btn-primary text-sm">💾 Appliquer</button>
+                            <button type="submit" form="form-reset-couleurs" class="btn-outline text-sm">↺ Défaut</button>
+                        </div>
                     </form>
-                        <form method="POST" action="{{ route('dashboard.mes-instituts.apparence.reset') }}">
-                            @csrf
-                            <input type="hidden" name="institut_id" value="{{ $institut->id }}">
-                            <button type="submit" class="btn-outline text-sm">↺ Défaut</button>
-                        </form>
-                    </div>
+
+                    <form id="form-reset-couleurs" method="POST" action="{{ route('dashboard.mes-instituts.apparence.reset') }}" class="hidden">
+                        @csrf
+                        <input type="hidden" name="institut_id" value="{{ $institut->id }}">
+                    </form>
                 </div>
             </div>
 
