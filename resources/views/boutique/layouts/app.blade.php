@@ -38,6 +38,22 @@
 
     @stack('styles')
 
+    @if($institut)
+    <style>
+        :root {
+            --couleur-primaire: {{ $institut->couleur_primaire }};
+            --couleur-secondaire: {{ $institut->couleur_secondaire }};
+            --couleur-accent: {{ $institut->couleur_accent }};
+        }
+        .boutique-header { background: linear-gradient(135deg, var(--couleur-primaire), var(--couleur-secondaire)); }
+        .boutique-btn { background: var(--couleur-primaire); }
+        .boutique-btn:hover { opacity: 0.9; }
+        .boutique-badge { background: var(--couleur-secondaire); }
+        .boutique-accent { color: var(--couleur-accent); }
+        .boutique-border { border-color: var(--couleur-primaire); }
+    </style>
+    @endif
+
     {{-- Meta Pixel --}}
     @if($institut->facebook_pixel_id)
     <script>

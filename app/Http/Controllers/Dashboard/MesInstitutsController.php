@@ -184,4 +184,48 @@ class MesInstitutsController extends Controller
 
         return redirect()->back();
     }
+
+    // ─── Apparence (couleurs) ───────────────────────────────────────────────
+
+    public function apparence()
+    {
+        $user = Auth::user();
+        $institut = Institut::findOrFail(session('current_institut_id', $user->institut_id));
+        $aAcces = $institut->proprietaire_id === $user->id || $user->institut_id === $institut->id;
+        abort_unless($aAcces, 403);
+
+        return view('dashboard.mes-instituts.apparence', compact('institut'));
+    }
+
+    public function updateApparence(Request $request)
+    {
+        $user = Auth::user();
+        $institut = Institut::findOrFail(session('current_institut_id', $user->institut_id));
+        abort_unless($institut->proprietaire_id === $user->id || $user->institut_id === $institut->id, 403);
+
+        $data = $request->validate([
+            'couleur_primaire'   => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'couleur_secondaire' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'couleur_accent'     => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
+        ]);
+
+        $institut->update($data);
+
+        return back()->with('success', 'Couleurs mises à jour avec succès.');
+    }
+
+    public function resetApparence()
+    {
+        $user = Auth::user();
+        $institut = Institut::findOrFail(session('current_institut_id', $user->institut_id));
+        abort_unless($institut->proprietaire_id === $user->id || $user->institut_id === $institut->id, 403);
+
+        $institut->update([
+            'couleur_primaire'   => '#7c3aed',
+            'couleur_secondaire' => '#ec4899',
+            'couleur_accent'     => '#f59e0b',
+        ]);
+
+        return back()->with('success', 'Couleurs réinitialisées aux valeurs par défaut.');
+    }
 }

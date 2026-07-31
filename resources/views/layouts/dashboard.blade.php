@@ -32,6 +32,17 @@
 
     {{ $styles ?? '' }}
     @stack('head')
+
+    @php $__institut = auth()->user()?->institut; @endphp
+    @if($__institut)
+    <style>
+        :root {
+            --couleur-primaire: {{ $__institut->couleur_primaire }};
+            --couleur-secondaire: {{ $__institut->couleur_secondaire }};
+            --couleur-accent: {{ $__institut->couleur_accent }};
+        }
+    </style>
+    @endif
 </head>
 <body class="dashboard min-h-screen font-sans bg-purple-50/50 dark:bg-slate-900">
 
@@ -239,11 +250,17 @@
                 <p class="px-3 mt-14 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">Mon établissement</p>
 
                 <a href="{{ route('dashboard.mes-instituts.index') }}"
-                   class="sidebar-link {{ request()->routeIs('dashboard.mes-instituts.*') ? 'active' : '' }}">
+                   class="sidebar-link {{ request()->routeIs('dashboard.mes-instituts.index') ? 'active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                         <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                     </svg>
                     {{ isset($__sidebarNbInstituts) && $__sidebarNbInstituts > 1 ? 'Mes établissements' : 'Paramètres' }}
+                </a>
+
+                <a href="{{ route('dashboard.mes-instituts.apparence') }}"
+                   class="sidebar-link text-sm {{ request()->routeIs('dashboard.mes-instituts.apparence*') ? 'active' : '' }}">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+                    <span>Apparence</span>
                 </a>
 
                 <a href="{{ route('dashboard.prestations.index') }}"

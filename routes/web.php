@@ -296,6 +296,9 @@ Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dash
             Route::post('mes-instituts/{institut}/logo', [MesInstitutsController::class, 'updateLogo'])->name('mes-instituts.logo');
             Route::patch('mes-instituts/{institut}/vitrine', [MesInstitutsController::class, 'toggleVitrine'])->name('mes-instituts.vitrine');
             Route::patch('mes-instituts/{institut}/reservation', [MesInstitutsController::class, 'toggleReservation'])->name('mes-instituts.reservation');
+            Route::get('mes-instituts/apparence', [MesInstitutsController::class, 'apparence'])->name('mes-instituts.apparence');
+            Route::put('mes-instituts/apparence', [MesInstitutsController::class, 'updateApparence'])->name('mes-instituts.apparence.update');
+            Route::post('mes-instituts/apparence/reset', [MesInstitutsController::class, 'resetApparence'])->name('mes-instituts.apparence.reset');
             Route::middleware('feature:multi_instituts')->group(function () {
                 Route::post('mes-instituts', [MesInstitutsController::class, 'store'])->name('mes-instituts.store');
                 Route::post('mes-instituts/{institut}/switch', [MesInstitutsController::class, 'switch'])->name('mes-instituts.switch');
