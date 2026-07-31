@@ -21,44 +21,43 @@
     </div>
     @endif
 
+    <form method="POST" action="{{ route('dashboard.mes-instituts.update', $institut) }}">
+    @csrf @method('PUT')
     <div class="grid lg:grid-cols-3 gap-6">
-        {{-- Formulaire principal --}}
+        {{-- Colonne gauche : Infos + Logo --}}
         <div class="lg:col-span-2 space-y-6">
             <div class="card">
                 <div class="card-header"><h2 class="text-lg font-semibold text-gray-900 dark:text-white">Informations générales</h2></div>
-                <div class="card-body">
-                    <form method="POST" action="{{ route('dashboard.mes-instituts.update', $institut) }}" class="space-y-4">
-                        @csrf @method('PUT')
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="col-span-2">
-                                <label class="form-label">Nom de l'établissement *</label>
-                                <input type="text" name="nom" required maxlength="100" class="form-input" value="{{ old('nom', $institut->nom) }}">
-                            </div>
-                            <div>
-                                <label class="form-label">Ville</label>
-                                <input type="text" name="ville" maxlength="100" class="form-input" value="{{ old('ville', $institut->ville) }}">
-                            </div>
-                            <div>
-                                <label class="form-label">Téléphone</label>
-                                <input type="text" name="telephone" maxlength="20" class="form-input" value="{{ old('telephone', $institut->telephone) }}">
-                            </div>
-                            <div class="col-span-2">
-                                <label class="form-label">Email</label>
-                                <input type="email" name="email" maxlength="150" class="form-input" value="{{ old('email', $institut->email) }}">
-                            </div>
-                            <div class="col-span-2">
-                                <label class="form-label">Type d'établissement *</label>
-                                <select name="type" required class="form-input">
-                                    @foreach(['salon_coiffure'=>'Salon de coiffure','institut_beaute'=>'Institut de beauté','barbier'=>'Barbier','centre_esthetique'=>'Centre esthétique','boutique_mode'=>'Boutique de mode','imprimerie'=>'Imprimerie','lavage_auto'=>'Lavage auto','pressing'=>'Pressing / Laverie','business_center'=>'Business center','depot_gaz'=>'Dépôt de gaz','commerce'=>'Commerce / Alimentation','evenementiel'=>'Évènementiel','informatique_telephonie'=>'Informatique / Téléphonie','autre'=>'Autre'] as $v=>$l)
-                                    <option value="{{ $v }}" {{ old('type', $institut->type) === $v ? 'selected' : '' }}>{{ $l }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
+                <div class="card-body space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2">
+                            <label class="form-label">Nom de l'établissement *</label>
+                            <input type="text" name="nom" required maxlength="100" class="form-input" value="{{ old('nom', $institut->nom) }}">
                         </div>
-                        <div class="pt-2">
-                            <button type="submit" class="btn-primary">💾 Enregistrer les modifications</button>
+                        <div>
+                            <label class="form-label">Ville</label>
+                            <input type="text" name="ville" maxlength="100" class="form-input" value="{{ old('ville', $institut->ville) }}">
                         </div>
-                    </form>
+                        <div>
+                            <label class="form-label">Téléphone</label>
+                            <input type="text" name="telephone" maxlength="20" class="form-input" value="{{ old('telephone', $institut->telephone) }}">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" maxlength="150" class="form-input" value="{{ old('email', $institut->email) }}">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="form-label">Type d'établissement *</label>
+                            <select name="type" required class="form-input">
+                                @foreach(['salon_coiffure'=>'Salon de coiffure','institut_beaute'=>'Institut de beauté','barbier'=>'Barbier','centre_esthetique'=>'Centre esthétique','boutique_mode'=>'Boutique de mode','imprimerie'=>'Imprimerie','lavage_auto'=>'Lavage auto','pressing'=>'Pressing / Laverie','business_center'=>'Business center','depot_gaz'=>'Dépôt de gaz','commerce'=>'Commerce / Alimentation','evenementiel'=>'Évènementiel','informatique_telephonie'=>'Informatique / Téléphonie','autre'=>'Autre'] as $v=>$l)
+                                <option value="{{ $v }}" {{ old('type', $institut->type) === $v ? 'selected' : '' }}>{{ $l }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="pt-2">
+                        <button type="submit" class="btn-primary">💾 Enregistrer les modifications</button>
+                    </div>
                 </div>
             </div>
 
@@ -70,7 +69,8 @@
                         @if($institut->logo)
                         <img src="{{ asset('storage/' . $institut->logo) }}" alt="Logo" class="w-20 h-20 rounded-xl object-cover ring-2 ring-gray-200">
                         @else
-                        <div class="w-20 h-20 rounded-xl flex items-center justify-center text-white font-bold text-2xl shadow-sm" style="background: linear-gradient(135deg, var(--couleur-primaire), var(--couleur-secondaire));">
+                        <div class="w-20 h-20 rounded-xl flex items-center justify-center text-white font-bold text-2xl shadow-sm"
+                             :style="'background: linear-gradient(135deg, ' + primaire + ', ' + secondaire + ')'">
                             {{ strtoupper(substr($institut->nom, 0, 2)) }}
                         </div>
                         @endif
@@ -88,20 +88,18 @@
             </div>
         </div>
 
-        {{-- Sidebar : Couleurs --}}
+        {{-- Colonne droite : Couleurs + Aperçu --}}
         <div class="space-y-6">
             <div class="card">
                 <div class="card-header"><h2 class="text-lg font-semibold text-gray-900 dark:text-white">🎨 Couleurs</h2></div>
                 <div class="card-body space-y-5">
                     <p class="text-sm text-gray-500 dark:text-gray-400">Appliquées sur vos factures, emails et boutique en ligne.</p>
 
-                    <form id="form-couleurs" method="POST" action="{{ route('dashboard.mes-instituts.apparence.update') }}" class="space-y-4">
-                        @csrf @method('PUT')
-                        <input type="hidden" name="institut_id" value="{{ $institut->id }}">
+                    <div class="space-y-4">
                         <div>
                             <label class="form-label">Principale</label>
                             <div class="flex items-center gap-3">
-                                <input type="color" x-model="primaire" name="couleur_primaire" class="w-12 h-12 rounded-xl cursor-pointer border-0 p-0">
+                                <input type="color" x-model="primaire" class="w-12 h-12 rounded-xl cursor-pointer border-0 p-0">
                                 <input type="text" x-model="primaire" name="couleur_primaire" maxlength="7" placeholder="#7c3aed"
                                        class="form-input w-28 font-mono text-sm">
                             </div>
@@ -110,7 +108,7 @@
                         <div>
                             <label class="form-label">Secondaire</label>
                             <div class="flex items-center gap-3">
-                                <input type="color" x-model="secondaire" name="couleur_secondaire" class="w-12 h-12 rounded-xl cursor-pointer border-0 p-0">
+                                <input type="color" x-model="secondaire" class="w-12 h-12 rounded-xl cursor-pointer border-0 p-0">
                                 <input type="text" x-model="secondaire" name="couleur_secondaire" maxlength="7" placeholder="#ec4899"
                                        class="form-input w-28 font-mono text-sm">
                             </div>
@@ -119,22 +117,18 @@
                         <div>
                             <label class="form-label">Accent</label>
                             <div class="flex items-center gap-3">
-                                <input type="color" x-model="accent" name="couleur_accent" class="w-12 h-12 rounded-xl cursor-pointer border-0 p-0">
+                                <input type="color" x-model="accent" class="w-12 h-12 rounded-xl cursor-pointer border-0 p-0">
                                 <input type="text" x-model="accent" name="couleur_accent" maxlength="7" placeholder="#f59e0b"
                                        class="form-input w-28 font-mono text-sm">
                             </div>
                             <p class="text-xs text-gray-400 mt-1">Icônes, liens, mises en avant</p>
                         </div>
-                        <div class="flex gap-3 pt-2">
-                            <button type="submit" class="btn-primary text-sm">💾 Appliquer</button>
-                            <button type="submit" form="form-reset-couleurs" class="btn-outline text-sm">↺ Défaut</button>
-                        </div>
-                    </form>
+                    </div>
 
-                    <form id="form-reset-couleurs" method="POST" action="{{ route('dashboard.mes-instituts.apparence.reset') }}" class="hidden">
-                        @csrf
-                        <input type="hidden" name="institut_id" value="{{ $institut->id }}">
-                    </form>
+                    <div class="flex gap-3 pt-2">
+                        <button type="submit" class="btn-primary text-sm flex-1">💾 Tout enregistrer</button>
+                        <button type="submit" form="form-reset-couleurs" class="btn-outline text-sm flex-1">↺ Défaut</button>
+                    </div>
                 </div>
             </div>
 
@@ -162,5 +156,11 @@
             </div>
         </div>
     </div>
+    </form>
+
+    <form id="form-reset-couleurs" method="POST" action="{{ route('dashboard.mes-instituts.apparence.reset') }}" class="hidden">
+        @csrf
+        <input type="hidden" name="institut_id" value="{{ $institut->id }}">
+    </form>
 </div>
 </x-dashboard-layout>
