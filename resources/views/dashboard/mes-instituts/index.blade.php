@@ -424,6 +424,24 @@
                                         </select>
                                     </div>
                                 </div>
+                                <div class="border-t border-gray-100 dark:border-gray-700 pt-4 mt-2">
+                                    <p class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">🎨 Couleurs de l'établissement</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Ces couleurs seront appliquées sur vos factures, emails et boutique en ligne.</p>
+                                    <div class="grid grid-cols-3 gap-3">
+                                        <div>
+                                            <label class="form-label">Principale</label>
+                                            <input type="color" name="couleur_primaire" class="w-full h-10 rounded-lg cursor-pointer border-0" value="{{ old('couleur_primaire', $institut->couleur_primaire) }}">
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Secondaire</label>
+                                            <input type="color" name="couleur_secondaire" class="w-full h-10 rounded-lg cursor-pointer border-0" value="{{ old('couleur_secondaire', $institut->couleur_secondaire) }}">
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Accent</label>
+                                            <input type="color" name="couleur_accent" class="w-full h-10 rounded-lg cursor-pointer border-0" value="{{ old('couleur_accent', $institut->couleur_accent) }}">
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="flex gap-3 pt-1">
                                     <button type="button" @click="editOpen = false" class="btn btn-outline flex-1 justify-center">Annuler</button>
                                     <button type="submit" class="btn-primary flex-1 justify-center">Enregistrer</button>
