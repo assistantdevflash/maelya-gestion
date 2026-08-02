@@ -131,6 +131,11 @@ class AdminAbonnementController extends Controller
             'valide_par' => Auth::id(),
         ]);
 
+        // Invalider le cache d'accès boutique si l'option est incluse
+        if ($abonnement->hasBoutique()) {
+            Cache::forget("user_{$abonnement->user_id}_boutique_access");
+        }
+
         // ── Récompense de parrainage ──────────────────────────────────────────
         $parrainage = Parrainage::where('filleul_id', $abonnement->user_id)
             ->where('statut', 'en_attente')

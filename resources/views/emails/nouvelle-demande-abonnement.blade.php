@@ -98,6 +98,31 @@
                 <span class="label">Montant payé</span>
                 <span class="amount">{{ number_format($abonnement->montant, 0, ',', ' ') }} FCFA</span>
             </div>
+            @if($abonnement->hasBoutique())
+            <div class="row" style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed #e5e7eb;">
+                <span class="label">🛍️ Boutique en ligne</span>
+                <span class="value" style="color: #7c3aed;">Incluse</span>
+            </div>
+            <div style="background: #f5f3ff; border-radius: 8px; padding: 12px; margin-top: 8px; font-size: 13px;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="font-size: 13px;">
+                    <tr>
+                        <td style="color: #6b7280; padding: 4px 0;">Plan {{ $abonnement->plan?->nom }}</td>
+                        <td align="right" style="font-weight: 600; padding: 4px 0;">{{ number_format($abonnement->plan?->prix ?? 0, 0, ',', ' ') }} FCFA</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #6b7280; padding: 4px 0;">+ Option boutique</td>
+                        <td align="right" style="font-weight: 600; color: #7c3aed; padding: 4px 0;">{{ number_format($abonnement->metadata['boutique_prix'] ?? 3900, 0, ',', ' ') }} FCFA</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding-top: 8px;"><hr style="border: none; border-top: 1px solid #d8b4fe;"></td>
+                    </tr>
+                    <tr style="font-weight: 700;">
+                        <td style="padding: 4px 0;">Total</td>
+                        <td align="right" style="padding: 4px 0;">{{ number_format($abonnement->montant, 0, ',', ' ') }} FCFA</td>
+                    </tr>
+                </table>
+            </div>
+            @endif
             <div class="row">
                 <span class="label">Statut</span>
                 <span class="badge badge-attente">En attente</span>

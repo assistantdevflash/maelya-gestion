@@ -39,7 +39,30 @@
                             <span class="block text-xs text-gray-400 mt-0.5">au lieu de {{ number_format($abonnement->plan->prix, 0, ',', ' ') }} FCFA</span>
                         @endif
                     </p>
+                    {{-- Détail plan + option boutique --}}
+                    @if($abonnement->hasBoutique())
+                    <div class="mt-1.5 space-y-1 bg-gray-50 dark:bg-slate-800/50 rounded-lg p-2.5 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Plan {{ $abonnement->plan?->nom }}</span>
+                            <span class="font-medium">{{ number_format($abonnement->plan?->prix ?? 0, 0, ',', ' ') }} FCFA</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">+ Option boutique</span>
+                            <span class="font-medium text-purple-600">{{ number_format($abonnement->metadata['boutique_prix'] ?? 3900, 0, ',', ' ') }} FCFA</span>
+                        </div>
+                        <div class="flex justify-between border-t border-gray-200 dark:border-gray-600 pt-1">
+                            <span class="font-semibold">Total</span>
+                            <span class="font-bold">{{ number_format($abonnement->montant, 0, ',', ' ') }} FCFA</span>
+                        </div>
+                    </div>
+                    @endif
                 </div>
+                @if($abonnement->hasBoutique())
+                <div>
+                    <span class="text-gray-400">Boutique en ligne</span>
+                    <p><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-xs font-medium">🛍️ Incluse</span></p>
+                </div>
+                @endif
                 <div>
                     <span class="text-gray-400">Période</span>
                     <p class="font-medium capitalize">{{ $abonnement->periode }}</p>

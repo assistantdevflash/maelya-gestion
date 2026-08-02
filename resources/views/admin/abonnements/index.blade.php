@@ -87,7 +87,12 @@
                         @endif
                     </div>
                 </td>
-                <td class="text-sm font-medium">{{ $ab->plan->nom ?? '—' }}</td>
+                <td class="text-sm font-medium">
+                    {{ $ab->plan->nom ?? '—' }}
+                    @if($ab->hasBoutique())
+                    <span class="inline-flex items-center gap-0.5 ml-1 px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[10px] font-bold">🛍️</span>
+                    @endif
+                </td>
                 <td class="text-sm text-gray-600 capitalize">{{ $ab->periode }}</td>
                 <td class="text-sm font-semibold">
                     {{ number_format($ab->montant ?? 0, 0, ',', ' ') }} <span class="text-gray-400 font-normal">FCFA</span>
