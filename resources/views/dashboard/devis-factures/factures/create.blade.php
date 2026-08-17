@@ -181,7 +181,12 @@
                 </div>
 
                 <input type="hidden" name="lignes" :value="JSON.stringify(lignes)">
-                <button type="submit" class="btn-primary w-full">Créer la facture</button>
+                <button type="submit" 
+                        :disabled="!canSubmit" 
+                        :class="canSubmit ? 'btn-primary' : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'" 
+                        class="w-full transition-colors">
+                    Créer la facture
+                </button>
             </div>
         </div>
     </form>
@@ -323,6 +328,15 @@ document.addEventListener('alpine:init', () => {
         get totalHT() { return Math.max(0, this.sousTotal - this.remiseGlobale); },
         get totalTTC() { return Math.round(this.totalHT * (1 + (this.tva || 0) / 100)); },
         formatPrix(v) { return new Intl.NumberFormat('fr-FR').format(v); },
+        get canSubmit() {
+            if (!this.clientChoisi) return false;
+            const hasValidLine = this.lignes.some(l => 
+                l.designation.trim() && 
+                (l.quantite > 0) && 
+                (l.prix_unitaire > 0)
+            );
+            return hasValidLine;
+        },
         clientsList: clientsInit,
         clientChoisi: null,
         newClientOpen: false,
