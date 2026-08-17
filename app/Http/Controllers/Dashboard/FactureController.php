@@ -144,6 +144,17 @@ class FactureController extends Controller
         return $pdf->download("Facture-{$facture->numero}.pdf");
     }
 
+    /**
+     * PDF public (pas d'auth requise) — accès sécurisé par UUID de la facture.
+     */
+    public function pdfPublic(string $id)
+    {
+        $facture = Facture::where('id', $id)->firstOrFail();
+        $facture->load(['items', 'client']);
+        $pdf = Pdf::loadView('pdf.facture-module', ['facture' => $facture, 'institut' => $facture->institut]);
+        return $pdf->download("Facture-{$facture->numero}.pdf");
+    }
+
     public function ajouterPaiement(Request $request, Facture $facture)
     {
         $data = $request->validate([

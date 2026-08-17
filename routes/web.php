@@ -100,6 +100,16 @@ Route::get('/fiche-credit/{id}', [\App\Http\Controllers\Dashboard\CreditControll
     ->middleware('throttle:30,1')
     ->name('credit.fiche.public');
 
+// ─── Devis PDF public (lien partageable, accès par UUID) ─────────────────────
+Route::get('/devis/{id}', [\App\Http\Controllers\Dashboard\DevisController::class, 'pdfPublic'])
+    ->middleware('throttle:30,1')
+    ->name('devis.public');
+
+// ─── Facture PDF publique (lien partageable, accès par UUID) ─────────────────
+Route::get('/facture/{id}', [\App\Http\Controllers\Dashboard\FactureController::class, 'pdfPublic'])
+    ->middleware('throttle:30,1')
+    ->name('facture.public');
+
 // ─── Inscription personnalisée (remplace Breeze) ─────────────────────────────
 Route::middleware('guest')->group(function () {
     Route::get('/inscription', [InscriptionController::class, 'index'])->name('inscription');

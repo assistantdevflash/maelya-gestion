@@ -191,6 +191,17 @@ class DevisController extends Controller
         return $pdf->download("Devis-{$devis->numero}.pdf");
     }
 
+    /**
+     * PDF public (pas d'auth requise) — accès sécurisé par UUID du devis.
+     */
+    public function pdfPublic(string $id)
+    {
+        $devis = Devis::where('id', $id)->firstOrFail();
+        $devis->load(['items', 'client']);
+        $pdf = Pdf::loadView('pdf.devis', ['devis' => $devis, 'institut' => $devis->institut]);
+        return $pdf->download("Devis-{$devis->numero}.pdf");
+    }
+
     public function dupliquer(Devis $devis)
     {
         // Stocker les données du devis en session pour pré-remplir le formulaire de création

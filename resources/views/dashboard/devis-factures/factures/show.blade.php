@@ -13,7 +13,7 @@
             . "Montant : " . number_format($facture->total_ttc, 0, ',', ' ') . " F CFA\n"
             . "Échéance : " . $facture->date_echeance->format('d/m/Y') . "\n"
             . ($facture->resteAPayer > 0 ? "Reste à payer : " . number_format($facture->resteAPayer, 0, ',', ' ') . " F CFA\n" : "")
-            . "\nTélécharger le PDF : " . route('dashboard.factures.pdf', ['facture' => $factureId]) . "\n\n"
+            . "\nTélécharger le PDF : " . route('facture.public', ['id' => $factureId]) . "\n\n"
             . "Merci de votre confiance !");
     @endphp
 
