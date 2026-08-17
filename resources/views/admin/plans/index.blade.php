@@ -49,8 +49,8 @@
                             @endif
                             
                             {{-- Badge Statut --}}
-                            <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full {{ $plan->actif ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-200' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-300' }}">
-                                <span class="w-1.5 h-1.5 rounded-full {{ $plan->actif ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-gray-400' }}"></span>
+                            <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full {{ $plan->actif ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/90 dark:text-white' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-300' }}">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $plan->actif ? 'bg-emerald-500 dark:bg-white' : 'bg-gray-400' }}"></span>
                                 {{ $plan->actif ? 'Actif' : 'Inactif' }}
                             </span>
                         </div>
@@ -68,24 +68,24 @@
                     </div>
                     
                     {{-- Prix principal --}}
-                    <div class="bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/50 dark:to-primary-800/50 dark:border dark:border-primary-700/50 rounded-xl px-5 py-4 text-center min-w-[160px]">
+                    <div class="bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-600/30 dark:to-primary-700/30 dark:border-2 dark:border-primary-500/50 rounded-xl px-5 py-4 text-center min-w-[160px]">
                         @if($offrePlan)
-                            <div class="text-sm text-gray-500 dark:text-slate-300 line-through mb-1">
+                            <div class="text-sm text-gray-500 dark:text-slate-200 line-through mb-1">
                                 {{ number_format($plan->prix, 0, ',', ' ') }} FCFA
                             </div>
-                            <div class="text-3xl font-bold text-primary-600 dark:text-primary-300">
+                            <div class="text-3xl font-bold text-primary-600 dark:text-primary-200">
                                 {{ number_format($plan->prixEffectif(), 0, ',', ' ') }}
                             </div>
                             <div class="text-xs text-emerald-600 dark:text-emerald-300 font-semibold mt-1">
                                 {{ $offrePlan->reduction_texte }}
                             </div>
-                            <div class="text-[10px] text-gray-400 dark:text-slate-400 mt-1">jusqu'au {{ $offrePlan->date_fin->format('d/m/Y') }}</div>
+                            <div class="text-[10px] text-gray-400 dark:text-slate-300 mt-1">jusqu'au {{ $offrePlan->date_fin->format('d/m/Y') }}</div>
                         @else
-                            <div class="text-3xl font-bold text-primary-600 dark:text-primary-300">
+                            <div class="text-3xl font-bold text-primary-600 dark:text-primary-200">
                                 {{ number_format($plan->prix, 0, ',', ' ') }}
                             </div>
                         @endif
-                        <div class="text-xs text-gray-500 dark:text-slate-300 font-medium mt-1">FCFA / mois</div>
+                        <div class="text-xs text-gray-500 dark:text-slate-200 font-medium mt-1">FCFA / mois</div>
                     </div>
                 </div>
 
