@@ -193,8 +193,10 @@
                 <input type="hidden" name="lignes" :value="JSON.stringify(lignes)">
                 <button type="submit" 
                         :disabled="!canSubmit" 
-                        :class="canSubmit ? 'btn-primary' : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'" 
-                        class="w-full transition-colors">
+                        class="w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-200"
+                        :class="canSubmit 
+                            ? 'bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 text-white shadow-lg hover:shadow-xl' 
+                            : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'">
                     Créer le devis
                 </button>
             </div>
