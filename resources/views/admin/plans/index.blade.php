@@ -23,7 +23,7 @@
         @php $offrePlan = $plan->meilleureOffre(); @endphp
         
         {{-- Card responsive pour chaque plan --}}
-        <div class="card hover:shadow-lg transition-shadow duration-200 {{ $plan->mis_en_avant ? 'ring-2 ring-amber-400/50' : '' }}">
+        <div class="card hover:shadow-lg transition-shadow duration-200 {{ $plan->mis_en_avant ? 'ring-2 ring-amber-400 dark:ring-amber-500' : '' }}">
             <div class="p-6">
                 {{-- En-tête du plan --}}
                 <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-5">
@@ -49,17 +49,17 @@
                             @endif
                             
                             {{-- Badge Statut --}}
-                            <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full {{ $plan->actif ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400' }}">
-                                <span class="w-1.5 h-1.5 rounded-full {{ $plan->actif ? 'bg-emerald-500' : 'bg-gray-400' }}"></span>
+                            <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full {{ $plan->actif ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-200' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-300' }}">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $plan->actif ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-gray-400' }}"></span>
                                 {{ $plan->actif ? 'Actif' : 'Inactif' }}
                             </span>
                         </div>
                         
                         @if($plan->description)
-                            <p class="text-sm text-gray-600 dark:text-slate-400 mb-2">{{ $plan->description }}</p>
+                            <p class="text-sm text-gray-600 dark:text-slate-300 mb-2">{{ $plan->description }}</p>
                         @endif
                         
-                        <div class="inline-flex items-center gap-1.5 text-xs text-gray-400 font-mono">
+                        <div class="inline-flex items-center gap-1.5 text-xs text-gray-400 dark:text-slate-400 font-mono">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                             </svg>
@@ -68,24 +68,24 @@
                     </div>
                     
                     {{-- Prix principal --}}
-                    <div class="bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 rounded-xl px-5 py-4 text-center min-w-[160px]">
+                    <div class="bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/50 dark:to-primary-800/50 dark:border dark:border-primary-700/50 rounded-xl px-5 py-4 text-center min-w-[160px]">
                         @if($offrePlan)
-                            <div class="text-sm text-gray-500 dark:text-slate-400 line-through mb-1">
+                            <div class="text-sm text-gray-500 dark:text-slate-300 line-through mb-1">
                                 {{ number_format($plan->prix, 0, ',', ' ') }} FCFA
                             </div>
-                            <div class="text-3xl font-bold text-primary-600 dark:text-primary-400">
+                            <div class="text-3xl font-bold text-primary-600 dark:text-primary-300">
                                 {{ number_format($plan->prixEffectif(), 0, ',', ' ') }}
                             </div>
-                            <div class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-1">
+                            <div class="text-xs text-emerald-600 dark:text-emerald-300 font-semibold mt-1">
                                 {{ $offrePlan->reduction_texte }}
                             </div>
-                            <div class="text-[10px] text-gray-400 mt-1">jusqu'au {{ $offrePlan->date_fin->format('d/m/Y') }}</div>
+                            <div class="text-[10px] text-gray-400 dark:text-slate-400 mt-1">jusqu'au {{ $offrePlan->date_fin->format('d/m/Y') }}</div>
                         @else
-                            <div class="text-3xl font-bold text-primary-600 dark:text-primary-400">
+                            <div class="text-3xl font-bold text-primary-600 dark:text-primary-300">
                                 {{ number_format($plan->prix, 0, ',', ' ') }}
                             </div>
                         @endif
-                        <div class="text-xs text-gray-500 dark:text-slate-400 font-medium mt-1">FCFA / mois</div>
+                        <div class="text-xs text-gray-500 dark:text-slate-300 font-medium mt-1">FCFA / mois</div>
                     </div>
                 </div>
 
@@ -93,7 +93,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {{-- Limites --}}
                     <div class="space-y-3">
-                        <h4 class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-3">Limites</h4>
+                        <h4 class="text-xs font-bold text-gray-500 dark:text-slate-300 uppercase tracking-wider mb-3">Limites</h4>
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
                                 <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,27 +120,27 @@
 
                     {{-- Tarifs par période --}}
                     <div class="lg:col-span-2 space-y-3">
-                        <h4 class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-3">Tarifs par période</h4>
+                        <h4 class="text-xs font-bold text-gray-500 dark:text-slate-300 uppercase tracking-wider mb-3">Tarifs par période</h4>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                            <div class="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-lg p-3 text-center">
-                                <div class="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-1">3 mois</div>
+                            <div class="bg-amber-50 dark:bg-amber-900/30 border-2 border-amber-200 dark:border-amber-700/60 rounded-lg p-3 text-center">
+                                <div class="text-xs font-semibold text-amber-700 dark:text-amber-300 mb-1">3 mois</div>
                                 <div class="text-sm font-bold text-gray-900 dark:text-white">{{ number_format($plan->prixPourPeriode('trimestre'), 0, ',', ' ') }}</div>
-                                <div class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1">-5%</div>
+                                <div class="text-[10px] text-emerald-600 dark:text-emerald-300 font-semibold mt-1">-5%</div>
                             </div>
-                            <div class="bg-sky-50 dark:bg-sky-900/10 border border-sky-200 dark:border-sky-800/30 rounded-lg p-3 text-center">
-                                <div class="text-xs font-semibold text-sky-700 dark:text-sky-400 mb-1">6 mois</div>
+                            <div class="bg-sky-50 dark:bg-sky-900/30 border-2 border-sky-200 dark:border-sky-700/60 rounded-lg p-3 text-center">
+                                <div class="text-xs font-semibold text-sky-700 dark:text-sky-300 mb-1">6 mois</div>
                                 <div class="text-sm font-bold text-gray-900 dark:text-white">{{ number_format($plan->prixPourPeriode('semestre'), 0, ',', ' ') }}</div>
-                                <div class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1">-10%</div>
+                                <div class="text-[10px] text-emerald-600 dark:text-emerald-300 font-semibold mt-1">-10%</div>
                             </div>
-                            <div class="bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-200 dark:border-indigo-800/30 rounded-lg p-3 text-center">
-                                <div class="text-xs font-semibold text-indigo-700 dark:text-indigo-400 mb-1">1 an</div>
+                            <div class="bg-indigo-50 dark:bg-indigo-900/30 border-2 border-indigo-200 dark:border-indigo-700/60 rounded-lg p-3 text-center">
+                                <div class="text-xs font-semibold text-indigo-700 dark:text-indigo-300 mb-1">1 an</div>
                                 <div class="text-sm font-bold text-gray-900 dark:text-white">{{ number_format($plan->prixPourPeriode('annuel'), 0, ',', ' ') }}</div>
-                                <div class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1">-15%</div>
+                                <div class="text-[10px] text-emerald-600 dark:text-emerald-300 font-semibold mt-1">-15%</div>
                             </div>
-                            <div class="bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/30 rounded-lg p-3 text-center">
-                                <div class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 mb-1">3 ans</div>
+                            <div class="bg-emerald-50 dark:bg-emerald-900/30 border-2 border-emerald-200 dark:border-emerald-700/60 rounded-lg p-3 text-center">
+                                <div class="text-xs font-semibold text-emerald-700 dark:text-emerald-300 mb-1">3 ans</div>
                                 <div class="text-sm font-bold text-gray-900 dark:text-white">{{ number_format($plan->prixPourPeriode('triennal'), 0, ',', ' ') }}</div>
-                                <div class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1">-20%</div>
+                                <div class="text-[10px] text-emerald-600 dark:text-emerald-300 font-semibold mt-1">-20%</div>
                             </div>
                         </div>
                     </div>
@@ -152,7 +152,7 @@
                     <form action="{{ route('admin.plans.featurer', $plan) }}" method="POST" class="flex-1 sm:flex-initial">
                         @csrf
                         <button type="submit" title="Mettre en avant"
-                                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border-2 border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/20 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-900/30 transition-all duration-200 shadow-sm hover:shadow">
+                                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border-2 border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/40 dark:border-amber-600 dark:text-amber-300 dark:hover:bg-amber-900/60 transition-all duration-200 shadow-sm hover:shadow">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                             </svg>
@@ -163,7 +163,7 @@
                     
                     <div class="flex-1 flex items-center gap-2">
                         <button @click='openEdit(@json($plan))'
-                            class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border-2 border-primary-200 text-primary-700 bg-primary-50 hover:bg-primary-100 dark:bg-primary-900/20 dark:border-primary-700 dark:text-primary-400 dark:hover:bg-primary-900/30 transition-all duration-200 shadow-sm hover:shadow">
+                            class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border-2 border-primary-200 text-primary-700 bg-primary-50 hover:bg-primary-100 dark:bg-primary-900/40 dark:border-primary-600 dark:text-primary-300 dark:hover:bg-primary-900/60 transition-all duration-200 shadow-sm hover:shadow">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                             </svg>
@@ -173,7 +173,7 @@
                         <form id="form-plan-{{ $plan->id }}" action="{{ route('admin.plans.destroy', $plan) }}" method="POST" class="flex-1 sm:flex-initial">
                             @csrf @method('DELETE')
                             <button type="button" 
-                                    class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border-2 border-red-200 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/30 transition-all duration-200 shadow-sm hover:shadow"
+                                    class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border-2 border-red-200 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/40 dark:border-red-600 dark:text-red-300 dark:hover:bg-red-900/60 transition-all duration-200 shadow-sm hover:shadow"
                                     onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-plan-{{ $plan->id }}',title:'Désactiver ce plan',message:'Ce plan ne sera plus disponible à la souscription.',confirmLabel:'Désactiver',confirmClass:'!bg-red-600 hover:!bg-red-700',danger:true}}))">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
@@ -188,13 +188,13 @@
     @empty
         <div class="card">
             <div class="p-16 text-center">
-                <div class="w-20 h-20 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-20 h-20 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-10 h-10 text-gray-400 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
                     </svg>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Aucun plan d'abonnement</h3>
-                <p class="text-sm text-gray-500 dark:text-slate-400 mb-6">Commencez par créer votre premier plan.</p>
+                <p class="text-sm text-gray-500 dark:text-slate-300 mb-6">Commencez par créer votre premier plan.</p>
                 <button @click="openCreate()" class="btn-primary inline-flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -300,7 +300,7 @@
                                 <input type="number" name="prix" x-model="form.prix" min="0" step="100"
                                        class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" 
                                        placeholder="5000" required>
-                                <div class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-semibold">FCFA</div>
+                                <div class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-slate-400 font-semibold">FCFA</div>
                             </div>
                             <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">Les réductions automatiques s'appliquent : 3 mois (-5%), 6 mois (-10%), 1 an (-15%), 3 ans (-20%)</p>
                         </div>
@@ -347,18 +347,18 @@
                 </div>
 
                 {{-- Note offres promo --}}
-                <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border border-amber-200 dark:border-amber-800/30 rounded-xl p-4">
+                <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 border-2 border-amber-200 dark:border-amber-700/60 rounded-xl p-4">
                     <div class="flex items-start gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
-                            <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-800/50 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-4 h-4 text-amber-600 dark:text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
                             </svg>
                         </div>
                         <div>
-                            <h4 class="text-sm font-semibold text-amber-900 dark:text-amber-300 mb-1">Offres promotionnelles</h4>
-                            <p class="text-xs text-amber-700 dark:text-amber-400">
+                            <h4 class="text-sm font-semibold text-amber-900 dark:text-amber-200 mb-1">Offres promotionnelles</h4>
+                            <p class="text-xs text-amber-700 dark:text-amber-300">
                                 Les offres promotionnelles se gèrent depuis la page
-                                <a href="{{ route('admin.offres.index') }}" class="underline font-semibold hover:text-amber-900 dark:hover:text-amber-200">Offres promo</a>.
+                                <a href="{{ route('admin.offres.index') }}" class="underline font-semibold hover:text-amber-900 dark:hover:text-amber-100">Offres promo</a>.
                             </p>
                         </div>
                     </div>
