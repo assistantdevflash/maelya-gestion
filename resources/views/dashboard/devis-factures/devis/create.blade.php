@@ -1,5 +1,5 @@
 <x-dashboard-layout>
-<div class="max-w-4xl mx-auto space-y-6" x-data="devisForm(@js($allClients->toArray()), @js($catalogue->toArray()), @js($duplicateData ?? null))">
+<div class="max-w-6xl mx-auto space-y-6" x-data="devisForm(@js($allClients->toArray()), @js($catalogue->toArray()), @js($duplicateData ?? null))">
     <div class="flex items-center gap-4">
         <a href="{{ route('dashboard.devis.index') }}" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition">←</a>
         <div><h1 class="text-2xl font-bold text-gray-900 dark:text-white">Nouveau devis</h1></div>
@@ -49,7 +49,14 @@
                                 </div>
                                 <input type="text" :name="'ligne_'+i+'_designation'" x-model="ligne.designation" placeholder="Désignation" class="form-input text-sm flex-1 min-w-[140px]" required>
                                 <input type="number" :name="'ligne_'+i+'_quantite'" x-model.number="ligne.quantite" min="1" class="form-input text-sm w-16 text-center" required>
-                                <input type="number" :name="'ligne_'+i+'_prix'" x-model.number="ligne.prix_unitaire" min="0" placeholder="PU" class="form-input text-sm w-24" required>
+                                <input type="text" 
+                                       :name="'ligne_'+i+'_prix'" 
+                                       x-model="ligne.prix_display" 
+                                       @input="updatePrix(ligne, $event.target.value)" 
+                                       @blur="ligne.prix_display = formatPrixInput(ligne.prix_unitaire)"
+                                       placeholder="PU" 
+                                       class="form-input text-sm w-36" 
+                                       required>
                                 <button type="button" @click="lignes.splice(i,1)" class="p-1.5 text-red-400 hover:text-red-600" title="Supprimer">✕</button>
                             </div>
                         </template>
@@ -320,14 +327,14 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('devisForm', (clientsInit, catalogueInit, duplicateData) => ({
         // ── Lignes ──
         lignes: duplicateData?.lignes?.length
-            ? duplicateData.lignes.map(l => ({...l, pickerOpen: false, pickerSearch: ''}))
-            : [{designation:'', quantite:1, prix_unitaire:0, remise_type:'', remise_valeur:0, tva_taux:null, pickerOpen: false, pickerSearch: ''}],
+            ? duplicateData.lignes.map(l => ({...l, prix_display: new Intl.NumberFormat('fr-FR').format(l.prix_unitaire || 0), pickerOpen: false, pickerSearch: ''}))
+            : [{designation:'', quantite:1, prix_unitaire:0, prix_display:'0', remise_type:'', remise_valeur:0, tva_taux:null, pickerOpen: false, pickerSearch: ''}],
         tva: duplicateData?.tva_applicable ? (duplicateData.tva_taux || 18) : 0,
         tvaApplicable: duplicateData?.tva_applicable ? true : false,
         remiseGlobaleType: duplicateData?.remise_globale_type || '',
         remiseGlobaleValeur: duplicateData?.remise_globale_valeur || 0,
         catalogue: catalogueInit,
-        ajouterLigne() { this.lignes.push({designation:'', quantite:1, prix_unitaire:0, remise_type:'', remise_valeur:0, tva_taux:null, pickerOpen: false, pickerSearch: ''}); },
+        ajouterLigne() { this.lignes.push({designation:'', quantite:1, prix_unitaire:0, prix_display:'0', remise_type:'', remise_valeur:0, tva_taux:null, pickerOpen: false, pickerSearch: ''}); },
         catalogueFiltered(ligne) {
             const q = (ligne.pickerSearch || '').toLowerCase();
             if (q.length < 1) return this.catalogue.slice(0, 10);
@@ -336,8 +343,18 @@ document.addEventListener('alpine:init', () => {
         choisirCatalogue(ligne, item) {
             ligne.designation = item.designation;
             ligne.prix_unitaire = item.prix;
+            ligne.prix_display = this.formatPrixInput(item.prix);
             ligne.pickerOpen = false;
             ligne.pickerSearch = '';
+        },
+        updatePrix(ligne, value) {
+            const cleanValue = value.replace(/\s/g, '');
+            const numValue = parseFloat(cleanValue) || 0;
+            ligne.prix_unitaire = numValue;
+            ligne.prix_display = this.formatPrixInput(numValue);
+        },
+        formatPrixInput(value) {
+            return new Intl.NumberFormat('fr-FR').format(value || 0);
         },
         get sousTotal() { return this.lignes.reduce((s, l) => s + ((l.prix_unitaire||0) * (l.quantite||1)), 0); },
         get remiseGlobale() {
