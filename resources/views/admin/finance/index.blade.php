@@ -151,8 +151,20 @@
                 @else
                     <div class="space-y-3">
                         @php
-                            $periodeLabels = ['mensuel' => 'Mensuel', 'annuel' => 'Annuel (1 an)', 'triennal' => 'Triennal (3 ans)'];
-                            $periodeColors = ['mensuel' => '#3b82f6', 'annuel' => '#10b981', 'triennal' => '#f59e0b'];
+                            $periodeLabels = [
+                                'mensuel' => 'Mensuel',
+                                'trimestre' => '3 mois',
+                                'semestre' => '6 mois',
+                                'annuel' => 'Annuel (1 an)',
+                                'triennal' => 'Triennal (3 ans)'
+                            ];
+                            $periodeColors = [
+                                'mensuel' => '#3b82f6',
+                                'trimestre' => '#f59e0b',
+                                'semestre' => '#10b981',
+                                'annuel' => '#06b6d4',
+                                'triennal' => '#8b5cf6'
+                            ];
                         @endphp
                         @foreach($revenusParPeriode as $rp)
                         @php $pct = $revenuTotal > 0 ? round($rp->total / $revenuTotal * 100, 1) : 0; @endphp

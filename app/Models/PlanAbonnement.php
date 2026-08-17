@@ -76,9 +76,11 @@ class PlanAbonnement extends Model
     {
         $base = $this->prixEffectif($periode);
         return match ($periode) {
-            'annuel'   => (int) round($base * 12 * 0.90),
-            'triennal' => (int) round($base * 36 * 0.80),
-            default    => $base,
+            'trimestre' => (int) round($base * 3 * 0.95),   // -5%
+            'semestre'  => (int) round($base * 6 * 0.90),   // -10%
+            'annuel'    => (int) round($base * 12 * 0.85),  // -15%
+            'triennal'  => (int) round($base * 36 * 0.80),  // -20%
+            default     => $base, // mensuel
         };
     }
 
@@ -109,9 +111,11 @@ class PlanAbonnement extends Model
     public function economiePeriode(string $periode): int
     {
         return match ($periode) {
-            'annuel'   => 10,
-            'triennal' => 20,
-            default    => 0,
+            'trimestre' => 5,
+            'semestre'  => 10,
+            'annuel'    => 15,
+            'triennal'  => 20,
+            default     => 0,
         };
     }
 
@@ -121,9 +125,11 @@ class PlanAbonnement extends Model
     public function joursPourPeriode(string $periode): int
     {
         return match ($periode) {
-            'annuel'   => 365,
-            'triennal' => 1095,
-            default    => 30, // mensuel
+            'trimestre' => 90,
+            'semestre'  => 180,
+            'annuel'    => 365,
+            'triennal'  => 1095,
+            default     => 30, // mensuel
         };
     }
 

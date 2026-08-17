@@ -88,13 +88,21 @@
         {{-- Toggle période --}}
         <div x-data="pricingToggle()" class="space-y-8">
             <div class="flex justify-center">
-                <div class="inline-flex items-center bg-gray-100 rounded-xl p-1 gap-1">
+                <div class="inline-flex items-center bg-gray-100 rounded-xl p-1 gap-1 flex-wrap">
                     <button @click="periode = 'mensuel'" :class="periode === 'mensuel' ? 'bg-white shadow-sm text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700'" class="px-4 py-2 rounded-lg text-sm transition-all">
                         Mensuel
                     </button>
+                    <button @click="periode = 'trimestre'" :class="periode === 'trimestre' ? 'bg-white shadow-sm text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700'" class="px-4 py-2 rounded-lg text-sm transition-all relative">
+                        3 mois
+                        <span class="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">-5%</span>
+                    </button>
+                    <button @click="periode = 'semestre'" :class="periode === 'semestre' ? 'bg-white shadow-sm text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700'" class="px-4 py-2 rounded-lg text-sm transition-all relative">
+                        6 mois
+                        <span class="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">-10%</span>
+                    </button>
                     <button @click="periode = 'annuel'" :class="periode === 'annuel' ? 'bg-white shadow-sm text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700'" class="px-4 py-2 rounded-lg text-sm transition-all relative">
                         1 an
-                        <span class="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">-10%</span>
+                        <span class="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">-15%</span>
                     </button>
                     <button @click="periode = 'triennal'" :class="periode === 'triennal' ? 'bg-white shadow-sm text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700'" class="px-4 py-2 rounded-lg text-sm transition-all relative">
                         3 ans
@@ -156,7 +164,7 @@
                             @endif
                             <div class="flex items-baseline gap-1">
                                 <span class="text-3xl sm:text-4xl font-bold whitespace-nowrap {{ $plan->mis_en_avant ? 'gradient-text' : 'text-gray-900' }}"
-                                      x-text="formatPrice({{ $plan->prixEffectif() }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }})">
+                                      x-text="formatPrice({{ $plan->prixEffectif() }}, {{ $plan->prixPourPeriode('trimestre') }}, {{ $plan->prixPourPeriode('semestre') }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }})">
                                     {{ number_format($plan->prixEffectif(), 0, ',', "\u{00A0}") }}
                                 </span>
                                 <span class="text-gray-400 text-sm" x-text="periodeLabel()">FCFA / mois</span>
@@ -168,7 +176,7 @@
                             @endif
                             <template x-if="periode !== 'mensuel'">
                                 <p class="text-xs text-emerald-600 font-medium mt-1">
-                                    <span x-text="'Soit ' + formatTotal({{ $plan->prixEffectif() }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }}) + ' FCFA au total'"></span>
+                                    <span x-text="'Soit ' + formatTotal({{ $plan->prixEffectif() }}, {{ $plan->prixPourPeriode('trimestre') }}, {{ $plan->prixPourPeriode('semestre') }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }}) + ' FCFA au total'"></span>
                                     <span class="line-through text-gray-400 ml-1" x-text="formatSans({{ $plan->prix }})"></span>
                                 </p>
                             </template>
@@ -289,15 +297,21 @@
                 window.location.href = url;
             },
 
-            formatPrice(mensuel, annuel, triennal) {
-                let total = this.periode === 'annuel' ? annuel : this.periode === 'triennal' ? triennal : mensuel;
-                if (this.periode === 'annuel') total = Math.round(total / 12);
-                if (this.periode === 'triennal') total = Math.round(total / 36);
+            formatPrice(mensuel, trimestre, semestre, annuel, triennal) {
+                let total = mensuel;
+                if (this.periode === 'trimestre') total = Math.round(trimestre / 3);
+                if (this.periode === 'semestre') total = Math.round(semestre / 6);
+                if (this.periode === 'annuel') total = Math.round(annuel / 12);
+                if (this.periode === 'triennal') total = Math.round(triennal / 36);
                 return new Intl.NumberFormat('fr-FR').format(total);
             },
 
-            formatTotal(mensuel, annuel, triennal) {
-                let total = this.periode === 'annuel' ? annuel : this.periode === 'triennal' ? triennal : mensuel;
+            formatTotal(mensuel, trimestre, semestre, annuel, triennal) {
+                let total = mensuel;
+                if (this.periode === 'trimestre') total = trimestre;
+                if (this.periode === 'semestre') total = semestre;
+                if (this.periode === 'annuel') total = annuel;
+                if (this.periode === 'triennal') total = triennal;
                 return new Intl.NumberFormat('fr-FR').format(total);
             },
 

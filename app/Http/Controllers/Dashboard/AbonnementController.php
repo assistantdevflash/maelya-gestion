@@ -94,7 +94,7 @@ class AbonnementController extends Controller
         }
 
         $periode = $request->query('periode', 'mensuel');
-        if (!in_array($periode, ['mensuel', 'annuel', 'triennal'])) {
+        if (!in_array($periode, ['mensuel', 'trimestre', 'semestre', 'annuel', 'triennal'])) {
             $periode = 'mensuel';
         }
 
@@ -122,7 +122,7 @@ class AbonnementController extends Controller
         }
 
         $request->validate([
-            'periode' => ['required', 'in:mensuel,annuel,triennal'],
+            'periode' => ['required', 'in:mensuel,trimestre,semestre,annuel,triennal'],
             'reference_transfert' => ['nullable', 'string', 'max:100'],
             'preuve_paiement' => ['nullable', 'file', 'mimes:jpeg,png,jpg,webp,pdf', 'max:10240'],
         ]);

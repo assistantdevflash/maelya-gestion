@@ -72,9 +72,27 @@
             </div>
 
             @php
-                $periodeLabels    = ['mensuel' => 'Mensuel', 'annuel' => 'Annuel', 'triennal' => '3 ans'];
-                $periodeBadgeBg   = ['mensuel' => '#ede9fe', 'annuel' => '#dbeafe', 'triennal' => '#dcfce7'];
-                $periodeBadgeCol  = ['mensuel' => '#5b21b6', 'annuel' => '#1e40af', 'triennal' => '#14532d'];
+                $periodeLabels    = [
+                    'mensuel' => 'Mensuel',
+                    'trimestre' => '3 mois',
+                    'semestre' => '6 mois',
+                    'annuel' => 'Annuel',
+                    'triennal' => '3 ans'
+                ];
+                $periodeBadgeBg   = [
+                    'mensuel' => '#ede9fe',
+                    'trimestre' => '#fef3c7',
+                    'semestre' => '#dbeafe',
+                    'annuel' => '#dbeafe',
+                    'triennal' => '#dcfce7'
+                ];
+                $periodeBadgeCol  = [
+                    'mensuel' => '#5b21b6',
+                    'trimestre' => '#78350f',
+                    'semestre' => '#1e3a8a',
+                    'annuel' => '#1e40af',
+                    'triennal' => '#14532d'
+                ];
                 $periodeLabel     = $periodeLabels[$abonnement->periode] ?? $abonnement->periode;
                 $periodeBg        = $periodeBadgeBg[$abonnement->periode] ?? '#f3f4f6';
                 $periodeCol       = $periodeBadgeCol[$abonnement->periode] ?? '#374151';

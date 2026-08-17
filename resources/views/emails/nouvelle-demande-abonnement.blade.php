@@ -86,8 +86,20 @@
                 <span class="label">Période</span>
                 <span class="value">
                     @php
-                        $periodeLabels = ['mensuel' => 'Mensuel', 'annuel' => 'Annuel (−10%)', 'triennal' => '3 ans (−20%)'];
-                        $periodeBadge  = ['mensuel' => 'badge-mensuel', 'annuel' => 'badge-annuel', 'triennal' => 'badge-triennal'];
+                        $periodeLabels = [
+                            'mensuel' => 'Mensuel',
+                            'trimestre' => '3 mois (−5%)',
+                            'semestre' => '6 mois (−10%)',
+                            'annuel' => 'Annuel (−15%)',
+                            'triennal' => '3 ans (−20%)'
+                        ];
+                        $periodeBadge  = [
+                            'mensuel' => 'badge-mensuel',
+                            'trimestre' => 'badge-trimestre',
+                            'semestre' => 'badge-semestre',
+                            'annuel' => 'badge-annuel',
+                            'triennal' => 'badge-triennal'
+                        ];
                     @endphp
                     <span class="badge {{ $periodeBadge[$abonnement->periode] ?? '' }}">
                         {{ $periodeLabels[$abonnement->periode] ?? $abonnement->periode }}

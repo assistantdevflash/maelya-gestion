@@ -1,5 +1,5 @@
 <x-dashboard-layout>
-<div class="max-w-3xl mx-auto space-y-8 py-4" x-data="souscrire({{ $plan->prixEffectif() }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }}, '{{ $periode }}', {{ request('ajouter') === 'boutique' ? 'true' : 'false' }})">
+<div class="max-w-3xl mx-auto space-y-8 py-4" x-data="souscrire({{ $plan->prixEffectif() }}, {{ $plan->prixPourPeriode('trimestre') }}, {{ $plan->prixPourPeriode('semestre') }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }}, '{{ $periode }}', {{ request('ajouter') === 'boutique' ? 'true' : 'false' }})">
 
     {{-- Fil d'Ariane --}}
     <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400">
@@ -67,21 +67,33 @@
                 {{-- Sélecteur de période --}}
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-3">Période d'engagement</label>
-                    <div class="inline-flex bg-gray-100 dark:bg-slate-800/80 rounded-xl p-1.5 gap-1.5 shadow-inner">
+                    <div class="inline-flex bg-gray-100 dark:bg-slate-800/80 rounded-xl p-1.5 gap-1.5 shadow-inner flex-wrap">
                         <button type="button" @click="setPeriode('mensuel')"
                                 :class="periode === 'mensuel' ? 'bg-white dark:bg-slate-700 shadow-md text-gray-900 dark:text-white font-semibold border border-gray-200 dark:border-slate-600' : 'text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'"
-                                class="px-5 py-3 rounded-lg text-sm transition-all flex items-center gap-2">
+                                class="px-4 py-2.5 rounded-lg text-sm transition-all flex items-center gap-2">
                             📅 Mensuel
+                        </button>
+                        <button type="button" @click="setPeriode('trimestre')"
+                                :class="periode === 'trimestre' ? 'bg-white dark:bg-slate-700 shadow-md text-gray-900 dark:text-white font-semibold border border-gray-200 dark:border-slate-600' : 'text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'"
+                                class="px-4 py-2.5 rounded-lg text-sm transition-all flex items-center gap-2 relative">
+                            📅 3 mois
+                            <span class="absolute -top-2 -right-2 bg-emerald-500 dark:bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">-5%</span>
+                        </button>
+                        <button type="button" @click="setPeriode('semestre')"
+                                :class="periode === 'semestre' ? 'bg-white dark:bg-slate-700 shadow-md text-gray-900 dark:text-white font-semibold border border-gray-200 dark:border-slate-600' : 'text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'"
+                                class="px-4 py-2.5 rounded-lg text-sm transition-all flex items-center gap-2 relative">
+                            📆 6 mois
+                            <span class="absolute -top-2 -right-2 bg-emerald-500 dark:bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">-10%</span>
                         </button>
                         <button type="button" @click="setPeriode('annuel')"
                                 :class="periode === 'annuel' ? 'bg-white dark:bg-slate-700 shadow-md text-gray-900 dark:text-white font-semibold border border-gray-200 dark:border-slate-600' : 'text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'"
-                                class="px-5 py-3 rounded-lg text-sm transition-all flex items-center gap-2 relative">
+                                class="px-4 py-2.5 rounded-lg text-sm transition-all flex items-center gap-2 relative">
                             📆 1 an
-                            <span class="absolute -top-2 -right-2 bg-emerald-500 dark:bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">-10%</span>
+                            <span class="absolute -top-2 -right-2 bg-emerald-500 dark:bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">-15%</span>
                         </button>
                         <button type="button" @click="setPeriode('triennal')"
                                 :class="periode === 'triennal' ? 'bg-white dark:bg-slate-700 shadow-md text-gray-900 dark:text-white font-semibold border border-gray-200 dark:border-slate-600' : 'text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100'"
-                                class="px-5 py-3 rounded-lg text-sm transition-all flex items-center gap-2 relative">
+                                class="px-4 py-2.5 rounded-lg text-sm transition-all flex items-center gap-2 relative">
                             📆 3 ans
                             <span class="absolute -top-2 -right-2 bg-emerald-500 dark:bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">-20%</span>
                         </button>
@@ -253,9 +265,11 @@
 
 <x-slot:scripts>
 <script>
-function souscrire(prixMensuel, prixAnnuel, prixTriennal, initialPeriode, initialBoutique) {
+function souscrire(prixMensuel, prixTrimestre, prixSemestre, prixAnnuel, prixTriennal, initialPeriode, initialBoutique) {
     return {
         prixMensuel: prixMensuel,
+        prixTrimestre: prixTrimestre,
+        prixSemestre: prixSemestre,
         prixAnnuel: prixAnnuel,
         prixTriennal: prixTriennal,
         periode: initialPeriode,
@@ -268,20 +282,22 @@ function souscrire(prixMensuel, prixAnnuel, prixTriennal, initialPeriode, initia
         },
 
         planPrice() {
+            if (this.periode === 'trimestre') return this.prixTrimestre;
+            if (this.periode === 'semestre') return this.prixSemestre;
             if (this.periode === 'annuel') return this.prixAnnuel;
             if (this.periode === 'triennal') return this.prixTriennal;
             return this.prixMensuel;
         },
 
         boutiquePrice() {
-            const nbMois = this.periode === 'annuel' ? 12 : this.periode === 'triennal' ? 36 : 1;
+            const nbMois = this.periode === 'trimestre' ? 3 : this.periode === 'semestre' ? 6 : this.periode === 'annuel' ? 12 : this.periode === 'triennal' ? 36 : 1;
             return new Intl.NumberFormat('fr-FR').format(3900 * nbMois);
         },
 
         totalPrice() {
             let total = this.planPrice();
             if (this.optionBoutique) {
-                const nbMois = this.periode === 'annuel' ? 12 : this.periode === 'triennal' ? 36 : 1;
+                const nbMois = this.periode === 'trimestre' ? 3 : this.periode === 'semestre' ? 6 : this.periode === 'annuel' ? 12 : this.periode === 'triennal' ? 36 : 1;
                 total += 3900 * nbMois;
             }
             return new Intl.NumberFormat('fr-FR').format(total);
@@ -292,13 +308,15 @@ function souscrire(prixMensuel, prixAnnuel, prixTriennal, initialPeriode, initia
         },
 
         periodeLabel() {
-            if (this.periode === 'annuel') return '1 an (-10%)';
+            if (this.periode === 'trimestre') return '3 mois (-5%)';
+            if (this.periode === 'semestre') return '6 mois (-10%)';
+            if (this.periode === 'annuel') return '1 an (-15%)';
             if (this.periode === 'triennal') return '3 ans (-20%)';
             return 'Mensuel';
         },
 
         periodeInfo() {
-            const nbMois = this.periode === 'annuel' ? 12 : this.periode === 'triennal' ? 36 : 1;
+            const nbMois = this.periode === 'trimestre' ? 3 : this.periode === 'semestre' ? 6 : this.periode === 'annuel' ? 12 : this.periode === 'triennal' ? 36 : 1;
             const pp = this.planPrice() / nbMois;
             return 'Soit ' + new Intl.NumberFormat('fr-FR').format(pp) + ' FCFA / mois';
         }

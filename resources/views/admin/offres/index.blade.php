@@ -307,7 +307,7 @@
                         <div>
                             <label class="form-label">Périodes concernées <span class="text-xs text-gray-400">(vide = toutes)</span></label>
                             <div class="flex flex-wrap gap-2 mt-1">
-                                @foreach(['mensuel' => 'Mensuel', 'annuel' => 'Annuel (1 an)', 'triennal' => 'Triennal (3 ans)'] as $key => $label)
+                                @foreach(['mensuel' => 'Mensuel', 'trimestre' => '3 mois (-5%)', 'semestre' => '6 mois (-10%)', 'annuel' => 'Annuel (-15%)', 'triennal' => '3 ans (-20%)'] as $key => $label)
                                 <label class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 hover:border-primary-300 cursor-pointer transition-colors text-sm">
                                     <input type="checkbox" name="periodes_concernees[]" value="{{ $key }}"
                                            :checked="form.periodes_concernees && form.periodes_concernees.includes('{{ $key }}')"
