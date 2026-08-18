@@ -13,25 +13,25 @@
     class="grid lg:grid-cols-5 gap-4 lg:gap-5 min-h-0"
 >
 <style>
-@keyframes slideInFromTop {
+@keyframes slideInFromLeft {
     from {
         opacity: 0;
-        transform: translateY(-8px) scale(0.95);
+        transform: translateX(-20px) scale(0.95);
     }
     to {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateX(0) scale(1);
     }
 }
 
-@keyframes slideOutToRight {
+@keyframes slideOutToLeft {
     from {
         opacity: 1;
         transform: translateX(0) scale(1);
     }
     to {
         opacity: 0;
-        transform: translateX(16px) scale(0.95);
+        transform: translateX(-20px) scale(0.95);
     }
 }
 
@@ -45,11 +45,11 @@
 }
 
 .cart-item-add {
-    animation: slideInFromTop 300ms ease-out;
+    animation: slideInFromLeft 300ms ease-out;
 }
 
 .cart-item-remove {
-    animation: slideOutToRight 200ms ease-in forwards;
+    animation: slideOutToLeft 200ms ease-in forwards;
 }
 
 .cart-item-flash {
