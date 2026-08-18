@@ -79,7 +79,7 @@
     @endif
 
     {{-- ═══ Catalogue gauche (100 % Alpine – zéro requête serveur) ═══ --}}
-    <div class="col-span-full lg:col-span-3 space-y-4" wire:ignore>
+    <div class="lg:col-span-3 space-y-4 pb-28 lg:pb-0" wire:ignore>
 
         {{-- Recherche + onglets --}}
         <div class="card p-4 space-y-3">
@@ -311,7 +311,7 @@
         </div>
 
         {{-- Grille items - Plus compact sur mobile --}}
-        <div x-show="!showVenteRapide" class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 max-h-[55vh] overflow-y-auto pr-1">
+        <div x-show="!showVenteRapide" class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 sm:max-h-[55vh] sm:overflow-y-auto pr-1">
             <template x-for="item in filteredItems" :key="item.id">
                 <button
                     @click="ajouterItem(item)"
