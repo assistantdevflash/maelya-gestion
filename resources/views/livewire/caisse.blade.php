@@ -1105,9 +1105,8 @@
             </div>
         </div>
     </div>
-</div>
 
-{{-- ═══ MOBILE : panier flottant + drawer + toast (x-teleport évite les bugs position:fixed dans un grid) ═══ --}}
+{{-- ═══ MOBILE : panier flottant + drawer + toast (à l'intérieur du scope Alpine, x-teleport rend dans body pour un position:fixed fiable) ═══ --}}
 <template x-teleport="body">
     <div>
         {{-- Bouton flottant --}}
@@ -1244,6 +1243,7 @@
         </div>
     </div>
 </template>
+</div>
 
 <script>
 function scannerCodeBarre() {
