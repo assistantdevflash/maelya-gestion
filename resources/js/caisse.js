@@ -79,6 +79,7 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
 
         // ── Panier ──
         panier: {},
+        animatingItems: {}, // {key: 'add'|'remove'}
 
         // ── Paiement ──
         modePaiement: 'cash',
@@ -264,11 +265,23 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
             const key = `${type}_${item.id}`;
             if (this.panier[key]) {
                 this.panier[key].quantite++;
+                // Petit flash pour indiquer l'ajout
+                this.animatingItems[key] = 'flash';
+                setTimeout(() => {
+                    delete this.animatingItems[key];
+                    this.animatingItems = { ...this.animatingItems };
+                }, 300);
             } else {
                 this.panier = {
                     ...this.panier,
                     [key]: { type, id: item.id, nom: item.nom, prix: item.prix, quantite: 1 },
                 };
+                // Animation d'entrée
+                this.animatingItems[key] = 'add';
+                setTimeout(() => {
+                    delete this.animatingItems[key];
+                    this.animatingItems = { ...this.animatingItems };
+                }, 300);
             }
         },
 
@@ -292,8 +305,15 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         },
 
         supprimerItem(key) {
-            const { [key]: _, ...rest } = this.panier;
-            this.panier = rest;
+            // Animation de sortie avant suppression
+            this.animatingItems[key] = 'remove';
+            this.animatingItems = { ...this.animatingItems };
+            setTimeout(() => {
+                const { [key]: _, ...rest } = this.panier;
+                this.panier = rest;
+                delete this.animatingItems[key];
+                this.animatingItems = { ...this.animatingItems };
+            }, 200);
         },
 
         viderPanier() {

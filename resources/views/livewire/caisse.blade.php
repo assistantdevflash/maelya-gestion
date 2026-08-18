@@ -12,6 +12,50 @@
     })"
     class="grid lg:grid-cols-5 gap-4 lg:gap-5 min-h-0"
 >
+<style>
+@keyframes slideInFromTop {
+    from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes slideOutToRight {
+    from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(16px) scale(0.95);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        background-color: rgb(249 250 251 / 0.5);
+    }
+    50% {
+        background-color: rgb(243 244 246);
+    }
+}
+
+.cart-item-add {
+    animation: slideInFromTop 300ms ease-out;
+}
+
+.cart-item-remove {
+    animation: slideOutToRight 200ms ease-in forwards;
+}
+
+.cart-item-flash {
+    animation: pulse 300ms ease-in-out;
+}
+</style>
     @php $hasCredits = auth()->user()->aFonctionnalite('credits'); @endphp
     {{-- Succès vente crédit --}}
     @if($hasCredits && $creditSuccess)
@@ -423,12 +467,11 @@
             <div class="flex-1 overflow-y-auto divide-y divide-gray-50 max-h-52">
                 <template x-for="key in panierKeys" :key="key">
                     <div class="px-3 sm:px-4 py-3 hover:bg-gray-50/50 transition-colors"
-                         x-transition:enter="transition ease-out duration-300"
-                         x-transition:enter-start="opacity-0 -translate-y-2 scale-95"
-                         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                         x-transition:leave="transition ease-in duration-200"
-                         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-                         x-transition:leave-end="opacity-0 translate-x-4 scale-95">
+                         :class="{
+                             'cart-item-add': animatingItems[key] === 'add',
+                             'cart-item-remove': animatingItems[key] === 'remove',
+                             'cart-item-flash': animatingItems[key] === 'flash'
+                         }">
                         {{-- Ligne 1 : nom + supprimer --}}
                         <div class="flex items-center gap-2">
                             <div class="flex-1 min-w-0">
