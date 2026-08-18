@@ -154,7 +154,7 @@
                     </div>
                     <div class="bg-blue-50 dark:bg-gradient-to-br dark:from-blue-900/30 dark:to-blue-800/20 rounded-xl p-3 border border-blue-100 dark:border-blue-700/50 shadow-sm">
                         <p class="text-xs text-blue-600 dark:text-blue-300 font-semibold mb-1.5">📅 RDV</p>
-                        <p class="text-2xl font-bold text-blue-700 dark:text-blue-100">
+                        <p class="text-2xl font-bold text-blue-700 dark:text-sky-200">
                             <span x-show="periode === 'total'" x-cloak>{{ $totalRdv }}</span>
                             <span x-show="periode === 'mois'" x-cloak>{{ $rdvMois }}</span>
                             <span x-show="periode === 'jour'" x-cloak>{{ $rdvJour }}</span>
@@ -175,7 +175,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-xs text-emerald-600 dark:text-emerald-300 font-semibold mb-1">💰 Ventes validées</p>
-                            <p class="text-2xl font-bold text-emerald-700 dark:text-emerald-100">
+                            <p class="text-2xl font-bold text-emerald-700 dark:text-emerald-200">
                                 <span x-show="periode === 'total'" x-cloak>{{ number_format($statsVentes->ca_total, 0, ',', ' ') }} FCFA</span>
                                 <span x-show="periode === 'mois'" x-cloak>{{ number_format($statsVentes->ca_mois, 0, ',', ' ') }} FCFA</span>
                                 <span x-show="periode === 'jour'" x-cloak>{{ number_format($statsVentes->ca_jour, 0, ',', ' ') }} FCFA</span>
