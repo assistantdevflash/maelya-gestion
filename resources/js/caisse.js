@@ -131,7 +131,7 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         },
 
         get panierKeys() {
-            return Object.keys(this.panier);
+            return Object.keys(this.panier).reverse();
         },
 
         get panierVide() {

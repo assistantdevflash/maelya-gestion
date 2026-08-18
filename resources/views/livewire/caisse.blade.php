@@ -422,7 +422,13 @@
 
             <div class="flex-1 overflow-y-auto divide-y divide-gray-50 max-h-52">
                 <template x-for="key in panierKeys" :key="key">
-                    <div class="px-3 sm:px-4 py-3 hover:bg-gray-50/50 transition-colors">
+                    <div class="px-3 sm:px-4 py-3 hover:bg-gray-50/50 transition-colors"
+                         x-transition:enter="transition ease-out duration-300"
+                         x-transition:enter-start="opacity-0 -translate-y-2 scale-95"
+                         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave="transition ease-in duration-200"
+                         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave-end="opacity-0 translate-x-4 scale-95">
                         {{-- Ligne 1 : nom + supprimer --}}
                         <div class="flex items-center gap-2">
                             <div class="flex-1 min-w-0">
