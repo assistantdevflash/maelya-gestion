@@ -1,20 +1,20 @@
 <style>
 @keyframes slideInFromLeft {
     from { opacity: 0; transform: translateX(-20px) scale(0.95); }
-    to   { opacity: 1; transform: translateX(0)  scale(1); }
+    to   { opacity: 1; transform: translateX(0) scale(1); }
 }
 @keyframes slideOutToLeft {
-    from { opacity: 1; transform: translateX(0)  scale(1); }
+    from { opacity: 1; transform: translateX(0) scale(1); }
     to   { opacity: 0; transform: translateX(-20px) scale(0.95); }
 }
-@keyframes pulse {
+@keyframes cartPulse {
     0%, 100% { background-color: rgb(249 250 251 / 0.5); }
     50%       { background-color: rgb(243 244 246); }
 }
 .cart-item-add    { animation: slideInFromLeft 300ms ease-out; }
 .cart-item-remove { animation: slideOutToLeft  200ms ease-in forwards; }
-.cart-item-flash  { animation: pulse 300ms ease-in-out; }
-.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.cart-item-flash  { animation: cartPulse 300ms ease-in-out; }
+.scrollbar-hide   { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 </style>
 <div
@@ -31,7 +31,48 @@
     })"
     class="grid lg:grid-cols-5 gap-4 lg:gap-5 min-h-0"
 >
+    from {
+        opacity: 0;
+        transform: translateX(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
 
+@keyframes slideOutToLeft {
+    from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-20px) scale(0.95);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        background-color: rgb(249 250 251 / 0.5);
+    }
+    50% {
+        background-color: rgb(243 244 246);
+    }
+}
+
+.cart-item-add {
+    animation: slideInFromLeft 300ms ease-out;
+}
+
+.cart-item-remove {
+    animation: slideOutToLeft 200ms ease-in forwards;
+}
+
+.cart-item-flash {
+    animation: pulse 300ms ease-in-out;
+}
+</style>
     @php $hasCredits = auth()->user()->aFonctionnalite('credits'); @endphp
     {{-- Succès vente crédit --}}
     @if($hasCredits && $creditSuccess)
@@ -45,7 +86,7 @@
     @endif
 
     {{-- ═══ Catalogue gauche (100 % Alpine – zéro requête serveur) ═══ --}}
-    <div class="lg:col-span-3 space-y-4 pb-28 lg:pb-0" wire:ignore>
+    <div class="lg:col-span-3 space-y-4 pb-24 lg:pb-0" wire:ignore>
 
         {{-- Recherche + onglets --}}
         <div class="card p-4 space-y-3">
@@ -79,19 +120,19 @@
                 </button>
             </div>
 
-            {{-- Filtre catégorie - scroll horizontal sur mobile --}}
-            <div x-show="categories.length > 0" class="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5">
+            {{-- Filtre catégorie --}}
+            <div x-show="categories.length > 0" class="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5 -mx-4 px-4">
                 <button @click="categorieId = ''"
                         :class="categorieId === '' ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
                         :style="categorieId === '' ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
-                        class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 flex-shrink-0 whitespace-nowrap">
+                        class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 flex-shrink-0">
                     Toutes
                 </button>
                 <template x-for="cat in categories" :key="cat.id">
                     <button @click="categorieId = cat.id"
                             :class="categorieId === cat.id ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
                             :style="categorieId === cat.id ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
-                            class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 flex-shrink-0 whitespace-nowrap"
+                            class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 flex-shrink-0"
                             x-text="cat.nom">
                     </button>
                 </template>
@@ -1125,141 +1166,145 @@
             </div>
         </div>
     </div>
+</div>
 
-    {{-- ═══ PANIER FLOTTANT MOBILE (bouton fixe, toujours visible) ═══ --}}
-    <div x-show="!panierVide"
-         class="lg:hidden fixed bottom-24 left-4 right-4 z-50 pointer-events-none"
-         x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0 translate-y-2"
-         x-transition:enter-end="opacity-100 translate-y-0"
-         x-transition:leave="transition ease-in duration-150"
-         x-transition:leave-start="opacity-100 translate-y-0"
-         x-transition:leave-end="opacity-0 translate-y-2">
-        <button @click="toggleMobileCart()"
-                class="w-full flex items-center justify-between gap-3 p-4 rounded-2xl shadow-2xl pointer-events-auto active:scale-[0.98] transition-transform duration-200"
-                style="background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);">
-            <div class="flex items-center gap-3">
-                <div class="relative">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                    </svg>
-                    <span x-text="nbArticles" class="absolute -top-2 -right-2 min-w-[20px] h-[20px] rounded-full text-[10px] font-bold bg-white text-purple-600 flex items-center justify-center px-1"></span>
-                </div>
-                <div class="text-left">
-                    <p class="text-xs font-medium text-white/80" x-text="nbArticles + ' article' + (nbArticles > 1 ? 's' : '')"></p>
-                    <p class="text-base font-bold text-white" x-text="formatNumber(total) + ' F'"></p>
-                </div>
-            </div>
-            <span class="text-sm font-semibold text-white flex items-center gap-1">
-                Voir le panier
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
-                </svg>
-            </span>
-        </button>
-    </div>
-
-    {{-- ═══ MODAL PANIER MOBILE (drawer depuis le bas) ═══ --}}
-    <div x-show="mobileCartOpen"
-         x-cloak
-         @click.self="toggleMobileCart()"
-         class="lg:hidden fixed inset-0 z-[60] bg-black/50"
-         x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-150"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         wire:ignore>
-        <div class="absolute bottom-0 left-0 right-0 bg-white dark:bg-slate-800 rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col"
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="transform translate-y-full"
-             x-transition:enter-end="transform translate-y-0"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="transform translate-y-0"
-             x-transition:leave-end="transform translate-y-full">
-            <div class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-slate-700">
+{{-- ═══ MOBILE : panier flottant + drawer + toast (x-teleport évite les bugs position:fixed dans un grid) ═══ --}}
+<template x-teleport="body" x-if="typeof panierVide !== 'undefined'">
+    <div>
+        {{-- Bouton flottant --}}
+        <div x-show="!panierVide"
+             class="lg:hidden fixed z-50 left-4 right-4"
+             style="bottom: 80px;"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 translate-y-4">
+            <button @click="toggleMobileCart()"
+                    class="w-full flex items-center justify-between px-4 py-3 rounded-2xl shadow-2xl"
+                    style="background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);">
                 <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, rgba(147,51,234,0.15), rgba(236,72,153,0.15));">
-                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="relative">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                         </svg>
+                        <span x-text="nbArticles" class="absolute -top-2 -right-2 w-5 h-5 rounded-full text-[10px] font-bold bg-white text-purple-600 flex items-center justify-center shadow"></span>
                     </div>
-                    <div>
-                        <h3 class="font-bold text-gray-900 dark:text-white">Panier</h3>
-                        <p class="text-xs text-gray-400" x-text="nbArticles + ' article' + (nbArticles > 1 ? 's' : '')"></p>
+                    <div class="text-left">
+                        <p class="text-[11px] font-medium text-white/80 leading-none" x-text="nbArticles + ' article' + (nbArticles > 1 ? 's' : '')"></p>
+                        <p class="text-base font-bold text-white leading-tight" x-text="formatNumber(total) + ' F'"></p>
                     </div>
                 </div>
-                <button @click="toggleMobileCart()" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-gray-500">
+                <span class="text-sm font-semibold text-white flex items-center gap-1">
+                    Panier
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
                     </svg>
-                </button>
-            </div>
-            <div class="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-700">
-                <template x-for="key in panierKeys" :key="'mob_' + key">
-                    <div class="p-4"
-                         :class="{
-                             'cart-item-add': animatingItems[key] === 'add',
-                             'cart-item-remove': animatingItems[key] === 'remove',
-                             'cart-item-flash': animatingItems[key] === 'flash'
-                         }">
-                        <div class="flex items-start gap-3">
-                            <div class="flex-1 min-w-0">
-                                <p class="font-semibold text-gray-900 dark:text-white truncate" x-text="panier[key].nom"></p>
-                                <p class="text-sm text-gray-400 mt-0.5" x-text="formatNumber(panier[key].prix) + ' F'"></p>
-                            </div>
-                            <button @click="supprimerItem(key)" class="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-500 flex-shrink-0 active:scale-95">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                </svg>
-                            </button>
+                </span>
+            </button>
+        </div>
+
+        {{-- Drawer modal --}}
+        <div x-show="mobileCartOpen"
+             @click.self="toggleMobileCart()"
+             class="lg:hidden"
+             style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; background: rgba(0,0,0,0.6);"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0">
+            <div class="absolute left-0 right-0 bottom-0 bg-white dark:bg-slate-800 flex flex-col"
+                 style="border-radius: 24px 24px 0 0; max-height: 80vh;"
+                 @click.stop>
+                {{-- Header --}}
+                <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-slate-700 flex-shrink-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, rgba(147,51,234,0.15), rgba(236,72,153,0.15));">
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                            </svg>
                         </div>
-                        <div class="flex items-center justify-between mt-3">
-                            <div class="flex items-center gap-3">
-                                <button @click="decrementer(key)" class="w-9 h-9 rounded-xl bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-gray-700 dark:text-gray-300 font-bold text-lg active:scale-95 transition-transform">−</button>
-                                <span class="w-8 text-center font-bold text-gray-900 dark:text-white" x-text="panier[key].quantite"></span>
-                                <button @click="incrementer(key)" class="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-lg active:scale-95 transition-transform" style="background: linear-gradient(135deg, #9333ea, #ec4899);">+</button>
-                            </div>
-                            <span class="text-lg font-bold text-gray-900 dark:text-white" x-text="formatNumber(panier[key].prix * panier[key].quantite) + ' F'"></span>
+                        <div>
+                            <h3 class="font-bold text-gray-900 dark:text-white text-base">Panier</h3>
+                            <p class="text-xs text-gray-400" x-text="nbArticles + ' article' + (nbArticles > 1 ? 's' : '')"></p>
                         </div>
                     </div>
-                </template>
-            </div>
-            <div class="p-4 bg-gray-50 dark:bg-slate-900 border-t border-gray-100 dark:border-slate-700 space-y-3">
-                <div class="flex items-center justify-between">
-                    <span class="text-base font-semibold text-gray-700 dark:text-gray-300">Total</span>
-                    <span class="text-2xl font-bold text-gray-900 dark:text-white" x-text="formatNumber(total) + ' F'"></span>
-                </div>
-                <div class="flex gap-2">
-                    <button @click="viderPanier(); toggleMobileCart();" class="flex-1 py-3 rounded-xl font-semibold text-sm text-red-600 dark:text-red-400 border-2 border-red-200 dark:border-red-800 active:scale-95 transition-transform">Vider</button>
-                    <button @click="toggleMobileCart(); ouvrirConfirmation();"
-                            :disabled="!mixtePret"
-                            :class="!mixtePret ? 'opacity-50' : 'active:scale-95'"
-                            class="flex-[2] py-3 rounded-xl font-bold text-sm text-white transition-transform"
-                            style="background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);">
-                        Encaisser <span x-text="formatNumber(total) + ' F'"></span>
+                    <button @click="toggleMobileCart()" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-gray-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
                     </button>
                 </div>
+                {{-- Articles --}}
+                <div class="flex-1 overflow-y-auto">
+                    <template x-for="key in panierKeys" :key="'mob_' + key">
+                        <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-700">
+                            <div class="flex items-center gap-3">
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-semibold text-gray-900 dark:text-white truncate" x-text="panier[key].nom"></p>
+                                    <p class="text-sm text-gray-400 mt-0.5" x-text="formatNumber(panier[key].prix) + ' F'"></p>
+                                </div>
+                                <button @click="supprimerItem(key)" class="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-500 flex-shrink-0">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="flex items-center justify-between mt-3">
+                                <div class="flex items-center gap-3">
+                                    <button @click="decrementer(key)" class="w-9 h-9 rounded-xl bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-200 font-bold text-xl flex items-center justify-center">−</button>
+                                    <span class="w-8 text-center font-bold text-gray-900 dark:text-white" x-text="panier[key].quantite"></span>
+                                    <button @click="incrementer(key)" class="w-9 h-9 rounded-xl text-white font-bold text-xl flex items-center justify-center" style="background: linear-gradient(135deg, #9333ea, #ec4899);">+</button>
+                                </div>
+                                <span class="text-base font-bold text-gray-900 dark:text-white" x-text="formatNumber(panier[key].prix * panier[key].quantite) + ' F'"></span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                {{-- Footer --}}
+                <div class="px-5 py-4 bg-gray-50 dark:bg-slate-900 flex-shrink-0" style="border-top: 1px solid rgba(229,231,235,1);">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="font-semibold text-gray-600 dark:text-gray-400">Total</span>
+                        <span class="text-2xl font-bold text-gray-900 dark:text-white" x-text="formatNumber(total) + ' F'"></span>
+                    </div>
+                    <div class="flex gap-3">
+                        <button @click="viderPanier(); toggleMobileCart();"
+                                class="flex-1 py-3 rounded-xl font-semibold text-sm text-red-600 dark:text-red-400"
+                                style="border: 2px solid rgba(239,68,68,0.4);">
+                            Vider
+                        </button>
+                        <button @click="toggleMobileCart(); ouvrirConfirmation();"
+                                :disabled="!mixtePret"
+                                :class="!mixtePret ? 'opacity-50' : ''"
+                                class="flex-[2] py-3 rounded-xl font-bold text-sm text-white"
+                                style="background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);">
+                            Encaisser <span x-text="formatNumber(total) + ' F'"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Toast --}}
+        <div x-show="toastVisible"
+             class="lg:hidden"
+             style="position: fixed; top: 72px; left: 50%; transform: translateX(-50%); z-index: 9999; pointer-events: none;"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95">
+            <div class="px-5 py-2.5 rounded-xl shadow-xl text-sm font-semibold text-white whitespace-nowrap"
+                 style="background: linear-gradient(135deg, #9333ea, #ec4899);">
+                <span x-text="toastMessage"></span>
             </div>
         </div>
     </div>
-
-    {{-- Toast notification --}}
-    <div x-show="toastVisible"
-         x-cloak
-         x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0 -translate-y-2"
-         x-transition:enter-end="opacity-100 translate-y-0"
-         x-transition:leave="transition ease-in duration-150"
-         x-transition:leave-start="opacity-100 translate-y-0"
-         x-transition:leave-end="opacity-0 -translate-y-2"
-         class="fixed top-16 left-1/2 -translate-x-1/2 z-[70] pointer-events-none">
-        <div class="px-5 py-2.5 rounded-xl shadow-xl text-sm font-semibold text-white" style="background: linear-gradient(135deg, #9333ea, #ec4899);">
-            <span x-text="toastMessage"></span>
-        </div>
-    </div>
-</div>
+</template>
 
 <script>
 function scannerCodeBarre() {
