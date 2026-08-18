@@ -31,6 +31,39 @@
     })"
     class="grid lg:grid-cols-5 gap-4 lg:gap-5 min-h-0"
 >
+
+@keyframes slideOutToLeft {
+    from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-20px) scale(0.95);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        background-color: rgb(249 250 251 / 0.5);
+    }
+    50% {
+        background-color: rgb(243 244 246);
+    }
+}
+
+.cart-item-add {
+    animation: slideInFromLeft 300ms ease-out;
+}
+
+.cart-item-remove {
+    animation: slideOutToLeft 200ms ease-in forwards;
+}
+
+.cart-item-flash {
+    animation: pulse 300ms ease-in-out;
+}
+</style>
     @php $hasCredits = auth()->user()->aFonctionnalite('credits'); @endphp
     {{-- Succès vente crédit --}}
     @if($hasCredits && $creditSuccess)
@@ -78,19 +111,19 @@
                 </button>
             </div>
 
-            {{-- Filtre catégorie - Scroll horizontal sur mobile --}}
-            <div x-show="categories.length > 0" class="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap scrollbar-hide">
+            {{-- Filtre catégorie - scroll horizontal sur mobile --}}
+            <div x-show="categories.length > 0" class="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5">
                 <button @click="categorieId = ''"
                         :class="categorieId === '' ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
                         :style="categorieId === '' ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
-                        class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 whitespace-nowrap flex-shrink-0">
+                        class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 flex-shrink-0 whitespace-nowrap">
                     Toutes
                 </button>
                 <template x-for="cat in categories" :key="cat.id">
                     <button @click="categorieId = cat.id"
                             :class="categorieId === cat.id ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
                             :style="categorieId === cat.id ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
-                            class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 whitespace-nowrap flex-shrink-0"
+                            class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 flex-shrink-0 whitespace-nowrap"
                             x-text="cat.nom">
                     </button>
                 </template>
@@ -275,41 +308,49 @@
             </div>
         </div>
 
-        {{-- Grille items - Plus compact sur mobile --}}
-        <div x-show="!showVenteRapide" class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 sm:max-h-[55vh] sm:overflow-y-auto pr-1">
+        {{-- Grille items --}}
+        <div x-show="!showVenteRapide" class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[55vh] overflow-y-auto pr-1">
             <template x-for="item in filteredItems" :key="item.id">
                 <button
                     @click="ajouterItem(item)"
                     :class="quantiteDans(item) > 0 ? 'ring-2 ring-primary-400 bg-primary-50/30' : ''"
-                    class="card p-2.5 sm:p-4 text-left hover:ring-1 hover:ring-primary-300 active:scale-[0.97] transition-all duration-200 group cursor-pointer min-w-0 overflow-hidden">
-                    <div class="flex items-start justify-between mb-2 sm:mb-3">
-                        {{-- Icône --}}
-                        <div x-show="onglet === 'prestations'" class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-primary-100/40 dark:bg-primary-400/25 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 flex-shrink-0">
-                            <svg class="w-4 h-4 sm:w-[18px] sm:h-[18px] text-primary-600 dark:text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </div>
-                        <div x-show="onglet === 'produits'">
-                            <img x-show="item.photo" :src="item.photo" :alt="item.nom"
-                                 class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl object-cover border border-gray-200 dark:border-slate-600 group-hover:scale-110 transition-transform duration-200 flex-shrink-0">
-                            <div x-show="!item.photo"
-                                 class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-emerald-100/40 dark:bg-emerald-400/25 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 flex-shrink-0">
-                                <svg class="w-4 h-4 sm:w-[18px] sm:h-[18px] text-emerald-600 dark:text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                    class="card p-4 text-left hover:ring-1 hover:ring-primary-300 active:scale-[0.97] transition-all duration-200 group cursor-pointer min-w-0 overflow-hidden">
+                    <div class="flex items-start justify-between mb-3">
+                        {{-- Icône ou photo --}}
+                        <template x-if="onglet === 'prestations'">
+                            <div class="w-9 h-9 rounded-xl bg-primary-100/40 dark:bg-primary-400/25 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 flex-shrink-0">
+                                <svg class="w-[18px] h-[18px] text-primary-600 dark:text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                             </div>
-                        </div>
+                        </template>
+                        <template x-if="onglet === 'produits'">
+                            <div>
+                                <img x-show="item.photo" :src="item.photo" :alt="item.nom"
+                                     class="w-9 h-9 rounded-xl object-cover border border-gray-200 dark:border-slate-600 group-hover:scale-110 transition-transform duration-200 flex-shrink-0">
+                                <div x-show="!item.photo"
+                                     class="w-9 h-9 rounded-xl bg-emerald-100/40 dark:bg-emerald-400/25 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 flex-shrink-0">
+                                    <svg class="w-[18px] h-[18px] text-emerald-600 dark:text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </template>
                         <span x-show="quantiteDans(item) > 0"
                               x-text="quantiteDans(item)"
-                              class="min-w-[20px] h-[20px] sm:min-w-[22px] sm:h-[22px] rounded-full text-white text-[10px] sm:text-xs font-bold flex items-center justify-center px-1 shadow-sm flex-shrink-0"
+                              class="min-w-[22px] h-[22px] rounded-full text-white text-xs font-bold flex items-center justify-center px-1 shadow-sm flex-shrink-0"
                               style="background: linear-gradient(135deg, #9333ea, #ec4899);">
                         </span>
                     </div>
-                    <p class="text-[11px] sm:text-xs font-semibold text-gray-900 dark:text-gray-100 leading-tight truncate" x-text="item.nom"></p>
-                    <p x-show="item.categorie_nom" class="text-[9px] sm:text-[10px] font-medium text-primary-500/80 dark:text-primary-400/80 mt-0.5 truncate" x-text="item.categorie_nom"></p>
-                    <p x-show="onglet === 'prestations' && item.duree" class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5" x-text="item.duree + ' min'"></p>
-                    <p x-show="onglet === 'produits'" class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5" x-text="'Stock: ' + (item.stock ?? '')"></p>
-                    <p class="text-xs sm:text-sm font-bold mt-1 sm:mt-1.5" style="background: linear-gradient(135deg, #9333ea, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;" x-text="formatNumber(item.prix) + ' F'"></p>
+                    <p class="text-xs font-semibold text-gray-900 dark:text-gray-100 leading-tight truncate" x-text="item.nom"></p>
+                    <p x-show="item.categorie_nom" class="text-[10px] font-medium text-primary-500/80 dark:text-primary-400/80 mt-0.5 truncate" x-text="item.categorie_nom"></p>
+                    <template x-if="onglet === 'prestations' && item.duree">
+                        <p class="text-[11px] text-gray-400 mt-0.5" x-text="item.duree + ' min'"></p>
+                    </template>
+                    <template x-if="onglet === 'produits'">
+                        <p class="text-[11px] text-gray-400 mt-0.5" x-text="'Stock: ' + (item.stock ?? '')"></p>
+                    </template>
+                    <p class="text-sm font-bold mt-1.5" style="background: linear-gradient(135deg, #9333ea, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;" x-text="formatNumber(item.prix) + ' F'"></p>
                 </button>
             </template>
             <div x-show="filteredItems.length === 0" class="col-span-3 py-14 text-center">
@@ -1117,81 +1158,78 @@
         </div>
     </div>
 
-    {{-- ═══ PANIER FLOTTANT MOBILE (visible uniquement sur mobile) ═══ --}}
-    <div x-show="!panierVide" 
-         class="lg:hidden fixed bottom-24 left-0 right-0 z-50 p-3 pointer-events-none">
-        <button @click="toggleMobileCart()" 
-                class="w-full mx-auto max-w-md flex items-center justify-between gap-3 p-4 rounded-2xl shadow-2xl backdrop-blur-sm border border-white/20 pointer-events-auto active:scale-[0.98] transition-transform duration-200"
+    {{-- ═══ PANIER FLOTTANT MOBILE (bouton fixe, toujours visible) ═══ --}}
+    <div x-show="!panierVide"
+         class="lg:hidden fixed bottom-24 left-4 right-4 z-50 pointer-events-none"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 translate-y-2"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 translate-y-2">
+        <button @click="toggleMobileCart()"
+                class="w-full flex items-center justify-between gap-3 p-4 rounded-2xl shadow-2xl pointer-events-auto active:scale-[0.98] transition-transform duration-200"
                 style="background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);">
             <div class="flex items-center gap-3">
                 <div class="relative">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                     </svg>
-                    <span x-text="nbArticles"
-                          class="absolute -top-2 -right-2 min-w-[20px] h-[20px] rounded-full text-[10px] font-bold bg-white text-primary-600 flex items-center justify-center px-1 shadow-sm"></span>
+                    <span x-text="nbArticles" class="absolute -top-2 -right-2 min-w-[20px] h-[20px] rounded-full text-[10px] font-bold bg-white text-purple-600 flex items-center justify-center px-1"></span>
                 </div>
                 <div class="text-left">
-                    <p class="text-xs font-medium text-white/90" x-text="nbArticles + ' article' + (nbArticles > 1 ? 's' : '')"></p>
-                    <p class="text-sm font-bold text-white" x-text="formatNumber(total) + ' F'"></p>
+                    <p class="text-xs font-medium text-white/80" x-text="nbArticles + ' article' + (nbArticles > 1 ? 's' : '')"></p>
+                    <p class="text-base font-bold text-white" x-text="formatNumber(total) + ' F'"></p>
                 </div>
             </div>
-            <div class="flex items-center gap-2 text-white">
-                <span class="text-xs font-semibold">Voir le panier</span>
+            <span class="text-sm font-semibold text-white flex items-center gap-1">
+                Voir le panier
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
                 </svg>
-            </div>
+            </span>
         </button>
     </div>
 
     {{-- ═══ MODAL PANIER MOBILE (drawer depuis le bas) ═══ --}}
-    <div x-show="mobileCartOpen" 
+    <div x-show="mobileCartOpen"
          x-cloak
          @click.self="toggleMobileCart()"
-         class="lg:hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
-         x-transition:enter="transition ease-out duration-300"
+         class="lg:hidden fixed inset-0 z-[60] bg-black/50"
+         x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave="transition ease-in duration-150"
          x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0">
-        
+         x-transition:leave-end="opacity-0"
+         wire:ignore>
         <div class="absolute bottom-0 left-0 right-0 bg-white dark:bg-slate-800 rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col"
              x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="translate-y-full"
-             x-transition:enter-end="translate-y-0"
+             x-transition:enter-start="transform translate-y-full"
+             x-transition:enter-end="transform translate-y-0"
              x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="translate-y-0"
-             x-transition:leave-end="translate-y-full"
-             wire:ignore>
-            
-            {{-- Header --}}
-            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
+             x-transition:leave-start="transform translate-y-0"
+             x-transition:leave-end="transform translate-y-full">
+            <div class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-slate-700">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl flex items-center justify-center relative" style="background: linear-gradient(135deg, rgba(147,51,234,0.1), rgba(236,72,153,0.1));">
-                        <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, rgba(147,51,234,0.15), rgba(236,72,153,0.15));">
+                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                         </svg>
-                        <span x-text="nbArticles"
-                              class="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full text-[10px] font-bold text-white flex items-center justify-center px-1"
-                              style="background: linear-gradient(135deg, #9333ea, #ec4899);"></span>
                     </div>
                     <div>
-                        <h3 class="font-bold text-gray-900 dark:text-white">Mon panier</h3>
-                        <p class="text-xs text-gray-500" x-text="nbArticles + ' article' + (nbArticles > 1 ? 's' : '')"></p>
+                        <h3 class="font-bold text-gray-900 dark:text-white">Panier</h3>
+                        <p class="text-xs text-gray-400" x-text="nbArticles + ' article' + (nbArticles > 1 ? 's' : '')"></p>
                     </div>
                 </div>
-                <button @click="toggleMobileCart()" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-gray-400 hover:text-gray-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button @click="toggleMobileCart()" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-gray-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                     </svg>
                 </button>
             </div>
-
-            {{-- Liste articles --}}
             <div class="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-700">
-                <template x-for="key in panierKeys" :key="'mobile_' + key">
+                <template x-for="key in panierKeys" :key="'mob_' + key">
                     <div class="p-4"
                          :class="{
                              'cart-item-add': animatingItems[key] === 'add',
@@ -1201,64 +1239,56 @@
                         <div class="flex items-start gap-3">
                             <div class="flex-1 min-w-0">
                                 <p class="font-semibold text-gray-900 dark:text-white truncate" x-text="panier[key].nom"></p>
-                                <p class="text-sm text-gray-500 mt-0.5" x-text="formatNumber(panier[key].prix) + ' F × ' + panier[key].quantite"></p>
+                                <p class="text-sm text-gray-400 mt-0.5" x-text="formatNumber(panier[key].prix) + ' F'"></p>
                             </div>
-                            <button @click="supprimerItem(key)" class="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-500 flex-shrink-0">
+                            <button @click="supprimerItem(key)" class="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-500 flex-shrink-0 active:scale-95">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                 </svg>
                             </button>
                         </div>
                         <div class="flex items-center justify-between mt-3">
-                            <div class="flex items-center gap-2">
-                                <button @click="decrementer(key)"
-                                        class="w-9 h-9 rounded-lg bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold active:scale-95 transition-transform">−</button>
-                                <span class="w-12 text-center font-bold text-gray-900 dark:text-white" x-text="panier[key].quantite"></span>
-                                <button @click="incrementer(key)"
-                                        class="w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold active:scale-95 transition-transform"
-                                        style="background: linear-gradient(135deg, #9333ea, #ec4899);">+</button>
+                            <div class="flex items-center gap-3">
+                                <button @click="decrementer(key)" class="w-9 h-9 rounded-xl bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-gray-700 dark:text-gray-300 font-bold text-lg active:scale-95 transition-transform">−</button>
+                                <span class="w-8 text-center font-bold text-gray-900 dark:text-white" x-text="panier[key].quantite"></span>
+                                <button @click="incrementer(key)" class="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-lg active:scale-95 transition-transform" style="background: linear-gradient(135deg, #9333ea, #ec4899);">+</button>
                             </div>
                             <span class="text-lg font-bold text-gray-900 dark:text-white" x-text="formatNumber(panier[key].prix * panier[key].quantite) + ' F'"></span>
                         </div>
                     </div>
                 </template>
             </div>
-
-            {{-- Footer avec total et actions --}}
-            <div class="p-4 border-t border-gray-200 dark:border-slate-700 space-y-3 bg-gray-50 dark:bg-slate-900">
+            <div class="p-4 bg-gray-50 dark:bg-slate-900 border-t border-gray-100 dark:border-slate-700 space-y-3">
                 <div class="flex items-center justify-between">
-                    <span class="text-gray-600 dark:text-gray-400 font-semibold">Total</span>
+                    <span class="text-base font-semibold text-gray-700 dark:text-gray-300">Total</span>
                     <span class="text-2xl font-bold text-gray-900 dark:text-white" x-text="formatNumber(total) + ' F'"></span>
                 </div>
                 <div class="flex gap-2">
-                    <button @click="viderPanier(); toggleMobileCart();" 
-                            class="flex-1 py-3 rounded-xl font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 active:scale-95 transition-transform">
-                        Vider
-                    </button>
+                    <button @click="viderPanier(); toggleMobileCart();" class="flex-1 py-3 rounded-xl font-semibold text-sm text-red-600 dark:text-red-400 border-2 border-red-200 dark:border-red-800 active:scale-95 transition-transform">Vider</button>
                     <button @click="toggleMobileCart(); ouvrirConfirmation();"
                             :disabled="!mixtePret"
-                            :class="!mixtePret ? 'opacity-50' : ''"
-                            class="flex-[2] py-3 rounded-xl font-bold text-white shadow-lg active:scale-95 transition-transform"
+                            :class="!mixtePret ? 'opacity-50' : 'active:scale-95'"
+                            class="flex-[2] py-3 rounded-xl font-bold text-sm text-white transition-transform"
                             style="background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);">
-                        Encaisser
+                        Encaisser <span x-text="formatNumber(total) + ' F'"></span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- ═══ TOAST NOTIFICATION ═══ --}}
+    {{-- Toast notification --}}
     <div x-show="toastVisible"
+         x-cloak
          x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0 translate-y-2"
+         x-transition:enter-start="opacity-0 -translate-y-2"
          x-transition:enter-end="opacity-100 translate-y-0"
          x-transition:leave="transition ease-in duration-150"
          x-transition:leave-start="opacity-100 translate-y-0"
-         x-transition:leave-end="opacity-0 translate-y-2"
-         class="fixed top-20 left-1/2 -translate-x-1/2 z-[60] pointer-events-none">
-        <div class="px-4 py-3 rounded-xl shadow-2xl backdrop-blur-sm border border-white/20 max-w-sm"
-             style="background: linear-gradient(135deg, rgba(147,51,234,0.95), rgba(236,72,153,0.95));">
-            <p class="text-sm font-semibold text-white text-center" x-text="toastMessage"></p>
+         x-transition:leave-end="opacity-0 -translate-y-2"
+         class="fixed top-16 left-1/2 -translate-x-1/2 z-[70] pointer-events-none">
+        <div class="px-5 py-2.5 rounded-xl shadow-xl text-sm font-semibold text-white" style="background: linear-gradient(135deg, #9333ea, #ec4899);">
+            <span x-text="toastMessage"></span>
         </div>
     </div>
 </div>
