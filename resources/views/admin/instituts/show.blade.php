@@ -114,15 +114,15 @@
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
                     <div class="bg-indigo-50 dark:bg-gradient-to-br dark:from-indigo-900/30 dark:to-indigo-800/20 rounded-xl p-3 border border-indigo-100 dark:border-indigo-700/50 shadow-sm">
                         <p class="text-xs text-indigo-600 dark:text-indigo-300 font-semibold mb-1.5">Produits</p>
-                        <p class="text-2xl font-bold text-indigo-700 dark:text-white">{{ $totalProduits }}</p>
+                        <p class="text-2xl font-bold text-indigo-700 dark:text-indigo-100">{{ $totalProduits }}</p>
                     </div>
                     <div class="bg-violet-50 dark:bg-gradient-to-br dark:from-violet-900/30 dark:to-violet-800/20 rounded-xl p-3 border border-violet-100 dark:border-violet-700/50 shadow-sm">
                         <p class="text-xs text-violet-600 dark:text-violet-300 font-semibold mb-1.5">Prestations</p>
-                        <p class="text-2xl font-bold text-violet-700 dark:text-white">{{ $totalPrestations }}</p>
+                        <p class="text-2xl font-bold text-violet-700 dark:text-violet-100">{{ $totalPrestations }}</p>
                     </div>
                     <div class="bg-cyan-50 dark:bg-gradient-to-br dark:from-cyan-900/30 dark:to-cyan-800/20 rounded-xl p-3 border border-cyan-100 dark:border-cyan-700/50 shadow-sm">
                         <p class="text-xs text-cyan-600 dark:text-cyan-300 font-semibold mb-1.5">Clients</p>
-                        <p class="text-2xl font-bold text-cyan-700 dark:text-white">
+                        <p class="text-2xl font-bold text-cyan-700 dark:text-cyan-100">
                             <span x-show="periode === 'total'" x-cloak>{{ $totalClients }}</span>
                             <span x-show="periode === 'mois'" x-cloak>{{ $clientsMois }}</span>
                             <span x-show="periode === 'jour'" x-cloak>{{ $clientsJour }}</span>
@@ -130,7 +130,7 @@
                     </div>
                     <div class="bg-pink-50 dark:bg-gradient-to-br dark:from-pink-900/30 dark:to-pink-800/20 rounded-xl p-3 border border-pink-100 dark:border-pink-700/50 shadow-sm">
                         <p class="text-xs text-pink-600 dark:text-pink-300 font-semibold mb-1.5">🛒 Cmd en ligne</p>
-                        <p class="text-2xl font-bold text-pink-700 dark:text-white">
+                        <p class="text-2xl font-bold text-pink-700 dark:text-pink-100">
                             <span x-show="periode === 'total'" x-cloak>{{ $totalCommandes }}</span>
                             <span x-show="periode === 'mois'" x-cloak>{{ $commandesMois }}</span>
                             <span x-show="periode === 'jour'" x-cloak>{{ $commandesJour }}</span>
@@ -138,7 +138,7 @@
                     </div>
                     <div class="bg-teal-50 dark:bg-gradient-to-br dark:from-teal-900/30 dark:to-teal-800/20 rounded-xl p-3 border border-teal-100 dark:border-teal-700/50 shadow-sm">
                         <p class="text-xs text-teal-600 dark:text-teal-300 font-semibold mb-1.5">📄 Factures</p>
-                        <p class="text-2xl font-bold text-teal-700 dark:text-white">
+                        <p class="text-2xl font-bold text-teal-700 dark:text-teal-100">
                             <span x-show="periode === 'total'" x-cloak>{{ $totalFactures }}</span>
                             <span x-show="periode === 'mois'" x-cloak>{{ $facturesMois }}</span>
                             <span x-show="periode === 'jour'" x-cloak>{{ $facturesJour }}</span>
@@ -146,7 +146,7 @@
                     </div>
                     <div class="bg-orange-50 dark:bg-gradient-to-br dark:from-orange-900/30 dark:to-orange-800/20 rounded-xl p-3 border border-orange-100 dark:border-orange-700/50 shadow-sm">
                         <p class="text-xs text-orange-600 dark:text-orange-300 font-semibold mb-1.5">📝 Devis</p>
-                        <p class="text-2xl font-bold text-orange-700 dark:text-white">
+                        <p class="text-2xl font-bold text-orange-700 dark:text-orange-100">
                             <span x-show="periode === 'total'" x-cloak>{{ $totalDevis }}</span>
                             <span x-show="periode === 'mois'" x-cloak>{{ $devisMois }}</span>
                             <span x-show="periode === 'jour'" x-cloak>{{ $devisJour }}</span>
@@ -154,7 +154,7 @@
                     </div>
                     <div class="bg-blue-50 dark:bg-gradient-to-br dark:from-blue-900/30 dark:to-blue-800/20 rounded-xl p-3 border border-blue-100 dark:border-blue-700/50 shadow-sm">
                         <p class="text-xs text-blue-600 dark:text-blue-300 font-semibold mb-1.5">📅 RDV</p>
-                        <p class="text-2xl font-bold text-blue-700 dark:text-white">
+                        <p class="text-2xl font-bold text-blue-700 dark:text-blue-100">
                             <span x-show="periode === 'total'" x-cloak>{{ $totalRdv }}</span>
                             <span x-show="periode === 'mois'" x-cloak>{{ $rdvMois }}</span>
                             <span x-show="periode === 'jour'" x-cloak>{{ $rdvJour }}</span>
@@ -162,7 +162,7 @@
                     </div>
                     <div class="bg-rose-50 dark:bg-gradient-to-br dark:from-rose-900/30 dark:to-rose-800/20 rounded-xl p-3 border border-rose-100 dark:border-rose-700/50 shadow-sm">
                         <p class="text-xs text-rose-600 dark:text-rose-300 font-semibold mb-1.5">💳 Crédits</p>
-                        <p class="text-2xl font-bold text-rose-700 dark:text-white">
+                        <p class="text-2xl font-bold text-rose-700 dark:text-rose-100">
                             <span x-show="periode === 'total'" x-cloak>{{ $totalCredits }}</span>
                             <span x-show="periode === 'mois'" x-cloak>{{ $creditsMois }}</span>
                             <span x-show="periode === 'jour'" x-cloak>{{ $creditsJour }}</span>
@@ -175,7 +175,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-xs text-emerald-600 dark:text-emerald-300 font-semibold mb-1">💰 Ventes validées</p>
-                            <p class="text-2xl font-bold text-emerald-700 dark:text-white">
+                            <p class="text-2xl font-bold text-emerald-700 dark:text-emerald-100">
                                 <span x-show="periode === 'total'" x-cloak>{{ number_format($statsVentes->ca_total, 0, ',', ' ') }} FCFA</span>
                                 <span x-show="periode === 'mois'" x-cloak>{{ number_format($statsVentes->ca_mois, 0, ',', ' ') }} FCFA</span>
                                 <span x-show="periode === 'jour'" x-cloak>{{ number_format($statsVentes->ca_jour, 0, ',', ' ') }} FCFA</span>
@@ -205,7 +205,7 @@
                             <svg class="w-6 h-6 text-amber-600 dark:text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                         </div>
                     </div>
-                    <p class="text-2xl font-bold text-amber-700 dark:text-white">
+                    <p class="text-2xl font-bold text-amber-700 dark:text-amber-100">
                         <span x-show="periode === 'total'" x-cloak>{{ number_format($statsCommandes->ca_total, 0, ',', ' ') }} FCFA</span>
                         <span x-show="periode === 'mois'" x-cloak>{{ number_format($statsCommandes->ca_mois, 0, ',', ' ') }} FCFA</span>
                         <span x-show="periode === 'jour'" x-cloak>{{ number_format($statsCommandes->ca_jour, 0, ',', ' ') }} FCFA</span>
