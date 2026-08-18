@@ -1,22 +1,3 @@
-<style>
-@keyframes slideInFromLeft {
-    from { opacity: 0; transform: translateX(-20px) scale(0.95); }
-    to   { opacity: 1; transform: translateX(0) scale(1); }
-}
-@keyframes slideOutToLeft {
-    from { opacity: 1; transform: translateX(0) scale(1); }
-    to   { opacity: 0; transform: translateX(-20px) scale(0.95); }
-}
-@keyframes cartPulse {
-    0%, 100% { background-color: rgb(249 250 251 / 0.5); }
-    50%       { background-color: rgb(243 244 246); }
-}
-.cart-item-add    { animation: slideInFromLeft 300ms ease-out; }
-.cart-item-remove { animation: slideOutToLeft  200ms ease-in forwards; }
-.cart-item-flash  { animation: cartPulse 300ms ease-in-out; }
-.scrollbar-hide   { -ms-overflow-style: none; scrollbar-width: none; }
-.scrollbar-hide::-webkit-scrollbar { display: none; }
-</style>
 <div
     x-data="caisseApp({
         prestations: @js($prestations),
@@ -31,48 +12,6 @@
     })"
     class="grid lg:grid-cols-5 gap-4 lg:gap-5 min-h-0"
 >
-    from {
-        opacity: 0;
-        transform: translateX(-20px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-    }
-}
-
-@keyframes slideOutToLeft {
-    from {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-    }
-    to {
-        opacity: 0;
-        transform: translateX(-20px) scale(0.95);
-    }
-}
-
-@keyframes pulse {
-    0%, 100% {
-        background-color: rgb(249 250 251 / 0.5);
-    }
-    50% {
-        background-color: rgb(243 244 246);
-    }
-}
-
-.cart-item-add {
-    animation: slideInFromLeft 300ms ease-out;
-}
-
-.cart-item-remove {
-    animation: slideOutToLeft 200ms ease-in forwards;
-}
-
-.cart-item-flash {
-    animation: pulse 300ms ease-in-out;
-}
-</style>
     @php $hasCredits = auth()->user()->aFonctionnalite('credits'); @endphp
     {{-- Succès vente crédit --}}
     @if($hasCredits && $creditSuccess)
