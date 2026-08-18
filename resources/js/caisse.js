@@ -101,6 +101,9 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         loading: false,
         enAttenteLoading: false,
         newClientOpen: false,
+        mobileCartOpen: false,
+        toastMessage: '',
+        toastVisible: false,
 
         // ── Vente rapide ──
         showVenteRapide: false,
@@ -263,7 +266,8 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         ajouterItem(item) {
             const type = this.onglet === 'prestations' ? 'prestation' : 'produit';
             const key = `${type}_${item.id}`;
-            if (this.panier[key]) {
+            const existait = !!this.panier[key];
+            if (existait) {
                 this.panier[key].quantite++;
                 // Petit flash pour indiquer l'ajout
                 this.animatingItems[key] = 'flash';
@@ -271,6 +275,7 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
                     delete this.animatingItems[key];
                     this.animatingItems = { ...this.animatingItems };
                 }, 300);
+                this.showToast(`${item.nom} (×${this.panier[key].quantite})`);
             } else {
                 this.panier = {
                     ...this.panier,
@@ -282,6 +287,7 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
                     delete this.animatingItems[key];
                     this.animatingItems = { ...this.animatingItems };
                 }, 300);
+                this.showToast(`✓ ${item.nom} ajouté`);
             }
         },
 
@@ -305,6 +311,10 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         },
 
         supprimerItem(key) {
+            const item = this.panier[key];
+            if (item) {
+                this.showToast(`✗ ${item.nom} retiré`);
+            }
             // Animation de sortie avant suppression
             this.animatingItems[key] = 'remove';
             this.animatingItems = { ...this.animatingItems };
@@ -314,6 +324,23 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
                 delete this.animatingItems[key];
                 this.animatingItems = { ...this.animatingItems };
             }, 200);
+        },
+
+        showToast(message) {
+            this.toastMessage = message;
+            this.toastVisible = true;
+            setTimeout(() => {
+                this.toastVisible = false;
+            }, 2000);
+        },
+
+        toggleMobileCart() {
+            this.mobileCartOpen = !this.mobileCartOpen;
+            if (this.mobileCartOpen) {
+                document.body.classList.add('overflow-hidden');
+            } else {
+                document.body.classList.remove('overflow-hidden');
+            }
         },
 
         viderPanier() {
