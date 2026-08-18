@@ -58,21 +58,44 @@
 
             {{-- Utilisateurs --}}
             <div class="card overflow-hidden">
-                <div class="px-5 py-3 border-b border-gray-100 font-medium text-sm">Utilisateurs ({{ $institut->users->count() }})</div>
-                <div class="overflow-x-auto">
-                <table class="table-auto w-full">
-                    <thead><tr><th>Nom</th><th>Rôle</th><th class="hidden sm:table-cell">Email</th><th class="hidden md:table-cell">Inscrit</th></tr></thead>
-                    <tbody>
+                <div class="px-5 py-3 border-b border-gray-100 dark:border-gray-700 font-medium text-sm text-gray-700 dark:text-gray-200">Utilisateurs ({{ $institut->users->count() }})</div>
+                
+                {{-- Version mobile : cartes empilées --}}
+                <div class="sm:hidden divide-y divide-gray-100 dark:divide-gray-700">
                     @foreach($institut->users as $u)
-                    <tr>
-                        <td class="font-medium">{{ $u->prenom }} {{ $u->nom_famille }}</td>
-                        <td><span class="badge bg-indigo-100 text-indigo-700 text-xs capitalize">{{ $u->role }}</span></td>
-                        <td class="text-sm text-gray-500 hidden sm:table-cell">{{ $u->email }}</td>
-                        <td class="text-sm text-gray-400 hidden md:table-cell">{{ $u->created_at->format('d/m/Y') }}</td>
-                    </tr>
+                    <div class="p-4 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <p class="font-medium text-gray-900 dark:text-white">{{ $u->prenom }} {{ $u->nom_famille }}</p>
+                            <span class="badge bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300 text-xs capitalize">{{ $u->role }}</span>
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ $u->email }}</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500">Inscrit le {{ $u->created_at->format('d/m/Y') }}</p>
+                    </div>
                     @endforeach
-                    </tbody>
-                </table>
+                </div>
+                
+                {{-- Version tablette/desktop : tableau --}}
+                <div class="hidden sm:block overflow-x-auto">
+                    <table class="table-auto w-full">
+                        <thead class="bg-gray-50 dark:bg-slate-800">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Nom</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rôle</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Inscrit</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-slate-900 divide-y divide-gray-100 dark:divide-gray-700">
+                            @foreach($institut->users as $u)
+                            <tr class="hover:bg-gray-50 dark:hover:bg-slate-800 transition">
+                                <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ $u->prenom }} {{ $u->nom_famille }}</td>
+                                <td class="px-4 py-3"><span class="badge bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300 text-xs capitalize">{{ $u->role }}</span></td>
+                                <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{{ $u->email }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-400 dark:text-gray-500 hidden md:table-cell">{{ $u->created_at->format('d/m/Y') }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
