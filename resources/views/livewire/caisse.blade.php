@@ -79,7 +79,7 @@
     @endif
 
     {{-- ═══ Catalogue gauche (100 % Alpine – zéro requête serveur) ═══ --}}
-    <div class="lg:col-span-3 space-y-4" wire:ignore>
+    <div class="col-span-full lg:col-span-3 space-y-4" wire:ignore>
 
         {{-- Recherche + onglets --}}
         <div class="card p-4 space-y-3">
@@ -1162,7 +1162,7 @@
 
     {{-- ═══ PANIER FLOTTANT MOBILE (visible uniquement sur mobile) ═══ --}}
     <div x-show="!panierVide" 
-         class="lg:hidden fixed bottom-16 left-0 right-0 z-40 p-3 pointer-events-none">
+         class="lg:hidden fixed bottom-24 left-0 right-0 z-50 p-3 pointer-events-none">
         <button @click="toggleMobileCart()" 
                 class="w-full mx-auto max-w-md flex items-center justify-between gap-3 p-4 rounded-2xl shadow-2xl backdrop-blur-sm border border-white/20 pointer-events-auto active:scale-[0.98] transition-transform duration-200"
                 style="background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);">
