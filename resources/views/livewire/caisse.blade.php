@@ -60,7 +60,7 @@
             </div>
 
             {{-- Filtre catégorie --}}
-            <div x-show="categories.length > 0" class="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5 -mx-4 px-4">
+            <div x-show="categories.length > 0" class="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5">
                 <button @click="categorieId = ''"
                         :class="categorieId === '' ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
                         :style="categorieId === '' ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
@@ -1108,7 +1108,7 @@
 </div>
 
 {{-- ═══ MOBILE : panier flottant + drawer + toast (x-teleport évite les bugs position:fixed dans un grid) ═══ --}}
-<template x-teleport="body" x-if="typeof panierVide !== 'undefined'">
+<template x-teleport="body">
     <div>
         {{-- Bouton flottant --}}
         <div x-show="!panierVide"
