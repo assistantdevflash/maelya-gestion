@@ -1,3 +1,22 @@
+<style>
+@keyframes slideInFromLeft {
+    from { opacity: 0; transform: translateX(-20px) scale(0.95); }
+    to   { opacity: 1; transform: translateX(0)  scale(1); }
+}
+@keyframes slideOutToLeft {
+    from { opacity: 1; transform: translateX(0)  scale(1); }
+    to   { opacity: 0; transform: translateX(-20px) scale(0.95); }
+}
+@keyframes pulse {
+    0%, 100% { background-color: rgb(249 250 251 / 0.5); }
+    50%       { background-color: rgb(243 244 246); }
+}
+.cart-item-add    { animation: slideInFromLeft 300ms ease-out; }
+.cart-item-remove { animation: slideOutToLeft  200ms ease-in forwards; }
+.cart-item-flash  { animation: pulse 300ms ease-in-out; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+</style>
 <div
     x-data="caisseApp({
         prestations: @js($prestations),
@@ -12,60 +31,6 @@
     })"
     class="grid lg:grid-cols-5 gap-4 lg:gap-5 min-h-0"
 >
-<style>
-@keyframes slideInFromLeft {
-    from {
-        opacity: 0;
-        transform: translateX(-20px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-    }
-}
-
-@keyframes slideOutToLeft {
-    from {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-    }
-    to {
-        opacity: 0;
-        transform: translateX(-20px) scale(0.95);
-    }
-}
-
-@keyframes pulse {
-    0%, 100% {
-        background-color: rgb(249 250 251 / 0.5);
-    }
-    50% {
-        background-color: rgb(243 244 246);
-    }
-}
-
-.cart-item-add {
-    animation: slideInFromLeft 300ms ease-out;
-}
-
-.cart-item-remove {
-    animation: slideOutToLeft 200ms ease-in forwards;
-}
-
-.cart-item-flash {
-    animation: pulse 300ms ease-in-out;
-}
-
-/* Masquer la scrollbar tout en gardant la fonctionnalité */
-.scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-    display: none;
-}
-</style>
     @php $hasCredits = auth()->user()->aFonctionnalite('credits'); @endphp
     {{-- Succès vente crédit --}}
     @if($hasCredits && $creditSuccess)
@@ -318,26 +283,22 @@
                     :class="quantiteDans(item) > 0 ? 'ring-2 ring-primary-400 bg-primary-50/30' : ''"
                     class="card p-2.5 sm:p-4 text-left hover:ring-1 hover:ring-primary-300 active:scale-[0.97] transition-all duration-200 group cursor-pointer min-w-0 overflow-hidden">
                     <div class="flex items-start justify-between mb-2 sm:mb-3">
-                        {{-- Icône ou photo --}}
-                        <template x-if="onglet === 'prestations'">
-                            <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-primary-100/40 dark:bg-primary-400/25 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 flex-shrink-0">
-                                <svg class="w-4 h-4 sm:w-[18px] sm:h-[18px] text-primary-600 dark:text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        {{-- Icône --}}
+                        <div x-show="onglet === 'prestations'" class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-primary-100/40 dark:bg-primary-400/25 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 flex-shrink-0">
+                            <svg class="w-4 h-4 sm:w-[18px] sm:h-[18px] text-primary-600 dark:text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div x-show="onglet === 'produits'">
+                            <img x-show="item.photo" :src="item.photo" :alt="item.nom"
+                                 class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl object-cover border border-gray-200 dark:border-slate-600 group-hover:scale-110 transition-transform duration-200 flex-shrink-0">
+                            <div x-show="!item.photo"
+                                 class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-emerald-100/40 dark:bg-emerald-400/25 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 flex-shrink-0">
+                                <svg class="w-4 h-4 sm:w-[18px] sm:h-[18px] text-emerald-600 dark:text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                                 </svg>
                             </div>
-                        </template>
-                        <template x-if="onglet === 'produits'">
-                            <div>
-                                <img x-show="item.photo" :src="item.photo" :alt="item.nom"
-                                     class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl object-cover border border-gray-200 dark:border-slate-600 group-hover:scale-110 transition-transform duration-200 flex-shrink-0">
-                                <div x-show="!item.photo"
-                                     class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-emerald-100/40 dark:bg-emerald-400/25 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 flex-shrink-0">
-                                    <svg class="w-4 h-4 sm:w-[18px] sm:h-[18px] text-emerald-600 dark:text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                                    </svg>
-                                </div>
-                            </div>
-                        </template>
+                        </div>
                         <span x-show="quantiteDans(item) > 0"
                               x-text="quantiteDans(item)"
                               class="min-w-[20px] h-[20px] sm:min-w-[22px] sm:h-[22px] rounded-full text-white text-[10px] sm:text-xs font-bold flex items-center justify-center px-1 shadow-sm flex-shrink-0"
@@ -346,12 +307,8 @@
                     </div>
                     <p class="text-[11px] sm:text-xs font-semibold text-gray-900 dark:text-gray-100 leading-tight truncate" x-text="item.nom"></p>
                     <p x-show="item.categorie_nom" class="text-[9px] sm:text-[10px] font-medium text-primary-500/80 dark:text-primary-400/80 mt-0.5 truncate" x-text="item.categorie_nom"></p>
-                    <template x-if="onglet === 'prestations' && item.duree">
-                        <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5" x-text="item.duree + ' min'"></p>
-                    </template>
-                    <template x-if="onglet === 'produits'">
-                        <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5" x-text="'Stock: ' + (item.stock ?? '')"></p>
-                    </template>
+                    <p x-show="onglet === 'prestations' && item.duree" class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5" x-text="item.duree + ' min'"></p>
+                    <p x-show="onglet === 'produits'" class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5" x-text="'Stock: ' + (item.stock ?? '')"></p>
                     <p class="text-xs sm:text-sm font-bold mt-1 sm:mt-1.5" style="background: linear-gradient(135deg, #9333ea, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;" x-text="formatNumber(item.prix) + ' F'"></p>
                 </button>
             </template>
