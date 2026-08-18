@@ -89,15 +89,15 @@
 
                 {{-- Ligne 1 : 8 stats (4 par ligne sur desktop) --}}
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
-                    <div class="bg-indigo-50 dark:bg-slate-800 rounded-xl p-3 border border-transparent dark:border-l-4 dark:border-l-indigo-500">
+                    <div class="bg-indigo-50 dark:bg-gradient-to-br dark:from-indigo-900/20 dark:to-indigo-800/10 rounded-xl p-3 border border-indigo-100 dark:border-indigo-800/30 shadow-sm">
                         <p class="text-xs text-indigo-600 dark:text-indigo-400 font-medium mb-1">Produits</p>
                         <p class="text-xl font-bold text-indigo-700 dark:text-white">{{ $totalProduits }}</p>
                     </div>
-                    <div class="bg-violet-50 dark:bg-slate-800 rounded-xl p-3 border border-transparent dark:border-l-4 dark:border-l-violet-500">
+                    <div class="bg-violet-50 dark:bg-gradient-to-br dark:from-violet-900/20 dark:to-violet-800/10 rounded-xl p-3 border border-violet-100 dark:border-violet-800/30 shadow-sm">
                         <p class="text-xs text-violet-600 dark:text-violet-400 font-medium mb-1">Prestations</p>
                         <p class="text-xl font-bold text-violet-700 dark:text-white">{{ $totalPrestations }}</p>
                     </div>
-                    <div class="bg-cyan-50 dark:bg-slate-800 rounded-xl p-3 border border-transparent dark:border-l-4 dark:border-l-cyan-500">
+                    <div class="bg-cyan-50 dark:bg-gradient-to-br dark:from-cyan-900/20 dark:to-cyan-800/10 rounded-xl p-3 border border-cyan-100 dark:border-cyan-800/30 shadow-sm">
                         <p class="text-xs text-cyan-600 dark:text-cyan-400 font-medium mb-1">Clients</p>
                         <p class="text-xl font-bold text-cyan-700 dark:text-white">
                             <span x-show="periode === 'total'" x-cloak>{{ $totalClients }}</span>
@@ -105,7 +105,7 @@
                             <span x-show="periode === 'jour'" x-cloak>{{ $clientsJour }}</span>
                         </p>
                     </div>
-                    <div class="bg-pink-50 dark:bg-slate-800 rounded-xl p-3 border border-transparent dark:border-l-4 dark:border-l-pink-500">
+                    <div class="bg-pink-50 dark:bg-gradient-to-br dark:from-pink-900/20 dark:to-pink-800/10 rounded-xl p-3 border border-pink-100 dark:border-pink-800/30 shadow-sm">
                         <p class="text-xs text-pink-600 dark:text-pink-400 font-medium mb-1">🛒 Cmd en ligne</p>
                         <p class="text-xl font-bold text-pink-700 dark:text-white">
                             <span x-show="periode === 'total'" x-cloak>{{ $totalCommandes }}</span>
@@ -113,7 +113,7 @@
                             <span x-show="periode === 'jour'" x-cloak>{{ $commandesJour }}</span>
                         </p>
                     </div>
-                    <div class="bg-teal-50 dark:bg-slate-800 rounded-xl p-3 border border-transparent dark:border-l-4 dark:border-l-teal-500">
+                    <div class="bg-teal-50 dark:bg-gradient-to-br dark:from-teal-900/20 dark:to-teal-800/10 rounded-xl p-3 border border-teal-100 dark:border-teal-800/30 shadow-sm">
                         <p class="text-xs text-teal-600 dark:text-teal-400 font-medium mb-1">📄 Factures</p>
                         <p class="text-xl font-bold text-teal-700 dark:text-white">
                             <span x-show="periode === 'total'" x-cloak>{{ $totalFactures }}</span>
@@ -121,7 +121,7 @@
                             <span x-show="periode === 'jour'" x-cloak>{{ $facturesJour }}</span>
                         </p>
                     </div>
-                    <div class="bg-orange-50 dark:bg-slate-800 rounded-xl p-3 border border-transparent dark:border-l-4 dark:border-l-orange-500">
+                    <div class="bg-orange-50 dark:bg-gradient-to-br dark:from-orange-900/20 dark:to-orange-800/10 rounded-xl p-3 border border-orange-100 dark:border-orange-800/30 shadow-sm">
                         <p class="text-xs text-orange-600 dark:text-orange-400 font-medium mb-1">📝 Devis</p>
                         <p class="text-xl font-bold text-orange-700 dark:text-white">
                             <span x-show="periode === 'total'" x-cloak>{{ $totalDevis }}</span>
@@ -129,7 +129,7 @@
                             <span x-show="periode === 'jour'" x-cloak>{{ $devisJour }}</span>
                         </p>
                     </div>
-                    <div class="bg-blue-50 dark:bg-slate-800 rounded-xl p-3 border border-transparent dark:border-l-4 dark:border-l-blue-500">
+                    <div class="bg-blue-50 dark:bg-gradient-to-br dark:from-blue-900/20 dark:to-blue-800/10 rounded-xl p-3 border border-blue-100 dark:border-blue-800/30 shadow-sm">
                         <p class="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">📅 RDV</p>
                         <p class="text-xl font-bold text-blue-700 dark:text-white">
                             <span x-show="periode === 'total'" x-cloak>{{ $totalRdv }}</span>
@@ -137,7 +137,7 @@
                             <span x-show="periode === 'jour'" x-cloak>{{ $rdvJour }}</span>
                         </p>
                     </div>
-                    <div class="bg-rose-50 dark:bg-slate-800 rounded-xl p-3 border border-transparent dark:border-l-4 dark:border-l-rose-500">
+                    <div class="bg-rose-50 dark:bg-gradient-to-br dark:from-rose-900/20 dark:to-rose-800/10 rounded-xl p-3 border border-rose-100 dark:border-rose-800/30 shadow-sm">
                         <p class="text-xs text-rose-600 dark:text-rose-400 font-medium mb-1">💳 Crédits</p>
                         <p class="text-xl font-bold text-rose-700 dark:text-white">
                             <span x-show="periode === 'total'" x-cloak>{{ $totalCredits }}</span>
@@ -148,7 +148,7 @@
                 </div>
 
                 {{-- Ligne 2 : Ventes (filtrable) --}}
-                <div class="bg-emerald-50 dark:bg-slate-800 rounded-xl p-4 mb-3 border border-transparent dark:border-l-4 dark:border-l-emerald-500">
+                <div class="bg-emerald-50 dark:bg-gradient-to-br dark:from-emerald-900/20 dark:to-emerald-800/10 rounded-xl p-4 mb-3 border border-emerald-100 dark:border-emerald-800/30 shadow-sm">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-0.5">💰 Ventes validées</p>
@@ -170,7 +170,7 @@
                 </div>
 
                 {{-- Ligne 3 : Boutique en ligne (filtrable) --}}
-                <div class="bg-amber-50 dark:bg-slate-800 rounded-xl p-4 border border-transparent dark:border-l-4 dark:border-l-amber-500">
+                <div class="bg-amber-50 dark:bg-gradient-to-br dark:from-amber-900/20 dark:to-amber-800/10 rounded-xl p-4 border border-amber-100 dark:border-amber-800/30 shadow-sm">
                     <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center gap-2">
                             <p class="text-xs text-amber-600 dark:text-amber-400 font-medium">🛒 Boutique en ligne</p>
