@@ -378,9 +378,7 @@
                          class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden mt-2 shadow-sm max-h-52 overflow-y-auto bg-white dark:bg-gray-800">
                         <template x-for="c in filtered" :key="c.id">
                             <button type="button"
-                                    @mousedown.prevent
                                     @click="choose(c.id)"
-                                    @touchend.prevent="choose(c.id)"
                                     class="w-full text-left px-3 py-2.5 text-sm hover:bg-primary-50/50 dark:hover:bg-gray-700 flex items-center gap-2.5 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors">
                                 <div class="w-7 h-7 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center text-primary-700 text-xs font-bold"
                                      x-text="c.initiale"></div>
@@ -818,7 +816,7 @@
                     <template x-for="key in panierKeys" :key="'modal_' + key">
                         <div class="px-4 py-3 flex items-center gap-3">
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-semibold text-gray-900 truncate" x-text="panier[key].nom"></p>
+                                <p class="text-sm font-semibold text-gray-900 line-clamp-2" x-text="panier[key].nom"></p>
                                 <p class="text-xs text-gray-400" x-text="formatNumber(panier[key].prix) + ' F × ' + panier[key].quantite"></p>
                             </div>
                             <div class="flex items-center gap-1.5">
@@ -1241,9 +1239,7 @@
                                  class="absolute left-5 right-5 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden mt-2 shadow-lg max-h-52 overflow-y-auto bg-white dark:bg-gray-800 z-10">
                                 <template x-for="c in filtered" :key="c.id">
                                     <button type="button"
-                                            @mousedown.prevent
                                             @click="choose(c.id)"
-                                            @touchend.prevent="choose(c.id)"
                                             class="w-full text-left px-3 py-2.5 text-sm hover:bg-primary-50/50 dark:hover:bg-gray-700 flex items-center gap-2.5 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors">
                                         <div class="w-7 h-7 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center text-primary-700 text-xs font-bold"
                                              x-text="c.initiale"></div>
