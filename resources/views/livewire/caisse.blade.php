@@ -61,8 +61,8 @@
         </div>
 
         {{-- Filtre catégorie (hors card pour permettre le scroll horizontal) --}}
-        <div x-show="categories.length > 0" class="overflow-x-auto scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0">
-            <div class="flex gap-2 pb-0.5 w-max">
+        <div x-show="categories.length > 0" class="relative lg:static left-0 w-screen lg:w-auto -ml-4 lg:ml-0 overflow-x-auto scrollbar-hide">
+            <div class="flex gap-2 pb-0.5 px-4 lg:px-0 w-max">
                 <button @click="categorieId = ''"
                         :class="categorieId === '' ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
                         :style="categorieId === '' ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
