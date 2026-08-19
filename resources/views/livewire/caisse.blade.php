@@ -60,18 +60,18 @@
             </div>
 
             {{-- Filtre catégorie --}}
-            <div x-show="categories.length > 0" class="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5">
+            <div x-show="categories.length > 0" class="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5 -mx-4 px-4 min-w-0">
                 <button @click="categorieId = ''"
                         :class="categorieId === '' ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
                         :style="categorieId === '' ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
-                        class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 flex-shrink-0">
+                        class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 flex-shrink-0 whitespace-nowrap">
                     Toutes
                 </button>
                 <template x-for="cat in categories" :key="cat.id">
                     <button @click="categorieId = cat.id"
                             :class="categorieId === cat.id ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
                             :style="categorieId === cat.id ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
-                            class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 flex-shrink-0"
+                            class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 flex-shrink-0 whitespace-nowrap"
                             x-text="cat.nom">
                     </button>
                 </template>
