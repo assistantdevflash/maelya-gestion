@@ -1568,6 +1568,78 @@
                 <span x-text="toastMessage"></span>
             </div>
         </div>
+
+        {{-- Modal confirmation crédit (mobile) --}}
+        @if($hasCredits)
+        <div x-show="showCreditConfirmation" class="lg:hidden fixed inset-0 flex items-center justify-center p-4" 
+             style="z-index: 10001; background: rgba(0,0,0,0.5);"
+             @click.self="showCreditConfirmation = false"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 @click.stop>
+                {{-- Header --}}
+                <div class="p-5 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-bold text-gray-900 dark:text-white">Confirmer la vente à crédit</h3>
+                    </div>
+                    <button @click="showCreditConfirmation = false" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                {{-- Body --}}
+                <div class="p-5 space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-500 dark:text-gray-400">Total vente</span>
+                        <strong class="text-gray-900 dark:text-white" x-text="formatNumber(total) + ' F'"></strong>
+                    </div>
+                    <div class="flex justify-between text-emerald-600 dark:text-emerald-400">
+                        <span>Apport initial</span>
+                        <strong x-text="formatNumber(parseInt(creditApport)||0) + ' F'"></strong>
+                    </div>
+                    <div class="flex justify-between text-red-600 dark:text-red-400 font-bold pt-2 border-t dark:border-slate-700">
+                        <span>Reste à payer</span>
+                        <strong x-text="formatNumber(Math.max(0, total-(parseInt(creditApport)||0))) + ' F'"></strong>
+                    </div>
+                    <div class="flex justify-between text-gray-500 dark:text-gray-400">
+                        <span>Échéancier</span>
+                        <span x-text="creditNbEcheances + ' × ' + (creditFrequence === 'mensuelle' ? 'mois' : 'semaines')"></span>
+                    </div>
+                    <div x-show="$wire.clientId" class="bg-gray-50 dark:bg-slate-700/50 rounded-lg p-2.5">
+                        <div class="flex justify-between mb-1">
+                            <span class="text-gray-500 dark:text-gray-400">Client</span>
+                            <span class="font-semibold text-gray-900 dark:text-white" x-text="$wire.selectedClientNom || ''"></span>
+                        </div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 space-y-0.5">
+                            <div><strong>Tél:</strong> {{ $this->selectedClientTel ?? '—' }}</div>
+                            <div><strong>Adresse:</strong> {{ $this->selectedClientAdresse ?? '—' }}</div>
+                            <div><strong>Pièce ID:</strong> {{ $this->selectedClientPieceId ?? '—' }}</div>
+                        </div>
+                    </div>
+                </div>
+                {{-- Footer --}}
+                <div class="px-5 pb-5 flex gap-2">
+                    <button @click="showCreditConfirmation = false" class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700">
+                        Annuler
+                    </button>
+                    <button @click="confirmerVenteCredit()" class="flex-1 py-2.5 text-sm font-bold rounded-xl text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:brightness-110">
+                        Confirmer
+                    </button>
+                </div>
+            </div>
+        </div>
+        @endif
     </div>
 </template>
 </div>
