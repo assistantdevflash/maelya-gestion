@@ -1182,7 +1182,8 @@
                         </svg>
                     </button>
                 </div>
-
+                {{-- Contenu scrollable (Client + Articles + Code promo + Paiement) --}}
+                <div class="flex-1 overflow-y-auto">
                 {{-- Client (sur mobile) --}}
                 @if(auth()->user()->aFonctionnalite('caisse_client'))
                 <div class="px-5 py-3 border-b border-gray-100 dark:border-slate-700">
@@ -1269,7 +1270,7 @@
                 @endif
 
                 {{-- Articles --}}
-                <div class="flex-1 overflow-y-auto">
+                <div>
                     <template x-for="key in panierKeys" :key="'mob_' + key">
                         <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-700">
                             <div class="flex items-center gap-3">
@@ -1360,62 +1361,63 @@
                         </svg>
                     </button>
                     <div x-show="paiementOpen" x-collapse class="px-5 pb-3">
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="flex gap-2 justify-center">
                         <button @click="modePaiement = 'cash'"
-                                :class="modePaiement === 'cash' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 shadow-sm' : 'border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-400 hover:border-gray-300'"
-                                class="py-2.5 px-2 rounded-xl text-xs font-semibold border-2 transition-all duration-200 text-center">
-                            💵 Espèces
+                                :class="modePaiement === 'cash' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30 shadow-sm scale-110' : 'border-gray-200 dark:border-slate-600 hover:border-gray-300'"
+                                class="w-12 h-12 rounded-xl text-2xl border-2 transition-all duration-200 flex items-center justify-center">
+                            💵
                         </button>
                         <button @click="modePaiement = 'carte'"
-                                :class="modePaiement === 'carte' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-sm' : 'border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-400 hover:border-gray-300'"
-                                class="py-2.5 px-2 rounded-xl text-xs font-semibold border-2 transition-all duration-200 text-center">
-                            💳 Carte
+                                :class="modePaiement === 'carte' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 shadow-sm scale-110' : 'border-gray-200 dark:border-slate-600 hover:border-gray-300'"
+                                class="w-12 h-12 rounded-xl text-2xl border-2 transition-all duration-200 flex items-center justify-center">
+                            💳
                         </button>
                         <button @click="modePaiement = 'mobile_money'"
-                                :class="modePaiement === 'mobile_money' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 shadow-sm' : 'border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-400 hover:border-gray-300'"
-                                class="py-2.5 px-2 rounded-xl text-xs font-semibold border-2 transition-all duration-200 text-center">
-                            📱 Mobile
+                                :class="modePaiement === 'mobile_money' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/30 shadow-sm scale-110' : 'border-gray-200 dark:border-slate-600 hover:border-gray-300'"
+                                class="w-12 h-12 rounded-xl text-2xl border-2 transition-all duration-200 flex items-center justify-center">
+                            📱
                         </button>
                         <button @click="modePaiement = 'mixte'"
-                                :class="modePaiement === 'mixte' ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 shadow-sm' : 'border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-400 hover:border-gray-300'"
-                                class="py-2.5 px-2 rounded-xl text-xs font-semibold border-2 transition-all duration-200 text-center">
-                            🔀 Mixte
+                                :class="modePaiement === 'mixte' ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/30 shadow-sm scale-110' : 'border-gray-200 dark:border-slate-600 hover:border-gray-300'"
+                                class="w-12 h-12 rounded-xl text-2xl border-2 transition-all duration-200 flex items-center justify-center">
+                            🔀
                         </button>
                         @if($hasCredits)
                         <button @click="modePaiement = 'credit'"
-                                :class="modePaiement === 'credit' ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 shadow-sm' : 'border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-400 hover:border-gray-300'"
-                                class="col-span-2 py-2.5 px-2 rounded-xl text-xs font-semibold border-2 transition-all duration-200 text-center">
-                            🕐 Crédit
+                                :class="modePaiement === 'credit' ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 shadow-sm scale-110' : 'border-gray-200 dark:border-slate-600 hover:border-gray-300'"
+                                class="w-12 h-12 rounded-xl text-2xl border-2 transition-all duration-200 flex items-center justify-center">
+                            🕐
                         </button>
                         @endif
                     </div>
-                </div>
 
-                {{-- Référence Mobile Money --}}
-                <template x-if="modePaiement === 'mobile_money'">
-                    <div class="px-5 pb-3">
-                        <input type="text" x-model="referencePaiement"
-                               placeholder="Référence transaction (optionnel)"
-                               class="form-input text-sm w-full">
-                    </div>
-                </template>
+                    {{-- Référence Mobile Money --}}
+                    <template x-if="modePaiement === 'mobile_money'">
+                        <div class="mt-3">
+                            <input type="text" x-model="referencePaiement"
+                                   placeholder="Référence transaction (optionnel)"
+                                   class="form-input text-sm w-full">
+                        </div>
+                    </template>
 
-                {{-- Montant remis (Espèces) --}}
-                <template x-if="modePaiement === 'cash'">
-                    <div class="px-5 pb-3">
-                        <label class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1.5 block">💵 Montant remis par le client</label>
-                        <input type="number" x-model.number="montantRemis"
-                               class="form-input text-sm w-full" placeholder="0" min="0">
-                        <template x-if="montantRemis && montantRemis >= total">
-                            <div class="mt-2 flex justify-between items-center p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20">
-                                <span class="text-xs font-semibold text-emerald-700 dark:text-emerald-300">À rendre</span>
-                                <span class="text-sm font-bold text-emerald-700 dark:text-emerald-300" x-text="formatNumber(montantRemis - total) + ' F'"></span>
-                            </div>
-                        </template>
-                    </div>
-                </template>
+                    {{-- Montant remis (Espèces) --}}
+                    <template x-if="modePaiement === 'cash'">
+                        <div class="mt-3">
+                            <label class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1.5 block">💵 Montant remis par le client</label>
+                            <input type="number" x-model.number="montantRemis"
+                                   class="form-input text-sm w-full" placeholder="0" min="0">
+                            <template x-if="montantRemis && montantRemis >= total">
+                                <div class="mt-2 flex justify-between items-center p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20">
+                                    <span class="text-xs font-semibold text-emerald-700 dark:text-emerald-300">À rendre</span>
+                                    <span class="text-sm font-bold text-emerald-700 dark:text-emerald-300" x-text="formatNumber(montantRemis - total) + ' F'"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
                     </div>
                 </div>
+                </div>
+                {{-- Fin contenu scrollable --}}
 
                 {{-- Footer --}}
                 <div class="px-5 py-4 bg-gray-50 dark:bg-slate-900 flex-shrink-0" style="border-top: 1px solid rgba(229,231,235,1);">

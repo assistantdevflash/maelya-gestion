@@ -372,6 +372,13 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
                 );
                 this.codePromo = result.promo;
                 this.codePromoErreur = result.erreur;
+                
+                // Afficher un toast pour indiquer le résultat
+                if (result.promo) {
+                    this.showToast(`✅ Code promo ${result.promo.code} appliqué !`);
+                } else if (result.erreur) {
+                    this.showToast(`❌ ${result.erreur}`);
+                }
             } finally {
                 this.codePromoLoading = false;
             }

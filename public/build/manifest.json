@@ -8,7 +8,7 @@
     "name": "vendor"
   },
   "resources/css/app.css": {
-    "file": "assets/css/app-DKx4Qhic.css",
+    "file": "assets/css/app-D7D7Pd1z.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -17,7 +17,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/js/app-D8lc37Mh.js",
+    "file": "assets/js/app-P5-QNKrF.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
