@@ -660,7 +660,7 @@
                 {{-- Modal confirmation crédit --}}
                 @if($hasCredits)
                 <template x-if="showCreditConfirmation">
-                    <div class="fixed inset-0 z-[60] flex items-center justify-center p-4" style="background: rgba(0,0,0,0.5);"
+                    <div class="fixed inset-0 flex items-center justify-center p-4" style="z-index: 10001; background: rgba(0,0,0,0.5);"
                          @click.self="showCreditConfirmation = false">
                         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
                              x-transition:enter="transition ease-out duration-200"
@@ -1480,6 +1480,25 @@
                                         <option value="mensuelle">Mensuelle</option>
                                         <option value="hebdomadaire">Hebdomadaire</option>
                                     </select>
+                                </div>
+                            </div>
+                            {{-- Infos client crédit --}}
+                            <div x-show="$wire.clientId" class="space-y-2 bg-white dark:bg-slate-800 rounded-lg p-2.5 text-xs">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-500 dark:text-gray-400">Tél :</span>
+                                    <span class="font-medium text-gray-900 dark:text-white">{{ $this->selectedClientTel ?? '—' }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-500 dark:text-gray-400 flex-shrink-0">Adresse :</span>
+                                    <input type="text" wire:model.blur="selectedClientAdresse" wire:change="updateClientInfosCredit"
+                                           class="flex-1 bg-transparent border-0 border-b border-gray-300 dark:border-slate-600 px-1 py-0.5 text-xs focus:border-emerald-500 focus:ring-0 dark:text-white"
+                                           placeholder="Adresse du client">
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-500 dark:text-gray-400 flex-shrink-0">Pièce ID :</span>
+                                    <input type="text" wire:model.blur="selectedClientPieceId" wire:change="updateClientInfosCredit"
+                                           class="flex-1 bg-transparent border-0 border-b border-gray-300 dark:border-slate-600 px-1 py-0.5 text-xs focus:border-emerald-500 focus:ring-0 dark:text-white"
+                                           placeholder="N° CNI, Passeport...">
                                 </div>
                             </div>
                             <div x-show="!$wire.clientId" class="text-xs text-red-600 dark:text-red-400 font-semibold bg-red-50 dark:bg-red-900/20 p-2 rounded">
