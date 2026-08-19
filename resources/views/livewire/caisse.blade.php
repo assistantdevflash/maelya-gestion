@@ -1160,8 +1160,9 @@
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0">
             <div class="absolute left-0 right-0 bottom-0 bg-white dark:bg-slate-800 flex flex-col"
-                 style="border-radius: 24px 24px 0 0; max-height: 80vh;"
-                 @click.stop>
+                 style="border-radius: 24px 24px 0 0; max-height: 90vh;"
+                 @click.stop
+                 x-data="{ codePromoOpen: false, paiementOpen: false }">
                 {{-- Header --}}
                 <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-slate-700 flex-shrink-0">
                     <div class="flex items-center gap-3">
@@ -1296,8 +1297,21 @@
 
                 {{-- Code promo --}}
                 @if(auth()->user()->aFonctionnalite('caisse_code_promo'))
-                <div class="px-5 pb-3">
-                    <template x-if="codePromo">
+                <div class="border-t border-gray-100 dark:border-slate-700">
+                    <button @click="codePromoOpen = !codePromoOpen" type="button" class="w-full px-5 py-3 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                            </svg>
+                            <span class="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Code promo</span>
+                            <span x-show="codePromo" class="text-xs text-emerald-600 font-semibold" x-text="codePromo ? codePromo.code : ''"></span>
+                        </div>
+                        <svg class="w-4 h-4 text-gray-400 transition-transform" :class="codePromoOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div x-show="codePromoOpen" x-collapse class="px-5 pb-3">
+                        <template x-if="codePromo">
                         <div class="flex items-center justify-between p-2.5 rounded-xl" style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2);">
                             <div class="flex items-center gap-2">
                                 <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1327,12 +1341,25 @@
                         </div>
                         <p x-show="codePromoErreur" x-text="codePromoErreur" class="text-xs text-red-500 mt-1"></p>
                     </template>
+                    </div>
                 </div>
                 @endif
 
                 {{-- Modes de paiement --}}
-                <div class="px-5 pb-3">
-                    <p class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">💳 Mode de paiement</p>
+                <div class="border-t border-gray-100 dark:border-slate-700">
+                    <button @click="paiementOpen = !paiementOpen" type="button" class="w-full px-5 py-3 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                            </svg>
+                            <span class="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Mode de paiement</span>
+                            <span class="text-xs text-primary-600 dark:text-primary-400 font-semibold" x-text="modePaiement === 'cash' ? '💵 Espèces' : (modePaiement === 'carte' ? '💳 Carte' : (modePaiement === 'mobile_money' ? '📱 Mobile' : (modePaiement === 'mixte' ? '🔀 Mixte' : (modePaiement === 'credit' ? '🕐 Crédit' : ''))))"></span>
+                        </div>
+                        <svg class="w-4 h-4 text-gray-400 transition-transform" :class="paiementOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div x-show="paiementOpen" x-collapse class="px-5 pb-3">
                     <div class="grid grid-cols-2 gap-2">
                         <button @click="modePaiement = 'cash'"
                                 :class="modePaiement === 'cash' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 shadow-sm' : 'border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-400 hover:border-gray-300'"
@@ -1387,6 +1414,8 @@
                         </template>
                     </div>
                 </template>
+                    </div>
+                </div>
 
                 {{-- Footer --}}
                 <div class="px-5 py-4 bg-gray-50 dark:bg-slate-900 flex-shrink-0" style="border-top: 1px solid rgba(229,231,235,1);">
