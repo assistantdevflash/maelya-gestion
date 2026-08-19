@@ -58,29 +58,29 @@
                     Produits
                 </button>
             </div>
+        </div>
 
-            {{-- Filtre catégorie --}}
-            <div x-show="categories.length > 0" class="min-w-0 -mx-4">
-                <div class="overflow-x-auto scrollbar-hide px-4">
-                    <div class="flex gap-2 pb-0.5 w-max">
-                        <button @click="categorieId = ''"
-                                :class="categorieId === '' ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
-                                :style="categorieId === '' ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
-                                class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 whitespace-nowrap">
-                            Toutes
-                        </button>
-                        <template x-for="cat in categories" :key="cat.id">
-                            <button @click="categorieId = cat.id"
-                                    :class="categorieId === cat.id ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
-                                    :style="categorieId === cat.id ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
-                                    class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 whitespace-nowrap"
-                                    x-text="cat.nom">
-                            </button>
-                        </template>
-                    </div>
-                </div>
+        {{-- Filtre catégorie (hors card pour permettre le scroll horizontal) --}}
+        <div x-show="categories.length > 0" class="overflow-x-auto scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0">
+            <div class="flex gap-2 pb-0.5 w-max">
+                <button @click="categorieId = ''"
+                        :class="categorieId === '' ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
+                        :style="categorieId === '' ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
+                        class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 whitespace-nowrap">
+                    Toutes
+                </button>
+                <template x-for="cat in categories" :key="cat.id">
+                    <button @click="categorieId = cat.id"
+                            :class="categorieId === cat.id ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
+                            :style="categorieId === cat.id ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
+                            class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 whitespace-nowrap"
+                            x-text="cat.nom">
+                    </button>
+                </template>
             </div>
+        </div>
 
+        <div class="card p-4 space-y-3">
             {{-- Bouton Vente rapide --}}
             <button x-show="!showVenteRapide"
                     @click="toggleVenteRapide()"
