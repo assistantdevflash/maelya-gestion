@@ -1114,7 +1114,7 @@
 <template x-teleport="body">
     <div>
         {{-- Bouton flottant --}}
-        <div x-show="!panierVide"
+        <div x-show="!panierVide && !showConfirmation"
              class="lg:hidden fixed z-50 left-4 right-4"
              style="bottom: 80px;"
              x-transition:enter="transition ease-out duration-200"
@@ -1148,7 +1148,7 @@
         </div>
 
         {{-- Drawer modal --}}
-        <div x-show="mobileCartOpen"
+        <div x-show="mobileCartOpen && !showConfirmation"
              @click.self="toggleMobileCart()"
              class="lg:hidden"
              style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; background: rgba(0,0,0,0.6);"
@@ -1206,6 +1206,101 @@
                         </div>
                     </template>
                 </div>
+
+                {{-- Code promo --}}
+                @if(auth()->user()->aFonctionnalite('caisse_code_promo'))
+                <div class="px-5 pb-3">
+                    <template x-if="codePromo">
+                        <div class="flex items-center justify-between p-2.5 rounded-xl" style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2);">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                </svg>
+                                <span class="text-xs font-bold text-emerald-700 font-mono" x-text="codePromo.code"></span>
+                                <span class="text-xs text-emerald-600" x-text="'-' + formatNumber(codePromo.remise) + ' F'"></span>
+                            </div>
+                            <button @click="retirerCode" class="text-emerald-500 hover:text-red-500 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </template>
+                    <template x-if="!codePromo">
+                        <div class="flex gap-2">
+                            <input type="text" x-model="codePromoInput"
+                                   placeholder="Code promo"
+                                   class="form-input flex-1 text-sm font-mono uppercase tracking-widest"
+                                   @input="$el.value = $el.value.toUpperCase()"
+                                   @keydown.enter="appliquerCode">
+                            <button @click="appliquerCode" :disabled="codePromoLoading" class="btn btn-outline text-sm px-3 flex-shrink-0">
+                                <span x-show="codePromoLoading" class="spinner spinner-sm" aria-hidden="true"></span>
+                                <span x-show="!codePromoLoading">OK</span>
+                            </button>
+                        </div>
+                        <p x-show="codePromoErreur" x-text="codePromoErreur" class="text-xs text-red-500 mt-1"></p>
+                    </template>
+                </div>
+                @endif
+
+                {{-- Modes de paiement --}}
+                <div class="px-5 pb-3">
+                    <p class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">💳 Mode de paiement</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button @click="modePaiement = 'cash'"
+                                :class="modePaiement === 'cash' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 shadow-sm' : 'border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-400 hover:border-gray-300'"
+                                class="py-2.5 px-2 rounded-xl text-xs font-semibold border-2 transition-all duration-200 text-center">
+                            💵 Espèces
+                        </button>
+                        <button @click="modePaiement = 'carte'"
+                                :class="modePaiement === 'carte' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-sm' : 'border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-400 hover:border-gray-300'"
+                                class="py-2.5 px-2 rounded-xl text-xs font-semibold border-2 transition-all duration-200 text-center">
+                            💳 Carte
+                        </button>
+                        <button @click="modePaiement = 'mobile_money'"
+                                :class="modePaiement === 'mobile_money' ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 shadow-sm' : 'border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-400 hover:border-gray-300'"
+                                class="py-2.5 px-2 rounded-xl text-xs font-semibold border-2 transition-all duration-200 text-center">
+                            📱 Mobile
+                        </button>
+                        <button @click="modePaiement = 'mixte'"
+                                :class="modePaiement === 'mixte' ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 shadow-sm' : 'border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-400 hover:border-gray-300'"
+                                class="py-2.5 px-2 rounded-xl text-xs font-semibold border-2 transition-all duration-200 text-center">
+                            🔀 Mixte
+                        </button>
+                        @if($hasCredits)
+                        <button @click="modePaiement = 'credit'"
+                                :class="modePaiement === 'credit' ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 shadow-sm' : 'border-gray-200 dark:border-slate-600 text-gray-500 dark:text-slate-400 hover:border-gray-300'"
+                                class="col-span-2 py-2.5 px-2 rounded-xl text-xs font-semibold border-2 transition-all duration-200 text-center">
+                            🕐 Crédit
+                        </button>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- Référence Mobile Money --}}
+                <template x-if="modePaiement === 'mobile_money'">
+                    <div class="px-5 pb-3">
+                        <input type="text" x-model="referencePaiement"
+                               placeholder="Référence transaction (optionnel)"
+                               class="form-input text-sm w-full">
+                    </div>
+                </template>
+
+                {{-- Montant remis (Espèces) --}}
+                <template x-if="modePaiement === 'cash'">
+                    <div class="px-5 pb-3">
+                        <label class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1.5 block">💵 Montant remis par le client</label>
+                        <input type="number" x-model.number="montantRemis"
+                               class="form-input text-sm w-full" placeholder="0" min="0">
+                        <template x-if="montantRemis && montantRemis >= total">
+                            <div class="mt-2 flex justify-between items-center p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20">
+                                <span class="text-xs font-semibold text-emerald-700 dark:text-emerald-300">À rendre</span>
+                                <span class="text-sm font-bold text-emerald-700 dark:text-emerald-300" x-text="formatNumber(montantRemis - total) + ' F'"></span>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
                 {{-- Footer --}}
                 <div class="px-5 py-4 bg-gray-50 dark:bg-slate-900 flex-shrink-0" style="border-top: 1px solid rgba(229,231,235,1);">
                     <div class="flex items-center justify-between mb-3">
