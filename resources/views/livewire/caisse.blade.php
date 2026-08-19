@@ -1414,6 +1414,80 @@
                             </template>
                         </div>
                     </template>
+
+                    {{-- Paiement Mixte --}}
+                    <template x-if="modePaiement === 'mixte'">
+                        <div class="mt-3 space-y-2">
+                            <label class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">🔀 Répartition du paiement</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div>
+                                    <label class="text-xs text-gray-500 dark:text-gray-400">💵 Espèces</label>
+                                    <input type="number" x-model.number="montantMixteCash"
+                                           class="form-input text-sm mt-1 w-full" placeholder="0" min="0" :max="total">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500 dark:text-gray-400">💳 Carte</label>
+                                    <input type="number" x-model.number="montantMixteCartes"
+                                           class="form-input text-sm mt-1 w-full" placeholder="0" min="0" :max="total">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500 dark:text-gray-400">📱 Mobile</label>
+                                    <input type="number" x-model.number="montantMixteMobile"
+                                           class="form-input text-sm mt-1 w-full" placeholder="0" min="0" :max="total">
+                                </div>
+                            </div>
+                            <div :class="resteMixte === 0 ? 'bg-green-50 dark:bg-green-900/20' : (resteMixte < 0 ? 'bg-red-50 dark:bg-red-900/20' : 'bg-amber-50 dark:bg-amber-900/20')"
+                                 class="flex justify-between items-center p-2 rounded-lg">
+                                <span class="text-xs font-semibold"
+                                      :class="resteMixte === 0 ? 'text-green-700 dark:text-green-300' : (resteMixte < 0 ? 'text-red-700 dark:text-red-300' : 'text-amber-700 dark:text-amber-300')"
+                                      x-text="resteMixte === 0 ? '✓ Montants OK' : (resteMixte < 0 ? 'Dépassement' : 'Reste à ventiler')"></span>
+                                <span class="text-sm font-bold"
+                                      :class="resteMixte === 0 ? 'text-green-700 dark:text-green-300' : (resteMixte < 0 ? 'text-red-700 dark:text-red-300' : 'text-amber-700 dark:text-amber-300')"
+                                      x-text="resteMixte !== 0 ? formatNumber(Math.abs(resteMixte)) + ' F' : ''"></span>
+                            </div>
+                            <input type="text" x-model="referencePaiement"
+                                   placeholder="Référence mobile/carte (optionnel)"
+                                   class="form-input text-sm w-full">
+                        </div>
+                    </template>
+
+                    {{-- Paiement à Crédit --}}
+                    @if($hasCredits)
+                    <template x-if="modePaiement === 'credit'">
+                        <div class="mt-3 space-y-2 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-700">
+                            <label class="text-xs font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">🕐 Vente à crédit</label>
+                            <div>
+                                <label class="text-xs text-gray-600 dark:text-gray-400">Apport initial (optionnel)</label>
+                                <input type="number" x-model.number="creditApport" min="0" :max="total"
+                                       class="form-input text-sm mt-1 w-full" placeholder="0">
+                            </div>
+                            <div class="bg-white dark:bg-slate-800 rounded-lg p-2 text-xs space-y-1">
+                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-300">Total vente</span><strong class="text-gray-900 dark:text-white" x-text="formatNumber(total) + ' F'"></strong></div>
+                                <div class="flex justify-between text-emerald-600 dark:text-emerald-400"><span>Apport</span><strong x-text="formatNumber(parseInt(creditApport)||0) + ' F'"></strong></div>
+                                <div class="flex justify-between text-red-600 dark:text-red-400 font-bold pt-1 border-t dark:border-slate-700"><span>Reste à payer</span><strong x-text="formatNumber(Math.max(0, total-(parseInt(creditApport)||0))) + ' F'"></strong></div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-xs text-gray-600 dark:text-gray-400">Échéances</label>
+                                    <select x-model.number="creditNbEcheances" class="form-input text-sm mt-1 w-full">
+                                        <option value="2">2</option><option value="3">3</option><option value="4">4</option>
+                                        <option value="6">6</option><option value="12">12</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-600 dark:text-gray-400">Fréquence</label>
+                                    <select x-model="creditFrequence" class="form-input text-sm mt-1 w-full">
+                                        <option value="mensuelle">Mensuelle</option>
+                                        <option value="hebdomadaire">Hebdomadaire</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div x-show="!$wire.clientId" class="text-xs text-red-600 dark:text-red-400 font-semibold bg-red-50 dark:bg-red-900/20 p-2 rounded">
+                                ⚠️ Client obligatoire pour vente à crédit
+                            </div>
+                        </div>
+                    </template>
+                    @endif
                     </div>
                 </div>
                 </div>
@@ -1425,7 +1499,9 @@
                         <span class="font-semibold text-gray-600 dark:text-gray-400">Total</span>
                         <span class="text-2xl font-bold text-gray-900 dark:text-white" x-text="formatNumber(total) + ' F'"></span>
                     </div>
-                    <div class="flex gap-3">
+                    
+                    {{-- Footer normal (tous modes sauf crédit) --}}
+                    <div x-show="modePaiement !== 'credit'" class="flex gap-3">
                         <button @click="viderPanier(); toggleMobileCart();"
                                 class="flex-1 py-3 rounded-xl font-semibold text-sm text-red-600 dark:text-red-400"
                                 style="border: 2px solid rgba(239,68,68,0.4);">
@@ -1439,6 +1515,21 @@
                             Encaisser <span x-text="formatNumber(total) + ' F'"></span>
                         </button>
                     </div>
+
+                    {{-- Footer mode crédit --}}
+                    @if($hasCredits)
+                    <div x-show="modePaiement === 'credit'">
+                        <button @click="validerVenteCredit()"
+                                :disabled="!$wire.clientId || (total-(parseInt(creditApport)||0)) <= 0"
+                                class="w-full py-3 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-emerald-500 to-teal-600 disabled:opacity-50">
+                            🕐 Enregistrer la vente à crédit
+                        </button>
+                        <button @click="modePaiement = 'cash'"
+                                class="w-full mt-2 py-2 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                            ← Changer de mode de paiement
+                        </button>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
