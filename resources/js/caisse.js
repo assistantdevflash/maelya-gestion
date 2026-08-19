@@ -502,6 +502,8 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
                     this.creditFrequence,
                     this.codePromo?.id ?? null,
                 );
+                // Fermer le drawer mobile après validation
+                this.mobileCartOpen = false;
             } finally {
                 this.loading = false;
             }
