@@ -1180,6 +1180,92 @@
                         </svg>
                     </button>
                 </div>
+
+                {{-- Client (sur mobile) --}}
+                @if(auth()->user()->aFonctionnalite('caisse_client'))
+                <div class="px-5 py-3 border-b border-gray-100 dark:border-slate-700">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            <span class="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Client</span>
+                        </div>
+                        @if($clientId)
+                            <button wire:click="$set('clientId', null)" class="text-xs text-red-500 hover:text-red-700 font-medium">Retirer</button>
+                        @endif
+                    </div>
+                    @if($clientId)
+                        @if($this->selectedClient)
+                        <div class="flex items-center gap-2.5 p-2.5 bg-primary-50/50 dark:bg-primary-900/20 rounded-xl">
+                            @if($this->selectedClient->isEntreprise())
+                                <div class="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                    🏢
+                                </div>
+                            @else
+                                <div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                    {{ strtoupper(substr($this->selectedClient->prenom ?? '', 0, 1)) }}
+                                </div>
+                            @endif
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ $this->selectedClient->nom_affichage }}</span>
+                        </div>
+                        @endif
+                    @else
+                        <div x-data="{
+                                clients: {{ $allClients->toJson() }},
+                                search: '',
+                                open: false,
+                                get filtered() {
+                                    if (this.search.length < 2) return this.clients.slice(0, 8);
+                                    const q = this.search.toLowerCase();
+                                    return this.clients.filter(c => c.search.includes(q)).slice(0, 8);
+                                },
+                                choose(id) {
+                                    this.open = false;
+                                    this.search = '';
+                                    $wire.selectClient(id);
+                                }
+                            }" @click.outside="open = false">
+                            <input
+                                type="text"
+                                x-model="search"
+                                @focus="open = true"
+                                @input="open = true"
+                                @keydown.escape="open = false"
+                                placeholder="Chercher un client..."
+                                class="form-input text-sm w-full">
+                            <div x-show="open && filtered.length > 0" x-cloak
+                                 class="absolute left-5 right-5 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden mt-2 shadow-lg max-h-52 overflow-y-auto bg-white dark:bg-gray-800 z-10">
+                                <template x-for="c in filtered" :key="c.id">
+                                    <button type="button"
+                                            @mousedown.prevent
+                                            @click="choose(c.id)"
+                                            @touchend.prevent="choose(c.id)"
+                                            class="w-full text-left px-3 py-2.5 text-sm hover:bg-primary-50/50 dark:hover:bg-gray-700 flex items-center gap-2.5 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors">
+                                        <div class="w-7 h-7 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center text-primary-700 text-xs font-bold"
+                                             x-text="c.initiale"></div>
+                                        <span class="font-medium text-gray-900 dark:text-white" x-text="c.nom"></span>
+                                        <span class="text-gray-400 text-xs ml-auto" x-text="c.telephone"></span>
+                                    </button>
+                                </template>
+                            </div>
+                            <div x-show="open && search.length >= 2 && filtered.length === 0" x-cloak
+                                 class="text-xs text-gray-400 mt-2 text-center py-2">
+                                Aucun client trouvé
+                            </div>
+                        </div>
+
+                        {{-- Bouton + Nouveau client --}}
+                        <button @click="newClientOpen = true" class="mt-2 flex items-center gap-1.5 text-xs text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 font-medium transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            Nouveau client
+                        </button>
+                    @endif
+                </div>
+                @endif
+
                 {{-- Articles --}}
                 <div class="flex-1 overflow-y-auto">
                     <template x-for="key in panierKeys" :key="'mob_' + key">
