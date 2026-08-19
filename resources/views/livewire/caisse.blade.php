@@ -60,22 +60,24 @@
             </div>
 
             {{-- Filtre catégorie --}}
-            <div x-show="categories.length > 0" class="-mx-4 px-4 overflow-x-auto scrollbar-hide">
-                <div class="flex gap-2 pb-0.5">
-                    <button @click="categorieId = ''"
-                            :class="categorieId === '' ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
-                            :style="categorieId === '' ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
-                            class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 whitespace-nowrap flex-shrink-0">
-                        Toutes
-                    </button>
-                    <template x-for="cat in categories" :key="cat.id">
-                        <button @click="categorieId = cat.id"
-                                :class="categorieId === cat.id ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
-                                :style="categorieId === cat.id ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
-                                class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 whitespace-nowrap flex-shrink-0"
-                                x-text="cat.nom">
+            <div x-show="categories.length > 0" class="min-w-0 -mx-4">
+                <div class="overflow-x-auto scrollbar-hide px-4">
+                    <div class="flex gap-2 pb-0.5 w-max">
+                        <button @click="categorieId = ''"
+                                :class="categorieId === '' ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
+                                :style="categorieId === '' ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
+                                class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 whitespace-nowrap">
+                            Toutes
                         </button>
-                    </template>
+                        <template x-for="cat in categories" :key="cat.id">
+                            <button @click="categorieId = cat.id"
+                                    :class="categorieId === cat.id ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
+                                    :style="categorieId === cat.id ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
+                                    class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 whitespace-nowrap"
+                                    x-text="cat.nom">
+                            </button>
+                        </template>
+                    </div>
                 </div>
             </div>
 
