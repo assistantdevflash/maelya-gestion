@@ -1001,6 +1001,7 @@
 
     {{-- ═══ MODAL NOUVEAU CLIENT ═══ --}}
     <div x-show="newClientOpen" x-cloak class="modal-backdrop"
+         style="z-index: 10000;"
          x-on:keydown.escape.window="newClientOpen = false; document.body.classList.remove('overflow-hidden')"
          x-init="$watch('newClientOpen', v => document.body.classList.toggle('overflow-hidden', v))"
          @click.self="newClientOpen = false; document.body.classList.remove('overflow-hidden')">
