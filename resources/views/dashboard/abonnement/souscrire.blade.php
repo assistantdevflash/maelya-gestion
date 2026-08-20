@@ -154,12 +154,77 @@
         {{-- Section 3 : Paiement --}}
         <div class="card">
             <div class="card-header">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">3. Paiement par transfert</h2>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">3. Moyen de paiement</h2>
             </div>
             <div class="card-body space-y-5">
 
-                {{-- Mode de paiement --}}
+                @php $geniuspay = $paymentMethods->firstWhere('code', 'geniuspay'); @endphp
+                @php $bankTransfer = $paymentMethods->firstWhere('code', 'bank_transfer'); @endphp
+
+                {{-- Sélecteur de méthode de paiement --}}
+                @if($geniuspay)
                 <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-3">Choisissez votre moyen de paiement</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {{-- GeniusPay --}}
+                        <label class="relative cursor-pointer">
+                            <input type="radio" name="methode_paiement" value="geniuspay"
+                                   x-model="methodePaiement"
+                                   class="sr-only peer">
+                            <div class="p-4 border-2 rounded-2xl transition-all peer-checked:border-primary-500 peer-checked:bg-primary-50 dark:peer-checked:bg-primary-900/20 border-gray-200 dark:border-slate-700 hover:border-primary-300 dark:hover:border-primary-700">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900 dark:text-white text-sm">GeniusPay</p>
+                                        <p class="text-xs text-gray-500 dark:text-slate-400">Wave, Orange, MTN, Carte</p>
+                                    </div>
+                                    <div class="ml-auto">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">Instantané</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+
+                        {{-- Transfert bancaire --}}
+                        @if($bankTransfer)
+                        <label class="relative cursor-pointer">
+                            <input type="radio" name="methode_paiement" value="bank_transfer"
+                                   x-model="methodePaiement"
+                                   class="sr-only peer" checked>
+                            <div class="p-4 border-2 rounded-2xl transition-all peer-checked:border-primary-500 peer-checked:bg-primary-50 dark:peer-checked:bg-primary-900/20 border-gray-200 dark:border-slate-700 hover:border-primary-300 dark:hover:border-primary-700">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-gray-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900 dark:text-white text-sm">Transfert manuel</p>
+                                        <p class="text-xs text-gray-500 dark:text-slate-400">Wave / Orange Money</p>
+                                    </div>
+                                    <div class="ml-auto">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">24h</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                        @endif
+                    </div>
+                </div>
+                @else
+                <input type="hidden" name="methode_paiement" value="bank_transfer">
+                @endif
+
+                {{-- Contenu conditionnel selon la méthode --}}
+                <div x-show="methodePaiement === 'geniuspay'" x-cloak>
+                    <div class="rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 p-4 text-sm text-purple-800 dark:text-purple-200">
+                        <p class="font-semibold mb-1">🚀 Paiement sécurisé via GeniusPay</p>
+                        <p>Vous serez redirigé vers la page de paiement GeniusPay. Choisissez Wave, Orange Money, MTN ou votre carte bancaire. L'activation est <strong>instantanée</strong> dès la confirmation du paiement.</p>
+                    </div>
+                </div>
+
+                <div x-show="methodePaiement === 'bank_transfer'" x-cloak>
+                    {{-- Mode de paiement (OM / Wave) --}}
                     <label class="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-3">Mode de paiement</label>
                     <div class="flex items-center gap-2 bg-gray-100 dark:bg-slate-800/80 rounded-xl p-1.5 shadow-inner">
                         <button type="button" @click="payMethod = 'om'"
@@ -243,6 +308,7 @@
                     </label>
                     <p class="text-xs text-gray-600 dark:text-slate-400 mt-2">Fournissez la référence <strong class="dark:text-slate-300">OU</strong> le reçu — un seul des deux suffit.</p>
                 </div>
+                </div>{{-- /x-show bank_transfer --}}
             </div>
         </div>
 
@@ -256,7 +322,8 @@
                     class="btn-primary btn-lg w-full sm:flex-1 justify-center text-base"
                     style="background: linear-gradient(135deg, #9333ea, #ec4899);">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                Confirmer et envoyer la demande
+                <span x-show="methodePaiement === 'geniuspay'" x-cloak>Payer avec GeniusPay</span>
+                <span x-show="methodePaiement !== 'geniuspay'">Confirmer et envoyer la demande</span>
             </button>
         </div>
 
@@ -276,6 +343,7 @@ function souscrire(prixMensuel, prixTrimestre, prixSemestre, prixAnnuel, prixTri
         payMethod: 'om',
         copied: false,
         optionBoutique: initialBoutique,
+        methodePaiement: 'bank_transfer',
 
         setPeriode(p) {
             this.periode = p;

@@ -462,5 +462,26 @@ Route::middleware(['auth', 'role:commercial'])->prefix('commercial')->name('comm
     Route::post('/profil/password', [CommercialController::class, 'updatePassword'])->name('profil.password');
 });
 
+// ─── Webhooks (sans CSRF) ──────────────────────────────────────────────────────
+Route::post('/webhooks/geniuspay', [\App\Http\Controllers\Webhook\GeniusPayWebhookController::class, 'handle'])
+    ->name('webhooks.geniuspay')
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+
+// ─── Callbacks paiement (auth requis) ─────────────────────────────────────────
+Route::middleware('auth')->prefix('payment')->name('payment.')->group(function () {
+    Route::get('/success', [\App\Http\Controllers\Dashboard\PaymentController::class, 'success'])->name('success');
+    Route::get('/error',   [\App\Http\Controllers\Dashboard\PaymentController::class, 'error'])->name('error');
+    Route::get('/pending', [\App\Http\Controllers\Dashboard\PaymentController::class, 'pending'])->name('pending');
+    Route::get('/bank-transfer', [\App\Http\Controllers\Dashboard\PaymentController::class, 'bankTransfer'])->name('bank-transfer');
+});
+
+// ─── Super Admin — moyens de paiement ─────────────────────────────────────────
+Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('payment-methods', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'index'])->name('payment-methods.index');
+    Route::patch('payment-methods/{paymentMethod}/toggle', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'toggle'])->name('payment-methods.toggle');
+    Route::put('payment-methods/{paymentMethod}', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'update'])->name('payment-methods.update');
+    Route::get('payment-transactions', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'transactions'])->name('payment-transactions.index');
+});
+
 require __DIR__.'/auth.php';
 

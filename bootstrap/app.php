@@ -14,7 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Performance optimization middleware
         $middleware->append(\App\Http\Middleware\OptimizePerformance::class);
-        
+
+        // Exclure les webhooks de la vérification CSRF
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/*',
+        ]);
+
         $middleware->alias([
             'abonnement.actif' => \App\Http\Middleware\AbonnementActif::class,
             'role' => \App\Http\Middleware\CheckRole::class,
