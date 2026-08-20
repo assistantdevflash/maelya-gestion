@@ -12,7 +12,7 @@ class CommandePolicy
      */
     public function viewAny(User $user): bool
     {
-        return in_array($user->role, ['admin', 'employe']);
+        return in_array($user->role, ['admin', 'gerant', 'employe']);
     }
 
     /**
@@ -21,7 +21,7 @@ class CommandePolicy
     public function view(User $user, Commande $commande): bool
     {
         return $user->institut_id === $commande->institut_id && 
-               in_array($user->role, ['admin', 'employe']);
+               in_array($user->role, ['admin', 'gerant', 'employe']);
     }
 
     /**
@@ -30,7 +30,7 @@ class CommandePolicy
     public function update(User $user, Commande $commande): bool
     {
         return $user->institut_id === $commande->institut_id && 
-               $user->role === 'admin';
+               in_array($user->role, ['admin', 'gerant']);
     }
 
     /**
@@ -39,6 +39,6 @@ class CommandePolicy
     public function delete(User $user, Commande $commande): bool
     {
         return $user->institut_id === $commande->institut_id && 
-               $user->role === 'admin';
+               in_array($user->role, ['admin', 'gerant']);
     }
 }
