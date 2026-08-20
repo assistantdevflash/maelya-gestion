@@ -1,4 +1,7 @@
-<x-admin-layout>
+@extends('layouts.admin')
+@section('page-title', 'Paiements')
+
+@section('content')
 <div class="max-w-6xl mx-auto space-y-8">
 
     <div class="flex items-center justify-between">
@@ -129,4 +132,4 @@
     @endif
 
 </div>
-</x-admin-layout>
+@endsection
