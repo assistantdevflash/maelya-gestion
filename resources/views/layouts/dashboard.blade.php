@@ -231,7 +231,7 @@
                 @endphp
 
                 {{-- ── VUE D'ENSEMBLE ──────────────────────────────────────── --}}
-                @if(auth()->user()->isAdmin())
+                @if(auth()->user()->isAdmin() || auth()->user()->isGerant())
 
                 <p class="px-3 mt-6 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">Vue d'ensemble</p>
 
