@@ -309,23 +309,12 @@
                         </label>
                         <p class="text-xs text-gray-600 dark:text-slate-400 mt-2">Fournissez la référence <strong class="dark:text-slate-300">OU</strong> le reçu — un seul des deux suffit.</p>
                     </div>
-                </div>{{-- /x-show bank_transfer --}}>
-                            <div class="flex items-center gap-3 text-sm text-emerald-700 dark:text-emerald-400 font-medium">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                <span class="truncate max-w-[300px]" x-text="fileName"></span>
-                            </div>
-                        </template>
-                        <input type="file" name="preuve_paiement" accept="image/*,.pdf" class="sr-only"
-                               @change="fileName = $event.target.files[0]?.name || ''">
-                    </label>
-                    <p class="text-xs text-gray-600 dark:text-slate-400 mt-2">Fournissez la référence <strong class="dark:text-slate-300">OU</strong> le reçu — un seul des deux suffit.</p>
-                </div>
                 </div>{{-- /x-show bank_transfer --}}
             </div>
         </div>
 
         {{-- Actions --}}
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+        <div class="flex items-center gap-3 pt-4">
             <a href="{{ route('abonnement.plans') }}" class="btn-ghost px-6 py-2.5">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 Retour
@@ -333,8 +322,8 @@
             <button type="submit"
                     class="btn-primary px-8 py-3 text-base !bg-gradient-to-r !from-purple-600 !to-pink-600 hover:!from-purple-700 hover:!to-pink-700 shadow-lg hover:shadow-xl">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path x-show="methodePaiement === 'geniuspay'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                    <path x-show="methodePaiement !== 'geniuspay'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    <path x-show="methodePaiement === 'geniuspay'" x-cloak stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                    <path x-show="methodePaiement !== 'geniuspay'" x-cloak stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
                 <span x-show="methodePaiement === 'geniuspay'" x-cloak>Procéder au paiement</span>
                 <span x-show="methodePaiement !== 'geniuspay'" x-cloak>Envoyer ma demande</span>
