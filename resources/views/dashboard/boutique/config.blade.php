@@ -176,19 +176,19 @@
                                 @endif
 
                                 {{-- Affichage conditionnel selon la méthode --}}
-                                <div x-show="methodePaiement === 'geniuspay'">
+                                <div x-show="methodePaiement === 'geniuspay'" x-cloak>
                                     <div class="p-5 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 border-2 border-purple-200 dark:border-purple-700 rounded-2xl">
                                         <div class="flex items-center gap-3 mb-3">
                                             <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
-                                            <h3 class="font-semibold text-purple-900 dark:text-purple-300">Paiement sécurisé par GeniusPay</h3>
+                                            <h3 class="font-semibold text-purple-900 dark:text-purple-200">Paiement sécurisé par GeniusPay</h3>
                                         </div>
-                                        <p class="text-sm text-purple-800 dark:text-purple-200">
+                                        <p class="text-sm text-purple-800 dark:text-purple-100">
                                             Vous serez redirigé vers une page de paiement sécurisée. Votre abonnement sera activé automatiquement après confirmation du paiement.
                                         </p>
                                     </div>
                                 </div>
 
-                                <div x-show="methodePaiement === 'bank_transfer'">
+                                <div x-show="methodePaiement === 'bank_transfer'" x-cloak>
                                     {{-- Infos bénéficiaire --}}
                                     <div class="p-5 bg-gray-50 dark:bg-slate-800 rounded-2xl border-2 border-gray-200 dark:border-slate-600 space-y-4">
                                         <div class="flex items-center justify-between gap-3">
@@ -260,11 +260,18 @@
 
                                 {{-- Boutons de soumission --}}
                                 <div>
-                                    <button type="submit" x-show.important="methodePaiement === 'bank_transfer'" class="btn-primary w-full py-4 text-base flex items-center justify-center gap-2">
+                                    <button type="submit" 
+                                            x-show="methodePaiement === 'bank_transfer'" 
+                                            x-cloak
+                                            class="btn-primary w-full py-4 text-base flex items-center justify-center gap-2">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                                         <span>Envoyer ma demande</span>
                                     </button>
-                                    <button type="submit" x-show.important="methodePaiement === 'geniuspay'" class="w-full py-4 text-base font-semibold text-white rounded-xl shadow-md transition-all flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 hover:shadow-lg">
+                                    <button type="submit" 
+                                            x-show="methodePaiement === 'geniuspay'" 
+                                            x-cloak
+                                            style="display: none;"
+                                            class="w-full py-4 text-base font-semibold text-white rounded-xl shadow-md transition-all flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 hover:shadow-lg">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                                         <span>Procéder au paiement GeniusPay</span>
                                     </button>
