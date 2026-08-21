@@ -17,6 +17,10 @@ class PaymentController extends Controller
         // Connecter automatiquement l'utilisateur si déconnecté
         if (!Auth::check()) {
             Auth::login($transaction->user);
+            // Définir l'institut courant en session
+            if ($transaction->user->institut_id) {
+                session(['current_institut_id' => $transaction->user->institut_id]);
+            }
         }
 
         // Si le webhook n'est pas encore arrivé, on tente une vérification directe
@@ -40,6 +44,10 @@ class PaymentController extends Controller
         // Connecter automatiquement l'utilisateur si déconnecté
         if (!Auth::check()) {
             Auth::login($transaction->user);
+            // Définir l'institut courant en session
+            if ($transaction->user->institut_id) {
+                session(['current_institut_id' => $transaction->user->institut_id]);
+            }
         }
 
         return view('dashboard.payment.error', compact('transaction'));
@@ -53,6 +61,10 @@ class PaymentController extends Controller
         // Connecter automatiquement l'utilisateur si déconnecté
         if (!Auth::check()) {
             Auth::login($transaction->user);
+            // Définir l'institut courant en session
+            if ($transaction->user->institut_id) {
+                session(['current_institut_id' => $transaction->user->institut_id]);
+            }
         }
 
         return view('dashboard.payment.bank-transfer', compact('transaction'));
@@ -66,6 +78,10 @@ class PaymentController extends Controller
         // Connecter automatiquement l'utilisateur si déconnecté
         if (!Auth::check()) {
             Auth::login($transaction->user);
+            // Définir l'institut courant en session
+            if ($transaction->user->institut_id) {
+                session(['current_institut_id' => $transaction->user->institut_id]);
+            }
         }
 
         return view('dashboard.payment.pending', compact('transaction'));

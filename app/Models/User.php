@@ -226,7 +226,7 @@ class User extends Authenticatable
     /**
      * Retourne l'ID de l'institut courant (session ou fallback).
      */
-    public function currentInstitutId(): string
+    public function currentInstitutId(): ?string
     {
         return session('current_institut_id', $this->institut_id) ?? $this->institut_id;
     }
