@@ -161,8 +161,8 @@
                 @php $geniuspay = $paymentMethods->firstWhere('code', 'geniuspay'); @endphp
                 @php $bankTransfer = $paymentMethods->firstWhere('code', 'bank_transfer'); @endphp
 
-                {{-- Sélecteur de méthode de paiement --}}
-                @if($geniuspay)
+                {{-- Sélecteur de méthode de paiement (affiché seulement si plusieurs méthodes actives) --}}
+                @if($paymentMethods->count() > 1 && $geniuspay)
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-3">Choisissez votre moyen de paiement</label>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -192,7 +192,7 @@
                         <label class="relative cursor-pointer">
                             <input type="radio" name="methode_paiement" value="bank_transfer"
                                    x-model="methodePaiement"
-                                   class="sr-only peer" checked>
+                                   class="sr-only peer">
                             <div class="p-4 border-2 rounded-2xl transition-all peer-checked:border-primary-500 peer-checked:bg-primary-50 dark:peer-checked:bg-primary-900/20 border-gray-200 dark:border-slate-700 hover:border-primary-300 dark:hover:border-primary-700">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
@@ -211,6 +211,9 @@
                         @endif
                     </div>
                 </div>
+                @elseif($paymentMethods->count() === 1)
+                {{-- Une seule méthode active : input hidden --}}
+                <input type="hidden" name="methode_paiement" value="{{ $paymentMethods->first()->code }}">
                 @else
                 <input type="hidden" name="methode_paiement" value="bank_transfer">
                 @endif
@@ -346,7 +349,7 @@ function souscrire(prixMensuel, prixTrimestre, prixSemestre, prixAnnuel, prixTri
         payMethod: 'om',
         copied: false,
         optionBoutique: initialBoutique,
-        methodePaiement: 'bank_transfer',
+        methodePaiement: '{{ $paymentMethods->first()?->code ?? "bank_transfer" }}',
 
         setPeriode(p) {
             this.periode = p;
