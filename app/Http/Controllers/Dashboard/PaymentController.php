@@ -5,15 +5,19 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\PaymentTransaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
 {
     /** Page de confirmation après paiement GeniusPay réussi */
     public function success(Request $request)
     {
-        $transaction = PaymentTransaction::where('reference', $request->ref)
-            ->where('user_id', auth()->id())
-            ->firstOrFail();
+        $transaction = PaymentTransaction::where('reference', $request->ref)->firstOrFail();
+        
+        // Connecter automatiquement l'utilisateur si déconnecté
+        if (!Auth::check()) {
+            Auth::login($transaction->user);
+        }
 
         // Si le webhook n'est pas encore arrivé, on tente une vérification directe
         if ($transaction->isPending()) {
@@ -31,9 +35,12 @@ class PaymentController extends Controller
     /** Page d'erreur après échec de paiement */
     public function error(Request $request)
     {
-        $transaction = PaymentTransaction::where('reference', $request->ref)
-            ->where('user_id', auth()->id())
-            ->firstOrFail();
+        $transaction = PaymentTransaction::where('reference', $request->ref)->firstOrFail();
+        
+        // Connecter automatiquement l'utilisateur si déconnecté
+        if (!Auth::check()) {
+            Auth::login($transaction->user);
+        }
 
         return view('dashboard.payment.error', compact('transaction'));
     }
@@ -41,9 +48,12 @@ class PaymentController extends Controller
     /** Page d'instructions pour le transfert bancaire */
     public function bankTransfer(Request $request)
     {
-        $transaction = PaymentTransaction::where('reference', $request->ref)
-            ->where('user_id', auth()->id())
-            ->firstOrFail();
+        $transaction = PaymentTransaction::where('reference', $request->ref)->firstOrFail();
+        
+        // Connecter automatiquement l'utilisateur si déconnecté
+        if (!Auth::check()) {
+            Auth::login($transaction->user);
+        }
 
         return view('dashboard.payment.bank-transfer', compact('transaction'));
     }
@@ -51,9 +61,12 @@ class PaymentController extends Controller
     /** Page de paiement en attente (webhook pas encore reçu) */
     public function pending(Request $request)
     {
-        $transaction = PaymentTransaction::where('reference', $request->ref)
-            ->where('user_id', auth()->id())
-            ->firstOrFail();
+        $transaction = PaymentTransaction::where('reference', $request->ref)->firstOrFail();
+        
+        // Connecter automatiquement l'utilisateur si déconnecté
+        if (!Auth::check()) {
+            Auth::login($transaction->user);
+        }
 
         return view('dashboard.payment.pending', compact('transaction'));
     }

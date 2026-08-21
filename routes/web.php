@@ -467,8 +467,8 @@ Route::post('/webhooks/geniuspay', [\App\Http\Controllers\Webhook\GeniusPayWebho
     ->name('webhooks.geniuspay')
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
-// ─── Callbacks paiement (auth requis) ─────────────────────────────────────────
-Route::middleware('auth')->prefix('payment')->name('payment.')->group(function () {
+// ─── Callbacks paiement (publics - GeniusPay redirige des utilisateurs potentiellement déconnectés) ───
+Route::prefix('payment')->name('payment.')->group(function () {
     Route::get('/success', [\App\Http\Controllers\Dashboard\PaymentController::class, 'success'])->name('success');
     Route::get('/error',   [\App\Http\Controllers\Dashboard\PaymentController::class, 'error'])->name('error');
     Route::get('/pending', [\App\Http\Controllers\Dashboard\PaymentController::class, 'pending'])->name('pending');
