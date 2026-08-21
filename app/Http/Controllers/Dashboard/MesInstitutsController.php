@@ -7,6 +7,7 @@ use App\Models\Institut;
 use App\Models\EtablissementType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class MesInstitutsController extends Controller
 {
@@ -62,7 +63,7 @@ class MesInstitutsController extends Controller
             'ville'     => ['nullable', 'string', 'max:100'],
             'telephone' => ['nullable', 'string', 'max:20'],
             'email'     => ['nullable', 'email', 'max:150'],
-            'type'      => ['required', 'string', 'in:salon_coiffure,institut_beaute,barbier,centre_esthetique,boutique_mode,imprimerie,lavage_auto,pressing,business_center,depot_gaz,commerce,evenementiel,informatique_telephonie,autre'],
+            'type'      => ['required', 'string', Rule::exists('etablissement_types', 'code')->where('actif', true)],
             'logo'      => ['nullable', 'image', 'max:2048'],
         ]);
 
@@ -97,7 +98,7 @@ class MesInstitutsController extends Controller
             'ville'     => ['nullable', 'string', 'max:100'],
             'telephone' => ['nullable', 'string', 'max:20'],
             'email'     => ['nullable', 'email', 'max:150'],
-            'type'      => ['required', 'string', 'in:salon_coiffure,institut_beaute,barbier,centre_esthetique,boutique_mode,imprimerie,lavage_auto,pressing,business_center,depot_gaz,commerce,evenementiel,informatique_telephonie,autre'],
+            'type'      => ['required', 'string', Rule::exists('etablissement_types', 'code')->where('actif', true)],
             'couleur_primaire'   => ['nullable', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'couleur_secondaire' => ['nullable', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'couleur_accent'     => ['nullable', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
