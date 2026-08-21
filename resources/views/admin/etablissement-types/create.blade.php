@@ -28,7 +28,7 @@
             {{-- Libellé --}}
             <div>
                 <label class="form-label">Libellé *</label>
-                <input type="text" name="libelle" value="{{ old('libelle') }}" required autofocus maxlength="200"
+                <input type="text" id="libelle" name="libelle" value="{{ old('libelle') }}" required autofocus maxlength="200"
                        class="form-input @error('libelle') border-red-400 @enderror"
                        placeholder="Ex: Salon de coiffure">
                 @error('libelle')
@@ -40,13 +40,13 @@
             {{-- Code --}}
             <div>
                 <label class="form-label">Code technique</label>
-                <input type="text" name="code" value="{{ old('code') }}" maxlength="100"
+                <input type="text" id="code" name="code" value="{{ old('code') }}" maxlength="100"
                        class="form-input @error('code') border-red-400 @enderror"
                        placeholder="Ex: salon_coiffure">
                 @error('code')
                     <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                 @enderror
-                <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">Identifiant unique (optionnel, généré automatiquement depuis le libellé)</p>
+                <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">Généré automatiquement depuis le libellé (modifiable)</p>
             </div>
 
             {{-- Position --}}
@@ -80,4 +80,38 @@
         </div>
     </form>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const libelleInput = document.getElementById('libelle');
+    const codeInput = document.getElementById('code');
+    
+    if (libelleInput && codeInput) {
+        libelleInput.addEventListener('blur', function() {
+            // Ne générer que si le champ code est vide
+            if (!codeInput.value.trim()) {
+                const libelle = this.value.trim();
+                if (libelle) {
+                    codeInput.value = slugify(libelle);
+                }
+            }
+        });
+    }
+    
+    function slugify(text) {
+        return text
+            .toLowerCase()
+            .normalize('NFD')                   // Décomposer les caractères accentués
+            .replace(/[\u0300-\u036f]/g, '')    // Supprimer les accents
+            .replace(/[^\w\s-]/g, '')           // Supprimer les caractères spéciaux
+            .replace(/\s+/g, '_')               // Remplacer espaces par underscore
+            .replace(/-+/g, '_')                // Remplacer tirets par underscore
+            .replace(/_+/g, '_')                // Supprimer underscores multiples
+            .replace(/^_+|_+$/g, '');           // Supprimer underscores début/fin
+    }
+});
+</script>
+@endpush
+
 @endsection
