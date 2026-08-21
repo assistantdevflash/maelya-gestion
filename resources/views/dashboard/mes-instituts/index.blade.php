@@ -430,19 +430,11 @@
                             <label class="form-label">Type d'établissement *</label>
                             <select name="type" required class="form-input">
                                 <option value="">-- Choisir un type --</option>
-                                <option value="salon_coiffure"     {{ old('type') === 'salon_coiffure'     ? 'selected' : '' }}>Salon de coiffure</option>
-                                <option value="institut_beaute"    {{ old('type') === 'institut_beaute'    ? 'selected' : '' }}>Institut de beauté</option>
-                                <option value="barbier"            {{ old('type') === 'barbier'            ? 'selected' : '' }}>Barbier</option>
-                                <option value="centre_esthetique" {{ old('type') === 'centre_esthetique' ? 'selected' : '' }}>Centre esthétique</option>
-                                <option value="boutique_mode"      {{ old('type') === 'boutique_mode'      ? 'selected' : '' }}>Boutique de mode</option>
-                                <option value="imprimerie"         {{ old('type') === 'imprimerie'         ? 'selected' : '' }}>Imprimerie</option>
-                                <option value="lavage_auto"        {{ old('type') === 'lavage_auto'        ? 'selected' : '' }}>Lavage auto</option>
-                                <option value="pressing"           {{ old('type') === 'pressing'           ? 'selected' : '' }}>Pressing / Laverie</option>
-                                <option value="business_center"    {{ old('type') === 'business_center'    ? 'selected' : '' }}>Business center</option>
-                                <option value="depot_gaz"          {{ old('type') === 'depot_gaz'          ? 'selected' : '' }}>Dépôt de gaz</option>
-                                <option value="commerce"           {{ old('type') === 'commerce'           ? 'selected' : '' }}>Commerce / Alimentation</option>
-                                <option value="informatique_telephonie" {{ old('type') === 'informatique_telephonie' ? 'selected' : '' }}>Informatique / Téléphonie</option>
-                                <option value="autre"              {{ old('type') === 'autre'              ? 'selected' : '' }}>Autre</option>
+                                @foreach($etablissementTypes as $type)
+                                    <option value="{{ $type->code }}" {{ old('type') === $type->code ? 'selected' : '' }}>
+                                        {{ $type->libelle }}
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
                     </div>

@@ -49,8 +49,10 @@
                         <div class="col-span-2">
                             <label class="form-label">Type d'établissement *</label>
                             <select name="type" required class="form-input">
-                                @foreach(['salon_coiffure'=>'Salon de coiffure','institut_beaute'=>'Institut de beauté','barbier'=>'Barbier','centre_esthetique'=>'Centre esthétique','boutique_mode'=>'Boutique de mode','imprimerie'=>'Imprimerie','lavage_auto'=>'Lavage auto','pressing'=>'Pressing / Laverie','business_center'=>'Business center','depot_gaz'=>'Dépôt de gaz','commerce'=>'Commerce / Alimentation','evenementiel'=>'Évènementiel','informatique_telephonie'=>'Informatique / Téléphonie','autre'=>'Autre'] as $v=>$l)
-                                <option value="{{ $v }}" {{ old('type', $institut->type) === $v ? 'selected' : '' }}>{{ $l }}</option>
+                                @foreach($etablissementTypes as $type)
+                                    <option value="{{ $type->code }}" {{ old('type', $institut->type) === $type->code ? 'selected' : '' }}>
+                                        {{ $type->libelle }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>

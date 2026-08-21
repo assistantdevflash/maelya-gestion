@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Institut;
+use App\Models\EtablissementType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -30,9 +31,10 @@ class MesInstitutsController extends Controller
         $maxInstituts = $plan?->max_instituts; // null = illimité (Entreprise)
         $peutCreer = $maxInstituts === null || $instituts->count() < $maxInstituts;
         $currentInstitutId = $user->currentInstitutId();
+        $etablissementTypes = EtablissementType::actifs()->ordered()->get();
 
         return view('dashboard.mes-instituts.index', compact(
-            'instituts', 'peutCreer', 'maxInstituts', 'currentInstitutId', 'abonnement', 'plan'
+            'instituts', 'peutCreer', 'maxInstituts', 'currentInstitutId', 'abonnement', 'plan', 'etablissementTypes'
         ));
     }
 
@@ -196,7 +198,8 @@ class MesInstitutsController extends Controller
         $aAcces = $institut->proprietaire_id === $user->id || $user->institut_id === $institut->id;
         abort_unless($aAcces, 403);
 
-        return view('dashboard.mes-instituts.edit', compact('institut'));
+        $etablissementTypes = EtablissementType::actifs()->ordered()->get();
+        return view('dashboard.mes-instituts.edit', compact('institut', 'etablissementTypes'));
     }
 
     public function apparence()

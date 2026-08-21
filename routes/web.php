@@ -481,6 +481,10 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::patch('payment-methods/{paymentMethod}/toggle', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'toggle'])->name('payment-methods.toggle');
     Route::put('payment-methods/{paymentMethod}', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'update'])->name('payment-methods.update');
     Route::get('payment-transactions', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'transactions'])->name('payment-transactions.index');
+    
+    // Types d'établissements
+    Route::resource('etablissement-types', \App\Http\Controllers\Admin\AdminEtablissementTypeController::class)->except(['show']);
+    Route::patch('etablissement-types/{etablissementType}/toggle', [\App\Http\Controllers\Admin\AdminEtablissementTypeController::class, 'toggle'])->name('etablissement-types.toggle');
 });
 
 require __DIR__.'/auth.php';

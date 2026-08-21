@@ -8,6 +8,7 @@ use App\Models\Institut;
 use App\Models\Parrainage;
 use App\Models\User;
 use App\Models\PlanAbonnement;
+use App\Models\EtablissementType;
 use App\Mail\BienvenueMaelya;
 use App\Mail\CommercialNouveauFilleul;
 use App\Mail\NouvelInstitutInscrit;
@@ -23,7 +24,8 @@ class InscriptionController extends Controller
     public function index()
     {
         $plans = PlanAbonnement::where('actif', true)->orderBy('ordre')->get();
-        return view('auth.inscription', compact('plans'));
+        $etablissementTypes = EtablissementType::actifs()->ordered()->get();
+        return view('auth.inscription', compact('plans', 'etablissementTypes'));
     }
 
     public function store(Request $request)
