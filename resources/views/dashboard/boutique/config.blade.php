@@ -270,8 +270,7 @@
                                     <button type="submit" 
                                             x-show="methodePaiement === 'geniuspay'" 
                                             x-cloak
-                                            style="display: none;"
-                                            class="w-full py-4 text-base font-semibold text-white rounded-xl shadow-md transition-all flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 hover:shadow-lg">
+                                            class="btn-primary w-full py-4 text-base flex items-center justify-center gap-2 !bg-gradient-to-r !from-purple-600 !to-pink-600 hover:!from-purple-700 hover:!to-pink-700">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                                         <span>Procéder au paiement GeniusPay</span>
                                     </button>
