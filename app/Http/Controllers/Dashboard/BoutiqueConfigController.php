@@ -24,7 +24,10 @@ class BoutiqueConfigController extends Controller
             ->whereJsonContains('metadata->type', 'ajout_option_boutique')
             ->first();
 
-        return view('dashboard.boutique.config', compact('institut', 'demandeEnAttente'));
+        // Récupérer les méthodes de paiement actives
+        $paymentMethods = \App\Models\PaymentMethod::active()->orderBy('position')->get();
+
+        return view('dashboard.boutique.config', compact('institut', 'demandeEnAttente', 'paymentMethods'));
     }
 
     /**
