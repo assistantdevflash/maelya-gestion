@@ -258,15 +258,19 @@
                                     </div>
                                 </div>
 
-                                {{-- Boutons de soumission --}}
+                                {{-- Bouton de soumission dynamique --}}
                                 <div>
-                                    <button type="submit" x-show="methodePaiement === 'bank_transfer'" class="btn-primary w-full py-4 text-base">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                        Envoyer ma demande
-                                    </button>
-                                    <button type="submit" x-show="methodePaiement === 'geniuspay'" class="btn-primary w-full py-4 text-base bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                                        Procéder au paiement GeniusPay
+                                    <button type="submit" 
+                                            class="btn-primary w-full py-4 text-base transition-all flex items-center justify-center gap-2"
+                                            :class="methodePaiement === 'geniuspay' ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700' : ''">
+                                        <span x-show.important="methodePaiement === 'bank_transfer'" class="flex items-center justify-center gap-2">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                            <span>Envoyer ma demande</span>
+                                        </span>
+                                        <span x-show.important="methodePaiement === 'geniuspay'" class="flex items-center justify-center gap-2">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                                            <span>Procéder au paiement GeniusPay</span>
+                                        </span>
                                     </button>
                                 </div>
                             </form>
