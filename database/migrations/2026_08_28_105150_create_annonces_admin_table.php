@@ -14,7 +14,7 @@ return new class extends Migration
         // Table des annonces/messages bannières
         Schema::create('annonces_admin', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('expediteur_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->unsignedBigInteger('expediteur_id')->nullable();
             $table->string('titre', 200);
             $table->text('message');
             $table->enum('type', ['info', 'warning', 'success', 'danger'])->default('info');
@@ -23,15 +23,24 @@ return new class extends Migration
             $table->boolean('actif')->default(true);
             $table->timestamp('expire_le')->nullable();
             $table->timestamps();
+            
+            // Index sans contrainte stricte pour éviter les erreurs de compatibilité
+            $table->index('expediteur_id');
+            $table->index('actif');
+            $table->index('expire_le');
         });
 
         // Table pivot pour tracker les lectures
         Schema::create('annonce_lectures', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('annonce_id')->constrained('annonces_admin')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->unsignedBigInteger('annonce_id');
+            $table->unsignedBigInteger('user_id');
             $table->timestamp('lu_le');
             $table->unique(['annonce_id', 'user_id']);
+            
+            // Index pour les performances
+            $table->index('annonce_id');
+            $table->index('user_id');
         });
     }
 
