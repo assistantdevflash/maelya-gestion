@@ -877,7 +877,7 @@
                 }
             @endphp
             @foreach($__annoncesNonLues as $__annonce)
-                <div class="mb-4 animate-slide-down" x-data="{show: true}" x-show="show" x-transition>
+                <div class="mb-4" x-data="{show: true}" x-show="show" x-transition>
                     <div class="{{ $__annonce->getStyleClasses() }} border rounded-2xl p-4 shadow-sm">
                         <div class="flex items-start gap-3">
                             <div class="flex-shrink-0 mt-0.5">
@@ -885,17 +885,14 @@
                             </div>
                             <div class="flex-1 min-w-0">
                                 <h3 class="font-bold text-sm mb-1">{{ $__annonce->titre }}</h3>
-                                <p class="text-sm whitespace-pre-wrap">{{ $__annonce->message }}</p>
+                                <p class="text-sm whitespace-pre-wrap mb-3">{{ $__annonce->message }}</p>
+                                <button type="button"
+                                        @click="fetch('{{ route('admin.emails.marquer-banniere-lue', $__annonce) }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' } }).then(() => show = false)"
+                                        class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl border-2 border-current opacity-70 hover:opacity-100 transition-opacity active:scale-95">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                    C'est compris !
+                                </button>
                             </div>
-                            <button type="button"
-                                    @click="fetch('{{ route('admin.emails.marquer-banniere-lue', $__annonce) }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' } }).then(() => show = false)"
-                                    class="flex-shrink-0 px-4 py-2 text-xs font-semibold rounded-lg transition-colors hover:opacity-80"
-                                    :class="show ? '' : 'hidden'"
-                                    style="background-color: currentColor; opacity: 0.15;"
-                                    onmouseover="this.style.opacity='0.25'" 
-                                    onmouseout="this.style.opacity='0.15'">
-                                <span style="color: inherit; opacity: 1;">C'est compris !</span>
-                            </button>
                         </div>
                     </div>
                 </div>

@@ -37,8 +37,7 @@ class AnnonceAdmin extends Model
     public function lecteurs(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'annonce_lectures', 'annonce_id', 'user_id')
-            ->withPivot('lu_le')
-            ->withTimestamps();
+            ->withPivot('lu_le');
     }
 
     // ── Scopes ───────────────────────────────────────────────────────────────
