@@ -33,7 +33,7 @@ class EnsureEmailVerifie
         // Employé : vérifier si le propriétaire de l'établissement a vérifié son email
         if ($user->role === 'employe') {
             $institutId = session('current_institut_id', $user->institut_id);
-            $proprietaire = Institut::where('id', $institutId)
+            $proprietaire = Institut::where('instituts.id', $institutId)
                 ->join('users', 'users.id', '=', 'instituts.proprietaire_id')
                 ->select('users.email_verified_at', 'users.created_at')
                 ->first();
@@ -48,9 +48,5 @@ class EnsureEmailVerifie
         }
 
         return $next($request);
-    }
-}
-
-            ->with('info', 'Vous devez vérifier votre adresse email pour continuer.');
     }
 }
