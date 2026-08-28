@@ -134,6 +134,7 @@
         </table>
         </div>
     </div>
+    @empty
     <div class="card p-10 text-center text-gray-400">Aucun établissement trouvé.</div>
     @endforelse
 
