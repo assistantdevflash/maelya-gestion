@@ -91,25 +91,6 @@
                     </form>
                 </td>
             </tr>
-
-            {{-- Dialog natif HTML --}}
-            <dialog id="modal-{{ $msg->id }}" class="rounded-2xl shadow-2xl max-w-lg w-full p-8 backdrop:bg-black/50 bg-white dark:bg-slate-800">
-                <h2 class="font-bold text-lg text-gray-900 dark:text-white mb-1">Message de {{ $msg->nom }}</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">De : <strong class="text-gray-700 dark:text-gray-200">{{ $msg->nom }}</strong> ({{ $msg->email }}) — {{ $msg->telephone ?? '' }}</p>
-                <div class="bg-gray-50 dark:bg-slate-700 rounded-xl p-4 text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-line">{{ $msg->message }}</div>
-                <div class="mt-5 flex justify-between items-center">
-                    @if(!$msg->lu)
-                    <form action="{{ route('admin.messages.lire', $msg) }}" method="POST">
-                        @csrf @method('PATCH')
-                        <button class="text-sm text-primary-600 hover:underline">Marquer comme lu</button>
-                    </form>
-                    @else
-                    <span></span>
-                    @endif
-                    <button onclick="document.getElementById('modal-{{ $msg->id }}').close()"
-                            class="btn-secondary text-sm">Fermer</button>
-                </div>
-            </dialog>
             @empty
             <tr><td colspan="5" class="text-center py-10 text-gray-400">Aucun message.</td></tr>
             @endforelse
@@ -117,6 +98,27 @@
         </table>
         </div>
     </div>
+
+    {{-- Dialogs toujours dans le DOM (utilisés par mobile ET desktop) --}}
+    @foreach($messages as $msg)
+    <dialog id="modal-{{ $msg->id }}" class="rounded-2xl shadow-2xl max-w-lg w-full p-8 backdrop:bg-black/50 bg-white dark:bg-slate-800">
+        <h2 class="font-bold text-lg text-gray-900 dark:text-white mb-1">Message de {{ $msg->nom }}</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">De : <strong class="text-gray-700 dark:text-gray-200">{{ $msg->nom }}</strong> ({{ $msg->email }}) — {{ $msg->telephone ?? '' }}</p>
+        <div class="bg-gray-50 dark:bg-slate-700 rounded-xl p-4 text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-line">{{ $msg->message }}</div>
+        <div class="mt-5 flex justify-between items-center">
+            @if(!$msg->lu)
+            <form action="{{ route('admin.messages.lire', $msg) }}" method="POST">
+                @csrf @method('PATCH')
+                <button class="text-sm text-primary-600 hover:underline">Marquer comme lu</button>
+            </form>
+            @else
+            <span></span>
+            @endif
+            <button onclick="document.getElementById('modal-{{ $msg->id }}').close()"
+                    class="btn-secondary text-sm">Fermer</button>
+        </div>
+    </dialog>
+    @endforeach
 
     {{ $messages->links() }}
 </div>
