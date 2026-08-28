@@ -417,23 +417,28 @@
             
             <div>
                 <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">
-                    Titre <span class="text-gray-400 font-normal">(max 60 caractères)</span>
+                    Titre <span class="text-red-500">*</span> <span class="text-gray-400 font-normal">(max 60 caractères)</span>
                 </label>
-                <input type="text" name="push_titre" x-model="pushTitre" maxlength="60"
-                       x-init="$watch('sendMode', v => { if(v === 'banner' && !pushTitre) pushTitre = (document.getElementById('sujet-input')?.value || '').substring(0,60) })"
+                <input type="text" name="push_titre" x-model="pushTitre" maxlength="60" required
                        placeholder="Ex : ✨ Nouvelle fonctionnalité disponible"
                        class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all">
                 <p class="text-right text-xs text-gray-400 mt-1" x-text="(pushTitre.length) + '/60'"></p>
+                @if($errors->has('push_titre'))
+                <p class="text-xs text-red-500 mt-1">{{ $errors->first('push_titre') }}</p>
+                @endif
             </div>
 
             <div>
                 <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">
-                    Message <span class="text-gray-400 font-normal">(max 500 caractères)</span>
+                    Message <span class="text-red-500">*</span> <span class="text-gray-400 font-normal">(max 500 caractères)</span>
                 </label>
-                <textarea name="banner_message" x-model="bannerMessage" maxlength="500" rows="3"
+                <textarea name="banner_message" x-model="bannerMessage" maxlength="500" rows="3" required
                           placeholder="Message affiché dans la bannière en haut du dashboard…"
                           class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all resize-none"></textarea>
                 <p class="text-right text-xs text-gray-400 mt-1" x-text="(bannerMessage.length) + '/500'"></p>
+                @if($errors->has('banner_message'))
+                <p class="text-xs text-red-500 mt-1">{{ $errors->first('banner_message') }}</p>
+                @endif
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
