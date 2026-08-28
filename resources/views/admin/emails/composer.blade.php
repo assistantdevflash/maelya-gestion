@@ -45,8 +45,12 @@
     sendMode: 'email',
     pushTitre: '',
     pushMessage: '',
-    get sendEmail() { return this.sendMode !== 'push'; },
-    get sendPush()  { return this.sendMode !== 'email'; },
+    bannerType: 'info',
+    bannerMessage: '',
+    bannerDuree: '',
+    get sendEmail() { return this.sendMode !== 'push' && this.sendMode !== 'banner'; },
+    get sendPush()  { return this.sendMode !== 'email' && this.sendMode !== 'banner'; },
+    get sendBanner() { return this.sendMode === 'banner'; },
     toggleAll(instituts) {
         if (this.selectedInstituts.length === instituts.length) {
             this.selectedInstituts = [];
@@ -315,7 +319,7 @@
         <div class="card-admin p-6">
             <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Type d'envoi</h2>
             <input type="hidden" name="send_mode" :value="sendMode">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
 
                 <button type="button" @click="sendMode = 'email'"
                         :class="sendMode === 'email' ? 'ring-2 ring-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'ring-1 ring-gray-200 dark:ring-white/10 hover:ring-purple-300'"
@@ -359,13 +363,27 @@
                     </div>
                 </button>
 
+                <button type="button" @click="sendMode = 'banner'"
+                        :class="sendMode === 'banner' ? 'ring-2 ring-amber-500 bg-amber-50 dark:bg-amber-900/20' : 'ring-1 ring-gray-200 dark:ring-white/10 hover:ring-amber-300'"
+                        class="rounded-2xl p-4 text-left transition-all">
+                    <div class="flex items-center gap-3">
+                        <div :class="sendMode === 'banner' ? 'bg-amber-100 dark:bg-amber-800' : 'bg-gray-100 dark:bg-white/10'" class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5" :class="sendMode === 'banner' ? 'text-amber-600 dark:text-amber-300' : 'text-gray-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold" :class="sendMode === 'banner' ? 'text-amber-700 dark:text-amber-300' : 'text-gray-700 dark:text-gray-300'">Bannière dashboard</p>
+                            <p class="text-xs text-gray-500">Affiché en haut</p>
+                        </div>
+                    </div>
+                </button>
+
             </div>
 
             {{-- Avertissement mode personnalisé + push --}}
-            <div x-show="sendPush && mode === 'personnalise'" x-cloak x-transition
+            <div x-show="(sendPush || sendBanner) && mode === 'personnalise'" x-cloak x-transition
                  class="mt-4 flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-3 py-2">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                La notification push ne sera pas envoyée en mode "Email personnalisé" (pas de compte utilisateur associé).
+                <span x-text="sendPush ? 'La notification push ne sera pas envoyée en mode \"Email personnalisé\" (pas de compte utilisateur associé).' : 'Les bannières ne sont pas disponibles en mode \"Email personnalisé\".'"></span>
             </div>
         </div>
 
@@ -393,6 +411,67 @@
             </div>
         </div>
 
+        {{-- Champs bannière --}}
+        <div x-show="sendBanner" x-cloak x-transition class="card-admin p-6 space-y-4">
+            <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Configuration de la bannière</h2>
+            
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">
+                    Titre <span class="text-gray-400 font-normal">(max 60 caractères)</span>
+                </label>
+                <input type="text" name="push_titre" x-model="pushTitre" maxlength="60"
+                       x-init="$watch('sendMode', v => { if(v === 'banner' && !pushTitre) pushTitre = (document.getElementById('sujet-input')?.value || '').substring(0,60) })"
+                       placeholder="Ex : ✨ Nouvelle fonctionnalité disponible"
+                       class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all">
+                <p class="text-right text-xs text-gray-400 mt-1" x-text="(pushTitre.length) + '/60'"></p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">
+                    Message <span class="text-gray-400 font-normal">(max 500 caractères)</span>
+                </label>
+                <textarea name="banner_message" x-model="bannerMessage" maxlength="500" rows="3"
+                          placeholder="Message affiché dans la bannière en haut du dashboard…"
+                          class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all resize-none"></textarea>
+                <p class="text-right text-xs text-gray-400 mt-1" x-text="(bannerMessage.length) + '/500'"></p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Type de bannière</label>
+                    <select name="banner_type" x-model="bannerType" 
+                            class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all">
+                        <option value="info">ℹ️ Information (bleu)</option>
+                        <option value="success">✅ Succès (vert)</option>
+                        <option value="warning">⚠️ Avertissement (orange)</option>
+                        <option value="danger">🚨 Important (rouge)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Durée d'affichage (facultatif)</label>
+                    <input type="number" name="banner_duree" x-model="bannerDuree" min="1" max="365"
+                           placeholder="Illimité"
+                           class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all">
+                    <p class="text-xs text-gray-400 mt-1">En jours (laisser vide = sans expiration)</p>
+                </div>
+            </div>
+
+            <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
+                <div class="flex items-start gap-3">
+                    <svg class="w-5 h-5 flex-shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <div class="text-xs text-amber-800 dark:text-amber-300">
+                        <p class="font-semibold mb-1">À propos des bannières :</p>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>La bannière s'affiche en haut du dashboard des établissements ciblés</li>
+                            <li>Elle reste visible jusqu'à ce que l'utilisateur clique sur "C'est compris !"</li>
+                            <li>Si une durée est définie, elle disparaît automatiquement après expiration</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- Bouton d'envoi --}}
         <div class="flex items-center justify-between">
             <p class="text-sm text-gray-500 dark:text-gray-400">
@@ -412,6 +491,7 @@
                 <span x-show="sendMode === 'email'">Envoyer l'email</span>
                 <span x-show="sendMode === 'both'" x-cloak>Envoyer email + notification</span>
                 <span x-show="sendMode === 'push'" x-cloak>Envoyer la notification</span>
+                <span x-show="sendMode === 'banner'" x-cloak>Créer la bannière</span>
             </button>
         </div>
     </form>

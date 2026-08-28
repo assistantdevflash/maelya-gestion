@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\EmailManuel;
 use App\Models\EmailCampagne;
 use App\Models\Institut;
+use App\Models\AnnonceAdmin;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -41,9 +42,9 @@ class AdminEmailController extends Controller
     {
         $request->validate([
             'mode'               => ['required', 'in:tous,selection,un,personnalise'],
-            'send_mode'          => ['required', 'in:email,both,push'],
+            'send_mode'          => ['required', 'in:email,both,push,banner'],
             'sujet'              => ['required_unless:send_mode,push', 'nullable', 'string', 'max:255'],
-            'corps'              => ['required_unless:send_mode,push', 'nullable', 'string'],
+            'corps'              => ['required_unless:send_mode,push,banner', 'nullable', 'string'],
             'instituts'          => ['required_if:mode,selection', 'array'],
             'instituts.*'        => ['string', 'exists:instituts,id'],
             'institut_id'        => ['required_if:mode,un', 'nullable', 'string', 'exists:instituts,id'],
@@ -51,10 +52,14 @@ class AdminEmailController extends Controller
             'nom_personnalise'    => ['nullable', 'string', 'max:100'],
             'push_titre'          => ['required_unless:send_mode,email', 'nullable', 'string', 'max:60'],
             'push_message'        => ['nullable', 'string', 'max:120'],
+            'banner_type'         => ['required_if:send_mode,banner', 'nullable', 'in:info,success,warning,danger'],
+            'banner_message'      => ['required_if:send_mode,banner', 'nullable', 'string', 'max:500'],
+            'banner_duree'        => ['nullable', 'integer', 'min:1', 'max:365'],
         ], [
             'sujet.required_unless'          => 'Le sujet est requis pour un envoi email.',
             'corps.required_unless'          => 'Le corps du message est requis pour un envoi email.',
             'push_titre.required_unless'     => 'Le titre de la notification est requis.',
+            'banner_message.required_if'     => 'Le message de la bannière est requis.',
             'instituts.required_if'          => 'Sélectionnez au moins un établissement.',
             'institut_id.required_if'        => 'Sélectionnez un établissement.',
             'email_personnalise.required_if' => 'Saisissez une adresse email.',
@@ -62,6 +67,12 @@ class AdminEmailController extends Controller
         ]);
 
         $sendMode = $request->input('send_mode', 'email');
+
+        // ── Mode Bannière ────────────────────────────────────────────────────
+        if ($sendMode === 'banner') {
+            return $this->createBanner($request);
+        }
+
         $doEmail  = in_array($sendMode, ['email', 'both']);
         $doPush   = in_array($sendMode, ['both', 'push']);
 
@@ -180,4 +191,63 @@ class AdminEmailController extends Controller
 
         return redirect()->route('admin.emails.index')->with('success', $message);
     }
+
+    /**
+     * Créer une bannière administrateur
+     */
+    private function createBanner(Request $request)
+    {
+        $mode = $request->mode;
+        $institutIds = [];
+
+        if ($mode === 'tous') {
+            // Bannière pour tous : pas besoin de stocker les IDs
+            $cible = 'tous';
+        } elseif ($mode === 'selection') {
+            $cible = 'selection';
+            $institutIds = $request->instituts;
+        } elseif ($mode === 'un') {
+            $cible = 'un';
+            $institutIds = [$request->institut_id];
+        } else {
+            return back()->withErrors(['mode' => 'Les bannières ne sont pas disponibles en mode email personnalisé.'])->withInput();
+        }
+
+        $expireLe = null;
+        if ($request->filled('banner_duree')) {
+            $expireLe = now()->addDays($request->banner_duree);
+        }
+
+        AnnonceAdmin::create([
+            'expediteur_id' => auth()->id(),
+            'titre' => $request->push_titre,
+            'message' => $request->banner_message,
+            'type' => $request->banner_type ?? 'info',
+            'cible' => $cible,
+            'instituts_ids' => $institutIds,
+            'actif' => true,
+            'expire_le' => $expireLe,
+        ]);
+
+        $nbCibles = $cible === 'tous' ? Institut::count() : count($institutIds);
+        $dureeText = $request->filled('banner_duree') ? " (expire dans {$request->banner_duree} jour(s))" : ' (sans expiration)';
+
+        return redirect()->route('admin.emails.index')
+            ->with('success', "Bannière créée et visible pour {$nbCibles} établissement(s){$dureeText}.");
+    }
+
+    /**
+     * Marquer une bannière comme lue
+     */
+    public function marquerBanniereLue(Request $request, AnnonceAdmin $annonce)
+    {
+        $annonce->marquerCommeLue(auth()->user());
+        
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+
+        return back();
+    }
 }
+
