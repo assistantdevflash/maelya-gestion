@@ -76,7 +76,23 @@
     </div>
 
     <div class="card overflow-hidden">
-        <div class="overflow-x-auto">
+        {{-- Mobile : cartes --}}
+        <div class="sm:hidden divide-y divide-gray-100">
+            @foreach($instituts as $inst)
+            <div class="flex items-center gap-3 p-3">
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-sm text-gray-900 truncate">{{ $inst->nom }}</p>
+                    <p class="text-xs text-gray-400">{{ $inst->ville ?? '' }} · {{ $inst->users_count }} utilisateur(s)</p>
+                </div>
+                <span class="badge {{ $inst->actif ? 'badge-success' : 'bg-red-100 text-red-700' }} text-xs flex-shrink-0">
+                    {{ $inst->actif ? 'Actif' : 'Suspendu' }}
+                </span>
+                <a href="{{ route('admin.instituts.show', $inst) }}" class="text-xs text-primary-600 font-medium hover:underline flex-shrink-0">Voir</a>
+            </div>
+            @endforeach
+        </div>
+        {{-- Desktop : tableau --}}
+        <div class="hidden sm:block overflow-x-auto">
         <table class="table-auto w-full">
             <thead>
             <tr>
@@ -118,7 +134,6 @@
         </table>
         </div>
     </div>
-    @empty
     <div class="card p-10 text-center text-gray-400">Aucun établissement trouvé.</div>
     @endforelse
 

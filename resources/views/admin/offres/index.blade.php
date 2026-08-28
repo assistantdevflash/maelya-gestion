@@ -54,7 +54,62 @@
 
     {{-- Tableau des offres --}}
     <div class="card overflow-hidden">
-        <div class="overflow-x-auto">
+
+        {{-- Mobile : cartes --}}
+        <div class="sm:hidden divide-y divide-gray-100">
+            @forelse($offres as $offre)
+            <div class="p-4 {{ $offre->date_fin->lt(today()) ? 'opacity-60' : '' }}">
+                <div class="flex items-start gap-3 mb-2">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r {{ $offre->badge_class }} text-white text-[10px] font-bold flex-shrink-0">
+                        {{ $offre->badge_texte }}
+                    </span>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-sm text-gray-900 truncate">{{ $offre->nom }}</p>
+                        @if($offre->description)<p class="text-xs text-gray-400 truncate">{{ $offre->description }}</p>@endif
+                    </div>
+                    @if($offre->estActive())
+                    <span class="badge badge-success text-xs flex-shrink-0">Active</span>
+                    @elseif($offre->date_fin->lt(today()))
+                    <span class="badge bg-red-100 text-red-600 text-xs flex-shrink-0">Expirée</span>
+                    @elseif($offre->date_debut->isFuture())
+                    <span class="badge bg-amber-100 text-amber-700 text-xs flex-shrink-0">Programmée</span>
+                    @else
+                    <span class="badge bg-gray-100 text-gray-500 text-xs flex-shrink-0">Inactive</span>
+                    @endif
+                </div>
+                <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600 mb-3">
+                    <span><span class="text-gray-400">Réduction :</span> <strong class="text-emerald-600">{{ $offre->reduction_texte }}</strong></span>
+                    <span><span class="text-gray-400">Du</span> {{ $offre->date_debut->format('d/m/Y') }} <span class="text-gray-400">au</span> {{ $offre->date_fin->format('d/m/Y') }}</span>
+                    <span><span class="text-gray-400">Priorité :</span> {{ $offre->priorite }}</span>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button type="button" @click='openEdit(@json($offre))' class="btn-outline btn-sm inline-flex items-center gap-1 text-xs">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        Modifier
+                    </button>
+                    <form action="{{ route('admin.offres.toggle', $offre) }}" method="POST" class="inline">
+                        @csrf @method('PATCH')
+                        <button class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg border transition {{ $offre->actif ? 'border-amber-200 text-amber-700 bg-amber-50' : 'border-emerald-200 text-emerald-700 bg-emerald-50' }}">
+                            {{ $offre->actif ? 'Désactiver' : 'Activer' }}
+                        </button>
+                    </form>
+                    <form action="{{ route('admin.offres.destroy', $offre) }}" method="POST" id="delete-offre-mob-{{ $offre->id }}" class="inline">
+                        @csrf @method('DELETE')
+                    </form>
+                    <button type="button" @click="confirmDelete('{{ $offre->id }}', '{{ addslashes($offre->nom) }}')"
+                            class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg border border-red-200 text-red-600 bg-red-50 transition">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        Supprimer
+                    </button>
+                </div>
+            </div>
+            @empty
+            <div class="p-10 text-center text-gray-400 text-sm">Aucune offre. Cliquez sur « Nouvelle offre ».</div>
+            @endforelse
+        </div>
+
+        {{-- Desktop : tableau --}}
+        <div class="hidden sm:block overflow-x-auto">
             <table class="table-auto">
                 <thead>
                 <tr>
@@ -169,8 +224,6 @@
             </table>
         </div>
     </div>
-
-    {{-- Modal confirmation suppression --}}
     <div x-show="deleteOpen" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
          @keydown.escape.window="deleteOpen = false">
         <div @click.outside="deleteOpen = false" class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-sm p-6">

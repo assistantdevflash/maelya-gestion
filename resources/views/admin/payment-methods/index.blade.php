@@ -4,12 +4,12 @@
 @section('content')
 <div class="max-w-6xl mx-auto space-y-8">
 
-    <div class="flex items-center justify-between">
-        <div>
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div class="flex-1">
             <h1 class="text-2xl font-display font-bold text-gray-900 dark:text-white">Moyens de paiement</h1>
             <p class="text-gray-500 dark:text-slate-400 mt-1">Activez ou désactivez les gateways disponibles pour vos clients.</p>
         </div>
-        <a href="{{ route('admin.payment-transactions.index') }}" class="btn-outline text-sm">
+        <a href="{{ route('admin.payment-transactions.index') }}" class="btn-outline text-sm self-start sm:self-auto">
             Voir toutes les transactions
         </a>
     </div>
@@ -95,7 +95,34 @@
         <div class="card-header">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Transactions récentes</h2>
         </div>
-        <div class="overflow-x-auto">
+
+        {{-- Mobile : cartes --}}
+        <div class="sm:hidden divide-y divide-gray-100 dark:divide-slate-700">
+            @foreach($recent as $tx)
+            <div class="p-4">
+                <div class="flex items-start justify-between gap-3 mb-1">
+                    <div class="min-w-0">
+                        <p class="font-mono text-xs text-gray-600 dark:text-slate-300">{{ $tx->reference }}</p>
+                        <p class="font-medium text-sm text-gray-900 dark:text-white">{{ $tx->user?->name }}</p>
+                    </div>
+                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold flex-shrink-0
+                        {{ $tx->status === 'completed' ? 'bg-emerald-100 text-emerald-800' :
+                           ($tx->status === 'pending' ? 'bg-amber-100 text-amber-800' :
+                           'bg-red-100 text-red-800') }}">
+                        {{ $tx->status }}
+                    </span>
+                </div>
+                <div class="flex items-center justify-between text-xs text-gray-500">
+                    <span>{{ str_replace('_', ' ', $tx->type) }}</span>
+                    <span class="font-semibold text-gray-900 dark:text-white">{{ number_format($tx->amount, 0, ',', ' ') }} F</span>
+                    <span>{{ $tx->created_at->format('d/m/Y H:i') }}</span>
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+        {{-- Desktop : tableau --}}
+        <div class="hidden sm:block overflow-x-auto">
             <table class="w-full text-sm">
                 <thead class="bg-gray-50 dark:bg-slate-800/50">
                     <tr>
