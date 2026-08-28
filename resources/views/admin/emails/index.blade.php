@@ -1,13 +1,13 @@
 @extends('layouts.admin')
-@section('page-title', 'Emails envoyés')
+@section('page-title', 'Messages envoyés')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-6" x-data="{ tab: 'emails' }">
 
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="page-title">Emails envoyés</h1>
-            <p class="page-subtitle">Historique de tous les emails envoyés depuis l'interface d'administration.</p>
+            <h1 class="page-title">Messages envoyés</h1>
+            <p class="page-subtitle">Historique des emails, notifications push et bannières envoyés depuis l'administration.</p>
         </div>
         <a href="{{ route('admin.emails.composer') }}"
            style="background: linear-gradient(135deg, #9333ea, #ec4899);"
@@ -16,7 +16,7 @@
                 <line x1="22" y1="2" x2="11" y2="13"/>
                 <polygon points="22 2 15 22 11 13 2 9 22 2"/>
             </svg>
-            Composer un email
+            Composer un message
         </a>
     </div>
 
@@ -34,7 +34,26 @@
     </div>
     @endif
 
-    <div class="card-admin overflow-hidden">
+    {{-- Onglets --}}
+    <div class="card-admin p-1">
+        <div class="flex gap-1">
+            <button type="button" @click="tab = 'emails'" 
+                    :class="tab === 'emails' ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
+                    class="flex-1 px-4 py-2.5 text-sm font-semibold rounded-lg transition-all">
+                📧 Emails & Push
+                <span class="ml-1 text-xs opacity-60">({{ $historique->total() }})</span>
+            </button>
+            <button type="button" @click="tab = 'bannieres'" 
+                    :class="tab === 'bannieres' ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
+                    class="flex-1 px-4 py-2.5 text-sm font-semibold rounded-lg transition-all">
+                🏴 Bannières
+                <span class="ml-1 text-xs opacity-60">({{ $bannieres->total() }})</span>
+            </button>
+        </div>
+    </div>
+
+    {{-- Contenu Emails & Push --}}
+    <div x-show="tab === 'emails'" x-cloak class="card-admin overflow-hidden">
         @if($historique->isEmpty())
         <div class="flex flex-col items-center justify-center py-16 text-center px-4">
             <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-white/5 flex items-center justify-center mb-4">
@@ -144,6 +163,174 @@
         @if($historique->hasPages())
         <div class="px-5 py-4 border-t border-gray-100 dark:border-white/5">
             {{ $historique->links() }}
+        </div>
+        @endif
+        @endif
+    </div>
+
+    {{-- Contenu Bannières --}}
+    <div x-show="tab === 'bannieres'" x-cloak class="card-admin overflow-hidden">
+        @if($bannieres->isEmpty())
+        <div class="flex flex-col items-center justify-center py-16 text-center px-4">
+            <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-white/5 flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
+                </svg>
+            </div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Aucune bannière envoyée</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Les bannières que vous enverrez apparaîtront ici.</p>
+            <a href="{{ route('admin.emails.composer') }}" class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-200 transition-colors">
+                Envoyer la première bannière →
+            </a>
+        </div>
+        @else
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-100 dark:border-white/5">
+                        <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                        <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Titre</th>
+                        <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                        <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Cible</th>
+                        <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Lectures</th>
+                        <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Statut</th>
+                        <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Par</th>
+                        <th class="px-5 py-3"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 dark:divide-white/5">
+                    @foreach($bannieres as $banniere)
+                    <tr class="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors group" x-data="{ open: false }">
+                        <td class="px-5 py-4 whitespace-nowrap text-gray-500 dark:text-gray-400">
+                            {{ $banniere->created_at->format('d/m/Y H:i') }}
+                        </td>
+                        <td class="px-5 py-4">
+                            <p class="font-medium text-gray-900 dark:text-white truncate max-w-xs">{{ $banniere->titre }}</p>
+                        </td>
+                        <td class="px-5 py-4 whitespace-nowrap">
+                            @php
+                            $typeColors = [
+                                'info'    => 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300',
+                                'success' => 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300',
+                                'warning' => 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300',
+                                'danger'  => 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300',
+                            ];
+                            $typeLabels = [
+                                'info'    => 'Info',
+                                'success' => 'Succès',
+                                'warning' => 'Attention',
+                                'danger'  => 'Urgent',
+                            ];
+                            @endphp
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $typeColors[$banniere->type] ?? 'bg-gray-100 text-gray-600' }}">
+                                {{ $typeLabels[$banniere->type] ?? $banniere->type }}
+                            </span>
+                        </td>
+                        <td class="px-5 py-4 whitespace-nowrap">
+                            @php
+                            $cibleColors = [
+                                'tous'      => 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300',
+                                'selection' => 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300',
+                                'un'        => 'bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300',
+                            ];
+                            $cibleLabels = [
+                                'tous'      => 'Tous',
+                                'selection' => 'Sélection',
+                                'un'        => 'Un établissement',
+                            ];
+                            @endphp
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $cibleColors[$banniere->cible] ?? 'bg-gray-100 text-gray-600' }}">
+                                {{ $cibleLabels[$banniere->cible] ?? $banniere->cible }}
+                            </span>
+                        </td>
+                        <td class="px-5 py-4 text-center">
+                            <span class="font-semibold {{ $banniere->lecteurs_count > 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-400' }}">
+                                {{ $banniere->lecteurs_count }}
+                            </span>
+                        </td>
+                        <td class="px-5 py-4 whitespace-nowrap">
+                            @if($banniere->actif && (!$banniere->expire_le || $banniere->expire_le->isFuture()))
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300">
+                                ● Active
+                            </span>
+                            @elseif($banniere->expire_le && $banniere->expire_le->isPast())
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400">
+                                Expirée
+                            </span>
+                            @else
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400">
+                                Inactive
+                            </span>
+                            @endif
+                        </td>
+                        <td class="px-5 py-4 whitespace-nowrap text-gray-500 dark:text-gray-400 text-xs">
+                            {{ $banniere->expediteur?->prenom }} {{ $banniere->expediteur?->nom }}
+                        </td>
+                        <td class="px-5 py-4 text-right">
+                            <button type="button" @click="open = !open"
+                                    class="text-xs font-medium text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-200 transition-colors opacity-0 group-hover:opacity-100">
+                                Détails
+                            </button>
+                        </td>
+                    </tr>
+                    {{-- Ligne de détails dépliable --}}
+                    <tr x-show="open" x-cloak class="bg-gray-50 dark:bg-white/[0.02]">
+                        <td colspan="8" class="px-5 py-4">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 text-xs">
+                                {{-- Message --}}
+                                <div class="lg:col-span-2">
+                                    <p class="font-semibold text-gray-700 dark:text-gray-300 mb-2">Message</p>
+                                    <div class="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-4 text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ $banniere->message }}</div>
+                                </div>
+                                {{-- Statistiques --}}
+                                <div>
+                                    <p class="font-semibold text-gray-700 dark:text-gray-300 mb-2">Statistiques</p>
+                                    <div class="space-y-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-3">
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-500 dark:text-gray-400">Lectures :</span>
+                                            <span class="font-semibold text-gray-900 dark:text-white">{{ $banniere->lecteurs_count }}</span>
+                                        </div>
+                                        @if($banniere->expire_le)
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-500 dark:text-gray-400">Expire le :</span>
+                                            <span class="font-medium text-gray-700 dark:text-gray-300">{{ $banniere->expire_le->format('d/m/Y') }}</span>
+                                        </div>
+                                        @endif
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-500 dark:text-gray-400">Créée le :</span>
+                                            <span class="font-medium text-gray-700 dark:text-gray-300">{{ $banniere->created_at->format('d/m/Y à H:i') }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {{-- Lecteurs --}}
+                                @if($banniere->lecteurs->isNotEmpty())
+                                <div>
+                                    <p class="font-semibold text-gray-700 dark:text-gray-300 mb-2">Lu par ({{ $banniere->lecteurs->count() }})</p>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        @foreach($banniere->lecteurs->take(20) as $lecteur)
+                                        <span class="px-2 py-0.5 rounded-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300">
+                                            {{ $lecteur->prenom }} {{ $lecteur->nom }}
+                                        </span>
+                                        @endforeach
+                                        @if($banniere->lecteurs->count() > 20)
+                                        <span class="px-2 py-0.5 text-gray-500 dark:text-gray-400">
+                                            +{{ $banniere->lecteurs->count() - 20 }} autres
+                                        </span>
+                                        @endif
+                                    </div>
+                                </div>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
+        @if($bannieres->hasPages())
+        <div class="px-5 py-4 border-t border-gray-100 dark:border-white/5">
+            {{ $bannieres->links() }}
         </div>
         @endif
         @endif

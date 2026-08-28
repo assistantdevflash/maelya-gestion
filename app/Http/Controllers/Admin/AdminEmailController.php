@@ -25,7 +25,18 @@ class AdminEmailController extends Controller
             $historique = new \Illuminate\Pagination\LengthAwarePaginator(collect(), 0, 20, 1);
         }
 
-        return view('admin.emails.index', compact('historique'));
+        // Récupérer les bannières avec stats de lecture
+        try {
+            $bannieres = AnnonceAdmin::with(['expediteur', 'lecteurs'])
+                ->withCount('lecteurs')
+                ->orderByDesc('created_at')
+                ->paginate(20);
+        } catch (\Throwable $e) {
+            Log::error('[AdminEmail] Table annonces_admin inaccessible : ' . $e->getMessage());
+            $bannieres = new \Illuminate\Pagination\LengthAwarePaginator(collect(), 0, 20, 1);
+        }
+
+        return view('admin.emails.index', compact('historique', 'bannieres'));
     }
 
     public function composer()
