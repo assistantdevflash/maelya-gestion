@@ -31,6 +31,27 @@
 
     <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-8">
 
+        {{-- CAS EMPLOYÉ : bloqué par le propriétaire --}}
+        @if(session('bloque_par_proprietaire'))
+        <div class="text-center">
+            <div class="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center bg-red-50 dark:bg-red-900/20">
+                <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+            </div>
+            <h1 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Accès temporairement bloqué</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-6">
+                Le propriétaire de votre établissement n'a pas encore vérifié son adresse email.<br>
+                L'accès sera rétabli dès que la vérification sera effectuée.
+            </p>
+            <p class="text-xs text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3">
+                Contactez le propriétaire de votre établissement pour qu'il vérifie son email sur Maëlya Gestion.
+            </p>
+        </div>
+
+        {{-- CAS PROPRIÉTAIRE : vérification normale --}}
+        @else
+
         {{-- Alerte 3 jours dépassés --}}
         @if($joursRestants <= 0)
         <div class="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl mb-6">
@@ -132,6 +153,8 @@
                 </form>
             </div>
         </div>
+
+        @endif
 
     </div>
 

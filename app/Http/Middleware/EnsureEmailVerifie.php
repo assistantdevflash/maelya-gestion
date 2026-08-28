@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Institut;
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 
@@ -11,28 +13,44 @@ class EnsureEmailVerifie
     {
         $user = auth()->user();
 
-        // Uniquement pour les propriétaires d'établissements
-        if (!$user || !in_array($user->role, ['admin', 'gerant'])) {
+        if (!$user || in_array($user->role, ['super_admin', 'commercial'])) {
             return $next($request);
         }
 
-        // Email déjà vérifié
-        if ($user->email_verified_at) {
-            return $next($request);
-        }
-
-        // Routes de vérification et déconnexion toujours accessibles
         if ($request->routeIs('verification.*', 'logout')) {
             return $next($request);
         }
 
-        // Période de grâce de 3 jours : laisser passer
-        if ($user->created_at->diffInDays(now()) < 3) {
+        // Propriétaire / gérant : vérifier son propre email
+        if (in_array($user->role, ['admin', 'gerant'])) {
+            if (!$user->email_verified_at && $user->created_at->diffInDays(now()) >= 3) {
+                return redirect()->route('verification.email')
+                    ->with('info', 'Vous devez vérifier votre adresse email pour continuer.');
+            }
             return $next($request);
         }
 
-        // Délai dépassé : forcer la vérification
-        return redirect()->route('verification.email')
+        // Employé : vérifier si le propriétaire de l'établissement a vérifié son email
+        if ($user->role === 'employe') {
+            $institutId = session('current_institut_id', $user->institut_id);
+            $proprietaire = Institut::where('id', $institutId)
+                ->join('users', 'users.id', '=', 'instituts.proprietaire_id')
+                ->select('users.email_verified_at', 'users.created_at')
+                ->first();
+
+            if ($proprietaire
+                && !$proprietaire->email_verified_at
+                && \Carbon\Carbon::parse($proprietaire->created_at)->diffInDays(now()) >= 3
+            ) {
+                return redirect()->route('verification.email')
+                    ->with('bloque_par_proprietaire', true);
+            }
+        }
+
+        return $next($request);
+    }
+}
+
             ->with('info', 'Vous devez vérifier votre adresse email pour continuer.');
     }
 }
