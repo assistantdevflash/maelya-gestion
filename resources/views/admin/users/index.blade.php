@@ -27,85 +27,82 @@
     </form>
 
     <div class="card overflow-hidden">
-        <table class="table-auto">
-            <thead>
-            <tr>
-                <th>Utilisateur</th>
-                <th>Rôle</th>
-                <th>Établissement</th>
-                <th>Téléphone</th>
-                <th>Inscrit le</th>
-                <th>Email</th>
-                <th>Statut</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
+
+        {{-- Mobile : cartes --}}
+        <div class="sm:hidden divide-y divide-gray-100 dark:divide-white/5">
             @forelse($users as $user)
-            <tr class="hover:bg-gray-50">
-                <td>
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0 text-sm font-bold text-primary-700">
-                            {{ strtoupper(substr($user->nom_complet ?? $user->name, 0, 1)) }}
+            @php
+                $roleColors = ['admin' => 'bg-violet-100 text-violet-700', 'employe' => 'bg-blue-100 text-blue-700', 'super_admin' => 'bg-amber-100 text-amber-700', 'gerant' => 'bg-teal-100 text-teal-700', 'commercial' => 'bg-pink-100 text-pink-700'];
+                $roleLabels = ['admin' => 'Admin', 'employe' => 'Employé', 'super_admin' => 'Super Admin', 'gerant' => 'Gérant', 'commercial' => 'Commercial'];
+            @endphp
+            <div class="p-4" x-data="{ open: false }">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0 text-sm font-bold text-primary-700">
+                        {{ strtoupper(substr($user->nom_complet ?? $user->name, 0, 1)) }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="min-w-0">
+                                <p class="font-semibold text-sm text-gray-900 dark:text-white truncate">{{ $user->nom_complet ?? $user->name }}</p>
+                                <p class="text-xs text-gray-400 truncate">{{ $user->email }}</p>
+                            </div>
+                            <span class="badge {{ $roleColors[$user->role] ?? 'bg-gray-100 text-gray-500' }} text-xs flex-shrink-0">
+                                {{ $roleLabels[$user->role] ?? $user->role }}
+                            </span>
                         </div>
-                        <div>
-                            <div class="font-medium text-gray-900">{{ $user->nom_complet ?? $user->name }}</div>
-                            <div class="text-xs text-gray-400">{{ $user->email }}</div>
+                        <div class="flex items-center flex-wrap gap-2 mt-2">
+                            {{-- Statut compte --}}
+                            <span class="badge {{ $user->actif ? 'badge-success' : 'bg-gray-100 text-gray-500' }} text-xs">
+                                {{ $user->actif ? 'Actif' : 'Inactif' }}
+                            </span>
+                            {{-- Email vérifié : seulement pour les propriétaires admin --}}
+                            @if($user->role === 'admin')
+                                @if($user->email_verified_at)
+                                <span class="inline-flex items-center gap-1 text-xs text-green-600">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                    Email vérifié
+                                </span>
+                                @else
+                                <span class="inline-flex items-center gap-1 text-xs text-amber-600">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                    Non vérifié
+                                </span>
+                                @endif
+                            @endif
+                            {{-- Institut --}}
+                            @if($user->institut)
+                            <span class="text-xs text-gray-500 truncate max-w-[140px]">{{ $user->institut->nom }}</span>
+                            @endif
                         </div>
                     </div>
-                </td>
-                <td>
-                    @php
-                        $roleColors = ['admin' => 'bg-violet-100 text-violet-700', 'employe' => 'bg-blue-100 text-blue-700', 'super_admin' => 'bg-amber-100 text-amber-700'];
-                        $roleLabels = ['admin' => 'Admin', 'employe' => 'Employé', 'super_admin' => 'Super Admin'];
-                    @endphp
-                    <span class="badge {{ $roleColors[$user->role] ?? 'bg-gray-100 text-gray-500' }} text-xs">
-                        {{ $roleLabels[$user->role] ?? $user->role }}
-                    </span>
-                </td>
-                <td class="text-sm text-gray-600">
-                    @if($user->institut)
-                        <a href="{{ route('admin.instituts.show', $user->institut) }}" class="hover:text-primary-600 hover:underline">
-                            {{ $user->institut->nom }}
-                        </a>
-                    @else
-                        <span class="text-gray-400">—</span>
+                    {{-- Bouton actions --}}
+                    @if(!$user->isSuperAdmin())
+                    <button type="button" @click="open = !open"
+                            class="flex-shrink-0 p-2 rounded-xl text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 transition-colors">
+                        <svg class="w-4 h-4 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
                     @endif
-                </td>
-                <td class="text-sm text-gray-600">{{ $user->telephone ?? '—' }}</td>
-                <td class="text-sm text-gray-500">{{ $user->created_at->format('d/m/Y') }}</td>
-                <td>
-                    <span class="badge {{ $user->actif ? 'badge-success' : 'bg-gray-100 text-gray-500' }} text-xs">
-                        {{ $user->actif ? 'Actif' : 'Inactif' }}
-                    </span>
-                </td>
-                <td>
-                    @if($user->email_verified_at)
-                    <span class="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                        Vérifié
-                    </span>
-                    @elseif(!$user->isSuperAdmin())
+                </div>
+
+                {{-- Actions dépliables --}}
+                @if(!$user->isSuperAdmin())
+                <div x-show="open" x-cloak x-transition class="mt-3 flex items-center flex-wrap gap-2 pl-13">
+                    {{-- Marquer email vérifié : seulement propriétaires non vérifiés --}}
+                    @if($user->role === 'admin' && !$user->email_verified_at)
                     <form action="{{ route('admin.users.verifier-email', $user) }}" method="POST" class="inline">
                         @csrf @method('PATCH')
-                        <button type="submit" class="inline-flex items-center gap-1 text-xs text-amber-600 hover:text-amber-700 underline transition-colors">
+                        <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-amber-300 text-amber-600 bg-amber-50 hover:bg-amber-100 transition-colors">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             Marquer vérifié
                         </button>
                     </form>
-                    @else
-                    <span class="text-xs text-gray-400">—</span>
                     @endif
-                </td>
-                <td>
-                    @if(!$user->isSuperAdmin())
-                    <form id="form-user-{{ $user->id }}" action="{{ route('admin.users.toggle', $user) }}" method="POST">
+                    {{-- Toggle actif --}}
+                    <form id="form-mob-{{ $user->id }}" action="{{ route('admin.users.toggle', $user) }}" method="POST" class="inline">
                         @csrf @method('PATCH')
-                        <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition
-                            {{ $user->actif
-                                ? 'border-red-200 text-red-600 bg-red-50 hover:bg-red-100'
-                                : 'border-emerald-200 text-emerald-600 bg-emerald-50 hover:bg-emerald-100' }}"
-                            onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-user-{{ $user->id }}',title:'{{ $user->actif ? 'Désactiver' : 'Activer' }} ce compte',message:'{{ $user->actif ? 'Ce compte sera désactivé et l\'utilisateur ne pourra plus se connecter.' : 'Ce compte sera réactivé.' }}',confirmLabel:'{{ $user->actif ? 'Désactiver' : 'Activer' }}',confirmClass:'{{ $user->actif ? '!bg-red-600 hover:!bg-red-700' : '!bg-emerald-600 hover:!bg-emerald-700' }}',danger:{{ $user->actif ? 'true' : 'false' }}}}))">
+                        <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition
+                            {{ $user->actif ? 'border-red-200 text-red-600 bg-red-50 hover:bg-red-100' : 'border-emerald-200 text-emerald-600 bg-emerald-50 hover:bg-emerald-100' }}"
+                            onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-mob-{{ $user->id }}',title:'{{ $user->actif ? 'Désactiver' : 'Activer' }} ce compte',message:'{{ $user->actif ? 'Ce compte sera désactivé.' : 'Ce compte sera réactivé.' }}',confirmLabel:'{{ $user->actif ? 'Désactiver' : 'Activer' }}',confirmClass:'{{ $user->actif ? '!bg-red-600' : '!bg-emerald-600' }}',danger:{{ $user->actif ? 'true' : 'false' }}}}))">
                             @if($user->actif)
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
                                 Désactiver
@@ -115,14 +112,115 @@
                             @endif
                         </button>
                     </form>
-                    @endif
-                </td>
-            </tr>
+                </div>
+                @endif
+            </div>
             @empty
-            <tr><td colspan="7" class="text-center py-10 text-gray-400">Aucun utilisateur.</td></tr>
+            <div class="p-10 text-center text-gray-400 text-sm">Aucun utilisateur.</div>
             @endforelse
-            </tbody>
-        </table>
+        </div>
+
+        {{-- Desktop : tableau --}}
+        <div class="hidden sm:block overflow-x-auto">
+            <table class="table-auto">
+                <thead>
+                <tr>
+                    <th>Utilisateur</th>
+                    <th>Rôle</th>
+                    <th>Établissement</th>
+                    <th>Téléphone</th>
+                    <th>Inscrit le</th>
+                    <th>Statut</th>
+                    <th>Email</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                @forelse($users as $user)
+                @php
+                    $roleColors = ['admin' => 'bg-violet-100 text-violet-700', 'employe' => 'bg-blue-100 text-blue-700', 'super_admin' => 'bg-amber-100 text-amber-700', 'gerant' => 'bg-teal-100 text-teal-700', 'commercial' => 'bg-pink-100 text-pink-700'];
+                    $roleLabels = ['admin' => 'Admin', 'employe' => 'Employé', 'super_admin' => 'Super Admin', 'gerant' => 'Gérant', 'commercial' => 'Commercial'];
+                @endphp
+                <tr class="hover:bg-gray-50">
+                    <td>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0 text-sm font-bold text-primary-700">
+                                {{ strtoupper(substr($user->nom_complet ?? $user->name, 0, 1)) }}
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-900">{{ $user->nom_complet ?? $user->name }}</div>
+                                <div class="text-xs text-gray-400">{{ $user->email }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge {{ $roleColors[$user->role] ?? 'bg-gray-100 text-gray-500' }} text-xs">
+                            {{ $roleLabels[$user->role] ?? $user->role }}
+                        </span>
+                    </td>
+                    <td class="text-sm text-gray-600">
+                        @if($user->institut)
+                            <a href="{{ route('admin.instituts.show', $user->institut) }}" class="hover:text-primary-600 hover:underline">{{ $user->institut->nom }}</a>
+                        @else
+                            <span class="text-gray-400">—</span>
+                        @endif
+                    </td>
+                    <td class="text-sm text-gray-600">{{ $user->telephone ?? '—' }}</td>
+                    <td class="text-sm text-gray-500">{{ $user->created_at->format('d/m/Y') }}</td>
+                    <td>
+                        <span class="badge {{ $user->actif ? 'badge-success' : 'bg-gray-100 text-gray-500' }} text-xs">
+                            {{ $user->actif ? 'Actif' : 'Inactif' }}
+                        </span>
+                    </td>
+                    {{-- Colonne email : uniquement pertinente pour les propriétaires --}}
+                    <td>
+                        @if($user->role === 'admin')
+                            @if($user->email_verified_at)
+                            <span class="inline-flex items-center gap-1 text-xs text-green-600">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                Vérifié
+                            </span>
+                            @else
+                            <form action="{{ route('admin.users.verifier-email', $user) }}" method="POST" class="inline">
+                                @csrf @method('PATCH')
+                                <button type="submit" class="inline-flex items-center gap-1 text-xs text-amber-600 hover:text-amber-700 underline transition-colors">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    Marquer vérifié
+                                </button>
+                            </form>
+                            @endif
+                        @else
+                        <span class="text-gray-300 text-xs">—</span>
+                        @endif
+                    </td>
+                    <td>
+                        @if(!$user->isSuperAdmin())
+                        <form id="form-user-{{ $user->id }}" action="{{ route('admin.users.toggle', $user) }}" method="POST">
+                            @csrf @method('PATCH')
+                            <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition
+                                {{ $user->actif
+                                    ? 'border-red-200 text-red-600 bg-red-50 hover:bg-red-100'
+                                    : 'border-emerald-200 text-emerald-600 bg-emerald-50 hover:bg-emerald-100' }}"
+                                onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-user-{{ $user->id }}',title:'{{ $user->actif ? 'Désactiver' : 'Activer' }} ce compte',message:'{{ $user->actif ? 'Ce compte sera désactivé et l\'utilisateur ne pourra plus se connecter.' : 'Ce compte sera réactivé.' }}',confirmLabel:'{{ $user->actif ? 'Désactiver' : 'Activer' }}',confirmClass:'{{ $user->actif ? '!bg-red-600 hover:!bg-red-700' : '!bg-emerald-600 hover:!bg-emerald-700' }}',danger:{{ $user->actif ? 'true' : 'false' }}}}))">
+                                @if($user->actif)
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                    Désactiver
+                                @else
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    Activer
+                                @endif
+                            </button>
+                        </form>
+                        @endif
+                    </td>
+                </tr>
+                @empty
+                <tr><td colspan="8" class="text-center py-10 text-gray-400">Aucun utilisateur.</td></tr>
+                @endforelse
+                </tbody>
+            </table>
+        </div>
+
     </div>
 
     {{ $users->withQueryString()->links() }}
