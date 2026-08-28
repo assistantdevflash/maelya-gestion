@@ -114,6 +114,7 @@
         </div>
     </div>
 </div>
+@push('scripts')
 <script>
 function toggleStatus(typeId, button) {
     fetch(`/admin/etablissement-types/${typeId}/toggle`, {
