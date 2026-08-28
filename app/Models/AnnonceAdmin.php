@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class AnnonceAdmin extends Model
 {
+    protected $table = 'annonces_admin';
+
     protected $fillable = [
         'expediteur_id',
         'titre',

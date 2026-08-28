@@ -863,13 +863,18 @@
 
             {{-- Bannières administrateur --}}
             @php
-                $__annoncesNonLues = \App\Models\AnnonceAdmin::actives()
-                    ->whereDoesntHave('lecteurs', function($q) {
-                        $q->where('user_id', auth()->id());
-                    })
-                    ->latest()
-                    ->get()
-                    ->filter(fn($a) => $a->cibleUtilisateur(auth()->user()));
+                try {
+                    $__annoncesNonLues = \App\Models\AnnonceAdmin::actives()
+                        ->whereDoesntHave('lecteurs', function($q) {
+                            $q->where('user_id', auth()->id());
+                        })
+                        ->latest()
+                        ->get()
+                        ->filter(fn($a) => $a->cibleUtilisateur(auth()->user()));
+                } catch (\Exception $e) {
+                    // Si la table n'existe pas encore (migration non exécutée), ignorer silencieusement
+                    $__annoncesNonLues = collect();
+                }
             @endphp
             @foreach($__annoncesNonLues as $__annonce)
                 <div class="mb-4 animate-slide-down" x-data="{show: true}" x-show="show" x-transition>
