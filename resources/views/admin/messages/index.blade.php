@@ -12,6 +12,47 @@
     </div>
 
     <div class="card overflow-hidden">
+
+        {{-- Mobile : cartes --}}
+        <div class="sm:hidden divide-y divide-gray-100">
+            @forelse($messages as $msg)
+            <div class="p-4 {{ $msg->lu ? '' : 'bg-primary-50' }}">
+                <div class="flex items-start gap-3">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-start justify-between gap-2 mb-1">
+                            <div class="min-w-0">
+                                <p class="font-{{ $msg->lu ? 'medium' : 'bold' }} text-sm text-gray-900 truncate">{{ $msg->nom }}</p>
+                                <p class="text-xs text-gray-400 truncate">{{ $msg->email }}</p>
+                            </div>
+                            @if($msg->lu)
+                            <span class="badge badge-success text-xs flex-shrink-0">Lu</span>
+                            @else
+                            <span class="badge bg-yellow-100 text-yellow-700 text-xs flex-shrink-0">Non lu</span>
+                            @endif
+                        </div>
+                        <p class="text-sm {{ $msg->lu ? 'text-gray-500' : 'font-semibold text-gray-800' }} mb-2">{{ Str::limit($msg->message, 60) }}</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-gray-400">{{ $msg->created_at->format('d/m/Y H:i') }}</span>
+                            <div class="flex items-center gap-3">
+                                <button onclick="document.getElementById('modal-{{ $msg->id }}').showModal()"
+                                        class="text-primary-600 text-xs font-medium hover:underline">Lire</button>
+                                <form id="form-mob-msg-{{ $msg->id }}" action="{{ route('admin.messages.destroy', $msg) }}" method="POST">
+                                    @csrf @method('DELETE')
+                                    <button type="button" class="text-red-500 text-xs hover:underline"
+                                            onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-mob-msg-{{ $msg->id }}',title:'Supprimer',message:'Ce message sera supprimé.',confirmLabel:'Supprimer',confirmClass:'!bg-red-600',danger:true}}))">Supprimer</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @empty
+            <div class="p-10 text-center text-gray-400 text-sm">Aucun message.</div>
+            @endforelse
+        </div>
+
+        {{-- Desktop : tableau --}}
+        <div class="hidden sm:block overflow-x-auto">
         <table class="table-auto">
             <thead>
             <tr>
@@ -74,6 +115,7 @@
             @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 
     {{ $messages->links() }}

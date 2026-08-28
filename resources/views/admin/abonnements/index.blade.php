@@ -63,6 +63,42 @@
     </form>
 
     <div class="card overflow-hidden">
+
+        {{-- Mobile : cartes --}}
+        <div class="sm:hidden divide-y divide-gray-100">
+            @forelse($abonnements as $ab)
+            @php
+                $statutEffectif = ($ab->statut === 'actif' && $ab->expire_le?->isPast()) ? 'expire' : $ab->statut;
+                $colors = ['en_attente'=>'bg-amber-100 text-amber-700','actif'=>'badge-success','expire'=>'bg-red-100 text-red-700','rejete'=>'bg-gray-100 text-gray-500','annule'=>'bg-gray-100 text-gray-500'];
+                $labels = ['en_attente'=>'En attente','actif'=>'Actif','expire'=>'Expiré','rejete'=>'Rejeté','annule'=>'Annulé'];
+            @endphp
+            <div class="p-4">
+                <div class="flex items-start justify-between gap-3 mb-2">
+                    <div class="min-w-0 flex-1">
+                        <p class="font-semibold text-sm text-gray-900 truncate">{{ $ab->user->nom_complet ?? $ab->user->name ?? '—' }}</p>
+                        <p class="text-xs text-gray-400 truncate">{{ $ab->user->email ?? '' }} · {{ $ab->user->institut->nom ?? '' }}</p>
+                    </div>
+                    <span class="badge {{ $colors[$statutEffectif] ?? 'bg-gray-100 text-gray-500' }} text-xs flex-shrink-0">{{ $labels[$statutEffectif] ?? $statutEffectif }}</span>
+                </div>
+                <div class="flex flex-wrap gap-x-4 gap-y-1 mb-2 text-xs text-gray-600">
+                    <span><span class="text-gray-400">Plan :</span> <strong>{{ $ab->plan->nom ?? '—' }}</strong>
+                        @if($ab->hasBoutique())<span class="ml-0.5">🛍️</span>@endif
+                    </span>
+                    <span><span class="text-gray-400">Période :</span> {{ ucfirst($ab->periode) }}</span>
+                    <span><span class="text-gray-400">Montant :</span> <strong>{{ number_format($ab->montant ?? 0, 0, ',', ' ') }} FCFA</strong>
+                        @if($ab->plan && $ab->montant < $ab->plan->prix)<span class="ml-0.5 text-orange-500">🔥</span>@endif
+                    </span>
+                    @if($ab->debut_le)<span><span class="text-gray-400">Exp :</span> {{ $ab->expire_le?->format('d/m/Y') ?? '—' }}</span>@endif
+                </div>
+                <a href="{{ route('admin.abonnements.show', $ab) }}" class="inline-flex items-center gap-1 text-xs text-primary-600 font-medium hover:underline">Voir le détail →</a>
+            </div>
+            @empty
+            <div class="p-10 text-center text-gray-400 text-sm">Aucun abonnement.</div>
+            @endforelse
+        </div>
+
+        {{-- Desktop : tableau --}}
+        <div class="hidden sm:block overflow-x-auto">
         <table class="table-auto">
             <thead>
             <tr>
@@ -147,6 +183,7 @@
             @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 
     {{ $abonnements->withQueryString()->links() }}

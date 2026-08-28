@@ -63,6 +63,38 @@
         @if($commerciaux->isEmpty())
         <p class="text-center py-10 text-gray-400">Aucun commercial pour l'instant.</p>
         @else
+
+        {{-- Mobile : cartes --}}
+        <div class="sm:hidden divide-y divide-gray-100">
+            @foreach($commerciaux as $c)
+            <div class="p-4">
+                <div class="flex items-start justify-between gap-3 mb-1">
+                    <div class="min-w-0">
+                        <p class="font-semibold text-sm text-gray-900 truncate">{{ $c->nom_complet }}</p>
+                        <p class="text-xs text-gray-400 truncate">{{ $c->email }}</p>
+                    </div>
+                    <span class="badge {{ $c->actif ? 'badge-success' : 'badge-gray' }} text-xs flex-shrink-0">{{ $c->actif ? 'Actif' : 'Inactif' }}</span>
+                </div>
+                <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600 mb-3">
+                    <span><span class="text-gray-400">Code :</span> <span class="font-mono font-bold text-primary-600">{{ $c->commercialProfile?->code ?? '—' }}</span></span>
+                    <span><span class="text-gray-400">Parrainages :</span> {{ $c->commercialProfile?->parrainages()->count() ?? 0 }}</span>
+                    <span><span class="text-gray-400">Commissions :</span> {{ number_format($c->commercialProfile?->commissions()->sum('montant') ?? 0, 0, ',', ' ') }} FCFA</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('admin.commerciaux.show', $c) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-600 bg-gray-50 hover:bg-gray-100 transition-colors">Détail</a>
+                    <form method="POST" action="{{ route('admin.commerciaux.toggle', $c) }}">
+                        @csrf @method('PATCH')
+                        <button type="submit" class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors {{ $c->actif ? 'border-red-200 text-red-600 bg-red-50 hover:bg-red-100' : 'border-emerald-200 text-emerald-600 bg-emerald-50 hover:bg-emerald-100' }}">
+                            {{ $c->actif ? 'Désactiver' : 'Activer' }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+        {{-- Desktop : tableau --}}
+        <div class="hidden sm:block overflow-x-auto">
         <table class="table-auto">
             <thead>
             <tr>
@@ -120,6 +152,7 @@
         @if($commerciaux->hasPages())
         <div class="p-4 border-t border-gray-100">{{ $commerciaux->links() }}</div>
         @endif
+        </div>
         @endif
     </div>
 

@@ -214,7 +214,55 @@
                     <p class="text-gray-400 text-sm">Aucun institut actif.</p>
                 </div>
             @else
-            <div class="overflow-x-auto">
+
+            {{-- Mobile : cartes --}}
+            <div class="sm:hidden divide-y divide-gray-100 dark:divide-slate-700">
+                @foreach($instituts as $inst)
+                @php
+                    $ca = $inst->ca_total ?? 0;
+                    $caMois = $inst->ca_mois_courant ?? 0;
+                    $caPrev = $caMoisPrecedent[$inst->id] ?? 0;
+                    $depenses = $depensesParInstitut[$inst->id] ?? 0;
+                    $benefice = $ca - $depenses;
+                    $progression = $caPrev > 0 ? round(($caMois - $caPrev) / $caPrev * 100, 1) : ($caMois > 0 ? 100 : 0);
+                @endphp
+                <div class="p-4">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+                            <span class="text-xs font-bold text-primary-700 dark:text-primary-400">{{ strtoupper(substr($inst->nom, 0, 2)) }}</span>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ $inst->nom }}</p>
+                            <p class="text-xs text-gray-400 truncate">{{ $inst->ville ?? '' }} · {{ $inst->proprietaire->nom_complet ?? '—' }}</p>
+                        </div>
+                        @if($caMois > 0 || $caPrev > 0)
+                        <span class="ml-auto text-xs font-semibold flex-shrink-0 {{ $progression >= 0 ? 'text-emerald-600' : 'text-red-500' }}">{{ $progression >= 0 ? '+' : '' }}{{ $progression }}%</span>
+                        @endif
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                        <div class="bg-gray-50 dark:bg-slate-800 rounded-xl p-2">
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wide">CA {{ $annee }}</p>
+                            <p class="text-xs font-bold text-gray-900 dark:text-white">{{ number_format($ca, 0, ',', ' ') }}</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-slate-800 rounded-xl p-2">
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wide">Ce mois</p>
+                            <p class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ number_format($caMois, 0, ',', ' ') }}</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-slate-800 rounded-xl p-2">
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wide">Bénéfice</p>
+                            <p class="text-xs font-bold {{ $benefice >= 0 ? 'text-emerald-600' : 'text-red-500' }}">{{ number_format($benefice, 0, ',', ' ') }}</p>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+                <div class="px-4 py-3 bg-gray-50 dark:bg-slate-800 border-t-2 border-gray-300 dark:border-slate-500 flex justify-between text-xs font-bold">
+                    <span class="text-gray-700 dark:text-white uppercase tracking-wide">Total</span>
+                    <span class="text-gray-900 dark:text-white">{{ number_format($instituts->sum('ca_total'), 0, ',', ' ') }} FCFA</span>
+                </div>
+            </div>
+
+            {{-- Desktop : tableau --}}
+            <div class="hidden sm:block overflow-x-auto">
                 <table class="table-auto w-full">
                     <thead>
                         <tr>
@@ -300,7 +348,6 @@
             @endif
         </div>
     </div>
-
     {{-- ═══════════════════════════════════════════════════════════════════ --}}
     {{-- TAB 3 : CLASSEMENTS --}}
     {{-- ═══════════════════════════════════════════════════════════════════ --}}
