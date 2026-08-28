@@ -18,7 +18,7 @@ class EmailVerificationController extends Controller
         }
 
         return view('auth.verification-email', [
-            'joursRestants' => max(0, 3 - $user->created_at->diffInDays(now())),
+            'joursRestants' => max(0, 3 - (int) floor($user->created_at->floatDiffInDays(now()))),
             'codeEnvoye'    => session('code_envoye', false),
             'expireA'       => $user->code_verification_expire_le,
         ]);
