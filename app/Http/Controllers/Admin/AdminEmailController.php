@@ -54,7 +54,7 @@ class AdminEmailController extends Controller
         $request->validate([
             'mode'               => ['required', 'in:tous,selection,un,personnalise'],
             'send_mode'          => ['required', 'in:email,both,push,banner'],
-            'sujet'              => ['required_unless:send_mode,push', 'nullable', 'string', 'max:255'],
+            'sujet'              => ['required_unless:send_mode,push,banner', 'nullable', 'string', 'max:255'],
             'corps'              => ['required_unless:send_mode,push,banner', 'nullable', 'string'],
             'instituts'          => ['required_if:mode,selection', 'array'],
             'instituts.*'        => ['string', 'exists:instituts,id'],
