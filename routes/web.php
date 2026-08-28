@@ -427,6 +427,8 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::get('emails/composer', [AdminEmailController::class, 'composer'])->name('emails.composer');
     Route::post('emails', [AdminEmailController::class, 'send'])->name('emails.send');
     Route::post('banniere/{annonce}/lue', [AdminEmailController::class, 'marquerBanniereLue'])->name('emails.marquer-banniere-lue');
+    Route::patch('banniere/{annonce}/toggle', [AdminEmailController::class, 'toggleBanniere'])->name('emails.toggle-banniere');
+    Route::delete('banniere/{annonce}', [AdminEmailController::class, 'deleteBanniere'])->name('emails.delete-banniere');
     Route::get('logs', [AdminLogsController::class, 'index'])->name('logs.index');
     Route::post('logs/clear', [AdminLogsController::class, 'clear'])->name('logs.clear');
     Route::get('push-debug', [AdminPushDebugController::class, 'index'])->name('push.debug');

@@ -259,6 +259,23 @@
                         </div>
                     </div>
                     @endif
+                    {{-- Actions --}}
+                    <div class="flex items-center gap-2 pt-1 border-t border-gray-200 dark:border-white/10">
+                        <form method="POST" action="{{ route('admin.emails.toggle-banniere', $banniere) }}">
+                            @csrf @method('PATCH')
+                            <button type="submit" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors
+                                {{ $banniere->actif ? 'border-orange-300 text-orange-600 hover:bg-orange-50' : 'border-green-300 text-green-600 hover:bg-green-50' }}">
+                                {{ $banniere->actif ? '⏸ Désactiver' : '▶ Activer' }}
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ route('admin.emails.delete-banniere', $banniere) }}"
+                              onsubmit="return confirm('Supprimer cette bannière ?')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-red-300 text-red-600 hover:bg-red-50 transition-colors">
+                                🗑 Supprimer
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
             @endforeach
@@ -355,6 +372,23 @@
                                     </div>
                                 </div>
                                 @endif
+                                {{-- Actions admin --}}
+                                <div class="lg:col-span-2 flex items-center gap-3 pt-1 border-t border-gray-200 dark:border-white/10">
+                                    <form method="POST" action="{{ route('admin.emails.toggle-banniere', $banniere) }}">
+                                        @csrf @method('PATCH')
+                                        <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold border transition-colors
+                                            {{ $banniere->actif ? 'border-orange-300 dark:border-orange-700 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20' : 'border-green-300 dark:border-green-700 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20' }}">
+                                            {{ $banniere->actif ? '⏸ Désactiver' : '▶ Activer' }}
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ route('admin.emails.delete-banniere', $banniere) }}"
+                                          onsubmit="return confirm('Supprimer définitivement cette bannière ?')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                                            🗑 Supprimer
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -692,6 +726,23 @@
                                     </div>
                                 </div>
                                 @endif
+                                {{-- Actions admin --}}
+                                <div class="lg:col-span-2 flex items-center gap-3 pt-2 border-t border-gray-200 dark:border-white/10">
+                                    <form method="POST" action="{{ route('admin.emails.toggle-banniere', $banniere) }}">
+                                        @csrf @method('PATCH')
+                                        <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold border transition-colors
+                                            {{ $banniere->actif ? 'border-orange-300 dark:border-orange-700 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20' : 'border-green-300 dark:border-green-700 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20' }}">
+                                            {{ $banniere->actif ? '⏸ Désactiver' : '▶ Activer' }}
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ route('admin.emails.delete-banniere', $banniere) }}"
+                                          onsubmit="return confirm('Supprimer définitivement cette bannière ?')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                                            🗑 Supprimer
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </td>
                     </tr>

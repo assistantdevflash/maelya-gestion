@@ -226,7 +226,7 @@ class AdminEmailController extends Controller
 
         $expireLe = null;
         if ($request->filled('banner_duree')) {
-            $expireLe = now()->addDays($request->banner_duree);
+            $expireLe = now()->addDays((int) $request->banner_duree);
         }
 
         AnnonceAdmin::create([
@@ -248,17 +248,41 @@ class AdminEmailController extends Controller
     }
 
     /**
-     * Marquer une bannière comme lue
+     * Marquer une bannière comme lue (côté établissement, AJAX)
      */
     public function marquerBanniereLue(Request $request, AnnonceAdmin $annonce)
     {
         $annonce->marquerCommeLue(auth()->user());
-        
+
         if ($request->wantsJson()) {
             return response()->json(['success' => true]);
         }
 
         return back();
+    }
+
+    /**
+     * Activer / désactiver une bannière
+     */
+    public function toggleBanniere(AnnonceAdmin $annonce)
+    {
+        $annonce->update(['actif' => !$annonce->actif]);
+
+        $label = $annonce->actif ? 'activée' : 'désactivée';
+        return redirect()->route('admin.emails.index', ['tab' => 'bannieres'])
+            ->with('success', "Bannière {$label} avec succès.");
+    }
+
+    /**
+     * Supprimer une bannière
+     */
+    public function deleteBanniere(AnnonceAdmin $annonce)
+    {
+        $annonce->lecteurs()->detach();
+        $annonce->delete();
+
+        return redirect()->route('admin.emails.index', ['tab' => 'bannieres'])
+            ->with('success', 'Bannière supprimée.');
     }
 }
 
