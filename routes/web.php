@@ -120,6 +120,9 @@ Route::middleware('guest')->group(function () {
 Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dashboard.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('index');
 
+    // Marquer une bannière admin comme lue (accessible à tous les utilisateurs connectés)
+    Route::post('banniere/{annonce}/lue', [\App\Http\Controllers\Admin\AdminEmailController::class, 'marquerBanniereLue'])->name('banniere.lue');
+
     // Recherche globale
     Route::get('search', \App\Http\Controllers\Dashboard\SearchController::class)->name('search');
 
@@ -426,7 +429,6 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::get('emails', [AdminEmailController::class, 'index'])->name('emails.index');
     Route::get('emails/composer', [AdminEmailController::class, 'composer'])->name('emails.composer');
     Route::post('emails', [AdminEmailController::class, 'send'])->name('emails.send');
-    Route::post('banniere/{annonce}/lue', [AdminEmailController::class, 'marquerBanniereLue'])->name('emails.marquer-banniere-lue');
     Route::patch('banniere/{annonce}/toggle', [AdminEmailController::class, 'toggleBanniere'])->name('emails.toggle-banniere');
     Route::delete('banniere/{annonce}', [AdminEmailController::class, 'deleteBanniere'])->name('emails.delete-banniere');
     Route::get('logs', [AdminLogsController::class, 'index'])->name('logs.index');
