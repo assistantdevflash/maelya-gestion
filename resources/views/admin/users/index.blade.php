@@ -35,6 +35,7 @@
                 <th>Établissement</th>
                 <th>Téléphone</th>
                 <th>Inscrit le</th>
+                <th>Email</th>
                 <th>Statut</th>
                 <th></th>
             </tr>
@@ -77,6 +78,24 @@
                     <span class="badge {{ $user->actif ? 'badge-success' : 'bg-gray-100 text-gray-500' }} text-xs">
                         {{ $user->actif ? 'Actif' : 'Inactif' }}
                     </span>
+                </td>
+                <td>
+                    @if($user->email_verified_at)
+                    <span class="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        Vérifié
+                    </span>
+                    @elseif(!$user->isSuperAdmin())
+                    <form action="{{ route('admin.users.verifier-email', $user) }}" method="POST" class="inline">
+                        @csrf @method('PATCH')
+                        <button type="submit" class="inline-flex items-center gap-1 text-xs text-amber-600 hover:text-amber-700 underline transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            Marquer vérifié
+                        </button>
+                    </form>
+                    @else
+                    <span class="text-xs text-gray-400">—</span>
+                    @endif
                 </td>
                 <td>
                     @if(!$user->isSuperAdmin())

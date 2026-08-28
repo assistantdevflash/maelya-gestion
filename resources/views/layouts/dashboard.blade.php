@@ -861,6 +861,34 @@
                 </div>
             @endif
 
+            {{-- Bannière vérification email --}}
+            @if(in_array(auth()->user()->role, ['admin', 'gerant']) && !auth()->user()->email_verified_at)
+            @php $joursGrace = max(0, 3 - auth()->user()->created_at->diffInDays(now())); @endphp
+            <div class="mb-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-2xl p-4 shadow-sm">
+                <div class="flex items-start gap-3">
+                    <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-bold text-sm text-amber-900 dark:text-amber-200 mb-1">
+                            Vérifiez votre adresse email
+                        </h3>
+                        <p class="text-sm text-amber-700 dark:text-amber-300 mb-3">
+                            @if($joursGrace > 0)
+                                Il vous reste <strong>{{ $joursGrace }} jour(s)</strong> pour valider votre adresse <strong>{{ auth()->user()->email }}</strong>.
+                                Passé ce délai, l'accès sera bloqué.
+                            @else
+                                Votre délai de 3 jours est dépassé. Veuillez vérifier votre email pour continuer.
+                            @endif
+                        </p>
+                        <a href="{{ route('verification.email') }}"
+                           class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl bg-amber-600 hover:bg-amber-700 text-white transition-colors active:scale-95">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            Vérifier maintenant
+                        </a>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             {{-- Bannières administrateur --}}
             @php
                 try {

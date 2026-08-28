@@ -116,8 +116,15 @@ Route::middleware('guest')->group(function () {
     Route::post('/inscription', [InscriptionController::class, 'store'])->name('inscription.store');
 });
 
+// ─── Vérification email ─────────────────────────────────────────────────────
+Route::middleware('auth')->group(function () {
+    Route::get('/verification-email', [\App\Http\Controllers\Auth\EmailVerificationController::class, 'index'])->name('verification.email');
+    Route::post('/verification-email/envoyer', [\App\Http\Controllers\Auth\EmailVerificationController::class, 'envoyer'])->name('verification.email.envoyer');
+    Route::post('/verification-email/verifier', [\App\Http\Controllers\Auth\EmailVerificationController::class, 'verifier'])->name('verification.email.verifier');
+});
+
 // ─── Dashboard Institut ───────────────────────────────────────────────────────
-Route::middleware(['auth', 'abonnement.actif'])->prefix('dashboard')->name('dashboard.')->group(function () {
+Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashboard')->name('dashboard.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('index');
 
     // Marquer une bannière admin comme lue (accessible à tous les utilisateurs connectés)
@@ -421,6 +428,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
     Route::post('users', [AdminUserController::class, 'store'])->name('users.store');
     Route::patch('users/{user}/toggle', [AdminUserController::class, 'toggleActif'])->name('users.toggle');
+    Route::patch('users/{user}/verifier-email', [AdminUserController::class, 'verifierEmail'])->name('users.verifier-email');
     Route::get('config', [AdminConfigController::class, 'edit'])->name('config.edit');
     Route::put('config', [AdminConfigController::class, 'update'])->name('config.update');
     Route::get('messages', [AdminMessageController::class, 'index'])->name('messages.index');

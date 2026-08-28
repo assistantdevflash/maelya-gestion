@@ -22,8 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'abonnement.actif' => \App\Http\Middleware\AbonnementActif::class,
-            'role' => \App\Http\Middleware\CheckRole::class,
-            'feature' => \App\Http\Middleware\RequireFeature::class,
+            'role'             => \App\Http\Middleware\CheckRole::class,
+            'feature'          => \App\Http\Middleware\RequireFeature::class,
+            'email.verifie'    => \App\Http\Middleware\EnsureEmailVerifie::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

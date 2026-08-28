@@ -56,4 +56,15 @@ class AdminUserController extends Controller
 
         return back()->with('success', $user->actif ? 'Compte activé.' : 'Compte désactivé.');
     }
+
+    public function verifierEmail(User $user)
+    {
+        $user->update([
+            'email_verified_at'           => $user->email_verified_at ?? now(),
+            'code_verification_email'     => null,
+            'code_verification_expire_le' => null,
+        ]);
+
+        return back()->with('success', 'Email de ' . ($user->prenom ?? $user->name) . ' marqué comme vérifié.');
+    }
 }
