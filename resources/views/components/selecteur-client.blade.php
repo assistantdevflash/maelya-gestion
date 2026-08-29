@@ -1,12 +1,12 @@
 {{--
   Sélecteur de client avec recherche + ajout rapide (style caisse).
-  Usage : <x-selecteur-client :clients="$clients" :preselectionne="$clientPreselectionne" old-client-id="{{ old('client_id') }}" />
+  Usage : <x-selecteur-client :clients="$clients" :preselectionne="$clientPreselectionne" old-client-id="{{ old('client_id') }}" preselection-nom="{{ $rdv->client_nom ?? '' }}" />
 
   Ce composant gère lui-même les champs du formulaire :
     - client_id (hidden)
     - client_nom, client_telephone, client_email (inputs du formulaire parent)
 --}}
-@props(['clients', 'preselectionne' => null, 'oldClientId' => null])
+@props(['clients', 'preselectionne' => null, 'oldClientId' => null, 'preselectionNom' => null])
 
 @php
     $clientData = $clients->map(fn($c) => [
@@ -26,8 +26,23 @@
         search: '',
         open: false,
         selectedId: {{ $selClient ? "'{$selClient->id}'" : "''" }},
+        preselectionNom: {{ $selClient ? "'{$selClient->nom_complet}'" : ($preselectionNom ? "'" . addslashes($preselectionNom) . "'" : "''") }},
         newOpen: false,
         newPrenom: '',
+
+        get selectedClient() {
+            return this.clients.find(c => c.id === this.selectedId) || null;
+        },
+
+        get selectedNom() {
+            return this.selectedClient ? this.selectedClient.nom : (this.selectedId ? this.preselectionNom : '');
+        },
+
+        get selectedInitiale() {
+            const c = this.selectedClient;
+            if (c) return c.initiale;
+            return this.preselectionNom ? String(this.preselectionNom).charAt(0).toUpperCase() : '?';
+        },
         newNom: '',
         newTel: '',
         newEmail: '',
@@ -131,47 +146,67 @@
 >
     <input type="hidden" name="client_id" :value="selectedId">
 
-    <div class="relative">
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-        <input type="text"
-               x-model="search"
-               @focus="open = true"
-               @input="open = true"
-               @keydown.escape="open = false"
-               @keydown.backspace="selectedId && !search ? clearSelection() : null"
-               placeholder="Rechercher un client…"
-               autocomplete="off"
-               class="form-input pl-9 text-sm">
+    {{-- Client sélectionné (puce, comme à la caisse) --}}
+    <div x-show="selectedId" x-cloak
+         class="flex items-center gap-3 p-2.5 bg-primary-50/60 dark:bg-primary-900/20 rounded-xl border border-primary-200/60 dark:border-primary-700/40">
+        <div class="w-9 h-9 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0" x-text="selectedInitiale"></div>
+        <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-gray-900 dark:text-white truncate" x-text="selectedNom"></p>
+            <p class="text-xs text-gray-500 dark:text-slate-400" x-text="selectedClient ? selectedClient.telephone : ''"></p>
+        </div>
+        <button type="button" @click="clearSelection()"
+                class="flex-shrink-0 inline-flex items-center gap-1 text-xs font-medium text-red-500 hover:text-red-700 transition-colors"
+                title="Retirer ce client">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            Retirer
+        </button>
     </div>
 
-    {{-- Dropdown résultats --}}
-    <div x-show="open && filtered.length > 0" x-cloak
-         class="absolute z-50 mt-1 w-full rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 shadow-xl max-h-52 overflow-y-auto">
-        <template x-for="c in filtered" :key="c.id">
-            <button type="button" @click="choose(c)"
-                    class="w-full flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-primary-50/50 dark:hover:bg-primary-900/20 transition-colors border-b border-gray-50 dark:border-slate-700/50 last:border-0 text-left">
-                <div class="w-7 h-7 bg-gradient-to-br from-primary-100 to-secondary-100 dark:from-primary-900/40 dark:to-secondary-900/40 rounded-full flex items-center justify-center text-xs font-bold text-primary-700 dark:text-primary-400 flex-shrink-0" x-text="c.initiale"></div>
-                <div class="flex-1 min-w-0">
-                    <p class="font-medium text-gray-900 dark:text-white truncate" x-text="c.nom"></p>
-                    <p class="text-xs text-gray-400 dark:text-slate-500" x-text="c.telephone"></p>
-                </div>
-                <svg x-show="selectedId === c.id" class="w-4 h-4 text-primary-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-            </button>
-        </template>
-    </div>
-    <p x-show="open && search.length >= 2 && filtered.length === 0" x-cloak
-       class="text-xs text-gray-400 dark:text-slate-500 mt-2 text-center py-2">Aucun client trouvé.</p>
+    {{-- Recherche + nouvel client (si aucun sélectionné) --}}
+    <div x-show="!selectedId">
+        <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text"
+                   x-model="search"
+                   @focus="open = true"
+                   @input="open = true"
+                   @keydown.escape="open = false"
+                   placeholder="Rechercher un client…"
+                   autocomplete="off"
+                   class="form-input pl-9 text-sm">
+        </div>
 
-    {{-- Nouveau client --}}
-    <button type="button" @click="newOpen = true"
-            class="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 transition-colors">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-        </svg>
-        Nouveau client
-    </button>
+        {{-- Dropdown résultats --}}
+        <div x-show="open && filtered.length > 0" x-cloak
+             class="absolute z-50 mt-1 w-full rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 shadow-xl max-h-52 overflow-y-auto">
+            <template x-for="c in filtered" :key="c.id">
+                <button type="button" @click="choose(c)"
+                        class="w-full flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-primary-50/50 dark:hover:bg-primary-900/20 transition-colors border-b border-gray-50 dark:border-slate-700/50 last:border-0 text-left">
+                    <div class="w-7 h-7 bg-gradient-to-br from-primary-100 to-secondary-100 dark:from-primary-900/40 dark:to-secondary-900/40 rounded-full flex items-center justify-center text-xs font-bold text-primary-700 dark:text-primary-400 flex-shrink-0" x-text="c.initiale"></div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-medium text-gray-900 dark:text-white truncate" x-text="c.nom"></p>
+                        <p class="text-xs text-gray-400 dark:text-slate-500" x-text="c.telephone"></p>
+                    </div>
+                    <svg x-show="selectedId === c.id" class="w-4 h-4 text-primary-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                </button>
+            </template>
+        </div>
+        <p x-show="open && search.length >= 2 && filtered.length === 0" x-cloak
+           class="text-xs text-gray-400 dark:text-slate-500 mt-2 text-center py-2">Aucun client trouvé.</p>
+
+        {{-- Nouveau client --}}
+        <button type="button" @click="newOpen = true"
+                class="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+            </svg>
+            Nouveau client
+        </button>
+    </div>
 
     {{-- Modal ajout rapide --}}
     <template x-if="newOpen">

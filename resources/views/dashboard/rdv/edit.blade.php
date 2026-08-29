@@ -29,7 +29,7 @@
             <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Client</p>
             <div class="relative">
                 <label class="form-label">Sélectionner un client existant</label>
-                <x-selecteur-client :clients="$clients" :preselectionne="$clientPreselectionne" old-client-id="{{ old('client_id', $rdv->client_id) }}" />
+                <x-selecteur-client :clients="$clients" :preselectionne="$clientPreselectionne" old-client-id="{{ old('client_id', $rdv->client_id) }}" preselection-nom="{{ $rdv->client_nom }}" />
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
