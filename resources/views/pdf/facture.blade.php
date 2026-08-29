@@ -29,6 +29,7 @@
     .partie:last-child { padding-right: 0; padding-left: 12px; }
     .partie-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; font-weight: bold; margin-bottom: 4px; }
     .partie-nom { font-size: 12px; font-weight: bold; color: #111827; margin-bottom: 2px; }
+    .partie-nom.emetteur { color: {{ $cp }}; }
     .partie-meta { font-size: 10px; color: #4b5563; line-height: 1.5; }
 
     table.items { width: 100%; border-collapse: collapse; margin-top: 18px; }
@@ -82,7 +83,7 @@
 <div class="parties">
     <div class="partie">
         <div class="partie-label">Émetteur</div>
-        <div class="partie-nom">{{ $vente->institut->nom ?? config('app.name') }}</div>
+        <div class="partie-nom emetteur">{{ $vente->institut->nom ?? config('app.name') }}</div>
         <div class="partie-meta">
             @if($vente->institut->ville ?? null){{ $vente->institut->ville }}<br>@endif
             @if($vente->institut->telephone ?? null){{ $vente->institut->telephone }}<br>@endif

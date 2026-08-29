@@ -15,6 +15,7 @@
     .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
     .header-left h1 { font-size: 22px; font-weight: bold; color: {{ $cp }}; letter-spacing: -0.3px; }
     .header-left .subtitle { font-size: 9.5px; color: #6b7280; margin-top: 4px; }
+    .header-left .subtitle .institut-nom { color: {{ $cp }}; font-weight: bold; }
     .header-right { text-align: right; }
     .period-badge { display: inline-block; background: {{ $cp }}14; color: {{ $cp }}; padding: 5px 14px; border-radius: 20px; font-size: 10px; font-weight: bold; margin-bottom: 6px; }
     .header-right .meta { font-size: 9px; color: #9ca3af; }
@@ -70,7 +71,7 @@
     <div class="header-left">
         <h1>Rapport financier</h1>
         <div class="subtitle">
-            {{ $institut->nom ?? 'Maëlya Gestion' }}
+            <span class="institut-nom">{{ $institut->nom ?? 'Maëlya Gestion' }}</span>
             @if($institut->adresse ?? null) · {{ $institut->adresse }}@endif
         </div>
     </div>

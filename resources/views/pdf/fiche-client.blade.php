@@ -12,7 +12,7 @@
         body { font-family: DejaVu Sans, sans-serif; font-size: 10pt; color: #1f2937; line-height: 1.5; }
 
         .header { text-align: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #d1d5db; }
-        .header .institut { font-size: 14pt; font-weight: bold; color: #111827; margin: 0; }
+        .header .institut { font-size: 14pt; font-weight: bold; color: {{ $cp }}; margin: 0; }
         .header .sous   { font-size: 8pt; color: #6b7280; margin: 2px 0 0 0; }
 
         .title { font-size: 11pt; font-weight: bold; color: #374151; margin: 16px 0 8px 0; padding-bottom: 4px; border-bottom: 1px solid #e5e7eb; text-transform: uppercase; letter-spacing: .08em; }

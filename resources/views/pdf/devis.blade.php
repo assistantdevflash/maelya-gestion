@@ -23,6 +23,7 @@
     .partie:last-child { padding-right: 0; padding-left: 12px; }
     .partie-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; font-weight: bold; margin-bottom: 4px; }
     .partie-nom { font-size: 12px; font-weight: bold; color: #111827; margin-bottom: 2px; }
+    .partie-nom.emetteur { color: {{ $cp }}; }
     .partie-meta { font-size: 10px; color: #4b5563; line-height: 1.5; }
     table.items { width: 100%; border-collapse: collapse; margin-top: 18px; }
     table.items thead th { font-size: 10px; text-transform: uppercase; color: #6b7280; padding: 8px 6px; background: #f9fafb; border-bottom: 2px solid #e5e7eb; text-align: left; }
@@ -46,7 +47,7 @@
     <div class="header-left">
         @if($institut->logo ?? null)
             <img src="{{ storage_path('app/public/' . $institut->logo) }}" style="max-height: 50px; max-width: 140px; margin-bottom: 6px; display: block;">
-            <div style="font-size: 14px; font-weight: bold; color: #8B5CF6; margin-bottom: 4px;">{{ $institut->nom ?? config('app.name') }}</div>
+            <div style="font-size: 14px; font-weight: bold; color: {{ $cp }}; margin-bottom: 4px;">{{ $institut->nom ?? config('app.name') }}</div>
         @else
             <div class="institut-nom">{{ $institut->nom ?? config('app.name') }}</div>
         @endif
@@ -65,7 +66,7 @@
 <div class="parties">
     <div class="partie">
         <div class="partie-label">Émetteur</div>
-        <div class="partie-nom">{{ $institut->nom ?? config('app.name') }}</div>
+        <div class="partie-nom emetteur">{{ $institut->nom ?? config('app.name') }}</div>
         <div class="partie-meta">
             @if($institut->adresse ?? null){{ $institut->adresse }}<br>@endif
             @if($institut->ville ?? null){{ $institut->ville }}<br>@endif
