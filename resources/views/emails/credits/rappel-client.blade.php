@@ -15,11 +15,14 @@
         $client   = $credit->client;
         $institut = $credit->institut;
         $date     = \Carbon\Carbon::parse($echeance->date_prevue);
+        $cp = $institut?->couleur_primaire ?? '#7c3aed';
+        $cs = $institut?->couleur_secondaire ?? '#a855f7';
+        $ca = $institut?->couleur_accent ?? '#7c3aed';
     @endphp
 
     {{-- HEADER --}}
     <tr>
-        <td bgcolor="#7c3aed" style="background-color:#7c3aed;background:linear-gradient(135deg,#7c3aed,#a855f7);padding:36px 32px;text-align:center;">
+        <td bgcolor="{{ $cp }}" style="background-color:{{ $cp }};background:linear-gradient(135deg,{{ $cp }},{{ $cs }});padding:36px 32px;text-align:center;">
             <div style="width:56px;height:56px;background:rgba(255,255,255,0.2);border-radius:16px;display:inline-block;text-align:center;line-height:56px;margin-bottom:16px;font-size:28px;">📅</div>
             <h1 style="color:#ffffff !important;font-size:22px;font-weight:700;margin:0 0 6px;">Rappel – echeance demain</h1>
             <p style="color:rgba(255,255,255,0.85) !important;font-size:14px;margin:0 0 4px;">Bonjour {{ $client?->prenom ?? $client?->nom_complet ?? 'Client' }}, votre echeance de credit arrive a echeance demain.</p>
@@ -30,7 +33,7 @@
     {{-- BODY --}}
     <tr>
         <td style="padding:32px;">
-            <div style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:10px;padding:14px 16px;margin-bottom:28px;font-size:14px;color:#4c1d95;">
+            <div style="background:{{ $cp }}14;border:1px solid {{ $cp }}66;border-radius:10px;padding:14px 16px;margin-bottom:28px;font-size:14px;color:{{ $cp }};">
                 Votre echeance n°{{ $echeance->numero }} sur {{ $credit->nb_echeances }} est prevue <strong>demain {{ $date->translatedFormat('l d F Y') }}</strong>.
             </div>
 
@@ -44,7 +47,7 @@
                     <td style="font-size:14px;color:#111827;padding:14px 16px;font-weight:600;">
                         N°{{ $echeance->numero }}/{{ $credit->nb_echeances }}
                     </td>
-                    <td style="font-size:18px;color:#7c3aed;padding:14px 16px;font-weight:700;">
+                    <td style="font-size:18px;color:{{ $cp }};padding:14px 16px;font-weight:700;">
                         {{ number_format($echeance->montant - $echeance->montant_paye, 0, ',', ' ') }} FCFA
                     </td>
                     <td style="font-size:18px;color:#dc2626;padding:14px 16px;font-weight:700;">
@@ -60,7 +63,7 @@
 
             <div style="text-align:center;margin:32px 0 8px;">
                 <a href="{{ url('/fiche-credit/' . $credit->id) }}"
-                   style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;">
+                   style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,{{ $cp }},{{ $cs }});color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;">
                     Voir ma fiche de credit
                 </a>
             </div>

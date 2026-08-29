@@ -1,3 +1,9 @@
+@php
+    $institut = $vente->institut;
+    $cp = $institut->couleur_primaire ?? '#8B5CF6';
+    $cs = $institut->couleur_secondaire ?? '#ec4899';
+    $ca = $institut->couleur_accent ?? '#f59e0b';
+@endphp
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -9,9 +15,9 @@
     .header { display: table; width: 100%; margin-bottom: 24px; }
     .header-left, .header-right { display: table-cell; vertical-align: top; }
     .header-right { text-align: right; }
-    .institut-nom { font-size: 18px; font-weight: bold; color: #8B5CF6; margin-bottom: 4px; }
+    .institut-nom { font-size: 18px; font-weight: bold; color: {{ $cp }}; margin-bottom: 4px; }
     .institut-meta { font-size: 10px; color: #6b7280; line-height: 1.5; }
-    .facture-badge { display: inline-block; background: #8B5CF6; color: #fff; padding: 6px 14px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .facture-badge { display: inline-block; background: {{ $cp }}; color: #fff; padding: 6px 14px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
     .facture-numero { font-size: 14px; font-weight: bold; color: #111827; }
     .facture-date { font-size: 10px; color: #6b7280; margin-top: 4px; }
 
@@ -38,9 +44,9 @@
     .totals td { padding: 6px 8px; font-size: 11px; }
     .totals td.label { color: #6b7280; text-align: right; }
     .totals td.value { text-align: right; font-weight: bold; color: #111827; }
-    .totals tr.total td { background: #f5f3ff; border-top: 2px solid #8B5CF6; border-bottom: 2px solid #8B5CF6; font-size: 13px; padding: 10px 8px; color: #6d28d9; }
+    .totals tr.total td { background: {{ $cp }}14; border-top: 2px solid {{ $cp }}; border-bottom: 2px solid {{ $cp }}; font-size: 13px; padding: 10px 8px; color: {{ $cp }}; }
 
-    .paiement { margin-top: 20px; padding: 10px 14px; background: #f9fafb; border-left: 3px solid #8B5CF6; font-size: 10px; color: #4b5563; }
+    .paiement { margin-top: 20px; padding: 10px 14px; background: #f9fafb; border-left: 3px solid {{ $cp }}; font-size: 10px; color: #4b5563; }
     .paiement strong { color: #111827; }
 
     .mentions { margin-top: 28px; padding-top: 14px; border-top: 1px dashed #d1d5db; font-size: 8.5px; color: #6b7280; line-height: 1.6; }
@@ -99,7 +105,7 @@
                 {{-- Personne physique --}}
                 <div class="partie-nom">{{ $vente->client->prenom }} {{ $vente->client->nom }}</div>
                 <div class="partie-meta">
-                    @if($vente->client->est_patient)<span style="color:#8B5CF6;font-weight:bold;text-transform:uppercase;font-size:8px;">Patient</span><br>@endif
+                    @if($vente->client->est_patient)<span style="color:{{ $cp }};font-weight:bold;text-transform:uppercase;font-size:8px;">Patient</span><br>@endif
                     @if($vente->client->telephone){{ $vente->client->telephone }}<br>@endif
                     @if($vente->client->email){{ $vente->client->email }}@endif
                 </div>

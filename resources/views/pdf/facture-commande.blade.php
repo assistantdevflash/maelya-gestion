@@ -1,3 +1,9 @@
+@php
+    $institut = $commande->institut;
+    $cp = $institut->couleur_primaire ?? '#9333ea';
+    $cs = $institut->couleur_secondaire ?? '#ec4899';
+    $ca = $institut->couleur_accent ?? '#f59e0b';
+@endphp
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -9,9 +15,9 @@
     .header { display: table; width: 100%; margin-bottom: 24px; }
     .header-left, .header-right { display: table-cell; vertical-align: top; }
     .header-right { text-align: right; }
-    .institut-nom { font-size: 18px; font-weight: bold; color: #9333ea; margin-bottom: 4px; }
+    .institut-nom { font-size: 18px; font-weight: bold; color: {{ $cp }}; margin-bottom: 4px; }
     .institut-meta { font-size: 10px; color: #6b7280; line-height: 1.5; }
-    .facture-badge { display: inline-block; background: #9333ea; color: #fff; padding: 6px 14px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .facture-badge { display: inline-block; background: {{ $cp }}; color: #fff; padding: 6px 14px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
     .facture-numero { font-size: 14px; font-weight: bold; color: #111827; }
     .facture-date { font-size: 10px; color: #6b7280; margin-top: 4px; }
 
@@ -37,7 +43,7 @@
     .totaux table { width: 100%; }
     .totaux td { padding: 5px 0; font-size: 10px; }
     .totaux td:last-child { text-align: right; }
-    .totaux .total-line td { font-size: 13px; font-weight: bold; border-top: 2px solid #1f2937; padding-top: 8px; color: #9333ea; }
+    .totaux .total-line td { font-size: 13px; font-weight: bold; border-top: 2px solid #1f2937; padding-top: 8px; color: {{ $cp }}; }
 
     .footer { margin-top: 40px; text-align: center; font-size: 9px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 12px; }
 

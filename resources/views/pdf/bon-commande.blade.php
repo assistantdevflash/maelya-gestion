@@ -1,3 +1,9 @@
+@php
+    $institut = $bon->institut;
+    $cp = $institut->couleur_primaire ?? '#2563eb';
+    $cs = $institut->couleur_secondaire ?? '#ec4899';
+    $ca = $institut->couleur_accent ?? '#f59e0b';
+@endphp
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,8 +12,8 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'DejaVu Sans', sans-serif; font-size: 11px; color: #1f2937; line-height: 1.4; padding: 20px 30px; }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #2563eb; padding-bottom: 14px; margin-bottom: 16px; }
-        .header-left h1 { font-size: 20px; font-weight: 800; color: #2563eb; margin-bottom: 2px; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid {{ $cp }}; padding-bottom: 14px; margin-bottom: 16px; }
+        .header-left h1 { font-size: 20px; font-weight: 800; color: {{ $cp }}; margin-bottom: 2px; }
         .header-left .institut { font-size: 12px; color: #6b7280; }
         .header-right { text-align: right; }
         .badge { display: inline-block; padding: 3px 12px; border-radius: 999px; font-size: 10px; font-weight: 700; text-transform: uppercase; }

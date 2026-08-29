@@ -8,6 +8,9 @@
 <body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f4f7;color:#333;">
 @php
     $institut = $rdv?->institut ?? $vente?->institut;
+    $cp = $institut?->couleur_primaire ?? '#9333ea';
+    $cs = $institut?->couleur_secondaire ?? '#ec4899';
+    $ca = $institut?->couleur_accent ?? '#9333ea';
 @endphp
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f7;">
 <tr><td align="center" style="padding:32px 16px;">
@@ -15,7 +18,7 @@
 
     {{-- HEADER --}}
     <tr>
-        <td bgcolor="#9333ea" style="background-color:#9333ea;background:linear-gradient(135deg,#9333ea,#ec4899);padding:36px 32px;text-align:center;">
+        <td bgcolor="{{ $cp }}" style="background-color:{{ $cp }};background:linear-gradient(135deg,{{ $cp }},{{ $cs }});padding:36px 32px;text-align:center;">
             <div style="width:56px;height:56px;background:rgba(255,255,255,0.2);border-radius:16px;display:inline-block;text-align:center;line-height:56px;margin-bottom:16px;font-size:28px;">🌸</div>
             <h1 style="color:#ffffff !important;font-size:22px;font-weight:700;margin:0 0 6px;">Merci pour votre visite !</h1>
             @if($rdv)
@@ -45,7 +48,7 @@
 
             <div style="text-align:center;margin:8px 0 28px;">
                 <a href="{{ $lien }}"
-                   style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,#9333ea,#ec4899);color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;">
+                   style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,{{ $cp }},{{ $cs }});color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;">
                     ⭐ Donner mon avis
                 </a>
             </div>

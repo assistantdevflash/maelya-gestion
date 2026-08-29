@@ -1,3 +1,8 @@
+@php
+    $cp = $institut->couleur_primaire ?? '#ec4899';
+    $cs = $institut->couleur_secondaire ?? '#7c3aed';
+    $ca = $institut->couleur_accent ?? '#f59e0b';
+@endphp
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -10,7 +15,7 @@
         .card { width: 240px; height: 150px; position: relative; }
 
         .header {
-            background-color: #ec4899;
+            background-color: {{ $cp }};
             color: #fff;
             padding: 10px 10px 8px 10px;
             text-align: center;
@@ -44,10 +49,10 @@
             margin: 0;
         }
         .solde {
-            font-size: 22px; font-weight: bold; color: #ec4899;
+            font-size: 22px; font-weight: bold; color: {{ $cp }};
             line-height: 1; margin: 1px 0 0 0;
         }
-        .solde .pts { font-size: 8px; color: #6b7280; font-weight: normal; }
+        .solde .pts { font-size: 8px; color: {{ $cp }}; font-weight: normal; }
 
         .footer {
             position: absolute;
@@ -55,7 +60,7 @@
             font-size: 6px; color: #9ca3af;
             text-align: center;
         }
-        .footer .url { color: #ec4899; }
+        .footer .url { color: {{ $cp }}; }
     </style>
 </head>
 <body>

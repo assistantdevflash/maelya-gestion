@@ -1,3 +1,8 @@
+@php
+    $cp = $institut->couleur_primaire ?? '#7c3aed';
+    $cs = $institut->couleur_secondaire ?? '#8b5cf6';
+    $ca = $institut->couleur_accent ?? '#f59e0b';
+@endphp
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -8,23 +13,23 @@
 
     /* ── Header ── */
     .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
-    .header-left h1 { font-size: 22px; font-weight: bold; color: #7c3aed; letter-spacing: -0.3px; }
+    .header-left h1 { font-size: 22px; font-weight: bold; color: {{ $cp }}; letter-spacing: -0.3px; }
     .header-left .subtitle { font-size: 9.5px; color: #6b7280; margin-top: 4px; }
     .header-right { text-align: right; }
-    .period-badge { display: inline-block; background: #f3e8ff; color: #7c3aed; padding: 5px 14px; border-radius: 20px; font-size: 10px; font-weight: bold; margin-bottom: 6px; }
+    .period-badge { display: inline-block; background: {{ $cp }}14; color: {{ $cp }}; padding: 5px 14px; border-radius: 20px; font-size: 10px; font-weight: bold; margin-bottom: 6px; }
     .header-right .meta { font-size: 9px; color: #9ca3af; }
-    .divider { border: none; border-top: 2px solid #8b5cf6; margin-bottom: 24px; }
+    .divider { border: none; border-top: 2px solid {{ $cp }}; margin-bottom: 24px; }
 
     /* ── KPI ── */
     .kpi-table { width: 100%; border-collapse: separate; border-spacing: 10px; margin-bottom: 14px; }
     .kpi-box { border-radius: 8px; padding: 12px 14px; width: 50%; }
-    .kpi-box.violet { background: #f5f3ff; border-left: 4px solid #7c3aed; }
+    .kpi-box.violet { background: {{ $cp }}14; border-left: 4px solid {{ $cp }}; }
     .kpi-box.red    { background: #fff5f5; border-left: 4px solid #dc2626; }
     .kpi-box.green  { background: #f0fdf4; border-left: 4px solid #059669; }
     .kpi-box.gray   { background: #f9fafb; border-left: 4px solid #9ca3af; }
     .kpi-label { font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.5px; color: #9ca3af; margin-bottom: 5px; }
     .kpi-value { font-size: 17px; font-weight: bold; }
-    .kpi-box.violet .kpi-value { color: #7c3aed; }
+    .kpi-box.violet .kpi-value { color: {{ $cp }}; }
     .kpi-box.red .kpi-value    { color: #dc2626; }
     .kpi-box.green .kpi-value  { color: #059669; }
     .kpi-box.gray .kpi-value   { color: #374151; }
@@ -35,11 +40,11 @@
 
     /* ── Tables ── */
     table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-    thead th { background: #f8f7ff; color: #7c3aed; font-size: 8.5px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.4px; padding: 7px 10px; text-align: left; border-bottom: 2px solid #ddd6fe; }
+    thead th { background: {{ $cp }}14; color: {{ $cp }}; font-size: 8.5px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.4px; padding: 7px 10px; text-align: left; border-bottom: 2px solid {{ $cp }}; }
     tbody tr:nth-child(even) { background: #fafafa; }
     tbody tr:last-child td { border-bottom: none; }
     tbody td { padding: 7px 10px; font-size: 10px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
-    tfoot td { padding: 8px 10px; font-weight: bold; background: #f5f3ff; color: #7c3aed; font-size: 10px; border-top: 2px solid #ddd6fe; }
+    tfoot td { padding: 8px 10px; font-weight: bold; background: {{ $cp }}14; color: {{ $cp }}; font-size: 10px; border-top: 2px solid {{ $cp }}; }
     .text-right { text-align: right; }
     .text-center { text-align: center; }
     .font-bold { font-weight: bold; }

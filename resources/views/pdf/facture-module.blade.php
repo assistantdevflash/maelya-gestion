@@ -1,3 +1,8 @@
+@php
+    $cp = $institut->couleur_primaire ?? '#059669';
+    $cs = $institut->couleur_secondaire ?? '#8B5CF6';
+    $ca = $institut->couleur_accent ?? '#f59e0b';
+@endphp
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -9,9 +14,9 @@
     .header { display: table; width: 100%; margin-bottom: 24px; }
     .header-left, .header-right { display: table-cell; vertical-align: top; }
     .header-right { text-align: right; }
-    .institut-nom { font-size: 18px; font-weight: bold; color: #059669; margin-bottom: 4px; }
+    .institut-nom { font-size: 18px; font-weight: bold; color: {{ $cp }}; margin-bottom: 4px; }
     .institut-meta { font-size: 10px; color: #6b7280; line-height: 1.5; }
-    .badge { display: inline-block; background: {{ $facture->estPayee ? '#059669' : '#8B5CF6' }}; color: #fff; padding: 6px 14px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .badge { display: inline-block; background: {{ $facture->estPayee ? $cp : $cs }}; color: #fff; padding: 6px 14px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
     .numero { font-size: 14px; font-weight: bold; color: #111827; }
     .date-info { font-size: 10px; color: #6b7280; margin-top: 4px; }
     .parties { display: table; width: 100%; margin-top: 16px; }
@@ -31,8 +36,8 @@
     .totals td { padding: 6px 8px; font-size: 11px; }
     .totals td.label { color: #6b7280; text-align: right; }
     .totals td.value { text-align: right; font-weight: bold; color: #111827; }
-    .totals tr.total td { background: #ecfdf5; border-top: 2px solid #059669; border-bottom: 2px solid #059669; font-size: 13px; padding: 10px 8px; color: #059669; }
-    .paiement-info { margin-top: 16px; padding: 10px 14px; background: #f9fafb; border-left: 3px solid #059669; font-size: 10px; color: #4b5563; }
+    .totals tr.total td { background: {{ $cp }}14; border-top: 2px solid {{ $cp }}; border-bottom: 2px solid {{ $cp }}; font-size: 13px; padding: 10px 8px; color: {{ $cp }}; }
+    .paiement-info { margin-top: 16px; padding: 10px 14px; background: #f9fafb; border-left: 3px solid {{ $cp }}; font-size: 10px; color: #4b5563; }
     .mentions { margin-top: 28px; padding-top: 14px; border-top: 1px dashed #d1d5db; font-size: 8.5px; color: #6b7280; line-height: 1.6; }
     .footer { position: fixed; bottom: 15px; left: 35px; right: 35px; text-align: center; font-size: 8.5px; color: #9ca3af; padding-top: 8px; border-top: 1px solid #e5e7eb; }
 </style>
@@ -42,7 +47,7 @@
     <div class="header-left">
         @if($institut->logo ?? null)
             <img src="{{ storage_path('app/public/' . $institut->logo) }}" style="max-height: 50px; max-width: 140px; margin-bottom: 6px; display: block;">
-            <div style="font-size: 14px; font-weight: bold; color: #059669; margin-bottom: 4px;">{{ $institut->nom ?? config('app.name') }}</div>
+            <div style="font-size: 14px; font-weight: bold; color: {{ $cp }}; margin-bottom: 4px;">{{ $institut->nom ?? config('app.name') }}</div>
         @else
             <div class="institut-nom">{{ $institut->nom ?? config('app.name') }}</div>
         @endif

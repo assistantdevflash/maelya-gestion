@@ -143,7 +143,7 @@
             </div>
 
             <div class="mt-8 text-center">
-                <a href="{{ route('shop.index', $institut->slug) }}" class="text-indigo-600 hover:text-indigo-700 font-medium">
+                <a href="{{ route('shop.index', $institut->slug) }}" class="boutique-accent font-medium">
                     ← Retour à la boutique
                 </a>
             </div>

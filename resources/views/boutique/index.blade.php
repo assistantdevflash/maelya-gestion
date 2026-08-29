@@ -22,6 +22,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    {{-- Couleurs de l'établissement --}}
+    @include('boutique.partials.couleurs', ['institut' => $institut])
+
     {{-- Meta Pixel --}}
     @if($institut->facebook_pixel_id)
     <script>
@@ -35,7 +38,7 @@
     <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{ $institut->facebook_pixel_id }}&ev=PageView&noscript=1"/></noscript>
     @endif
 </head>
-<body class="bg-purple-50 dark:bg-slate-900 min-h-screen" x-data="boutique()" x-cloak>
+<body class="boutique-soft dark:bg-slate-900 min-h-screen" x-data="boutique()" x-cloak>
     {{-- Toast notification --}}
     <div x-show="toast.show"
          x-transition:enter="transition ease-out duration-300"
@@ -72,7 +75,7 @@
                         Partager
                     </a>
                     {{-- Bouton panier --}}
-                    <button @click="panierOpen = true" class="relative inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:bg-primary-700 transition-all hover:scale-105 flex-shrink-0">
+                    <button @click="panierOpen = true" class="boutique-btn relative inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105 flex-shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                         <span class="hidden sm:inline">Panier</span>
                         <span x-show="totalArticles > 0" x-text="totalArticles"
@@ -95,10 +98,10 @@
                         <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     </div>
                     <input type="text" x-model="searchQuery" placeholder="Rechercher un produit..."
-                        class="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-shadow shadow-sm">
+                        class="boutique-ring w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:border-transparent transition-shadow shadow-sm">
                 </div>
                 {{-- Tri --}}
-                <select x-model="sortBy" class="py-3 px-4 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-700 dark:text-white focus:ring-2 focus:ring-primary-500 shadow-sm">
+                <select x-model="sortBy" class="boutique-ring py-3 px-4 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-700 dark:text-white focus:ring-2 shadow-sm">
                     <option value="default">Tri : Défaut</option>
                     <option value="nom_asc">Nom : A → Z</option>
                     <option value="prix_asc">Prix : croissant</option>
@@ -111,11 +114,11 @@
             @if($categories->isNotEmpty())
             <div class="flex flex-wrap gap-2">
                 <button @click="setCategorie(null)"
-                    :class="selectedCategorie === null ? 'bg-primary-600 text-white ring-2 ring-primary-600 ring-offset-2' : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-100'"
+                    :class="selectedCategorie === null ? 'boutique-btn' : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-100'"
                     class="px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-slate-600 transition-all">Tous</button>
                 @foreach($categories as $cat)
                 <button @click="setCategorie('{{ $cat->id }}')"
-                    :class="selectedCategorie === '{{ $cat->id }}' ? 'bg-primary-600 text-white ring-2 ring-primary-600 ring-offset-2' : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-100'"
+                    :class="selectedCategorie === '{{ $cat->id }}' ? 'boutique-btn' : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-100'"
                     class="px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-slate-600 transition-all">{{ $cat->nom }}</button>
                 @endforeach
             </div>
@@ -152,7 +155,7 @@
                     <div class="p-3 sm:p-4 flex flex-col flex-1 gap-2">
                         <div>
                             <a :href="'/shop/{{ $institut->slug }}/produit/' + produit.id">
-                                <h3 class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base line-clamp-2 hover:text-primary-600 transition-colors" x-text="produit.nom"></h3>
+                                <h3 class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base line-clamp-2 boutique-accent-hover transition-colors" x-text="produit.nom"></h3>
                             </a>
                             <p x-show="produit.categorie" class="text-xs text-gray-400 mt-0.5" x-text="produit.categorie"></p>
                         </div>
@@ -163,12 +166,12 @@
                                     <span x-text="new Intl.NumberFormat('fr-FR').format(produit.prix)"></span> F
                                 </p>
                                 <p class="text-base sm:text-lg font-bold"
-                                   :class="produit.prix_promo ? 'text-red-500 dark:text-red-400' : 'text-primary-600 dark:text-primary-400'">
+                                   :class="produit.prix_promo ? 'text-red-500 dark:text-red-400' : 'boutique-accent'">
                                     <span x-text="new Intl.NumberFormat('fr-FR').format(produit.prix_promo || produit.prix)"></span> <span class="text-sm font-normal">F</span>
                                 </p>
                             </div>
                             <button @click="ajouterAuPanier(produit)"
-                                class="inline-flex items-center gap-1 px-3 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium text-sm shadow-md hover:shadow-lg transition-all hover:scale-105">
+                                class="boutique-btn inline-flex items-center gap-1 px-3 py-2 rounded-xl font-medium text-sm shadow-md hover:shadow-lg transition-all hover:scale-105">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
                                 <span class="hidden sm:inline">Ajouter</span>
                             </button>
@@ -184,14 +187,14 @@
                 <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             </div>
             <p class="text-gray-500 text-lg">Aucun produit trouvé</p>
-            <button @click="searchQuery = ''; selectedCategorie = null" class="mt-4 text-primary-600 hover:text-primary-700 font-medium">Réinitialiser</button>
+            <button @click="searchQuery = ''; selectedCategorie = null" class="mt-4 boutique-accent font-medium">Réinitialiser</button>
         </div>
 
         {{-- Info livraison --}}
         <br><br>
         <div class="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="flex items-center gap-3 p-4 bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700">
-                <svg class="w-8 h-8 text-primary-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2L19 8M10 12v4M14 12v4"/></svg>
+                <svg class="w-8 h-8 text-primary-500 boutique-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2L19 8M10 12v4M14 12v4"/></svg>
                 <div>
                     <p class="font-semibold text-gray-900 dark:text-white text-sm">Livraison à domicile</p>
                     <p class="text-xs text-gray-500 dark:text-slate-400">{{ $institut->boutique_delai_livraison ?? '2-5 jours ouvrables' }}</p>
@@ -286,7 +289,7 @@
                         <span x-text="new Intl.NumberFormat('fr-FR').format(total) + ' F'"></span>
                     </div>
                 </div>
-                <a href="{{ route('shop.commander.form', $institut->slug) }}" class="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all text-center block">
+                <a href="{{ route('shop.commander.form', $institut->slug) }}" class="boutique-btn w-full py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all text-center block">
                     Commander maintenant
                 </a>
             </div>
@@ -296,7 +299,7 @@
     {{-- Bouton Commander — redirige vers la page checkout --}}
     <div x-show="panier.length > 0" class="fixed bottom-24 right-6 z-40">
         <a href="{{ route('shop.commander.form', $institut->slug) }}"
-           class="flex items-center gap-3 px-6 py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-2xl font-bold shadow-xl hover:shadow-2xl transition-all">
+           class="boutique-btn flex items-center gap-3 px-6 py-4 rounded-2xl font-bold shadow-xl hover:shadow-2xl transition-all">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
             <span>Commander</span>
             <span class="bg-white/20 px-2.5 py-1 rounded-full text-sm" x-text="new Intl.NumberFormat('fr-FR').format(sousTotal) + ' F'"></span>

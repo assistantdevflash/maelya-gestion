@@ -37,6 +37,11 @@
         'acceptee' => '✅',
         default => '📦',
     };
+
+    $institut = $commande->institut;
+    $cp = $institut?->couleur_primaire ?? '#9333ea';
+    $cs = $institut?->couleur_secondaire ?? '#ec4899';
+    $ca = $institut?->couleur_accent ?? '#9333ea';
 @endphp
 <body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f4f7;color:#333;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f7;">
@@ -83,7 +88,7 @@
                 </tr>
                 <tr>
                     <td style="font-size:14px;color:#111827;padding:14px 16px;font-weight:600;">{{ $commande->numero }}</td>
-                    <td style="font-size:18px;color:#9333ea;padding:14px 16px;text-align:right;font-weight:800;">{{ number_format($commande->total, 0, ',', ' ') }} FCFA</td>
+                    <td style="font-size:18px;color:{{ $cp }};padding:14px 16px;text-align:right;font-weight:800;">{{ number_format($commande->total, 0, ',', ' ') }} FCFA</td>
                 </tr>
             </table>
 

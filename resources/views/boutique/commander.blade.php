@@ -25,7 +25,7 @@
             <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
         </div>
         <p class="text-gray-500 dark:text-gray-400 mb-4">Votre panier est vide.</p>
-        <a href="{{ route('shop.index', $institut->slug) }}" class="inline-block px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-semibold transition">Parcourir la boutique</a>
+        <a href="{{ route('shop.index', $institut->slug) }}" class="boutique-btn inline-block px-6 py-3 rounded-xl font-semibold transition">Parcourir la boutique</a>
     </div>
 
     {{-- Formulaire --}}
@@ -50,7 +50,7 @@
                 </template>
                 <div class="border-t border-gray-200 dark:border-slate-700 pt-2 mt-2 flex justify-between font-bold">
                     <span class="text-gray-900 dark:text-white">Total</span>
-                    <span class="text-primary-600 dark:text-primary-400" x-text="new Intl.NumberFormat('fr-FR').format(total) + ' F'"></span>
+                    <span class="boutique-accent" x-text="new Intl.NumberFormat('fr-FR').format(total) + ' F'"></span>
                 </div>
             </div>
 
@@ -97,7 +97,7 @@
             </div>
             @endif
 
-            <button type="submit" @click="handleSubmit($event)" class="w-full py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold text-lg shadow-lg transition-all flex items-center justify-center gap-3">
+            <button type="submit" @click="handleSubmit($event)" class="boutique-btn w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all flex items-center justify-center gap-3">
                 <span x-show="!submitting">Confirmer la commande</span>
                 <span x-show="submitting" class="flex items-center gap-2"><svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Envoi en cours...</span>
             </button>

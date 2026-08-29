@@ -1,3 +1,9 @@
+@php
+    $institut = $rdv->institut;
+    $cp = $institut?->couleur_primaire ?? '#9333ea';
+    $cs = $institut?->couleur_secondaire ?? '#ec4899';
+    $ca = $institut?->couleur_accent ?? '#9333ea';
+@endphp
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -12,7 +18,7 @@
 
     {{-- HEADER --}}
     <tr>
-        <td bgcolor="#9333ea" style="background-color:#9333ea;background:linear-gradient(135deg,#9333ea,#ec4899);padding:36px 32px;text-align:center;">
+        <td bgcolor="{{ $cp }}" style="background-color:{{ $cp }};background:linear-gradient(135deg,{{ $cp }},{{ $cs }});padding:36px 32px;text-align:center;">
             <div style="width:56px;height:56px;background:rgba(255,255,255,0.2);border-radius:16px;display:inline-block;text-align:center;line-height:56px;margin-bottom:16px;font-size:28px;">📅</div>
             <h1 style="color:#ffffff !important;font-size:22px;font-weight:700;margin:0 0 6px;">Demande reçue !</h1>
             <p style="color:rgba(255,255,255,0.85) !important;font-size:14px;margin:0 0 4px;">Bonjour {{ $rdv->client_nom }}, votre demande a bien été enregistrée.</p>
@@ -28,7 +34,7 @@
                 ⏳ <strong>Votre demande est en attente de confirmation.</strong> L'établissement vous contactera bientôt par téléphone ou par e-mail.
             </div>
 
-            <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#9333ea;margin-bottom:12px;">Détails de votre demande</p>
+            <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:{{ $cp }};margin-bottom:12px;">Détails de votre demande</p>
             <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:28px;">
                 <tr style="background:#f9fafb;">
                     <td style="font-size:11px;font-weight:700;text-transform:uppercase;color:#6b7280;padding:10px 16px;">Date</td>
@@ -37,7 +43,7 @@
                 </tr>
                 <tr>
                     <td style="font-size:14px;color:#111827;padding:14px 16px;font-weight:600;">{{ $rdv->debut_le->translatedFormat('l d F Y') }}</td>
-                    <td style="font-size:14px;color:#9333ea;padding:14px 16px;font-weight:700;">{{ $rdv->debut_le->format('H\hi') }}</td>
+                    <td style="font-size:14px;color:{{ $cp }};padding:14px 16px;font-weight:700;">{{ $rdv->debut_le->format('H\hi') }}</td>
                     <td style="font-size:14px;color:#111827;padding:14px 16px;">{{ $rdv->duree_minutes }} min</td>
                 </tr>
             </table>
@@ -48,7 +54,7 @@
                 @foreach($rdv->prestations as $p)
                 <tr>
                     <td style="padding:5px 0;font-size:14px;color:#374151;">
-                        <span style="display:inline-block;width:8px;height:8px;background:linear-gradient(135deg,#9333ea,#ec4899);border-radius:50%;margin-right:10px;vertical-align:middle;"></span>
+                        <span style="display:inline-block;width:8px;height:8px;background:linear-gradient(135deg,{{ $cp }},{{ $cs }});border-radius:50%;margin-right:10px;vertical-align:middle;"></span>
                         {{ $p->nom }}@if($p->duree) &nbsp;<span style="color:#9ca3af;font-size:12px;">· {{ $p->duree }} min</span>@endif
                     </td>
                 </tr>

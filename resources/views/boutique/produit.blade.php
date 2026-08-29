@@ -21,6 +21,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    {{-- Couleurs de l'établissement --}}
+    @include('boutique.partials.couleurs', ['institut' => $institut])
+
     {{-- Meta Pixel --}}
     @if($institut->facebook_pixel_id)
     <script>
@@ -34,7 +37,7 @@
     <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{ $institut->facebook_pixel_id }}&ev=PageView&noscript=1"/></noscript>
     @endif
 </head>
-<body class="bg-purple-50 dark:bg-slate-900 min-h-screen" x-data="ficheProduit()" x-cloak>
+<body class="boutique-soft dark:bg-slate-900 min-h-screen" x-data="ficheProduit()" x-cloak>
 
     {{-- Toast --}}
     <div x-show="toast.show"
@@ -65,7 +68,7 @@
                     <span class="font-bold text-gray-900 dark:text-white text-sm truncate">{{ $institut->nom }}</span>
                 </div>
                 <a href="{{ route('shop.index', $institut->slug) }}?panier=1"
-                   class="relative inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-xl font-semibold shadow-lg hover:bg-primary-700 transition-all hover:scale-105 flex-shrink-0">
+                   class="boutique-btn relative inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold shadow-lg transition-all hover:scale-105 flex-shrink-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                     <span class="hidden sm:inline">Panier</span>
                     <span x-show="totalArticles > 0" x-text="totalArticles"
@@ -79,10 +82,10 @@
 
         {{-- Breadcrumb --}}
         <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6">
-            <a href="{{ route('shop.index', $institut->slug) }}" class="hover:text-primary-600 transition-colors">Boutique</a>
+            <a href="{{ route('shop.index', $institut->slug) }}" class="boutique-accent-hover transition-colors">Boutique</a>
             @if($produit->categorie)
             <span>/</span>
-            <a href="{{ route('shop.index', $institut->slug) }}" class="hover:text-primary-600 transition-colors">{{ $produit->categorie->nom }}</a>
+            <a href="{{ route('shop.index', $institut->slug) }}" class="boutique-accent-hover transition-colors">{{ $produit->categorie->nom }}</a>
             @endif
             <span>/</span>
             <span class="text-gray-900 dark:text-white font-medium">{{ $produit->nom }}</span>
@@ -114,7 +117,7 @@
             <div class="flex gap-2 mt-3 overflow-x-auto pb-1">
                 @foreach($galleryImages as $img)
                 <button @click="activeImg = '{{ $img->chemin ?? $img['chemin'] }}'"
-                        :class="activeImg === '{{ $img->chemin ?? $img['chemin'] }}' ? 'ring-2 ring-primary-500 ring-offset-2' : 'hover:opacity-80'"
+                        :class="activeImg === '{{ $img->chemin ?? $img['chemin'] }}' ? 'boutique-ring-active' : 'hover:opacity-80'"
                         class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 transition-all">
                     <img src="{{ asset('storage/' . ($img->chemin ?? $img['chemin'])) }}" alt="" class="w-full h-full object-cover">
                 </button>
@@ -151,7 +154,7 @@
                         {{ number_format($produit->prix_promo, 0, ',', ' ') }} <span class="text-xl font-normal">FCFA</span>
                     </span>
                     @else
-                    <span class="text-3xl font-bold text-primary-600 dark:text-primary-400">
+                    <span class="text-3xl font-bold boutique-accent">
                         {{ number_format($produit->prix_vente, 0, ',', ' ') }} <span class="text-xl font-normal">FCFA</span>
                     </span>
                     @endif
@@ -200,12 +203,12 @@
                     </div>
 
                     <button @click="ajouterEtRetourner()"
-                            class="w-full py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3">
+                            class="boutique-btn w-full py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                         Ajouter au panier
                     </button>
 
-                    <a href="{{ route('shop.index', $institut->slug) }}" class="block text-center text-sm text-gray-500 hover:text-primary-600 transition-colors">
+                    <a href="{{ route('shop.index', $institut->slug) }}" class="block text-center text-sm text-gray-500 boutique-accent-hover transition-colors">
                         ← Continuer mes achats
                     </a>
                 </div>
@@ -254,7 +257,7 @@
                     </div>
                     <div class="p-3 flex-1">
                         <h3 class="font-semibold text-gray-900 dark:text-white text-sm line-clamp-2">{{ $sim->nom }}</h3>
-                        <p class="text-primary-600 font-bold mt-1">{{ number_format($sim->prix_vente, 0, ',', ' ') }} F</p>
+                        <p class="boutique-accent font-bold mt-1">{{ number_format($sim->prix_vente, 0, ',', ' ') }} F</p>
                     </div>
                 </a>
                 @endforeach

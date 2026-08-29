@@ -1,3 +1,8 @@
+@php
+    $cp = $institut->couleur_primaire ?? '#d97706';
+    $cs = $institut->couleur_secondaire ?? '#ec4899';
+    $ca = $institut->couleur_accent ?? '#f59e0b';
+@endphp
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -21,7 +26,7 @@
         .kpi { width: 100%; margin: 12px 0 18px 0; border-collapse: collapse; }
         .kpi td { width: 25%; text-align: center; padding: 8px 4px; border: 1px solid #e5e7eb; }
         .kpi .number { font-size: 14pt; font-weight: bold; color: #111827; }
-        .kpi .number.amber { color: #d97706; }
+        .kpi .number.amber { color: {{ $ca }}; }
         .kpi .legend { font-size: 7pt; color: #6b7280; text-transform: uppercase; letter-spacing: .04em; }
 
         table.data { width: 100%; border-collapse: collapse; margin-bottom: 14px; }

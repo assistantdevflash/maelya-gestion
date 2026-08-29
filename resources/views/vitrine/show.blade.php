@@ -39,6 +39,11 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
     <style>
+        :root {
+            --couleur-primaire: {{ $institut->couleur_primaire ?? '#7c3aed' }};
+            --couleur-secondaire: {{ $institut->couleur_secondaire ?? '#ec4899' }};
+            --couleur-accent: {{ $institut->couleur_accent ?? '#a855f7' }};
+        }
         body { font-family: 'Inter', system-ui, sans-serif; background: #0a0a0a; color: #f5f5f5; min-height: 100vh; color-scheme: dark; }
         .rdv-input {
             background: rgba(255,255,255,0.07) !important;
@@ -47,12 +52,18 @@
             color-scheme: dark;
         }
         .rdv-input::placeholder { color: #9ca3af !important; }
-        .rdv-input:focus { outline: none; border-color: #a855f7 !important; box-shadow: 0 0 0 2px rgba(168,85,247,0.2); }
+        .rdv-input:focus { outline: none; border-color: var(--couleur-primaire) !important; box-shadow: 0 0 0 2px color-mix(in srgb, var(--couleur-primaire) 40%, transparent); }
         .rdv-input option { background: #1f1f1f; color: #f9fafb; }
         .rdv-overlay { background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); }
         .section-card { background: #111111; border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; }
         .item-card { background: #1a1a1a; border: 1px solid rgba(255,255,255,0.06); transition: border-color .15s; }
-        .item-card:hover { border-color: rgba(168,85,247,0.3); }
+        .item-card:hover { border-color: color-mix(in srgb, var(--couleur-primaire) 45%, transparent); }
+        .vitrine-gradient { background: linear-gradient(135deg, var(--couleur-primaire), var(--couleur-secondaire)); }
+        /* Surpasser les dégradés/couleurs codés en dur par les couleurs de l'établissement */
+        [style*="background:linear-gradient(135deg,#9333ea,#ec4899)"] { background: linear-gradient(135deg, var(--couleur-primaire), var(--couleur-secondaire)) !important; }
+        [style*="background:linear-gradient(135deg,#059669,#10b981)"] { background: linear-gradient(135deg, var(--couleur-primaire), var(--couleur-secondaire)) !important; }
+        [style*="color:#a855f7"] { color: var(--couleur-accent) !important; }
+        [style*="accent-color:#9333ea"] { accent-color: var(--couleur-primaire) !important; }
         html { scroll-behavior: smooth; }
     </style>
 </head>

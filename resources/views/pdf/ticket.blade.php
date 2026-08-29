@@ -1,3 +1,9 @@
+@php
+    $institut = $vente->institut;
+    $cp = $institut->couleur_primaire ?? '#8B5CF6';
+    $cs = $institut->couleur_secondaire ?? '#7c3aed';
+    $ca = $institut->couleur_accent ?? '#f59e0b';
+@endphp
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -9,7 +15,7 @@
     .bold { font-weight: bold; }
     .divider { border-top: 1px dashed #9ca3af; margin: 8px 0; }
     .logo-zone { padding: 8px 0 4px; }
-    .logo-zone h1 { font-size: 16px; font-weight: bold; color: #8B5CF6; }
+    .logo-zone h1 { font-size: 16px; font-weight: bold; color: {{ $cp }}; }
     .logo-zone p { font-size: 9px; color: #6b7280; margin-top: 2px; }
     .vente-num { font-size: 13px; font-weight: bold; margin: 4px 0; }
     .meta { font-size: 9px; color: #6b7280; }
@@ -22,7 +28,7 @@
     .item-qty { color: #9ca3af; font-size: 9px; }
     .total-row { font-size: 13px; font-weight: bold; }
     .total-row td { padding: 6px 0 4px; border-top: 2px solid #1f2937; }
-    .mode-badge { display: inline-block; background: #f3e8ff; color: #7c3aed; padding: 2px 8px; border-radius: 12px; font-size: 9px; font-weight: bold; text-transform: uppercase; }
+    .mode-badge { display: inline-block; background: {{ $cp }}14; color: {{ $cp }}; padding: 2px 8px; border-radius: 12px; font-size: 9px; font-weight: bold; text-transform: uppercase; }
     .footer { font-size: 9px; color: #9ca3af; margin-top: 10px; padding-top: 6px; border-top: 1px dashed #e5e7eb; }
 </style>
 </head>
