@@ -114,14 +114,17 @@
     <header class="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-40 shadow-sm">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div class="flex items-center justify-between gap-4">
-                <div class="flex items-center gap-3 min-w-0">
+                <div class="flex items-center gap-2 min-w-0">
                     <a href="{{ route('shop.index', $institut->slug) }}" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors flex-shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                     </a>
-                    @if($institut->logo)
-                        <img src="{{ asset('storage/' . $institut->logo) }}" alt="{{ $institut->nom }}" class="w-9 h-9 rounded-xl object-cover flex-shrink-0">
-                    @endif
-                    <span class="font-bold text-gray-900 dark:text-white text-sm truncate">{{ $institut->nom }}</span>
+                    <a href="{{ route('shop.index', $institut->slug) }}"
+                       class="flex items-center gap-3 min-w-0 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700/60 px-1.5 py-1 transition-colors flex-shrink-0">
+                        @if($institut->logo)
+                            <img src="{{ asset('storage/' . $institut->logo) }}" alt="{{ $institut->nom }}" class="w-9 h-9 rounded-xl object-cover flex-shrink-0">
+                        @endif
+                        <span class="font-bold text-gray-900 dark:text-white text-sm truncate">{{ $institut->nom }}</span>
+                    </a>
                 </div>
                 <a href="{{ route('shop.index', $institut->slug) }}?panier=1"
                    class="boutique-btn relative inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold shadow-lg transition-all hover:scale-105 flex-shrink-0">
@@ -266,18 +269,20 @@
                         </div>
                     </div>
 
-                    <button @click="ajouterEtRetourner()"
-                            class="boutique-btn w-full py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                        Ajouter au panier
-                    </button>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button @click="ajouterEtRetourner()"
+                                class="boutique-btn flex-1 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                            Ajouter au panier
+                        </button>
 
-                    <button @click="acheterMaintenant()"
-                            class="w-full py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 text-white"
-                            style="background: linear-gradient(135deg, var(--couleur-primaire), var(--couleur-secondaire));">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                        Acheter maintenant
-                    </button>
+                        <button @click="acheterMaintenant()"
+                                class="flex-1 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 text-white"
+                                style="background: linear-gradient(135deg, var(--couleur-primaire), var(--couleur-secondaire));">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            Acheter maintenant
+                        </button>
+                    </div>
 
                     <a href="{{ route('shop.index', $institut->slug) }}" class="block text-center text-sm text-gray-500 boutique-accent-hover transition-colors">
                         ← Continuer mes achats

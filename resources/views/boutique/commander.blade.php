@@ -13,9 +13,11 @@
         <a href="{{ route('shop.index', $institut->slug) }}" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-white dark:hover:bg-slate-800 transition">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
         </a>
-        <div>
+        <div class="min-w-0">
             <h1 class="text-lg font-bold text-gray-900 dark:text-white">Finaliser la commande</h1>
-            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $institut->nom }}</p>
+            <a href="{{ route('shop.index', $institut->slug) }}" class="text-xs text-gray-500 dark:text-gray-400 hover:underline">
+                {{ $institut->nom }}
+            </a>
         </div>
     </div>
 
