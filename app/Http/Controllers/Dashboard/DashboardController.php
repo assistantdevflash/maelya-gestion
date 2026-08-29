@@ -204,9 +204,10 @@ class DashboardController extends Controller
             ->whereNotIn('id', $cadeauClientIds)
             ->get();
 
-        // ── 11. Prochains rendez-vous (bandeau masquable) ───────────────────
+        // ── 11. Prochains rendez-vous sur 7 jours (bandeau masquable) ───────
         $rdvsAvenir = \App\Models\RendezVous::with('client')
             ->aVenir()
+            ->whereBetween('debut_le', [now(), now()->addDays(7)->endOfDay()])
             ->orderBy('debut_le')
             ->limit(5)
             ->get();

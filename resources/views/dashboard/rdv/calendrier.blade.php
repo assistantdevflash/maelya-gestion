@@ -45,6 +45,9 @@
             .fc .fc-list-event-time { color: #6b7280; }
             .fc .fc-event { border-radius: 5px; padding: 2px 4px; }
             .fc .fc-event-title, .fc .fc-event-time { color: #fff !important; font-weight: 600; }
+            /* Vue liste : texte foncé sur fond clair (sinon invisible) */
+            .fc .fc-list-event .fc-event-title, .fc .fc-list-event .fc-event-time { color: #111827 !important; }
+            .dark .fc .fc-list-event .fc-event-title, .dark .fc .fc-list-event .fc-event-time { color: #f1f5f9 !important; }
 
             /* ── FullCalendar — thème SOMBRE (via classe .dark) ──────────── */
             .dark .fc { color: #e2e8f0; }

@@ -31,6 +31,12 @@
         newNom: '',
         newTel: '',
         newEmail: '',
+        newNaissanceMois: '',
+        newNaissanceJour: '',
+        newNotes: '',
+        newAdresse: '',
+        newPieceIdentite: '',
+        showExtra: false,
         submitting: false,
         error: '',
 
@@ -90,6 +96,12 @@
             fd.append('nom', this.newNom.trim());
             fd.append('telephone', this.newTel.trim());
             fd.append('email', this.newEmail.trim());
+            if (this.newNaissanceMois && this.newNaissanceJour) {
+                fd.append('date_naissance', this.newNaissanceMois + '-' + String(this.newNaissanceJour).padStart(2, '0'));
+            }
+            if (this.newNotes) fd.append('notes', this.newNotes.trim());
+            if (this.newAdresse) fd.append('adresse', this.newAdresse.trim());
+            if (this.newPieceIdentite) fd.append('piece_identite', this.newPieceIdentite.trim());
             try {
                 const res = await fetch('{{ route('dashboard.clients.quick-store') }}', { method: 'POST', body: fd });
                 const data = await res.json();
@@ -106,6 +118,8 @@
                 this.choose(nouveau);
                 this.newOpen = false;
                 this.newPrenom = ''; this.newNom = ''; this.newTel = ''; this.newEmail = '';
+                this.newNaissanceMois = ''; this.newNaissanceJour = ''; this.newNotes = '';
+                this.newAdresse = ''; this.newPieceIdentite = ''; this.showExtra = false;
             } catch (e) {
                 this.error = e.message || 'Erreur lors de la création.';
             } finally {
@@ -185,14 +199,59 @@
                     <label class="form-label">Nom</label>
                     <input type="text" x-model="newNom" class="form-input" placeholder="Nom">
                 </div>
-            </div>
-            <div>
-                <label class="form-label">Téléphone <span class="text-red-500">*</span></label>
-                <input type="tel" x-model="newTel" class="form-input" placeholder="06 XX XX XX XX">
-            </div>
-            <div>
-                <label class="form-label">E-mail</label>
-                <input type="email" x-model="newEmail" class="form-input" placeholder="client@exemple.fr">
+                <div class="col-span-2">
+                    <label class="form-label">Téléphone <span class="text-red-500">*</span></label>
+                    <input type="tel" x-model="newTel" class="form-input" placeholder="06 XX XX XX XX">
+                </div>
+                <div class="col-span-2">
+                    <label class="form-label">E-mail</label>
+                    <input type="email" x-model="newEmail" class="form-input" placeholder="client@exemple.fr">
+                </div>
+                <div class="col-span-2">
+                    <label class="form-label">Anniversaire (jour et mois)</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <select x-model="newNaissanceMois" class="form-input">
+                            <option value="">Mois</option>
+                            <option value="01">Janvier</option><option value="02">Février</option>
+                            <option value="03">Mars</option><option value="04">Avril</option>
+                            <option value="05">Mai</option><option value="06">Juin</option>
+                            <option value="07">Juillet</option><option value="08">Août</option>
+                            <option value="09">Septembre</option><option value="10">Octobre</option>
+                            <option value="11">Novembre</option><option value="12">Décembre</option>
+                        </select>
+                        <select x-model="newNaissanceJour" class="form-input">
+                            <option value="">Jour</option>
+                            @for($d = 1; $d <= 31; $d++)
+                            <option value="{{ str_pad($d, 2, '0', STR_PAD_LEFT) }}">{{ $d }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                </div>
+                <div class="col-span-2">
+                    <label class="form-label">Notes</label>
+                    <textarea x-model="newNotes" rows="2" maxlength="1000" class="form-input resize-none"
+                              placeholder="Allergies, préférences..."></textarea>
+                </div>
+                {{-- Informations supplémentaires (collapsible) --}}
+                <div class="col-span-2">
+                    <button type="button" @click="showExtra = !showExtra"
+                            class="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-slate-400 hover:text-gray-700 transition-colors">
+                        <svg class="w-3.5 h-3.5 transition-transform" :class="showExtra ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                        Informations supplémentaires
+                    </button>
+                    <div x-show="showExtra" class="mt-3 space-y-3">
+                        <div>
+                            <label class="form-label">Adresse</label>
+                            <input type="text" x-model="newAdresse" maxlength="255" class="form-input" placeholder="Abidjan, Cocody...">
+                        </div>
+                        <div>
+                            <label class="form-label">Pièce d'identité</label>
+                            <input type="text" x-model="newPieceIdentite" maxlength="100" class="form-input" placeholder="N° CNI, Passeport...">
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="flex gap-3 pt-2">
