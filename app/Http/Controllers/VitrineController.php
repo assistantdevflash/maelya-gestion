@@ -30,6 +30,7 @@ class VitrineController extends Controller
 
         $produits = $institut->produits()
             ->where('actif', true)
+            ->where('visible_boutique', true)
             ->with('categorie')
             ->orderBy('nom')
             ->get()

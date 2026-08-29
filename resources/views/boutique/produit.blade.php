@@ -54,6 +54,62 @@
         </div>
     </div>
 
+    {{-- Lightbox galerie --}}
+    <div x-show="lightboxOpen" x-cloak
+         @keydown="onLightboxKeydown"
+         tabindex="0"
+         x-init="$watch('lightboxOpen', v => { if (v) { $nextTick(() => $el.focus()); } })"
+         class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+         @click.self="closeLightbox()"
+         @keydown.escape.window="closeLightbox()">
+        <div class="relative w-full max-w-3xl">
+            {{-- Fermer --}}
+            <button @click="closeLightbox()"
+                    class="absolute -top-12 right-0 z-10 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+
+            {{-- Image --}}
+            <div class="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden">
+                <template x-if="lightboxImage">
+                    <img :src="'/storage/' + lightboxImage" :alt="'{{ $produit->nom }}'" class="w-full max-h-[70vh] object-contain">
+                </template>
+            </div>
+
+            {{-- Navigation --}}
+            <template x-if="gallery.length > 1">
+                <div class="absolute inset-y-0 left-0 flex items-center">
+                    <button @click="prevImage()"
+                            class="-ml-4 w-12 h-12 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-colors shadow-lg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                    </button>
+                </div>
+                <div class="absolute inset-y-0 right-0 flex items-center">
+                    <button @click="nextImage()"
+                            class="-mr-4 w-12 h-12 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-colors shadow-lg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                </div>
+            </template>
+
+            {{-- Miniatures + compteur --}}
+            <div class="mt-4">
+                <p class="text-center text-white/70 text-sm mb-3">
+                    <span x-text="lightboxIndex + 1"></span> / <span x-text="gallery.length"></span>
+                </p>
+                <div class="flex justify-center gap-2 overflow-x-auto pb-1" x-show="gallery.length > 1">
+                    <template x-for="(img, i) in gallery" :key="i">
+                        <button @click="lightboxIndex = i"
+                                :class="lightboxIndex === i ? 'ring-2 ring-white opacity-100' : 'opacity-60 hover:opacity-100'"
+                                class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 transition-all">
+                            <img :src="'/storage/' + img" alt="" class="w-full h-full object-cover">
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Header --}}
     <header class="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-40 shadow-sm">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3">
@@ -95,14 +151,19 @@
 
 {{-- Images --}}
         @php
-            $galleryImages = $produit->images->count() > 0
-                ? $produit->images
-                : ($produit->photo ? collect([['chemin' => $produit->photo, 'is_principale' => true]]) : collect());
+            // Galerie : photo principale (colonne photo) en premier, puis images de la table (sans doublons)
+            $galleryChemins = collect();
+            if ($produit->photo) $galleryChemins->push($produit->photo);
+            foreach ($produit->images as $img) {
+                if ($img->chemin !== $produit->photo) $galleryChemins->push($img->chemin);
+            }
+            $galleryChemins = $galleryChemins->unique()->values();
         @endphp
-        <div x-data="{ activeImg: '{{ $galleryImages->first()?->chemin ?? $produit->photo }}' }">
+        <div x-data="{ activeImg: '{{ $galleryChemins->first() }}' }">
             {{-- Image principale --}}
-            <div class="aspect-square bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-700 shadow-sm">
-                @if($galleryImages->isNotEmpty())
+            <div class="aspect-square bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-700 shadow-sm cursor-zoom-in"
+                 @click="openLightbox(0)">
+                @if($galleryChemins->isNotEmpty())
                     <img :src="'/storage/' + activeImg" alt="{{ $produit->nom }}" class="w-full h-full object-cover">
                 @else
                     <div class="w-full h-full flex items-center justify-center">
@@ -111,15 +172,18 @@
                         </svg>
                     </div>
                 @endif
+                <div class="absolute bottom-3 right-3 w-9 h-9 bg-white/90 dark:bg-slate-900/90 rounded-full flex items-center justify-center shadow">
+                    <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
+                </div>
             </div>
             {{-- Miniatures (si plusieurs images) --}}
-            @if($galleryImages->count() > 1)
+            @if($galleryChemins->count() > 1)
             <div class="flex gap-2 mt-3 overflow-x-auto pb-1">
-                @foreach($galleryImages as $img)
-                <button @click="activeImg = '{{ $img->chemin ?? $img['chemin'] }}'"
-                        :class="activeImg === '{{ $img->chemin ?? $img['chemin'] }}' ? 'boutique-ring-active' : 'hover:opacity-80'"
+                @foreach($galleryChemins as $cheminImg)
+                <button @click="activeImg = '{{ $cheminImg }}'; openLightbox({{ $loop->index }})"
+                        :class="activeImg === '{{ $cheminImg }}' ? 'boutique-ring-active' : 'hover:opacity-80'"
                         class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 transition-all">
-                    <img src="{{ asset('storage/' . ($img->chemin ?? $img['chemin'])) }}" alt="" class="w-full h-full object-cover">
+                    <img src="{{ asset('storage/' . $cheminImg) }}" alt="" class="w-full h-full object-cover">
                 </button>
                 @endforeach
             </div>
@@ -208,6 +272,13 @@
                         Ajouter au panier
                     </button>
 
+                    <button @click="acheterMaintenant()"
+                            class="w-full py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 text-white"
+                            style="background: linear-gradient(135deg, var(--couleur-primaire), var(--couleur-secondaire));">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        Acheter maintenant
+                    </button>
+
                     <a href="{{ route('shop.index', $institut->slug) }}" class="block text-center text-sm text-gray-500 boutique-accent-hover transition-colors">
                         ← Continuer mes achats
                     </a>
@@ -280,6 +351,9 @@
             'description_courte' => $produit->description_courte,
             'featured'         => $produit->featured ? true : false,
         ];
+
+        // Chemins d'images pour la galerie (lightbox)
+        $galleryArray = $galleryChemins->values()->toArray();
     @endphp
     function ficheProduit() {
         return {
@@ -287,9 +361,46 @@
             produit: @json($produitData),
             panier: JSON.parse(localStorage.getItem('panier_{{ $institut->id }}') || '[]'),
             toast: { show: false, message: '' },
+            lightboxOpen: false,
+            lightboxIndex: 0,
+            gallery: @json($galleryArray),
 
             get totalArticles() {
                 return this.panier.reduce((sum, item) => sum + item.quantite, 0);
+            },
+
+            get lightboxImage() {
+                return this.gallery[this.lightboxIndex] || null;
+            },
+
+            openLightbox(index) {
+                if (!this.gallery.length) return;
+                this.lightboxIndex = index;
+                this.lightboxOpen = true;
+                document.body.style.overflow = 'hidden';
+            },
+
+            closeLightbox() {
+                this.lightboxOpen = false;
+                document.body.style.overflow = '';
+            },
+
+            prevImage() {
+                if (!this.gallery.length) return;
+                this.lightboxIndex = (this.lightboxIndex - 1 + this.gallery.length) % this.gallery.length;
+            },
+
+            nextImage() {
+                if (!this.gallery.length) return;
+                this.lightboxIndex = (this.lightboxIndex + 1) % this.gallery.length;
+            },
+
+            // Gestion clavier (Échap / flèches) dans la lightbox
+            onLightboxKeydown(e) {
+                if (!this.lightboxOpen) return;
+                if (e.key === 'Escape') this.closeLightbox();
+                if (e.key === 'ArrowLeft') this.prevImage();
+                if (e.key === 'ArrowRight') this.nextImage();
             },
 
             ajouterEtRetourner() {
@@ -308,6 +419,25 @@
                 if(typeof fbq !== 'undefined') fbq('track','AddToCart',{content_name:this.produit.nom,content_ids:[this.produit.id],content_type:'product',value:this.produit.prix_promo||this.produit.prix_vente,currency:'XOF'});
                 fetch('{{ route('fb.event.log', $institut->slug) }}',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},body:JSON.stringify({event:'AddToCart',data:{content_name:this.produit.nom,content_ids:[this.produit.id],value:this.produit.prix_promo||this.produit.prix_vente}})}).catch(()=>{});
                 window.location.href = '{{ route('shop.index', $institut->slug) }}?panier=1';
+            },
+
+            // Ajoute le produit au panier puis va directement au checkout
+            acheterMaintenant() {
+                const index = this.panier.findIndex(item => item.id === this.produit.id);
+                if (index >= 0) {
+                    const newQty = this.panier[index].quantite + this.quantite;
+                    if (newQty > this.produit.stock) {
+                        this.showToast(`Stock insuffisant (max : ${this.produit.stock})`);
+                        return;
+                    }
+                    this.panier[index].quantite = newQty;
+                } else {
+                    this.panier.push({ ...this.produit, quantite: this.quantite });
+                }
+                localStorage.setItem('panier_{{ $institut->id }}', JSON.stringify(this.panier));
+                if(typeof fbq !== 'undefined') fbq('track','AddToCart',{content_name:this.produit.nom,content_ids:[this.produit.id],content_type:'product',value:this.produit.prix_promo||this.produit.prix_vente,currency:'XOF'});
+                fetch('{{ route('fb.event.log', $institut->slug) }}',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},body:JSON.stringify({event:'AddToCart',data:{content_name:this.produit.nom,content_ids:[this.produit.id],value:this.produit.prix_promo||this.produit.prix_vente}})}).catch(()=>{});
+                window.location.href = '{{ route('shop.commander.form', $institut->slug) }}';
             },
 
             showToast(message) {

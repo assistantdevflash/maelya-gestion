@@ -110,6 +110,7 @@ class BoutiqueController extends Controller
             ->where('categorie_id', $produit->categorie_id)
             ->where('id', '!=', $produit->id)
             ->where('actif', true)
+            ->where('visible_boutique', true)
             ->where('stock', '>', 0)
             ->limit(4)
             ->get();
@@ -174,6 +175,7 @@ class BoutiqueController extends Controller
             $produits = Produit::whereIn('id', $produitIds)
                 ->where('institut_id', $institut->id)
                 ->where('actif', true)
+                ->where('visible_boutique', true)
                 ->get()
                 ->keyBy('id');
 
