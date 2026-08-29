@@ -24,4 +24,15 @@ class BankTransferGateway implements PaymentGatewayInterface
     {
         // Le transfert bancaire ne reçoit pas de webhooks
     }
+
+    public function refund(PaymentTransaction $transaction, ?string $reason = null): array
+    {
+        // Le virement bancaire n'a pas d'API de remboursement automatique.
+        // Le remboursement est marqué manuellement par l'admin (la vérification
+        // du paiement réel se fait hors-ligne).
+        return [
+            'success' => true,
+            'message' => 'Remboursement manuel enregistré (à effectuer hors-ligne).',
+        ];
+    }
 }

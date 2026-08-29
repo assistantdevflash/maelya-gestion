@@ -281,6 +281,117 @@ white_img.save('badge-72.png')
 
 ---
 
+# 📝 Fichiers Modifiés Récemment — Août 2026
+
+**Période :** 20-29 Août 2026  
+**Contexte :** Paiements en ligne, vérification email, bannières admin, types établissements, UX mobile
+
+---
+
+## 💳 1. Système de Paiement en Ligne (20-21 août)
+
+**Nouveaux fichiers :**
+```
+app/Services/PaymentGatewayManager.php          # Orchestrateur des passerelles
+app/Services/Gateways/PaymentGatewayInterface.php  # Interface commune
+app/Services/Gateways/GeniusPayGateway.php      # Mobile money (299 lignes)
+app/Services/Gateways/BankTransferGateway.php   # Virement bancaire
+app/Http/Controllers/Dashboard/PaymentController.php  # Pages success/error/pending/bank-transfer
+app/Http/Controllers/Webhook/GeniusPayWebhookController.php  # Webhook de confirmation
+app/Models/PaymentMethod.php
+app/Models/PaymentTransaction.php
+app/Models/WebhookLog.php
+app/Http/Controllers/Admin/AdminPaymentMethodController.php  # CRUD méthodes admin
+```
+
+**Migrations :**
+```
+database/migrations/2026_08_20_000001_create_payment_methods_table.php
+database/migrations/2026_08_20_000002_create_payment_transactions_table.php
+database/migrations/2026_08_20_000003_create_webhook_logs_table.php
+```
+
+**Points clés :**
+- `PaymentTransaction` : référence `MGP-XXXXXXXX`, `amount`, `fees`, `net_amount`, `status` (pending/processing/completed/failed/expired)
+- Auto-login utilisateur sur les pages de retour (callback publics)
+- Routes callback publiques (hors middleware auth)
+- Webhook GeniusPay : vérification signature + mise à jour transaction
+
+---
+
+## ✉️ 2. Vérification Email (28 août)
+
+**Nouveaux fichiers :**
+```
+app/Http/Middleware/EnsureEmailVerifie.php
+app/Http/Controllers/Auth/EmailVerificationController.php
+app/Mail/CodeVerificationEmail.php
+database/migrations/2026_08_28_160000_add_email_verification_code_to_users.php
+```
+
+**Logique :**
+- Code 4 chiffres envoyé par email
+- Après 3 jours sans vérification → blocage
+- **Admin/Gérant** : vérifie son propre email
+- **Employé** : bloqué si l'email du propriétaire n'est pas vérifié
+- 13 tests dédiés + fix jointure ambiguë dans middleware
+
+---
+
+## 📣 3. Bannières Administratives (28 août)
+
+**Fichiers :**
+```
+app/Models/AnnonceAdmin.php
+database/migrations/2026_08_28_105150_create_annonces_admin_table.php
+database/migrations/2026_08_28_140000_fix_annonces_admin_uuid_columns.php
+```
+
+**Points clés :**
+- Colonnes UUID en `string(36)` (compat MySQL)
+- Pivot `annonce_lectures` sans `withTimestamps()` (fix)
+- Bouton "C'est compris !", stats de lecture, toggle/delete
+
+---
+
+## 🏷️ 4. Types d'Établissements Dynamiques (21 août)
+
+**Fichiers :**
+```
+app/Models/EtablissementType.php
+app/Http/Controllers/Admin/AdminEtablissementTypeController.php
+database/migrations/2026_08_21_113612_create_etablissement_types_table.php
+```
+
+**Points clés :**
+- Migration depuis les listes codées en dur
+- Code technique auto-généré depuis le libellé (event blur)
+- Validation dynamique `exists:etablissement_types`
+
+---
+
+## 📱 5. UX Mobile (28-29 août)
+
+**Pages adaptées :** offres, paiements, établissements, messages, abonnements, types, commerciaux, finance, instituts
+
+**Fix inclus :**
+- Dialogues/dialogs hors des blocs `hidden` (mobile)
+- `@push('scripts')` manquant (etablissement-types/index)
+- `@empty` manquant (admin/instituts/index — erreur de syntaxe)
+- En-tête email vérification compatible Outlook (table bgcolor)
+
+---
+
+## 🧹 Fixes Syntaxe / Divers
+
+- `bootstrap/app.php` : config middleware
+- `config/services.php` : config GeniusPay
+- `app/Models/PlanAbonnement.php` : ajustements
+- `app/Models/User.php` : champs vérification email
+- `app/Policies/CommandePolicy.php` : ajustement
+
+---
+
 ## 📋 Fichiers de Documentation Créés
 
 ### `/docs/CONTEXTE-PROJET.md`

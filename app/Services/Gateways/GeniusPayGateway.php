@@ -123,11 +123,184 @@ class GeniusPayGateway implements PaymentGatewayInterface
 
         match ($event) {
             'payment.success', 'payment.completed' => $this->activateFromGatewayData($transaction, $data),
-            'payment.failed'    => $transaction->update(['status' => 'failed',    'gateway_status' => 'failed',    'gateway_response' => json_encode($data)]),
-            'payment.cancelled' => $transaction->update(['status' => 'cancelled', 'gateway_status' => 'cancelled', 'gateway_response' => json_encode($data)]),
-            'payment.expired'   => $transaction->update(['status' => 'expired',   'gateway_status' => 'expired',   'gateway_response' => json_encode($data)]),
+            'payment.failed'    => $this->markFailed($transaction, $data),
+            'payment.cancelled' => $this->markCancelled($transaction, $data),
+            'payment.expired'   => $this->markExpired($transaction, $data),
+            'payment.refunded'  => $this->markRefunded($transaction, $data),
             default             => Log::info('[GeniusPay] webhook ignoré', ['event' => $event]),
         };
+    }
+
+    /**
+     * Marque une transaction comme échouée et nettoie l'abonnement en attente associé.
+     */
+    private function markFailed(PaymentTransaction $transaction, array $data): void
+    {
+        $transaction->update([
+            'status'           => 'failed',
+            'gateway_status'   => 'failed',
+            'gateway_response' => json_encode($data),
+        ]);
+        $this->annulerAbonnementEnAttente($transaction);
+        Log::info('[GeniusPay] paiement échoué', ['ref' => $transaction->reference]);
+    }
+
+    private function markCancelled(PaymentTransaction $transaction, array $data): void
+    {
+        $transaction->update([
+            'status'           => 'cancelled',
+            'gateway_status'   => 'cancelled',
+            'gateway_response' => json_encode($data),
+        ]);
+        $this->annulerAbonnementEnAttente($transaction);
+        Log::info('[GeniusPay] paiement annulé', ['ref' => $transaction->reference]);
+    }
+
+    private function markExpired(PaymentTransaction $transaction, array $data): void
+    {
+        $transaction->update([
+            'status'           => 'expired',
+            'gateway_status'   => 'expired',
+            'gateway_response' => json_encode($data),
+        ]);
+        $this->annulerAbonnementEnAttente($transaction);
+        Log::info('[GeniusPay] paiement expiré', ['ref' => $transaction->reference]);
+    }
+
+    /**
+     * Supprime l'abonnement "en_attente" lié à un paiement qui n'aboutit pas,
+     * pour éviter les demandes orphelines en attente de validation.
+     */
+    private function annulerAbonnementEnAttente(PaymentTransaction $transaction): void
+    {
+        if (!$transaction->abonnement_id) {
+            return;
+        }
+
+        $abonnement = Abonnement::find($transaction->abonnement_id);
+        if ($abonnement && $abonnement->statut === 'en_attente') {
+            $abonnement->update([
+                'statut'      => 'rejete',
+                'notes_admin' => ($abonnement->notes_admin ? $abonnement->notes_admin . "\n" : '')
+                    . 'Paiement ' . $transaction->status . ' — transaction ' . $transaction->reference,
+            ]);
+            Log::info('[GeniusPay] abonnement annulé suite échec paiement', [
+                'abonnement_id' => $abonnement->id,
+                'transaction'   => $transaction->reference,
+            ]);
+        }
+    }
+
+    private function markRefunded(PaymentTransaction $transaction, array $data): void
+    {
+        if ($transaction->status !== 'completed') {
+            return;
+        }
+
+        $transaction->update([
+            'status'           => 'refunded',
+            'gateway_status'   => 'refunded',
+            'refunded_at'      => now(),
+            'refund_reference' => $data['refund_reference'] ?? ($data['reference'] ?? null),
+            'refunded_amount'  => (int) ($data['amount'] ?? $transaction->amount),
+            'gateway_response' => json_encode($data),
+        ]);
+
+        // Désactiver le service lié (abonnement/boutique)
+        $this->desactiverService($transaction);
+
+        Log::info('[GeniusPay] remboursement reçu', [
+            'ref'  => $transaction->reference,
+            'montant' => $transaction->refunded_amount,
+        ]);
+    }
+
+    /**
+     * Rembourse une transaction via l'API GeniusPay.
+     */
+    public function refund(PaymentTransaction $transaction, ?string $reason = null): array
+    {
+        if (!$transaction->isCompleted()) {
+            return ['success' => false, 'message' => 'Seules les transactions complétées peuvent être remboursées.'];
+        }
+
+        if ($transaction->status === 'refunded') {
+            return ['success' => false, 'message' => 'Cette transaction est déjà remboursée.'];
+        }
+
+        if (!$transaction->gateway_reference) {
+            return ['success' => false, 'message' => 'Référence gateway manquante pour le remboursement.'];
+        }
+
+        $response = Http::timeout(30)->withHeaders([
+            'X-API-Key'    => config('services.geniuspay.api_key'),
+            'X-API-Secret' => config('services.geniuspay.api_secret'),
+            'Content-Type' => 'application/json',
+        ])->post("{$this->baseUrl}/payments/{$transaction->gateway_reference}/refund", array_filter([
+            'amount' => $transaction->amount,
+            'reason' => $reason,
+        ]));
+
+        if (!$response->successful()) {
+            Log::error('[GeniusPay] refund failed', [
+                'ref'      => $transaction->reference,
+                'status'   => $response->status(),
+                'response' => $response->json(),
+            ]);
+            return [
+                'success' => false,
+                'message' => 'Erreur GeniusPay : ' . ($response->json('error.message') ?? 'Erreur inconnue'),
+            ];
+        }
+
+        $data = $response->json('data');
+
+        $transaction->update([
+            'status'           => 'refunded',
+            'gateway_status'   => 'refunded',
+            'refunded_at'      => now(),
+            'refund_reference' => $data['reference'] ?? ($data['refund_reference'] ?? null),
+            'refunded_amount'  => (int) ($data['amount'] ?? $transaction->amount),
+            'gateway_response' => json_encode($data),
+        ]);
+
+        $this->desactiverService($transaction);
+
+        Log::info('[GeniusPay] remboursement effectué', [
+            'ref'    => $transaction->reference,
+            'amount' => $transaction->refunded_amount,
+        ]);
+
+        return ['success' => true, 'refund_reference' => $transaction->refund_reference];
+    }
+
+    /**
+     * Désactive le service (abonnement ou boutique) associé à un remboursement.
+     */
+    private function desactiverService(PaymentTransaction $transaction): void
+    {
+        $abonnement = $transaction->abonnement_id ? Abonnement::find($transaction->abonnement_id) : null;
+        if (!$abonnement) {
+            return;
+        }
+
+        if (in_array($transaction->type, ['boutique_activation', 'boutique_renouvellement'])) {
+            // Désactiver l'option boutique
+            if ($abonnement->hasBoutique()) {
+                $abonnement->setBoutique(false, 3900);
+                $abonnement->save();
+                Cache::forget("user_{$abonnement->user_id}_boutique_access");
+            }
+        } elseif (in_array($transaction->type, ['abonnement', 'renouvellement', 'upgrade'])) {
+            // Expirer l'abonnement
+            if ($abonnement->statut === 'actif') {
+                $abonnement->update([
+                    'statut'      => 'expire',
+                    'notes_admin' => ($abonnement->notes_admin ? $abonnement->notes_admin . "\n" : '')
+                        . 'Remboursement transaction ' . $transaction->reference . ' le ' . now()->format('d/m/Y'),
+                ]);
+            }
+        }
     }
 
     private function activateFromGatewayData(PaymentTransaction $transaction, array $data): void

@@ -444,6 +444,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::get('push-debug', [AdminPushDebugController::class, 'index'])->name('push.debug');
     Route::post('push-debug/test', [AdminPushDebugController::class, 'sendTest'])->name('push.debug.test');
     Route::get('finance', [AdminFinanceController::class, 'index'])->name('finance.index');
+    Route::get('finance-dashboard', [\App\Http\Controllers\Admin\AdminFinanceDashboardController::class, 'index'])->name('finance-dashboard.index');
     Route::get('offres', [AdminOffreController::class, 'index'])->name('offres.index');
     Route::post('offres', [AdminOffreController::class, 'store'])->name('offres.store');
     Route::get('offres/{offre}', fn () => redirect()->route('admin.offres.index'));
@@ -494,6 +495,8 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::patch('payment-methods/{paymentMethod}/toggle', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'toggle'])->name('payment-methods.toggle');
     Route::put('payment-methods/{paymentMethod}', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'update'])->name('payment-methods.update');
     Route::get('payment-transactions', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'transactions'])->name('payment-transactions.index');
+    Route::get('payment-transactions/{paymentTransaction}', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'transactionShow'])->name('payment-transactions.show');
+    Route::post('payment-transactions/{paymentTransaction}/refund', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'refund'])->name('payment-transactions.refund');
     
     // Types d'établissements
     Route::resource('etablissement-types', \App\Http\Controllers\Admin\AdminEtablissementTypeController::class)->except(['show']);

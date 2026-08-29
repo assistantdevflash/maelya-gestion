@@ -38,6 +38,11 @@ class PaymentGatewayManager
         $this->get($provider)->handleWebhook($payload);
     }
 
+    public function refund(PaymentTransaction $transaction, ?string $reason = null): array
+    {
+        return $this->get($transaction->payment_method_code)->refund($transaction, $reason);
+    }
+
     private function get(string $code): PaymentGatewayInterface
     {
         if (!isset($this->gateways[$code])) {

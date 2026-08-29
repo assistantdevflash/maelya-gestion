@@ -1,7 +1,7 @@
 # 📚 Documentation Maëlya Gestion
 
-**Version :** 2.0  
-**Date :** 17 Juillet 2026  
+**Version :** 2.1  
+**Date :** 29 Août 2026  
 **Statut :** Complet et à jour
 
 ---
@@ -26,10 +26,23 @@ Cette documentation complète vous permettra de reprendre le projet Maëlya Gest
 |----------|-------------|------------------|
 | **[INDEX.md](INDEX.md)** | 🗺️ **Point d'entrée principal**<br>Vue d'ensemble de la documentation + parcours recommandés | **TOUJOURS COMMENCER ICI** |
 | **[CONTEXTE-PROJET.md](CONTEXTE-PROJET.md)** | 🏗️ Architecture technique complète<br>Stack, structure, modules, configuration | Première prise en main<br>Setup nouvel environnement |
-| **[FICHIERS-MODIFIES-RECEMMENT.md](FICHIERS-MODIFIES-RECEMMENT.md)** | 🔧 Historique modifications (Juillet 2026)<br>10 fichiers critiques + bugs corrigés | Comprendre travail récent<br>Contexte derniers commits |
+| **[FICHIERS-MODIFIES-RECEMMENT.md](FICHIERS-MODIFIES-RECEMMENT.md)** | 🔧 Historique modifications<br>Juillet (bugs critiques) + Août (paiements, vérif email, bannières) | Comprendre travail récent<br>Contexte derniers commits |
 | **[GUIDE-DEPANNAGE.md](GUIDE-DEPANNAGE.md)** | 🛠️ Commandes et solutions<br>10 erreurs courantes, diagnostics | Résoudre bugs<br>Référence quotidienne |
 | **[DECISIONS-ARCHITECTURALES.md](DECISIONS-ARCHITECTURALES.md)** | 🧠 Pourquoi et comment<br>10 décisions majeures, patterns, leçons | Comprendre choix techniques<br>Ajouter fonctionnalité similaire |
 | **[NOTES-REPOSITORY.md](NOTES-REPOSITORY.md)** | 📝 Spécificités du projet<br>Workflow, Blade tips, pièges, conventions | Connaître les spécificités<br>Éviter erreurs connues |
+
+---
+
+## 🆕 Nouveautés Août 2026
+
+| Module | Description |
+|--------|-------------|
+| 💳 **Paiements en ligne** | Passerelles GeniusPay (mobile money) + virement bancaire, transactions, webhooks |
+| ✉️ **Vérification email** | Code 4 chiffres, délai 3 jours, blocage propriétaire/employé, gestion admin |
+| 📣 **Bannières admin** | Annonces avec cible, bouton "C'est compris !", stats de lecture |
+| 🏷️ **Types d'établissements** | CRUD admin dynamique au lieu de listes codées |
+| 📨 **Messagerie admin** | Communication admin ↔ établissements |
+| 📱 **UX mobile** | Adaptation responsive de toutes les pages admin/dashboard |
 
 ---
 

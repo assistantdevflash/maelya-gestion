@@ -17,15 +17,18 @@ class PaymentTransaction extends Model
         'payment_method_id', 'payment_method_code',
         'gateway_reference', 'gateway_status', 'gateway_response', 'checkout_url',
         'status', 'metadata', 'paid_at', 'expires_at',
+        'refunded_at', 'refund_reference', 'refunded_amount',
     ];
 
     protected $casts = [
-        'amount'     => 'integer',
-        'fees'       => 'integer',
-        'net_amount' => 'integer',
-        'metadata'   => 'array',
-        'paid_at'    => 'datetime',
-        'expires_at' => 'datetime',
+        'amount'         => 'integer',
+        'fees'           => 'integer',
+        'net_amount'     => 'integer',
+        'refunded_amount'=> 'integer',
+        'metadata'       => 'array',
+        'paid_at'        => 'datetime',
+        'expires_at'     => 'datetime',
+        'refunded_at'    => 'datetime',
     ];
 
     public function user()
@@ -51,6 +54,11 @@ class PaymentTransaction extends Model
     public function isPending(): bool
     {
         return in_array($this->status, ['pending', 'processing']);
+    }
+
+    public function isRefunded(): bool
+    {
+        return $this->status === 'refunded';
     }
 
     public function isExpired(): bool

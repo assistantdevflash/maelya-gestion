@@ -64,4 +64,31 @@ class AdminPaymentMethodController extends Controller
 
         return view('admin.payment-methods.transactions', compact('transactions'));
     }
+
+    public function transactionShow(PaymentTransaction $paymentTransaction)
+    {
+        $paymentTransaction->load('user', 'paymentMethod', 'abonnement.plan');
+
+        return view('admin.payment-methods.transaction-show', compact('paymentTransaction'));
+    }
+
+    public function refund(Request $request, PaymentTransaction $paymentTransaction)
+    {
+        $reason = $request->input('reason');
+
+        try {
+            $result = app(\App\Services\PaymentGatewayManager::class)->refund($paymentTransaction, $reason);
+
+            if ($result['success']) {
+                return redirect()
+                    ->route('admin.payment-transactions.show', $paymentTransaction)
+                    ->with('success', 'Remboursement effectué avec succès. Réf : ' . ($result['refund_reference'] ?? $paymentTransaction->refund_reference ?? '—'));
+            }
+
+            return back()->with('error', $result['message'] ?? 'Échec du remboursement.');
+        } catch (\Throwable $e) {
+            \Log::error('[Remboursement] ' . $e->getMessage());
+            return back()->with('error', 'Erreur lors du remboursement : ' . $e->getMessage());
+        }
+    }
 }

@@ -23,4 +23,11 @@ interface PaymentGatewayInterface
      * Traite un payload webhook entrant.
      */
     public function handleWebhook(array $payload): void;
+
+    /**
+     * Demande un remboursement auprès du gateway.
+     *
+     * @return array{success: bool, refund_reference?: string, message?: string}
+     */
+    public function refund(PaymentTransaction $transaction, ?string $reason = null): array;
 }

@@ -1,6 +1,6 @@
 # 📋 Contexte Complet du Projet Maëlya Gestion
 
-**Date de dernière mise à jour :** 17 juillet 2026  
+**Date de dernière mise à jour :** 29 août 2026  
 **Version Laravel :** 12.56.0  
 **Environnement :** Dev local + Production LWS
 
@@ -21,6 +21,86 @@
 - 📊 Statistiques et rapports
 - 🔔 Notifications push (Web Push API)
 - 📱 PWA (installable sur mobile/desktop)
+- 💳 **Paiements en ligne** (GeniusPay + virement bancaire)
+- ✉️ **Vérification email** (code 4 chiffres, blocage à 3 jours)
+- 📣 **Bannières administratives** (annonces admin avec stats de lecture)
+- 🏷️ **Types d'établissements dynamiques** (CRUD admin)
+- 📨 **Messagerie admin ↔ établissements**
+
+---
+
+## 🆕 Modules ajoutés en août 2026
+
+### 💳 Système de paiement en ligne (20-21 août)
+- Passerelles : **GeniusPay** (mobile money) + **virement bancaire**
+- Architecture orientée interface : `PaymentGatewayInterface`, `PaymentGatewayManager`
+- Tables : `payment_methods`, `payment_transactions`, `webhook_logs`
+- Flux : initiation → checkout_url → callback (success/error/pending) → webhook de confirmation
+- Transactions avec frais (fees), montant net, référence `MGP-XXXXXXXX`
+- Pages de retour : `dashboard.payment.success/error/bank-transfer/pending`
+- Webhook : `WebhookController/GeniusPayWebhookController`
+
+**Fichiers clés :**
+```
+app/Services/PaymentGatewayManager.php
+app/Services/Gateways/PaymentGatewayInterface.php
+app/Services/Gateways/GeniusPayGateway.php
+app/Services/Gateways/BankTransferGateway.php
+app/Http/Controllers/Dashboard/PaymentController.php
+app/Http/Controllers/Webhook/GeniusPayWebhookController.php
+app/Models/PaymentMethod.php
+app/Models/PaymentTransaction.php
+app/Models/WebhookLog.php
+```
+
+### ✉️ Vérification email (28 août)
+- Code de vérification à 4 chiffres envoyé par email
+- Délai de 3 jours avant blocage des accès
+- Middleware `EnsureEmailVerifie` : 
+  - Propriétaire/gérant → vérifie son propre email après 3 jours
+  - Employé → vérifie l'email du propriétaire (blocage si non vérifié)
+- Page dédiée `verification.email` avec compte à rebours
+- Gestion admin de la vérification des comptes
+- Tests : 13 tests dédiés
+
+**Fichiers clés :**
+```
+app/Http/Middleware/EnsureEmailVerifie.php
+app/Http/Controllers/Auth/EmailVerificationController.php
+app/Mail/CodeVerificationEmail.php
+database/migrations/2026_08_28_160000_add_email_verification_code_to_users.php
+```
+
+### 📣 Bannières administratives (28 août)
+- Annonces admin avec cible (tous / instituts spécifiques)
+- Bouton "C'est compris !" + stats de lecture (`annonce_lectures`)
+- Toggle actif/inactif + suppression
+- Table `annonces_admin` (colonnes UUID string(36), pas de FK pour compat MySQL)
+
+**Fichiers clés :**
+```
+app/Models/AnnonceAdmin.php
+resources/views/admin/... (bannières)
+database/migrations/2026_08_28_105150_create_annonces_admin_table.php
+```
+
+### 🏷️ Types d'établissements dynamiques (21 août)
+- Remplacement des listes codées en dur par une table `etablissement_types`
+- CRUD admin complet
+- Code technique auto-généré depuis le libellé (event blur)
+- Validation dynamique (`exists:etablissement_types` au lieu de `in:` statique)
+
+**Fichiers clés :**
+```
+app/Models/EtablissementType.php
+app/Http/Controllers/Admin/AdminEtablissementTypeController.php
+database/migrations/2026_08_21_113612_create_etablissement_types_table.php
+```
+
+### 📱 Adaptation mobile (28-29 août)
+- Pages rendues responsive : offres, paiements, établissements, messages, abonnements, types, commerciaux, finance, instituts
+- Dialogues/messages déplacés hors des blocs `hidden` pour fonctionner sur mobile
+- Fix syntaxe (`@empty`, `@push('scripts')`) sur plusieurs pages admin
 
 ---
 
@@ -65,7 +145,10 @@ app/
 │   │   ├── Dashboard/           # Contrôleurs du dashboard
 │   │   │   ├── ProduitController.php
 │   │   │   ├── ProduitImageController.php (AJAX gallery)
+│   │   │   ├── PaymentController.php   # Retours paiement
 │   │   │   └── ...
+│   │   ├── Admin/               # Super admin
+│   │   ├── Webhook/             # Webhooks (GeniusPay)
 │   │   ├── BoutiqueController.php   # Boutique publique
 │   │   └── Auth/
 │   ├── Livewire/
@@ -79,7 +162,12 @@ app/
 │   ├── Mail/                    # Emails transactionnels
 │   ├── Notifications/
 │   └── Services/
-│       └── PushNotificationService.php
+│       ├── PushNotificationService.php
+│       ├── PaymentGatewayManager.php   # Paiements
+│       └── Gateways/                   # GeniusPay + virement
+│           ├── PaymentGatewayInterface.php
+│           ├── GeniusPayGateway.php
+│           └── BankTransferGateway.php
 │
 ├── resources/
 │   ├── views/

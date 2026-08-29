@@ -1,6 +1,7 @@
 # 📚 Index Documentation Projet Maëlya Gestion
 
 **Date de création :** 17 Juillet 2026  
+**Dernière mise à jour :** 29 Août 2026  
 **Objectif :** Faciliter la reprise du projet sur un nouvel environnement
 
 ---
@@ -28,14 +29,14 @@
 ---
 
 ### 2. [FICHIERS-MODIFIES-RECEMMENT.md](./FICHIERS-MODIFIES-RECEMMENT.md)
-**🔧 Historique des modifications (13-17 Juillet 2026)**
+**🔧 Historique des modifications (Juillet + Août 2026)**
 
 **Contenu :**
-- Liste détaillée des 10 fichiers critiques modifiés
+- Liste détaillée des 10 fichiers critiques modifiés (Juillet)
+- Section Août : paiements en ligne, vérification email, bannières admin, types établissements, UX mobile
 - Raison de chaque modification
 - Code avant/après pour les changements importants
 - Bugs corrigés et leurs solutions
-- Workflow appliqué
 - Pièges évités
 
 **Quand l'utiliser :**

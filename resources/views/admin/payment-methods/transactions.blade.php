@@ -31,6 +31,7 @@
                     <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>Échoué</option>
                     <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Annulé</option>
                     <option value="expired" {{ request('status') === 'expired' ? 'selected' : '' }}>Expiré</option>
+                    <option value="refunded" {{ request('status') === 'refunded' ? 'selected' : '' }}>Remboursé</option>
                 </select>
             </div>
             <div class="flex-1 min-w-[200px]">
@@ -72,6 +73,7 @@
                         <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Montant</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
@@ -116,20 +118,28 @@
                         <td class="px-4 py-3">
                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold
                                 {{ $tx->status === 'completed' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                                   ($tx->status === 'refunded' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400' :
                                    ($tx->status === 'pending' || $tx->status === 'processing' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' :
-                                   'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400') }}">
+                                   'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400')) }}">
                                 @if($tx->status === 'completed') ✓ @endif
-                                {{ ucfirst($tx->status) }}
+                                @if($tx->status === 'refunded') ↩ @endif
+                                {{ $tx->status === 'refunded' ? 'Remboursé' : ucfirst($tx->status) }}
                             </span>
                         </td>
                         <td class="px-4 py-3 text-gray-600 dark:text-slate-400">
                             <div>{{ $tx->created_at->format('d/m/Y') }}</div>
                             <div class="text-xs text-gray-400 dark:text-slate-500">{{ $tx->created_at->format('H:i') }}</div>
                         </td>
+                        <td class="px-4 py-3 text-right">
+                            <a href="{{ route('admin.payment-transactions.show', $tx) }}" class="inline-flex items-center gap-1 text-xs font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-800">
+                                Voir
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </a>
+                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-4 py-12 text-center text-gray-500 dark:text-slate-400">
+                        <td colspan="8" class="px-4 py-12 text-center text-gray-500 dark:text-slate-400">
                             <svg class="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
