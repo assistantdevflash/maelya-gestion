@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $institut->nom }} — Vitrine</title>
     <meta name="description" content="Découvrez les prestations et produits de {{ $institut->nom }}{{ $institut->ville ? ', ' . $institut->ville : '' }}.">
-    
+
     {{-- Open Graph --}}
     <meta property="og:type" content="business.business">
     <meta property="og:site_name" content="Maëlya Gestion">
@@ -34,7 +34,7 @@
     <meta name="twitter:image" content="{{ asset('og-image.svg') }}">
     @endif
     <meta name="twitter:image:alt" content="{{ $institut->nom }}">
-    
+
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
