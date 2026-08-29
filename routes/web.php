@@ -26,7 +26,6 @@ use App\Http\Controllers\Admin\AdminPlanController;
 use App\Http\Controllers\Admin\AdminConfigController;
 use App\Http\Controllers\Admin\AdminMessageController;
 use App\Http\Controllers\Admin\AdminUserController;
-use App\Http\Controllers\Admin\AdminFinanceController;
 use App\Http\Controllers\Admin\AdminOffreController;
 use App\Http\Controllers\Admin\AdminCommercialController;
 use App\Http\Controllers\Admin\AdminEmailController;
@@ -443,7 +442,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::post('logs/clear', [AdminLogsController::class, 'clear'])->name('logs.clear');
     Route::get('push-debug', [AdminPushDebugController::class, 'index'])->name('push.debug');
     Route::post('push-debug/test', [AdminPushDebugController::class, 'sendTest'])->name('push.debug.test');
-    Route::get('finance', [AdminFinanceController::class, 'index'])->name('finance.index');
+    Route::get('finance', fn () => redirect()->route('admin.finance-dashboard.index'))->name('finance.index');
     Route::get('finance-dashboard', [\App\Http\Controllers\Admin\AdminFinanceDashboardController::class, 'index'])->name('finance-dashboard.index');
     Route::get('offres', [AdminOffreController::class, 'index'])->name('offres.index');
     Route::post('offres', [AdminOffreController::class, 'store'])->name('offres.store');
@@ -497,7 +496,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::get('payment-transactions', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'transactions'])->name('payment-transactions.index');
     Route::get('payment-transactions/{paymentTransaction}', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'transactionShow'])->name('payment-transactions.show');
     Route::post('payment-transactions/{paymentTransaction}/refund', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'refund'])->name('payment-transactions.refund');
-    
+
     // Types d'établissements
     Route::resource('etablissement-types', \App\Http\Controllers\Admin\AdminEtablissementTypeController::class)->except(['show']);
     Route::patch('etablissement-types/{etablissementType}/toggle', [\App\Http\Controllers\Admin\AdminEtablissementTypeController::class, 'toggle'])->name('etablissement-types.toggle');
