@@ -2,13 +2,17 @@
 
 namespace App\Services\Gateways;
 
+use App\Mail\NouveauPaiementRecu;
 use App\Models\Abonnement;
 use App\Models\PaymentMethod;
 use App\Models\PaymentTransaction;
 use App\Models\User;
+use App\Services\NotificationService;
+use App\Services\PushNotificationService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class GeniusPayGateway implements PaymentGatewayInterface
 {
@@ -396,6 +400,9 @@ class GeniusPayGateway implements PaymentGatewayInterface
             }
         }
 
+        // Notifier les super admins (email + in-app + push)
+        $this->notifierAdminsPaiementRecu($transaction);
+
         Log::info('[GeniusPay] abonnement activé', [
             'abonnement_id' => $abonnement->id,
             'user_id'       => $abonnement->user_id,
@@ -442,6 +449,9 @@ class GeniusPayGateway implements PaymentGatewayInterface
             }
         }
 
+        // Notifier les super admins (email + in-app + push)
+        $this->notifierAdminsPaiementRecu($transaction);
+
         Log::info('[GeniusPay] boutique activée', [
             'abonnement_id' => $abonnement->id,
             'user_id'       => $abonnement->user_id,
@@ -468,5 +478,45 @@ class GeniusPayGateway implements PaymentGatewayInterface
             'email' => $user?->email,
             'phone' => $user?->telephone ?? null,
         ]);
+    }
+
+    /**
+     * Notifie tous les super admins qu'un paiement GeniusPay a été reçu
+     * (email + notification in-app + notification push).
+     */
+    public function notifierAdminsPaiementRecu(PaymentTransaction $transaction): void
+    {
+        $user    = $transaction->user;
+        $type    = $transaction->type;
+        $libelle = NouveauPaiementRecu::typeLabel($type);
+        $montant = number_format($transaction->amount, 0, ',', ' ');
+
+        // In-app
+        NotificationService::notifyAdmins(
+            'paiement_recu',
+            '💳 ' . $libelle,
+            ($user?->nom_complet ?? 'Un client') . ' a payé ' . $montant . ' FCFA (' . $transaction->reference . ').',
+            '/admin/payment-transactions'
+        );
+
+        // Email
+        try {
+            User::where('role', 'super_admin')->each(function (User $admin) use ($transaction) {
+                Mail::to($admin->email)->send(new NouveauPaiementRecu($transaction));
+            });
+        } catch (\Throwable $e) {
+            Log::warning('[GeniusPay] email admin paiement échoué : ' . $e->getMessage());
+        }
+
+        // Push
+        try {
+            app(PushNotificationService::class)->sendToAdmins(
+                '💳 ' . $libelle,
+                ($user?->nom_complet ?? 'Un client') . ' a payé ' . $montant . ' FCFA.',
+                '/admin/payment-transactions'
+            );
+        } catch (\Throwable $e) {
+            Log::warning('[Push] ' . $e->getMessage());
+        }
     }
 }

@@ -78,6 +78,7 @@
                     'commission_gagnee'  => ['bg' => 'bg-yellow-100 dark:bg-yellow-900/30','text' => 'text-yellow-600 dark:text-yellow-500'],
                     'commission_payee'   => ['bg' => 'bg-green-100 dark:bg-green-900/30', 'text' => 'text-green-600 dark:text-green-400'],
                     'nouveau_filleul'    => ['bg' => 'bg-pink-100 dark:bg-pink-900/30',   'text' => 'text-pink-600 dark:text-pink-400'],
+                    'paiement_recu'      => ['bg' => 'bg-emerald-100 dark:bg-emerald-900/30','text' => 'text-emerald-600 dark:text-emerald-400'],
                 ];
                 $typeIcons = [
                     'abonnement_valide'  => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
@@ -93,6 +94,7 @@
                     'commission_gagnee'  => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
                     'commission_payee'   => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
                     'nouveau_filleul'    => 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z',
+                    'paiement_recu'      => 'M3 10h18M7 15h2m4 0h4M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
                 ];
                 $colors = $typeColors[$notif->type] ?? ['bg' => 'bg-gray-100 dark:bg-white/10', 'text' => 'text-gray-500 dark:text-gray-400'];
                 $icon   = $typeIcons[$notif->type] ?? 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z';
