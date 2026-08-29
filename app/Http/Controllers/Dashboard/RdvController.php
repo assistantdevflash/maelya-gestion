@@ -22,6 +22,16 @@ class RdvController extends Controller
         return session('current_institut_id', Auth::user()->institut_id);
     }
 
+    /** Expression de tri des clients par nom (compatible MySQL + SQLite) */
+    private function triClientsExpr(): string
+    {
+        $concat = \DB::getDriverName() === 'sqlite'
+            ? "COALESCE(prenom, '') || ' ' || COALESCE(nom, '')"
+            : "CONCAT(prenom, ' ', nom)";
+
+        return "CASE WHEN type_client = 'entreprise' THEN raison_sociale ELSE {$concat} END";
+    }
+
     public function index(Request $request)
     {
         $filtre = $request->get('filtre', 'semaine'); // today | semaine | mois | tous
@@ -43,6 +53,21 @@ class RdvController extends Controller
 
         $rdvs = $query->limit($filtre === 'tous' ? 300 : 500)->get()->groupBy(fn($r) => $r->debut_le->toDateString());
 
+        // Compteurs par période pour les onglets (respecte statut + rôle employé)
+        $baseCountQuery = RendezVous::query();
+        if ($isEmploye) {
+            $baseCountQuery->where('employe_id', Auth::id());
+        }
+        if ($statut) {
+            $baseCountQuery->where('statut', $statut);
+        }
+        $counts = [
+            'today'   => (clone $baseCountQuery)->whereDate('debut_le', today())->count(),
+            'semaine' => (clone $baseCountQuery)->whereBetween('debut_le', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+            'mois'    => (clone $baseCountQuery)->whereBetween('debut_le', [now()->startOfMonth(), now()->endOfMonth()])->count(),
+            'tous'    => (clone $baseCountQuery)->count(),
+        ];
+
         // Prochain RDV si filtre large
         $prochainQuery = RendezVous::with('prestations')->aVenir()->orderBy('debut_le');
         if ($isEmploye) {
@@ -50,13 +75,13 @@ class RdvController extends Controller
         }
         $prochainRdv = $prochainQuery->first();
 
-        return view('dashboard.rdv.index', compact('rdvs', 'filtre', 'statut', 'prochainRdv'));
+        return view('dashboard.rdv.index', compact('rdvs', 'filtre', 'statut', 'prochainRdv', 'counts'));
     }
 
     public function create(Request $request)
     {
         $clients     = Client::where('actif', true)
-                           ->orderByRaw("CASE WHEN type_client = 'entreprise' THEN raison_sociale ELSE CONCAT(prenom, ' ', nom) END")
+                           ->orderByRaw($this->triClientsExpr())
                            ->limit(300)
                            ->get();
         $prestations = Prestation::where('actif', true)->with('categorie')->orderBy('nom')->limit(500)->get();
@@ -177,7 +202,7 @@ class RdvController extends Controller
 
         $rdv->loadMissing(['prestations']);
         $clients     = Client::where('actif', true)
-                           ->orderByRaw("CASE WHEN type_client = 'entreprise' THEN raison_sociale ELSE CONCAT(prenom, ' ', nom) END")
+                           ->orderByRaw($this->triClientsExpr())
                            ->limit(300)
                            ->get();
         $prestations = Prestation::where('actif', true)->with('categorie')->orderBy('nom')->limit(500)->get();
@@ -186,8 +211,9 @@ class RdvController extends Controller
                            ->where('actif', true)
                            ->orderBy('prenom')
                            ->get();
+        $clientPreselectionne = $rdv->client_id ? $rdv->client : null;
 
-        return view('dashboard.rdv.edit', compact('rdv', 'clients', 'prestations', 'employes'));
+        return view('dashboard.rdv.edit', compact('rdv', 'clients', 'prestations', 'employes', 'clientPreselectionne'));
     }
 
     public function update(Request $request, RendezVous $rdv)

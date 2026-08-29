@@ -27,40 +27,29 @@
         <div class="card p-5 space-y-4">
             <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Client</p>
 
-            <div>
-                <label class="form-label">Sélectionner un client existant (optionnel)</label>
-                <select name="client_id" class="form-input"
-                        x-ref="clientSelect"
-                        x-on:change="fillClientFromSelect($el)"
-                        x-init="$nextTick(() => { if ($el.value) fillClientFromSelect($el) })">
-                    <option value="">— Choisir un client —</option>
-                    @foreach($clients as $c)
-                    <option value="{{ $c->id }}"
-                            data-nom="{{ $c->nom_complet }}"
-                            data-tel="{{ $c->telephone ?? '' }}"
-                            data-email="{{ $c->email ?? '' }}"
-                            {{ old('client_id') == $c->id || ($clientPreselectionne && $clientPreselectionne->id == $c->id) ? 'selected' : '' }}>
-                        {{ $c->nom_complet }}
-                    </option>
-                    @endforeach
-                </select>
+            <div class="relative">
+                <label class="form-label">Sélectionner un client existant</label>
+                <x-selecteur-client :clients="$clients" :preselectionne="$clientPreselectionne" old-client-id="{{ old('client_id') }}" />
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="form-label">Nom du client <span class="text-red-500">*</span></label>
-                    <input type="text" name="client_nom" x-model="clientNom" required
+                    <input type="text" name="client_nom" required
+                           value="{{ old('client_nom', $clientPreselectionne?->nom_complet ?? '') }}"
                            class="form-input" placeholder="Prénom Nom">
                 </div>
                 <div>
                     <label class="form-label">Téléphone</label>
-                    <input type="tel" name="client_telephone" x-model="clientTel"
+                    <input type="tel" name="client_telephone"
+                           value="{{ old('client_telephone', $clientPreselectionne?->telephone ?? '') }}"
                            class="form-input" placeholder="06 XX XX XX XX">
                 </div>
             </div>
             <div>
                 <label class="form-label">E-mail</label>
-                <input type="email" name="client_email" x-model="clientEmail"
+                <input type="email" name="client_email"
+                       value="{{ old('client_email', $clientPreselectionne?->email ?? '') }}"
                        class="form-input" placeholder="client@exemple.fr">
             </div>
         </div>

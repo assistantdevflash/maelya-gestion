@@ -204,6 +204,13 @@ class DashboardController extends Controller
             ->whereNotIn('id', $cadeauClientIds)
             ->get();
 
+        // ── 11. Prochains rendez-vous (bandeau masquable) ───────────────────
+        $rdvsAvenir = \App\Models\RendezVous::with('client')
+            ->aVenir()
+            ->orderBy('debut_le')
+            ->limit(5)
+            ->get();
+
         $chartData = ['labels' => $labels, 'values' => $data];
 
         // Invalider le cache après une nouvelle vente du jour (optionnel : purger via Event)
@@ -215,6 +222,7 @@ class DashboardController extends Controller
             'paiementsCash', 'paiementsMobile', 'paiementsCarte', 'paiementsMixte', 'paiementsCredit',
             'labels', 'data', 'chartData', 'dernieresVentes', 'alertesStock',
             'abonnement', 'joursRestants', 'anniversairesAujourdhui', 'abonnementSursis', 'sursisJours',
+            'rdvsAvenir',
             'caJourPrec', 'caMoisPrec', 'ventesJourPrec', 'ventesMoisPrec',
             'evolutionCa', 'evolutionCaJour', 'evolutionCaMois',
             'evolutionVentesJour', 'evolutionVentesMois', 'evolutionClientsJour'

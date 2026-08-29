@@ -112,6 +112,9 @@
         {{-- ═══ BANNIÈRES ANNIVERSAIRE ═══ --}}
         <x-banniere-anniversaire :clients="$anniversairesAujourdhui" />
 
+        {{-- ═══ BANNIÈRES PROCHAINS RDV ═══ --}}
+        <x-banniere-rdv :rdvs="$rdvsAvenir" />
+
         {{-- ═══ KPI CARDS ═══ --}}
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {{-- CA du jour --}}
