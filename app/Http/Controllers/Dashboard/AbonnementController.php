@@ -111,13 +111,24 @@ class AbonnementController extends Controller
             ->with('plan')
             ->first();
 
+        // ── Facturation PAR établissement ─────────────────────────────────────
+        // Au renouvellement, les boutiques actives des établissements sont
+        // re-facturées automatiquement. On les transmet à la vue pour l'affichage.
+        $estRenouvellement = (bool) $abonnementActif;
+        $boutiquesActives = $user->mesInstituts()
+            ->get()
+            ->filter(fn ($i) => $i->hasBoutiqueOption())
+            ->values();
+        $nbBoutiquesActives = $boutiquesActives->count();
+
         // Prix pour la période sélectionnée
         $prixPlan       = $plan->prixEffectif($periode);
         $paymentMethods = PaymentMethod::active()->get();
 
         return view('dashboard.abonnement.souscrire', compact(
             'plan', 'periode', 'prixPlan',
-            'abonnementActif', 'demandeEnAttente', 'user', 'paymentMethods'
+            'abonnementActif', 'demandeEnAttente', 'user', 'paymentMethods',
+            'estRenouvellement', 'boutiquesActives', 'nbBoutiquesActives'
         ));
     }
 
@@ -171,6 +182,7 @@ class AbonnementController extends Controller
         $estRenouvellement = (bool) $user->abonnementActif;
         $nbMois = match ($request->periode) {
             'mensuel'  => 1,
+            'semestre' => 6,
             'annuel'   => 12,
             'triennal' => 36,
             default    => 1,

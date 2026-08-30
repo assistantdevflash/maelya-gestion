@@ -265,7 +265,7 @@
                                     <button type="button" @click="showModal = false" class="btn-ghost px-6 py-2.5">
                                         Annuler
                                     </button>
-                                    <button type="submit" 
+                                    <button type="submit"
                                             class="btn-primary px-8 py-3 text-base flex items-center justify-center gap-2"
                                             :class="methodePaiement === 'geniuspay' ? '!bg-gradient-to-r !from-purple-600 !to-pink-600 hover:!from-purple-700 hover:!to-pink-700 shadow-lg' : ''">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

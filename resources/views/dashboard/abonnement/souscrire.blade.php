@@ -1,5 +1,5 @@
 <x-dashboard-layout>
-<div class="max-w-3xl mx-auto space-y-8 py-4" x-data="souscrire({{ $plan->prixEffectif() }}, {{ $plan->prixPourPeriode('trimestre') }}, {{ $plan->prixPourPeriode('semestre') }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }}, '{{ $periode }}', {{ request('ajouter') === 'boutique' ? 'true' : 'false' }})">
+<div class="max-w-3xl mx-auto space-y-8 py-4" x-data="souscrire({{ $plan->prixEffectif() }}, {{ $plan->prixPourPeriode('trimestre') }}, {{ $plan->prixPourPeriode('semestre') }}, {{ $plan->prixPourPeriode('annuel') }}, {{ $plan->prixPourPeriode('triennal') }}, '{{ $periode }}', {{ request('ajouter') === 'boutique' ? 'true' : 'false' }}, {{ $estRenouvellement ? 'true' : 'false' }}, {{ $nbBoutiquesActives }})">
 
     {{-- Fil d'Ariane --}}
     <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400">
@@ -125,6 +125,41 @@
 
                     {{-- Option boutique --}}
                     <div class="pt-3 border-t-2 border-gray-200 dark:border-slate-600">
+                        @if($estRenouvellement && $nbBoutiquesActives > 0)
+                        {{-- Renouvellement : les boutiques actives sont re-facturées automatiquement --}}
+                        <div class="p-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 border-2 border-purple-200 dark:border-purple-800">
+                            <div class="flex items-start gap-3">
+                                <div class="mt-0.5 w-6 h-6 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-4 h-4 text-purple-600 dark:text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="font-semibold text-gray-900 dark:text-white text-base">🛍️ Boutique en ligne</span>
+                                        <span class="text-sm font-bold text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/50 px-2 py-0.5 rounded">
+                                            {{ $nbBoutiquesActives }} × 3 900 F/mois
+                                        </span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 dark:text-slate-300 mt-1">
+                                        Boutique(s) active(s) sur {{ $nbBoutiquesActives }} établissement(s)
+                                        @if($nbBoutiquesActives > 1) — re-facturée(s) automatiquement à chaque établissement @endif.
+                                    </p>
+                                    <ul class="mt-2 space-y-1">
+                                        @foreach($boutiquesActives as $bi)
+                                        <li class="flex items-center gap-2 text-xs text-gray-600 dark:text-slate-300">
+                                            <svg class="w-3.5 h-3.5 text-purple-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                            {{ $bi->nom }}
+                                        </li>
+                                        @endforeach
+                                    </ul>
+                                    <input type="hidden" name="option_boutique" value="1">
+                                    <input type="hidden" name="nb_boutiques" :value="{{ $nbBoutiquesActives }}">
+                                    <p x-show="true" x-cloak class="text-xs font-semibold text-purple-700 dark:text-purple-300 mt-2 bg-purple-100 dark:bg-purple-900/40 px-2 py-1 rounded inline-block">
+                                        +<span x-text="boutiqueTotal()"></span> FCFA pour la période
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        @else
                         <label class="flex items-start gap-3 cursor-pointer p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700/50 transition-colors border-2 border-transparent hover:border-primary-200 dark:hover:border-primary-700/70">
                             <input type="checkbox" name="option_boutique" value="1"
                                    x-model="optionBoutique"
@@ -140,6 +175,7 @@
                                 </p>
                             </div>
                         </label>
+                        @endif
                     </div>
 
                     {{-- Total --}}
@@ -338,7 +374,7 @@
 
 <x-slot:scripts>
 <script>
-function souscrire(prixMensuel, prixTrimestre, prixSemestre, prixAnnuel, prixTriennal, initialPeriode, initialBoutique) {
+function souscrire(prixMensuel, prixTrimestre, prixSemestre, prixAnnuel, prixTriennal, initialPeriode, initialBoutique, estRenouvellement, nbBoutiquesActives) {
     return {
         prixMensuel: prixMensuel,
         prixTrimestre: prixTrimestre,
@@ -349,6 +385,8 @@ function souscrire(prixMensuel, prixTrimestre, prixSemestre, prixAnnuel, prixTri
         payMethod: 'om',
         copied: false,
         optionBoutique: initialBoutique,
+        estRenouvellement: estRenouvellement,
+        nbBoutiquesActives: nbBoutiquesActives,
         methodePaiement: '{{ $paymentMethods->first()?->code ?? "bank_transfer" }}',
 
         setPeriode(p) {
@@ -363,16 +401,32 @@ function souscrire(prixMensuel, prixTrimestre, prixSemestre, prixAnnuel, prixTri
             return this.prixMensuel;
         },
 
+        // Nombre de boutiques facturées (renouvellement : boutiques actives ; sinon : case à cocher)
+        nbBoutiques() {
+            return this.estRenouvellement ? this.nbBoutiquesActives : (this.optionBoutique ? 1 : 0);
+        },
+
+        nbMois() {
+            return this.periode === 'trimestre' ? 3 : this.periode === 'semestre' ? 6 : this.periode === 'annuel' ? 12 : this.periode === 'triennal' ? 36 : 1;
+        },
+
+        // Prix total des boutiques pour la période (une seule boutique, non multiplié — affichage)
         boutiquePrice() {
-            const nbMois = this.periode === 'trimestre' ? 3 : this.periode === 'semestre' ? 6 : this.periode === 'annuel' ? 12 : this.periode === 'triennal' ? 36 : 1;
-            return new Intl.NumberFormat('fr-FR').format(3900 * nbMois);
+            const total = 3900 * this.nbMois();
+            return new Intl.NumberFormat('fr-FR').format(total);
+        },
+
+        // Prix total des boutiques pour la période (multi-établissements — renouvellement)
+        boutiqueTotal() {
+            const total = 3900 * this.nbMois() * this.nbBoutiques();
+            return new Intl.NumberFormat('fr-FR').format(total);
         },
 
         totalPrice() {
             let total = this.planPrice();
-            if (this.optionBoutique) {
-                const nbMois = this.periode === 'trimestre' ? 3 : this.periode === 'semestre' ? 6 : this.periode === 'annuel' ? 12 : this.periode === 'triennal' ? 36 : 1;
-                total += 3900 * nbMois;
+            const nb = this.nbBoutiques();
+            if (nb > 0) {
+                total += 3900 * this.nbMois() * nb;
             }
             return new Intl.NumberFormat('fr-FR').format(total);
         },
