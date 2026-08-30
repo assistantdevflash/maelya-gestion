@@ -112,14 +112,19 @@ class AbonnementController extends Controller
             ->first();
 
         // ── Facturation PAR établissement ─────────────────────────────────────
-        // Au renouvellement, les boutiques actives des établissements sont
-        // re-facturées automatiquement. On les transmet à la vue pour l'affichage.
+        // On transmet TOUS les établissements du compte avec leur état d'option
+        // boutique : pré-cochés si l'option est active, décochés sinon.
         $estRenouvellement = (bool) $abonnementActif;
-        $boutiquesActives = $user->mesInstituts()
+        $etablissements = $user->mesInstituts()
             ->get()
-            ->filter(fn ($i) => $i->hasBoutiqueOption())
+            ->map(fn ($i) => [
+                'id'         => $i->id,
+                'nom'        => $i->nom,
+                'slug'       => $i->slug,
+                'ville'      => $i->ville,
+                'optionActive' => $i->hasBoutiqueOption(),
+            ])
             ->values();
-        $nbBoutiquesActives = $boutiquesActives->count();
 
         // Prix pour la période sélectionnée
         $prixPlan       = $plan->prixEffectif($periode);
@@ -128,7 +133,7 @@ class AbonnementController extends Controller
         return view('dashboard.abonnement.souscrire', compact(
             'plan', 'periode', 'prixPlan',
             'abonnementActif', 'demandeEnAttente', 'user', 'paymentMethods',
-            'estRenouvellement', 'boutiquesActives', 'nbBoutiquesActives'
+            'estRenouvellement', 'etablissements'
         ));
     }
 
@@ -179,7 +184,7 @@ class AbonnementController extends Controller
         $montant = $plan->prixPourPeriode($request->periode);
 
         // Option boutique en ligne (add-on payant, facturation PAR établissement)
-        $estRenouvellement = (bool) $user->abonnementActif;
+        // L'utilisateur a coché les établissements souhaités (boutiques[]).
         $nbMois = match ($request->periode) {
             'mensuel'  => 1,
             'semestre' => 6,
@@ -187,17 +192,20 @@ class AbonnementController extends Controller
             'triennal' => 36,
             default    => 1,
         };
-        $nbBoutiques = 0;
-        if ($estRenouvellement) {
-            // Renouvellement : re-facturer les boutiques actives
-            $nbBoutiques = $user->mesInstituts()
-                ->get()
-                ->filter(fn ($i) => $i->hasBoutiqueOption())
-                ->count();
-        } elseif ($request->boolean('option_boutique')) {
-            // Nouvelle souscription : une boutique (établissement principal)
-            $nbBoutiques = 1;
-        }
+
+        $institutIds = collect($request->input('boutiques', []))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        // Ne garder que les établissements du compte (sécurité)
+        $etablissementsValides = $user->mesInstituts()
+            ->whereIn('id', $institutIds)
+            ->pluck('id')
+            ->all();
+
+        $nbBoutiques = count($etablissementsValides);
         $prixBoutique = 3900 * $nbMois * $nbBoutiques;
 
         Abonnement::create([
@@ -212,6 +220,7 @@ class AbonnementController extends Controller
                 'boutique' => $nbBoutiques > 0,
                 'boutique_prix' => $nbBoutiques > 0 ? 3900 : 0,
                 'nb_boutiques' => $nbBoutiques,
+                'boutiques_ids' => $etablissementsValides,
             ],
         ]);
 
@@ -365,19 +374,20 @@ class AbonnementController extends Controller
         $nbMois  = match ($periode) { 'trimestre' => 3, 'semestre' => 6, 'annuel' => 12, 'triennal' => 36, default => 1 };
 
         // ── Option boutique (facturation PAR établissement) ──────────────────
-        // Renouvellement : re-facturer automatiquement les boutiques actives
-        $estRenouvellement = (bool) $user->abonnementActif;
-        $nbBoutiques = 0;
+        // L'utilisateur a coché les établissements souhaités (boutiques[]).
+        // On ne garde que les établissements du compte (sécurité).
+        $institutIds = collect($request->input('boutiques', []))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
 
-        if ($estRenouvellement) {
-            $nbBoutiques = $user->mesInstituts()
-                ->get()
-                ->filter(fn ($i) => $i->hasBoutiqueOption())
-                ->count();
-        } elseif ($request->boolean('option_boutique')) {
-            // Nouvelle souscription : une boutique (établissement principal)
-            $nbBoutiques = 1;
-        }
+        $etablissementsValides = $user->mesInstituts()
+            ->whereIn('id', $institutIds)
+            ->pluck('id')
+            ->all();
+
+        $nbBoutiques = count($etablissementsValides);
 
         if ($nbBoutiques > 0) {
             $montant += 3900 * $nbMois * $nbBoutiques;
@@ -394,6 +404,7 @@ class AbonnementController extends Controller
                 'boutique'       => $nbBoutiques > 0,
                 'boutique_prix'  => $nbBoutiques > 0 ? 3900 : 0,
                 'nb_boutiques'   => $nbBoutiques,
+                'boutiques_ids'  => $etablissementsValides,
                 'payment_method' => 'geniuspay',
             ],
         ]);
@@ -405,7 +416,7 @@ class AbonnementController extends Controller
             'user_id'             => $user->id,
             'institut_id'         => $user->institut_id,
             'abonnement_id'       => $abonnement->id,
-            'type'                => $estRenouvellement ? 'renouvellement' : 'abonnement',
+            'type'                => $user->abonnementActif ? 'renouvellement' : 'abonnement',
             'amount'              => $montant,
             'net_amount'          => $montant,
             'currency'            => 'XOF',
@@ -416,6 +427,7 @@ class AbonnementController extends Controller
                 'plan_nom'     => $plan->nom,
                 'periode'      => $periode,
                 'nb_boutiques' => $nbBoutiques,
+                'boutiques_ids'=> $etablissementsValides,
             ],
         ]);
 

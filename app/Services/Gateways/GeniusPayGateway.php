@@ -381,17 +381,36 @@ class GeniusPayGateway implements PaymentGatewayInterface
             $user->forgetBoutiqueAccessCache();
         }
 
-        // Prolonger les options boutique des établissements actifs jusqu'à la
-        // nouvelle date d'expiration (elles ont été re-facturées au renouvellement)
+        // ── Appliquer la liste des établissements boutique cochés ──────────
+        // Les établissements cochés sont activés/prolongés jusqu'à la nouvelle
+        // date d'expiration ; ceux qui ne sont plus cochés sont désactivés.
         if ($user) {
+            $metadata = $abonnement->metadata ?? [];
+
+            if (array_key_exists('boutiques_ids', $metadata)) {
+                // Flux actuel : on applique la liste cochée (vide = tout décocher)
+                $idsCoches = collect($metadata['boutiques_ids']);
+            } else {
+                // Legacy : pas de liste → prolonger simplement les boutiques actives
+                $idsCoches = $user->mesInstituts()
+                    ->get()
+                    ->filter(fn ($i) => $i->hasBoutiqueOption())
+                    ->pluck('id');
+            }
+
+            $idsCoches = $idsCoches->filter()->unique()->values()->all();
+
             $user->mesInstituts()
                 ->get()
-                ->filter(fn ($i) => $i->hasBoutiqueOption())
-                ->each(function ($i) use ($abonnement) {
-                    $i->setBoutiqueOption(true, $abonnement->expire_le->toDateString(), 3900);
-                    $i->save();
-                    $user = $abonnement->user;
-                    if ($user) $user->forgetBoutiqueAccessCache($i->id);
+                ->each(function ($institut) use ($abonnement, $user, $idsCoches) {
+                    if (in_array($institut->id, $idsCoches)) {
+                        $institut->setBoutiqueOption(true, $abonnement->expire_le->toDateString(), 3900);
+                    } else {
+                        // Pas cochée → on retire l'option boutique
+                        $institut->setBoutiqueOption(false);
+                    }
+                    $institut->save();
+                    $user->forgetBoutiqueAccessCache($institut->id);
                 });
         }
 
