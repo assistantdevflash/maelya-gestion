@@ -60,12 +60,20 @@ class AdminAbonnementController extends Controller
                 return back()->with('error', 'L\'abonnement source n\'est plus actif.');
             }
 
-            // Activer l'option boutique sur l'abonnement source
-            $aboSource->setBoutique(true, 3900);
-            $aboSource->save();
+            // Établissement cible : celui d'où part la demande (sinon le principal)
+            $institut = \App\Models\Institut::find($abonnement->metadata['institut_id'] ?? null)
+                ?? \App\Models\Institut::find($aboSource->user?->institut_id);
 
-            // Invalider le cache d'accès boutique pour cet utilisateur
-            Cache::forget("user_{$aboSource->user_id}_boutique_access");
+            if (!$institut) {
+                return back()->with('error', 'Établissement cible introuvable.');
+            }
+
+            // Activer l'option boutique sur l'établissement (alignée sur l'abonnement)
+            $institut->setBoutiqueOption(true, $aboSource->expire_le?->toDateString(), 3900);
+            $institut->save();
+
+            // Invalider le cache d'accès boutique pour cet établissement
+            $aboSource->user?->forgetBoutiqueAccessCache($institut->id);
 
             // Marquer cette demande comme traitée
             $abonnement->update([
@@ -131,9 +139,24 @@ class AdminAbonnementController extends Controller
             'valide_par' => Auth::id(),
         ]);
 
-        // Invalider le cache d'accès boutique si l'option est incluse
-        if ($abonnement->hasBoutique()) {
-            Cache::forget("user_{$abonnement->user_id}_boutique_access");
+        // Invalider le cache d'accès boutique (si l'option est incluse)
+        $user = $abonnement->user;
+        if ($user) {
+            $user->forgetBoutiqueAccessCache();
+        }
+
+        // Prolonger les options boutique des établissements actifs à la nouvelle
+        // date d'expiration (renouvellement / upgrade manuel)
+        if ($user) {
+            $user->mesInstituts()
+                ->get()
+                ->filter(fn ($i) => $i->hasBoutiqueOption())
+                ->each(function ($i) use ($abonnement) {
+                    $i->setBoutiqueOption(true, $abonnement->expire_le->toDateString(), 3900);
+                    $i->save();
+                    $user = $abonnement->user;
+                    if ($user) $user->forgetBoutiqueAccessCache($i->id);
+                });
         }
 
         // ── Récompense de parrainage ──────────────────────────────────────────

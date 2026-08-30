@@ -190,20 +190,30 @@ class User extends Authenticatable
     }
 
     /**
-     * L'utilisateur a-t-il accès au module boutique en ligne ?
-     * L'option boutique est un add-on payant (3 900 F/mois) sur les plans payants.
+     * L'utilisateur a-t-il accès au module boutique en ligne pour un établissement ?
+     *
+     * Depuis le passage à la facturation PAR établissement, l'accès est vérifié
+     * pour l'établissement passé en paramètre (ou l'établissement courant si null).
+     * L'option boutique (3 900 F/mois) est un add-on payant par établissement.
      * Gratuit pendant l'essai et pour les super admins.
      */
-    public function hasBoutiqueAccess(): bool
+    public function hasBoutiqueAccess(?Institut $institut = null): bool
     {
         // Super admin : toujours
         if ($this->isSuperAdmin()) {
             return true;
         }
 
-        // Cache 5 minutes pour éviter les vérifications répétées qui peuvent
-        // causer des 404 intempestifs si l'abonnement est temporairement inaccessible
-        return Cache::remember("user_{$this->id}_boutique_access", 300, function () {
+        // Déterminer l'établissement concerné (paramètre explicite > établissement courant)
+        $institut = $institut ?: $this->institutActif;
+        if (!$institut) {
+            return false;
+        }
+
+        // Cache 5 minutes (par établissement) pour éviter les vérifications répétées
+        // qui peuvent causer des 404 intempestifs si l'abonnement est temporairement inaccessible
+        $key = "user_{$this->id}_boutique_access_{$institut->id}";
+        return Cache::remember($key, 300, function () use ($institut) {
             // Vérifier la feature de base dans le plan
             if (!$this->aFonctionnalite('boutique')) {
                 return false;
@@ -220,8 +230,8 @@ class User extends Authenticatable
                 return true;
             }
 
-            // Plan payant → vérifier l'option boutique dans les métadonnées
-            return $abo->hasBoutique();
+            // Plan payant → vérifier l'option boutique PAR ÉTABLISSEMENT
+            return $institut->hasBoutiqueOption();
         });
     }
 
@@ -231,6 +241,17 @@ class User extends Authenticatable
     public function currentInstitutId(): ?string
     {
         return session('current_institut_id', $this->institut_id) ?? $this->institut_id;
+    }
+
+    /**
+     * Invalide le cache d'accès boutique pour un établissement donné.
+     */
+    public function forgetBoutiqueAccessCache(?string $institutId = null): void
+    {
+        $ids = $institutId ? [$institutId] : $this->mesInstituts()->pluck('id')->all();
+        foreach ($ids as $id) {
+            Cache::forget("user_{$this->id}_boutique_access_{$id}");
+        }
     }
 
     // ── Parrainage ────────────────────────────────────────────────────────────

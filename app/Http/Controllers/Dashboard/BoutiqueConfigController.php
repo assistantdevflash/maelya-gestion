@@ -18,10 +18,11 @@ class BoutiqueConfigController extends Controller
     {
         $institut = Institut::findOrFail(session('current_institut_id', auth()->user()->institut_id));
 
-        // Vérifier si une demande d'ajout d'option boutique est en attente
+        // Vérifier si une demande d'ajout d'option boutique est en attente POUR CET ÉTABLISSEMENT
         $demandeEnAttente = \App\Models\Abonnement::where('user_id', auth()->id())
             ->where('statut', 'en_attente')
             ->whereJsonContains('metadata->type', 'ajout_option_boutique')
+            ->whereJsonContains('metadata->institut_id', $institut->id)
             ->first();
 
         // Récupérer les méthodes de paiement actives

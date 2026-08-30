@@ -464,11 +464,44 @@ if (!$institut->proprietaire?->hasBoutiqueAccess()) {
 
 1. ✅ L'essai (14 jours) inclut **gratuitement** la boutique
 2. ✅ L'option boutique peut être **ajoutée en cours d'abonnement** (prorata)
-3. ✅ L'option boutique est **liée à l'abonnement** : si l'abonnement expire, la boutique devient inaccessible
-4. ✅ Le renouvellement d'abonnement **conserve** l'option boutique
-5. ✅ L'upgrade de plan (ex: Premium → Premium+) **conserve** l'option boutique
-6. ✅ Super admin : toujours accès (pour support/démo)
-7. ✅ La boutique publique (`/shop/{slug}`) renvoie 404 si le propriétaire n'a pas l'option
+3. ✅ L'option boutique est **liée à l'ÉTABLISSEMENT** (facturation PAR établissement, 3 900 F/mois chacun) : si l'abonnement expire, toutes les boutiques deviennent inaccessibles
+4. ✅ **Multi-établissements** : chaque boutique est facturée séparément (3 900 F/mois × nb d'établissements avec boutique active)
+5. ✅ Le renouvellement d'abonnement **re-facture et prolonge** les options boutique des établissements actifs
+6. ✅ L'upgrade de plan (ex: Premium → Premium+) **conserve** les options boutique
+7. ✅ Super admin : toujours accès (pour support/démo)
+8. ✅ La boutique publique (`/shop/{slug}`) renvoie 404 si le propriétaire n'a pas l'option POUR CET établissement
+
+---
+
+## 🏗️ Modèle de facturation PAR établissement (mise à jour 30/08/2026)
+
+Depuis le passage à la facturation par établissement, l'option boutique est un **attribut de l'établissement** (table `instituts`), plus de l'abonnement :
+
+```
+instituts
+  ├── boutique_option_active      (bool)
+  ├── boutique_option_expire_le   (date, alignée sur l'abonnement du propriétaire)
+  └── boutique_option_prix        (int, 3900)
+
+instituts  N:1  user (proprietaire_id)
+user       1:N  abonnements
+```
+
+- **Activation** : depuis la config de l'établissement courant (`session('current_institut_id')`), paiement du prorata calculé sur l'abonnement du propriétaire (`joursRestants()`), puis activation de CET établissement avec `expire_le = abonnement.expire_le`.
+- **Accès** : `User::hasBoutiqueAccess(?Institut $institut)` vérifie l'option de l'établissement passé (ou courant). Cache par établissement : `user_{id}_boutique_access_{institutId}`.
+- **Renouvellement** : les boutiques actives sont re-facturées automatiquement (3900 × nbMois × nb boutiques) et leur `expire_le` est prolongée à la nouvelle date d'expiration.
+- **Remboursement** : désactive l'option de l'établissement concerné (via `$transaction->institut_id`).
+
+Fichiers modifiés (30/08/2026) :
+- `database/migrations/2026_08_30_000001_add_boutique_option_to_instituts.php` (nouveau)
+- `app/Models/Institut.php` : `hasBoutiqueOption()`, `setBoutiqueOption()`, `getBoutiqueOptionPrixMensuel()`
+- `app/Models/User.php` : `hasBoutiqueAccess(?Institut)`, `forgetBoutiqueAccessCache()`
+- `app/Http/Controllers/Dashboard/AbonnementController.php` : `ajouterOptionBoutique()` + `activerBoutiqueViaGeniusPay()` ciblent l'établissement courant ; `souscrireViaGeniusPay()`/`souscrire()` re-facturent les boutiques actives au renouvellement
+- `app/Http/Controllers/Admin/AdminAbonnementController.php` : validation `ajout_option_boutique` active l'établissement cible (metadata `institut_id`) + prolonge les options au renouvellement
+- `app/Services/Gateways/GeniusPayGateway.php` : `activateBoutique()`/`desactiverService()` par établissement ; `activateAbonnement()` prolonge les options
+- `app/Http/Controllers/BoutiqueController.php` : `hasBoutiqueAccess($institut)`
+- `app/Http/Controllers/Dashboard/BoutiqueConfigController.php` : `demandeEnAttente` par établissement
+- `resources/views/dashboard/boutique/config.blade.php` : `hasBoutiqueAccess($institut)`
 
 ---
 

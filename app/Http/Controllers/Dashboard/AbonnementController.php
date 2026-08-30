@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Mail\NouvelleDemandeAbonnement;
 use App\Models\Abonnement;
+use App\Models\Institut;
 use App\Models\PaymentMethod;
 use App\Models\PaymentTransaction;
 use App\Models\PlanAbonnement;
@@ -166,17 +167,26 @@ class AbonnementController extends Controller
             : null;
         $montant = $plan->prixPourPeriode($request->periode);
 
-        // Option boutique en ligne (add-on payant)
-        $optionBoutique = $request->boolean('option_boutique');
-        $prixBoutique = 0;
-        if ($optionBoutique) {
-            $nbMois = match ($request->periode) {
-                'mensuel'  => 1,
-                'annuel'   => 12,
-                'triennal' => 36,
-            };
-            $prixBoutique = 3900 * $nbMois;
+        // Option boutique en ligne (add-on payant, facturation PAR établissement)
+        $estRenouvellement = (bool) $user->abonnementActif;
+        $nbMois = match ($request->periode) {
+            'mensuel'  => 1,
+            'annuel'   => 12,
+            'triennal' => 36,
+            default    => 1,
+        };
+        $nbBoutiques = 0;
+        if ($estRenouvellement) {
+            // Renouvellement : re-facturer les boutiques actives
+            $nbBoutiques = $user->mesInstituts()
+                ->get()
+                ->filter(fn ($i) => $i->hasBoutiqueOption())
+                ->count();
+        } elseif ($request->boolean('option_boutique')) {
+            // Nouvelle souscription : une boutique (établissement principal)
+            $nbBoutiques = 1;
         }
+        $prixBoutique = 3900 * $nbMois * $nbBoutiques;
 
         Abonnement::create([
             'user_id' => $user->id,
@@ -187,8 +197,9 @@ class AbonnementController extends Controller
             'reference_transfert' => $request->reference_transfert,
             'preuve_paiement' => $preuvePath,
             'metadata' => [
-                'boutique' => $optionBoutique,
-                'boutique_prix' => $optionBoutique ? 3900 : 0,
+                'boutique' => $nbBoutiques > 0,
+                'boutique_prix' => $nbBoutiques > 0 ? 3900 : 0,
+                'nb_boutiques' => $nbBoutiques,
             ],
         ]);
 
@@ -229,23 +240,30 @@ class AbonnementController extends Controller
         $user = Auth::user();
         $abo = $user->abonnementActif;
 
+        // L'établissement concerné = établissement courant (session multi-instituts)
+        $institut = Institut::find(session('current_institut_id', $user->institut_id));
+        if (!$institut) {
+            return back()->with('error', 'Établissement introuvable.');
+        }
+
         // Vérifications de base
         if (!$abo || $abo->plan->slug === 'essai') {
             return back()->with('error', 'Action non disponible.');
         }
 
-        if ($abo->hasBoutique()) {
-            return back()->with('info', 'L\'option boutique est déjà activée sur votre abonnement.');
+        if ($institut->hasBoutiqueOption()) {
+            return back()->with('info', 'L\'option boutique est déjà activée sur cet établissement.');
         }
 
-        // Vérifier qu'il n'y a pas déjà une demande en attente
+        // Vérifier qu'il n'y a pas déjà une demande en attente POUR CET ÉTABLISSEMENT
         $demandeExistante = Abonnement::where('user_id', $user->id)
             ->where('statut', 'en_attente')
             ->whereJsonContains('metadata->type', 'ajout_option_boutique')
+            ->whereJsonContains('metadata->institut_id', $institut->id)
             ->exists();
 
         if ($demandeExistante) {
-            return back()->with('error', 'Vous avez déjà une demande d\'ajout d\'option boutique en attente.');
+            return back()->with('error', 'Vous avez déjà une demande d\'ajout d\'option boutique en attente pour cet établissement.');
         }
 
         // Validation des données de paiement
@@ -260,7 +278,7 @@ class AbonnementController extends Controller
 
         // ── Flux GeniusPay pour boutique ─────────────────────────────────────
         if ($methodCode === 'geniuspay' && $method) {
-            return $this->activerBoutiqueViaGeniusPay($abo, $method);
+            return $this->activerBoutiqueViaGeniusPay($abo, $method, $institut);
         }
 
         // Au moins une preuve de paiement
@@ -291,6 +309,7 @@ class AbonnementController extends Controller
             'metadata'   => [
                 'type' => 'ajout_option_boutique',
                 'abonnement_source_id' => $abo->id,
+                'institut_id' => $institut->id,
                 'boutique' => true,
                 'boutique_prix' => 3900,
                 'jours_restants' => $joursRestants,
@@ -331,12 +350,25 @@ class AbonnementController extends Controller
         $user    = Auth::user();
         $periode = $request->input('periode', 'mensuel');
         $montant = $plan->prixPourPeriode($periode);
+        $nbMois  = match ($periode) { 'trimestre' => 3, 'semestre' => 6, 'annuel' => 12, 'triennal' => 36, default => 1 };
 
-        // Option boutique incluse ?
-        $optionBoutique = $request->boolean('option_boutique');
-        if ($optionBoutique) {
-            $nbMois  = match ($periode) { 'trimestre' => 3, 'semestre' => 6, 'annuel' => 12, 'triennal' => 36, default => 1 };
-            $montant += 3900 * $nbMois;
+        // ── Option boutique (facturation PAR établissement) ──────────────────
+        // Renouvellement : re-facturer automatiquement les boutiques actives
+        $estRenouvellement = (bool) $user->abonnementActif;
+        $nbBoutiques = 0;
+
+        if ($estRenouvellement) {
+            $nbBoutiques = $user->mesInstituts()
+                ->get()
+                ->filter(fn ($i) => $i->hasBoutiqueOption())
+                ->count();
+        } elseif ($request->boolean('option_boutique')) {
+            // Nouvelle souscription : une boutique (établissement principal)
+            $nbBoutiques = 1;
+        }
+
+        if ($nbBoutiques > 0) {
+            $montant += 3900 * $nbMois * $nbBoutiques;
         }
 
         // Créer l'abonnement en_attente (sera activé auto par le webhook)
@@ -347,8 +379,9 @@ class AbonnementController extends Controller
             'periode'  => $periode,
             'statut'   => 'en_attente',
             'metadata' => [
-                'boutique'       => $optionBoutique,
-                'boutique_prix'  => $optionBoutique ? 3900 : 0,
+                'boutique'       => $nbBoutiques > 0,
+                'boutique_prix'  => $nbBoutiques > 0 ? 3900 : 0,
+                'nb_boutiques'   => $nbBoutiques,
                 'payment_method' => 'geniuspay',
             ],
         ]);
@@ -360,7 +393,7 @@ class AbonnementController extends Controller
             'user_id'             => $user->id,
             'institut_id'         => $user->institut_id,
             'abonnement_id'       => $abonnement->id,
-            'type'                => $user->abonnementActif ? 'renouvellement' : 'abonnement',
+            'type'                => $estRenouvellement ? 'renouvellement' : 'abonnement',
             'amount'              => $montant,
             'net_amount'          => $montant,
             'currency'            => 'XOF',
@@ -368,8 +401,9 @@ class AbonnementController extends Controller
             'payment_method_code' => 'geniuspay',
             'status'              => 'pending',
             'metadata'            => [
-                'plan_nom' => $plan->nom,
-                'periode'  => $periode,
+                'plan_nom'     => $plan->nom,
+                'periode'      => $periode,
+                'nb_boutiques' => $nbBoutiques,
             ],
         ]);
 
@@ -384,9 +418,10 @@ class AbonnementController extends Controller
         }
     }
 
-    private function activerBoutiqueViaGeniusPay(Abonnement $abo, PaymentMethod $method)
+    private function activerBoutiqueViaGeniusPay(Abonnement $abo, PaymentMethod $method, ?Institut $institut = null)
     {
         $user           = Auth::user();
+        $institut       = $institut ?? Institut::find(session('current_institut_id', $user->institut_id));
         $joursRestants  = max(1, $abo->joursRestants());
         $montantProrata = (int) round(3900 / 30 * $joursRestants);
 
@@ -394,7 +429,7 @@ class AbonnementController extends Controller
             'id'                  => (string) \Illuminate\Support\Str::uuid(),
             'reference'           => PaymentTransaction::generateReference(),
             'user_id'             => $user->id,
-            'institut_id'         => $user->institut_id,
+            'institut_id'         => $institut?->id ?? $user->institut_id,
             'abonnement_id'       => $abo->id,
             'type'                => 'boutique_activation',
             'amount'              => $montantProrata,
@@ -405,6 +440,7 @@ class AbonnementController extends Controller
             'status'              => 'pending',
             'metadata'            => [
                 'abonnement_source_id' => $abo->id,
+                'institut_id'          => $institut?->id,
                 'jours_restants'       => $joursRestants,
             ],
         ]);

@@ -30,8 +30,8 @@ class BoutiqueController extends Controller
             abort(404, 'Cette boutique n\'est pas disponible.');
         }
 
-        // Vérifier que le propriétaire a l'option boutique (ou est en essai)
-        if (!$institut->proprietaire?->hasBoutiqueAccess()) {
+        // Vérifier que le propriétaire a l'option boutique pour CET établissement (ou est en essai)
+        if (!$institut->proprietaire?->hasBoutiqueAccess($institut)) {
             abort(404, 'Cette boutique n\'est pas disponible.');
         }
 
@@ -86,8 +86,8 @@ class BoutiqueController extends Controller
             abort(404, 'Cette boutique n\'est pas disponible.');
         }
 
-        // Vérifier l'accès boutique (abonnement)
-        if (!$institut->proprietaire?->hasBoutiqueAccess()) {
+        // Vérifier l'accès boutique pour CET établissement (abonnement + option par établissement)
+        if (!$institut->proprietaire?->hasBoutiqueAccess($institut)) {
             abort(404, 'Cette boutique n\'est pas disponible.');
         }
 

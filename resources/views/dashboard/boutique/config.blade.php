@@ -16,7 +16,8 @@
     @endif
 
     @php
-        $hasBoutique = auth()->user()->hasBoutiqueAccess();
+        // Facturation par établissement : l'accès est vérifié pour CET établissement
+        $hasBoutique = auth()->user()->hasBoutiqueAccess($institut);
         $isEssai = auth()->user()->abonnementActif?->plan?->slug === 'essai';
         $aboActif = auth()->user()->abonnementActif;
         $enSursis = $aboActif && $aboActif->enPeriodeSursis();
@@ -79,8 +80,8 @@
             <div class="flex-1">
                 <h3 class="text-lg font-bold text-amber-900 dark:text-amber-200">Module non inclus dans votre abonnement</h3>
                 <p class="text-amber-800 dark:text-amber-300 mt-2">
-                    Le module <strong>Boutique en ligne</strong> est une option payante à <strong>3 900 F/mois</strong>.
-                    Ajoutez-le à votre abonnement actuel pour permettre à vos clients de commander vos produits en ligne avec livraison à domicile.
+                    Le module <strong>Boutique en ligne</strong> est une option payante à <strong>3 900 F/mois par établissement</strong>.
+                    Ajoutez-la pour <strong>{{ $institut->nom }}</strong> et permettez à vos clients de commander vos produits en ligne avec livraison à domicile.
                 </p>
                 @php
                     $aboActif = auth()->user()->abonnementActif;
@@ -91,7 +92,8 @@
                 <div class="mt-3 p-3 bg-amber-100 dark:bg-amber-900/40 rounded-lg border border-amber-200 dark:border-amber-700">
                     <p class="text-sm text-amber-900 dark:text-amber-200">
                         💡 <strong>Prorata calculé :</strong> {{ number_format($montantProrata, 0, ',', ' ') }} FCFA pour les {{ $joursRestants }} jours restants de votre abonnement actuel.
-                        À partir du prochain renouvellement, le montant sera de 3 900 FCFA/mois.
+                        Ce montant couvre la boutique de <strong>{{ $institut->nom }}</strong> (3 900 F/mois par établissement).
+                        À partir du prochain renouvellement, chaque boutique active sera facturée 3 900 FCFA/mois.
                     </p>
                 </div>
                 @endif

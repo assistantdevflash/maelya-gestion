@@ -48,7 +48,13 @@
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-500">+ Option boutique</span>
-                            <span class="font-medium text-purple-600">{{ number_format($abonnement->metadata['boutique_prix'] ?? 3900, 0, ',', ' ') }} FCFA</span>
+                            <span class="font-medium text-purple-600">
+                                @if(($abonnement->metadata['nb_boutiques'] ?? 0) > 1)
+                                    {{ $abonnement->metadata['nb_boutiques'] }} × {{ number_format($abonnement->metadata['boutique_prix'] ?? 3900, 0, ',', ' ') }} FCFA
+                                @else
+                                    {{ number_format($abonnement->metadata['boutique_prix'] ?? 3900, 0, ',', ' ') }} FCFA
+                                @endif
+                            </span>
                         </div>
                         <div class="flex justify-between border-t border-gray-200 dark:border-gray-600 pt-1">
                             <span class="font-semibold">Total</span>

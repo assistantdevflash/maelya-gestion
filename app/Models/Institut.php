@@ -15,6 +15,7 @@ class Institut extends Model
     protected $fillable = [
         'nom', 'slug', 'email', 'telephone', 'ville', 'type', 'logo', 'actif', 'vitrine_active', 'reservation_en_ligne',
         'boutique_active', 'boutique_frais_livraison', 'boutique_zones_livraison', 'boutique_delai_livraison', 'boutique_conditions',
+        'boutique_option_active', 'boutique_option_expire_le', 'boutique_option_prix',
         'facebook_pixel_id', 'facebook_access_token', 'facebook_test_code', 'facebook_pixel_name', 'facebook_connected_at',
         'couleur_primaire', 'couleur_secondaire', 'couleur_accent',
     ];
@@ -24,6 +25,9 @@ class Institut extends Model
         'vitrine_active' => 'boolean',
         'reservation_en_ligne' => 'boolean',
         'boutique_active' => 'boolean',
+        'boutique_option_active' => 'boolean',
+        'boutique_option_expire_le' => 'date',
+        'boutique_option_prix' => 'integer',
         'boutique_frais_livraison' => 'decimal:2',
         'boutique_zones_livraison' => 'array',
         'facebook_access_token' => 'encrypted',
@@ -57,6 +61,42 @@ class Institut extends Model
     public function getAbonnementActifAttribute()
     {
         return $this->proprietaire?->abonnementActif;
+    }
+
+    // ── Option Boutique en ligne (facturation PAR établissement) ─────────────
+
+    /**
+     * L'établissement a-t-il payé l'option boutique en ligne ?
+     * Vérifie l'activation ET la date d'expiration (alignée sur l'abonnement).
+     */
+    public function hasBoutiqueOption(): bool
+    {
+        if (!$this->boutique_option_active) {
+            return false;
+        }
+        // Pas de date d'expiration → considéré actif (rétrocompatibilité)
+        if (!$this->boutique_option_expire_le) {
+            return true;
+        }
+        return $this->boutique_option_expire_le->isFuture() || $this->boutique_option_expire_le->isToday();
+    }
+
+    /**
+     * Activer / désactiver l'option boutique de CET établissement.
+     */
+    public function setBoutiqueOption(bool $active, ?string $expireLe = null, int $prix = 3900): void
+    {
+        $this->boutique_option_active = $active;
+        $this->boutique_option_expire_le = $expireLe ? \Illuminate\Support\Carbon::parse($expireLe)->toDateString() : null;
+        $this->boutique_option_prix = $prix;
+    }
+
+    /**
+     * Prix mensuel de l'option boutique pour cet établissement.
+     */
+    public function getBoutiqueOptionPrixMensuel(): int
+    {
+        return $this->boutique_option_prix ?: 3900;
     }
 
     public function clients()

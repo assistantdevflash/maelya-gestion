@@ -284,18 +284,18 @@ class GeniusPayGateway implements PaymentGatewayInterface
     private function desactiverService(PaymentTransaction $transaction): void
     {
         $abonnement = $transaction->abonnement_id ? Abonnement::find($transaction->abonnement_id) : null;
-        if (!$abonnement) {
-            return;
-        }
 
         if (in_array($transaction->type, ['boutique_activation', 'boutique_renouvellement'])) {
-            // Désactiver l'option boutique
-            if ($abonnement->hasBoutique()) {
-                $abonnement->setBoutique(false, 3900);
-                $abonnement->save();
-                Cache::forget("user_{$abonnement->user_id}_boutique_access");
+            // Désactiver l'option boutique de l'établissement concerné
+            $institut = $transaction->institut_id ? \App\Models\Institut::find($transaction->institut_id) : null;
+            if ($institut && $institut->hasBoutiqueOption()) {
+                $institut->setBoutiqueOption(false);
+                $institut->save();
+                $user = $transaction->user;
+                if ($user) $user->forgetBoutiqueAccessCache($institut->id);
             }
         } elseif (in_array($transaction->type, ['abonnement', 'renouvellement', 'upgrade'])) {
+            if (!$abonnement) return;
             // Expirer l'abonnement
             if ($abonnement->statut === 'actif') {
                 $abonnement->update([
@@ -376,10 +376,26 @@ class GeniusPayGateway implements PaymentGatewayInterface
         $transaction->update(['abonnement_id' => $abonnement->id]);
 
         // Invalider les caches
-        Cache::forget("user_{$abonnement->user_id}_boutique_access");
+        $user = $abonnement->user;
+        if ($user) {
+            $user->forgetBoutiqueAccessCache();
+        }
+
+        // Prolonger les options boutique des établissements actifs jusqu'à la
+        // nouvelle date d'expiration (elles ont été re-facturées au renouvellement)
+        if ($user) {
+            $user->mesInstituts()
+                ->get()
+                ->filter(fn ($i) => $i->hasBoutiqueOption())
+                ->each(function ($i) use ($abonnement) {
+                    $i->setBoutiqueOption(true, $abonnement->expire_le->toDateString(), 3900);
+                    $i->save();
+                    $user = $abonnement->user;
+                    if ($user) $user->forgetBoutiqueAccessCache($i->id);
+                });
+        }
 
         // Notification in-app
-        $user = $abonnement->user;
         if ($user) {
             app(\App\Services\NotificationService::class)::notifyUser(
                 $user,
@@ -419,17 +435,25 @@ class GeniusPayGateway implements PaymentGatewayInterface
             return;
         }
 
-        if ($abonnement->hasBoutique()) {
+        // L'établissement concerné : celui de la transaction (établissement courant au moment du paiement)
+        $institut = \App\Models\Institut::find($transaction->institut_id ?? $transaction->metadata['institut_id'] ?? null);
+        if (!$institut) {
+            Log::error('[GeniusPay] établissement introuvable pour activation boutique', ['tx' => $transaction->reference]);
+            return;
+        }
+
+        if ($institut->hasBoutiqueOption()) {
             return; // Déjà activée
         }
 
-        $abonnement->setBoutique(true, 3900);
-        $abonnement->save();
-
-        Cache::forget("user_{$abonnement->user_id}_boutique_access");
+        // L'option est alignée sur l'abonnement du propriétaire (expiration = fin d'abonnement)
+        $expireLe = $abonnement->expire_le?->toDateString();
+        $institut->setBoutiqueOption(true, $expireLe, 3900);
+        $institut->save();
 
         $user = $abonnement->user;
         if ($user) {
+            $user->forgetBoutiqueAccessCache($institut->id);
             app(\App\Services\NotificationService::class)::notifyUser(
                 $user,
                 'option_boutique_activee',
@@ -453,6 +477,7 @@ class GeniusPayGateway implements PaymentGatewayInterface
         $this->notifierAdminsPaiementRecu($transaction);
 
         Log::info('[GeniusPay] boutique activée', [
+            'institut_id' => $institut->id,
             'abonnement_id' => $abonnement->id,
             'user_id'       => $abonnement->user_id,
         ]);
