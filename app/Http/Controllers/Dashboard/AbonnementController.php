@@ -12,6 +12,7 @@ use App\Models\PlanAbonnement;
 use App\Models\User;
 use App\Services\NotificationService;
 use App\Services\PaymentGatewayManager;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -53,12 +54,336 @@ class AbonnementController extends Controller
     {
         $user = Auth::user();
 
+        // 1. Abonnements : souscriptions ET demandes d'option boutique par virement
         $abonnements = Abonnement::where('user_id', $user->id)
             ->with('plan', 'validePar')
             ->orderByDesc('created_at')
-            ->paginate(15);
+            ->get();
 
-        return view('dashboard.abonnement.historique', compact('abonnements'));
+        // 2. Paiements en ligne (GeniusPay)
+        $paiements = PaymentTransaction::where('user_id', $user->id)
+            ->orderByDesc('created_at')
+            ->get();
+
+        // Transactions GeniusPay rattachées à un abonnement (souscription /
+        // renouvellement / upgrade) → on les fusionne avec l'abonnement concerné
+        // pour éviter les doublons.
+        $paiementsParAbonnement = $paiements
+            ->filter(fn ($tx) => in_array($tx->type, ['abonnement', 'renouvellement', 'upgrade'], true) && $tx->abonnement_id)
+            ->keyBy('abonnement_id');
+
+        $items = collect();
+
+        foreach ($abonnements as $abo) {
+            $items->push($this->transactionDepuisAbonnement($abo, $paiementsParAbonnement->get($abo->id)));
+        }
+
+        // 3. Paiements boutique en ligne INDIVIDUELS (GeniusPay) : ils n'ont pas
+        // d'enregistrement `Abonnement` dédié, on les ajoute donc séparément.
+        foreach ($paiements->whereIn('type', ['boutique_activation', 'boutique_renouvellement']) as $tx) {
+            $items->push($this->transactionDepuisPaiement($tx));
+        }
+
+        // Tri par date décroissante (abonnements + paiements mélangés)
+        $items = $items->sortByDesc(fn ($i) => $i['date']->timestamp)->values();
+
+        // Pagination manuelle (les deux sources sont fusionnées en mémoire)
+        $page    = max(1, (int) request('page', 1));
+        $perPage = 15;
+        $total   = $items->count();
+        $transactions = new \Illuminate\Pagination\LengthAwarePaginator(
+            $items->forPage($page, $perPage)->values(),
+            $total,
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+
+        return view('dashboard.abonnement.historique', compact('transactions'));
+    }
+
+    /**
+     * Construit une entrée d'historique unifiée à partir d'un abonnement
+     * (souscription classique ou demande d'option boutique par virement).
+     */
+    private function transactionDepuisAbonnement(Abonnement $abo, ?PaymentTransaction $tx = null): array
+    {
+        $isBoutique = ($abo->metadata['type'] ?? null) === 'ajout_option_boutique'
+            || $abo->periode === 'option_boutique';
+
+        $typeLabel = $isBoutique
+            ? 'Option boutique en ligne'
+            : ($abo->montant > 0 ? 'Abonnement' : 'Abonnement offert');
+
+        $titre = $isBoutique ? 'Boutique en ligne' : ($abo->plan?->nom ?? 'Abonnement');
+
+        [$statut, $statutLabel] = $this->normaliserStatut($abo->statut);
+
+        $factureUrl = $this->factureUrlAbonnement($abo);
+
+        return [
+            'id'                => $abo->id,
+            'titre'             => $titre,
+            'type_label'        => $typeLabel,
+            'montant'           => (int) $abo->montant,
+            'statut'            => $statut,
+            'statut_label'      => $statutLabel,
+            'periode_label'     => $this->periodeLabel($abo->periode),
+            'date'              => $abo->created_at,
+            'debut_le'          => $abo->debut_le,
+            'expire_le'         => $abo->expire_le,
+            'jours_restants'    => $abo->isActif() ? $abo->joursRestants() : null,
+            'reference'         => $tx?->reference ?? $abo->reference_transfert,
+            'gateway_reference' => $tx?->gateway_reference,
+            'methode'           => $tx ? $this->methodeLabel($tx->payment_method_code) : 'Virement bancaire',
+            'paid_at'           => $tx?->paid_at,
+            'notes_admin'       => $abo->notes_admin,
+            'is_boutique'       => $isBoutique,
+            'institut_nom'      => $this->institutNomPour($abo),
+            'facture_url'       => $factureUrl,
+        ];
+    }
+
+    /**
+     * Construit une entrée d'historique unifiée à partir d'un paiement
+     * boutique en ligne individuel (GeniusPay).
+     */
+    private function transactionDepuisPaiement(PaymentTransaction $tx): array
+    {
+        [$statut, $statutLabel] = $this->normaliserStatut($tx->status);
+
+        return [
+            'id'                => $tx->id,
+            'titre'             => 'Boutique en ligne',
+            'type_label'        => 'Option boutique en ligne',
+            'montant'           => (int) $tx->amount,
+            'statut'            => $statut,
+            'statut_label'      => $statutLabel,
+            'periode_label'     => $tx->type === 'boutique_renouvellement' ? 'Renouvellement' : 'Option boutique',
+            'date'              => $tx->created_at,
+            'debut_le'          => null,
+            'expire_le'         => $tx->abonnement?->expire_le,
+            'jours_restants'    => null,
+            'reference'         => $tx->reference,
+            'gateway_reference' => $tx->gateway_reference,
+            'methode'           => $this->methodeLabel($tx->payment_method_code),
+            'paid_at'           => $tx->paid_at,
+            'notes_admin'       => null,
+            'is_boutique'       => true,
+            'institut_nom'      => $this->institutNomPourPaiement($tx),
+            'facture_url'       => route('abonnement.facture-transaction', $tx),
+        ];
+    }
+
+    private function normaliserStatut(string $raw): array
+    {
+        return match ($raw) {
+            'actif'      => ['actif', 'Actif'],
+            'completed'  => ['paye', 'Payé'],
+            'en_attente' => ['en_attente', 'En attente'],
+            'pending'    => ['en_attente', 'En attente'],
+            'processing' => ['en_attente', 'En traitement'],
+            'rejete'     => ['rejete', 'Rejeté'],
+            'expire'     => ['expire', 'Expiré'],
+            'failed'     => ['echoue', 'Échoué'],
+            'cancelled'  => ['annule', 'Annulé'],
+            'expired'    => ['annule', 'Expiré'],
+            'refunded'   => ['rembourse', 'Remboursé'],
+            default      => [strtolower($raw), ucfirst($raw)],
+        };
+    }
+
+    private function periodeLabel(string $periode): string
+    {
+        return match ($periode) {
+            'mensuel'        => 'Mensuel',
+            'trimestre'      => 'Trimestriel',
+            'semestre'       => 'Semestriel',
+            'annuel'         => '1 an',
+            'triennal'       => '3 ans',
+            'option_boutique'=> 'Option boutique',
+            default          => ucfirst($periode),
+        };
+    }
+
+    private function methodeLabel(string $code): string
+    {
+        return $code === 'geniuspay' ? 'GeniusPay' : 'Virement bancaire';
+    }
+
+    private function factureUrlAbonnement(Abonnement $abo): string
+    {
+        return route('abonnement.facture-abonnement', $abo);
+    }
+
+    /**
+     * Nom de l'établissement concerné par une demande d'option boutique.
+     */
+    private function institutNomPour(Abonnement $abo): ?string
+    {
+        if (($abo->metadata['type'] ?? null) === 'ajout_option_boutique') {
+            $institut = Institut::find($abo->metadata['institut_id'] ?? null);
+            if ($institut) {
+                return $institut->nom;
+            }
+        }
+        return null;
+    }
+
+    private function institutNomPourPaiement(PaymentTransaction $tx): ?string
+    {
+        $institut = Institut::find($tx->institut_id ?? $tx->metadata['institut_id'] ?? null);
+        return $institut?->nom;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Factures (PDF)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Facture PDF d'un abonnement (souscription ou option boutique).
+     */
+    public function factureAbonnement(Abonnement $abonnement)
+    {
+        $this->autoriserFacture($abonnement->user_id);
+
+        $isBoutique = ($abonnement->metadata['type'] ?? null) === 'ajout_option_boutique'
+            || $abonnement->periode === 'option_boutique';
+
+        // Paiement GeniusPay rattaché éventuellement à cet abonnement
+        $tx = PaymentTransaction::where('abonnement_id', $abonnement->id)
+            ->whereIn('type', ['abonnement', 'renouvellement', 'upgrade'])
+            ->latest()
+            ->first();
+
+        [$statut, $statutLabel] = $this->normaliserStatut($abonnement->statut);
+
+        $details = [
+            ['label' => 'Référence', 'value' => $tx?->reference ?? $abonnement->reference_transfert ?: '—'],
+            ['label' => 'Méthode de paiement', 'value' => $tx ? $this->methodeLabel($tx->payment_method_code) : 'Virement bancaire'],
+            ['label' => 'Statut', 'value' => $statutLabel],
+        ];
+
+        if ($tx?->gateway_reference) {
+            $details[] = ['label' => 'Référence passerelle', 'value' => $tx->gateway_reference];
+        }
+        if ($abonnement->debut_le && $abonnement->expire_le) {
+            $details[] = ['label' => 'Période', 'value' => 'Du ' . $abonnement->debut_le->format('d/m/Y') . ' au ' . $abonnement->expire_le->format('d/m/Y')];
+        }
+        if ($tx?->paid_at) {
+            $details[] = ['label' => 'Payé le', 'value' => $tx->paid_at->format('d/m/Y H:i')];
+        }
+        if ($abonnement->notes_admin) {
+            $details[] = ['label' => 'Notes', 'value' => $abonnement->notes_admin];
+        }
+
+        $institutNom = $this->institutNomPour($abonnement);
+
+        $invoice = $this->factureDonnees(
+            id: $abonnement->id,
+            createdAt: $abonnement->created_at,
+            typeLabel: $isBoutique ? 'Option boutique en ligne' : 'Abonnement',
+            designation: $isBoutique
+                ? 'Option boutique en ligne' . ($institutNom ? ' — ' . $institutNom : '')
+                : ($abonnement->plan?->nom ?? 'Abonnement') . ' — ' . $this->periodeLabel($abonnement->periode),
+            montant: (int) $abonnement->montant,
+            methode: $tx ? $this->methodeLabel($tx->payment_method_code) : 'Virement bancaire',
+            statutLabel: $statutLabel,
+            reference: $tx?->reference ?? $abonnement->reference_transfert,
+            details: $details,
+        );
+
+        $pdf = Pdf::loadView('pdf.facture-abonnement', compact('invoice'))->setPaper('a4', 'portrait');
+        return $pdf->download('facture-' . $invoice['numero'] . '.pdf');
+    }
+
+    /**
+     * Facture PDF d'un paiement boutique en ligne individuel (GeniusPay).
+     */
+    public function factureTransaction(PaymentTransaction $paymentTransaction)
+    {
+        $this->autoriserFacture($paymentTransaction->user_id);
+
+        $paymentTransaction->loadMissing('abonnement.plan', 'user');
+
+        [$statut, $statutLabel] = $this->normaliserStatut($paymentTransaction->status);
+
+        $institutNom = $this->institutNomPourPaiement($paymentTransaction);
+
+        $details = [
+            ['label' => 'Référence', 'value' => $paymentTransaction->reference],
+            ['label' => 'Méthode de paiement', 'value' => $this->methodeLabel($paymentTransaction->payment_method_code)],
+            ['label' => 'Statut', 'value' => $statutLabel],
+        ];
+
+        if ($paymentTransaction->gateway_reference) {
+            $details[] = ['label' => 'Référence passerelle', 'value' => $paymentTransaction->gateway_reference];
+        }
+        if ($paymentTransaction->paid_at) {
+            $details[] = ['label' => 'Payé le', 'value' => $paymentTransaction->paid_at->format('d/m/Y H:i')];
+        }
+        if ($paymentTransaction->abonnement?->expire_le) {
+            $details[] = ['label' => 'Valable jusqu\'au', 'value' => $paymentTransaction->abonnement->expire_le->format('d/m/Y')];
+        }
+
+        $invoice = $this->factureDonnees(
+            id: $paymentTransaction->id,
+            createdAt: $paymentTransaction->created_at,
+            typeLabel: 'Option boutique en ligne',
+            designation: 'Option boutique en ligne' . ($institutNom ? ' — ' . $institutNom : ''),
+            montant: (int) $paymentTransaction->amount,
+            methode: $this->methodeLabel($paymentTransaction->payment_method_code),
+            statutLabel: $statutLabel,
+            reference: $paymentTransaction->reference,
+            details: $details,
+        );
+
+        $pdf = Pdf::loadView('pdf.facture-abonnement', compact('invoice'))->setPaper('a4', 'portrait');
+        return $pdf->download('facture-' . $invoice['numero'] . '.pdf');
+    }
+
+    /**
+     * Vérifie que l'utilisateur connecté est bien le destinataire de la facture.
+     */
+    private function autoriserFacture(?string $userId): void
+    {
+        abort_unless($userId && $userId === Auth::id(), 403);
+    }
+
+    /**
+     * Construit le tableau de données normalisé transmis à la vue PDF.
+     */
+    private function factureDonnees(
+        string $id,
+        \Illuminate\Support\Carbon $createdAt,
+        string $typeLabel,
+        string $designation,
+        int $montant,
+        string $methode,
+        string $statutLabel,
+        ?string $reference,
+        array $details,
+    ): array {
+        $user = Auth::user();
+
+        return [
+            'numero'        => 'FAC-' . $createdAt->format('Ymd') . '-' . strtoupper(substr($id, 0, 6)),
+            'date_emission' => now(),
+            'type_label'    => $typeLabel,
+            'designation'   => $designation,
+            'montant'       => $montant,
+            'devise'        => 'FCFA',
+            'methode'       => $methode,
+            'statut_label'  => $statutLabel,
+            'reference'     => $reference,
+            'details'       => $details,
+            'client'        => [
+                'nom'        => $user->nom_complet ?: $user->name,
+                'email'      => $user->email,
+                'telephone'  => $user->telephone,
+                'institut'   => Institut::find($user->currentInstitutId())?->nom ?? $user->institut?->nom,
+            ],
+        ];
     }
 
     public function plans()

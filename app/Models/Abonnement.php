@@ -38,6 +38,11 @@ class Abonnement extends Model
         return $this->belongsTo(User::class, 'valide_par');
     }
 
+    public function paymentTransactions()
+    {
+        return $this->hasMany(PaymentTransaction::class, 'abonnement_id');
+    }
+
     public function isActif(): bool
     {
         return $this->statut === 'actif' && $this->expire_le?->isFuture();
@@ -48,7 +53,7 @@ class Abonnement extends Model
         if (!$this->expire_le || !$this->isActif()) {
             return 0;
         }
-        return max(0, now()->diffInDays($this->expire_le, false));
+        return max(0, (int) now()->diffInDays($this->expire_le, false));
     }
 
     /**
