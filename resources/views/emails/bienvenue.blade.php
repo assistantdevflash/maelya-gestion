@@ -117,10 +117,24 @@
                 </div>
             </div>
             <div class="feature">
-                <div class="feature-icon orange">🏷️</div>
+                <div class="feature-icon orange">🛍️</div>
                 <div class="feature-text">
-                    <h4>Codes de réduction & Parrainage</h4>
-                    <p>Créez des codes promo, gérez vos campagnes de fidélisation et suivez vos parrainages.</p>
+                    <h4>Boutique en ligne</h4>
+                    <p>Vendez vos produits en ligne avec votre boutique publique partageable — commandes, livraison et suivi en temps réel.</p>
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon blue">🌐</div>
+                <div class="feature-text">
+                    <h4>Vitrine & Réservation publique</h4>
+                    <p>Partagez votre page établissement, présentez vos prestations et recevez des réservations en ligne sans que vos clients aient besoin d'un compte.</p>
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon purple">🧾</div>
+                <div class="feature-text">
+                    <h4>Devis & Factures</h4>
+                    <p>Créez des devis professionnels, convertissez-les en factures et envoyez des PDF à vos clients en un clic.</p>
                 </div>
             </div>
         </div>
