@@ -268,4 +268,17 @@ class FactureController extends Controller
 
         return back()->with('success', 'Facture envoyée par email à ' . ($facture->client_nom_complet ?: 'votre client') . '.');
     }
+
+    public function updatePiedPage(Request $request, Facture $facture)
+    {
+        $data = $request->validate([
+            'pied_page_afficher' => 'boolean',
+            'pied_page_texte'    => 'nullable|string|max:1000',
+        ]);
+        $facture->update([
+            'pied_page_afficher' => $data['pied_page_afficher'] ?? true,
+            'pied_page_texte'    => $data['pied_page_texte'] ?? null,
+        ]);
+        return back()->with('success', 'Pied de page mis à jour.');
+    }
 }

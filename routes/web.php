@@ -209,6 +209,7 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
         Route::post('factures/{facture}/marquer-payee', [\App\Http\Controllers\Dashboard\FactureController::class, 'marquerPayee'])->name('factures.marquer-payee');
         Route::post('factures/{facture}/annuler', [\App\Http\Controllers\Dashboard\FactureController::class, 'annuler'])->name('factures.annuler');
         Route::post('factures/{facture}/envoyer-email', [\App\Http\Controllers\Dashboard\FactureController::class, 'envoyerEmail'])->name('factures.envoyer-email');
+        Route::patch('factures/{facture}/pied-page', [\App\Http\Controllers\Dashboard\FactureController::class, 'updatePiedPage'])->name('factures.pied-page');
     });
 
     // Crédits clients & échéanciers (essai 14j + Premium+ uniquement)
