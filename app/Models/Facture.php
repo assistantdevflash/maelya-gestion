@@ -22,6 +22,7 @@ class Facture extends Model
         'sous_total', 'remise_globale_type', 'remise_globale_valeur',
         'total_ht', 'tva_applicable', 'tva_taux', 'total_ttc', 'montant_paye',
         'notes', 'conditions',
+        'pied_page_afficher', 'pied_page_texte',
     ];
 
     protected $casts = [
@@ -34,6 +35,7 @@ class Facture extends Model
         'tva_taux' => 'decimal:2',
         'total_ttc' => 'integer',
         'montant_paye' => 'integer',
+        'pied_page_afficher' => 'boolean',
     ];
 
     public function client(): BelongsTo { return $this->belongsTo(Client::class); }

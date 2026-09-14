@@ -79,6 +79,8 @@ class FactureController extends Controller
             'date_emission' => 'required|date', 'date_echeance' => 'required|date|after_or_equal:date_emission',
             'notes' => 'nullable|string|max:5000', 'conditions' => 'nullable|string|max:5000',
             'titre' => 'nullable|string|max:200',
+            'pied_page_afficher' => 'boolean',
+            'pied_page_texte' => 'nullable|string|max:1000',
             'tva_applicable' => 'boolean', 'tva_taux' => 'nullable|numeric|min:0|max:100',
             'remise_globale_type' => 'nullable|in:pourcentage,montant_fixe', 'remise_globale_valeur' => 'nullable|integer|min:0',
             'lignes' => 'required|json',
@@ -129,6 +131,8 @@ class FactureController extends Controller
             'sous_total' => $sousTotal, 'remise_globale_type' => $data['remise_globale_type'] ?? null, 'remise_globale_valeur' => $data['remise_globale_valeur'] ?? 0,
             'total_ht' => $totalHT, 'tva_applicable' => $data['tva_applicable'] ?? false, 'tva_taux' => $data['tva_taux'] ?? 0, 'total_ttc' => $totalTTC,
             'notes' => $data['notes'] ?? null, 'conditions' => $data['conditions'] ?? null, 'titre' => $data['titre'] ?? null, 'token' => Str::random(32),
+            'pied_page_afficher' => $data['pied_page_afficher'] ?? true,
+            'pied_page_texte' => $data['pied_page_texte'] ?? null,
         ]);
         foreach ($lignes as $i => $ligne) {
             FactureItem::create(['facture_id' => $facture->id, 'designation' => $ligne['designation'], 'quantite' => $ligne['quantite'], 'prix_unitaire' => $ligne['prix_unitaire'], 'remise_type' => $ligne['remise_type'] ?? null, 'remise_valeur' => $ligne['remise_valeur'] ?? 0, 'tva_taux' => $ligne['tva_taux'] ?? null, 'total_ligne' => $ligne['total_ligne'], 'ordre' => $i]);

@@ -106,7 +106,14 @@
     @endif
 </table>
 @if($facture->notes)<div class="paiement-info"><strong>Notes :</strong> {{ $facture->notes }}</div>@endif
-<div class="mentions"><p>Merci de régler cette facture avant le {{ $facture->date_echeance->format('d/m/Y') }}.</p><p>Pour toute question : {{ $institut->telephone ?? '—' }}</p></div>
+@if($facture->pied_page_afficher ?? true)
+    @php
+        $piedTexte = $facture->pied_page_texte
+            ? $facture->pied_page_texte
+            : 'Merci de régler cette facture avant le ' . $facture->date_echeance->format('d/m/Y') . '.' . "\nPour toute question : " . ($institut->telephone ?? '—');
+    @endphp
+    <div class="mentions">@foreach(explode("\n", $piedTexte) as $ligne)<p>{{ trim($ligne) }}</p>@endforeach</div>
+@endif
 <div class="footer">{{ config('app.name') }} — Facture générée le {{ now()->format('d/m/Y à H:i') }}</div>
 </body>
 </html>
