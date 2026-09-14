@@ -233,33 +233,33 @@
             @endif
         </div>
     </div>
-</div>
 
-{{-- Pied de page PDF --}}
-<div class="card" x-data="{ afficher: {{ $facture->pied_page_afficher ? 'true' : 'false' }} }">
-    <div class="card-header flex items-center justify-between">
-        <h2 class="font-semibold">Pied de page PDF</h2>
-        <label class="flex items-center gap-2 cursor-pointer select-none">
-            <span class="text-sm text-gray-500 dark:text-gray-400" x-text="afficher ? 'Affiché' : 'Masqué'"></span>
-            <button type="button" @click="afficher = !afficher"
-                class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors"
-                :class="afficher ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'">
-                <span class="inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform"
-                    :class="afficher ? 'translate-x-4' : 'translate-x-1'"></span>
-            </button>
-        </label>
-    </div>
-    <div class="card-body">
-        <form method="POST" action="{{ route('dashboard.factures.pied-page', ['facture' => $factureId]) }}" class="space-y-3">
-            @csrf @method('PATCH')
-            <input type="hidden" name="pied_page_afficher" :value="afficher ? '1' : '0'">
-            <div x-show="afficher" x-transition>
-                <textarea name="pied_page_texte" rows="2" class="form-textarea text-sm"
-                    placeholder="Laissez vide pour le texte par défaut (échéance + téléphone établissement)">{{ $facture->pied_page_texte }}</textarea>
-                <p class="text-xs text-gray-400 mt-1">Vide = <em>Merci de régler cette facture avant le {{ $facture->date_echeance->format('d/m/Y') }}. Pour toute question : {{ $facture->institut->telephone ?? '—' }}</em></p>
-            </div>
-            <button type="submit" class="btn-secondary text-sm">Enregistrer</button>
-        </form>
+    {{-- Pied de page PDF --}}
+    <div class="card" x-data="{ afficher: {{ $facture->pied_page_afficher ? 'true' : 'false' }} }">
+        <div class="card-header flex items-center justify-between">
+            <h2 class="font-semibold">Pied de page PDF</h2>
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+                <span class="text-sm text-gray-500 dark:text-gray-400" x-text="afficher ? 'Affiché' : 'Masqué'"></span>
+                <button type="button" @click="afficher = !afficher"
+                    class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors"
+                    :class="afficher ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'">
+                    <span class="inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform"
+                        :class="afficher ? 'translate-x-4' : 'translate-x-1'"></span>
+                </button>
+            </label>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ route('dashboard.factures.pied-page', ['facture' => $factureId]) }}" class="space-y-3">
+                @csrf @method('PATCH')
+                <input type="hidden" name="pied_page_afficher" :value="afficher ? '1' : '0'">
+                <div x-show="afficher" x-transition>
+                    <textarea name="pied_page_texte" rows="2" class="form-textarea text-sm"
+                        placeholder="Laissez vide pour le texte par défaut (échéance + téléphone établissement)">{{ $facture->pied_page_texte }}</textarea>
+                    <p class="text-xs text-gray-400 mt-1">Vide = <em>Merci de régler cette facture avant le {{ $facture->date_echeance->format('d/m/Y') }}. Pour toute question : {{ $facture->institut->telephone ?? '—' }}</em></p>
+                </div>
+                <button type="submit" class="btn-secondary text-sm">Enregistrer</button>
+            </form>
+        </div>
     </div>
 </div>
 
