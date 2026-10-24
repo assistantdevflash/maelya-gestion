@@ -27,9 +27,10 @@ class OptimizePerformance
                 $response->headers->set('X-Compress-Hint', 'on');
             }
 
-            // Preconnect hints
-            $response->headers->set('Link', '</build/assets>; rel=preload; as=style', false);
-            
+            // ⚠️ Ne PAS ajouter de header Link/rel=preload global :
+            // `</build/assets>; rel=preload; as=style` faisait précharger un
+            // dossier inexistant sur CHAQUE page (erreurs réseau + ralentissement).
+
             // Security headers qui n'impactent pas les performances
             $response->headers->set('X-Content-Type-Options', 'nosniff');
             $response->headers->set('X-Frame-Options', 'SAMEORIGIN');

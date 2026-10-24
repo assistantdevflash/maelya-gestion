@@ -49,7 +49,8 @@
             } catch(e) {}
         })();
     </script>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    {{-- Alpine bundlé localement (plus de dépendance CDN) --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/public.js'])
     <style>
         [x-cloak] { display: none !important; }
         @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
@@ -429,11 +430,6 @@
             localStorage.setItem('pwa-install-dismissed', Date.now() + 7 * 24 * 3600 * 1000);
         });
     })();
-</script>
-<script type="module">
-import Alpine from 'https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/module.esm.js';
-window.Alpine = Alpine;
-Alpine.start();
 </script>
 </body>
 </html>

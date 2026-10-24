@@ -19,8 +19,8 @@
     <meta property="og:locale" content="fr_FR">
     <meta name="twitter:card" content="summary_large_image">
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {{-- Alpine est bundlé LOCALEMENT (plus de dépendance à unpkg/CDN) --}}
+    @vite(['resources/css/app.css', 'resources/js/public.js'])
 
     {{-- Couleurs de l'établissement --}}
     @include('boutique.partials.couleurs', ['institut' => $institut])
@@ -38,7 +38,7 @@
     <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{ $institut->facebook_pixel_id }}&ev=PageView&noscript=1"/></noscript>
     @endif
 </head>
-<body class="boutique-soft dark:bg-slate-900 min-h-screen" x-data="boutique()" x-cloak>
+<body class="boutique-soft dark:bg-slate-900 min-h-screen" x-data="boutique()">
     {{-- Toast notification --}}
     <div x-show="toast.show"
          x-transition:enter="transition ease-out duration-300"
@@ -97,11 +97,11 @@
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     </div>
-                    <input type="text" x-model="searchQuery" placeholder="Rechercher un produit..."
+                    <input type="text" x-model="searchQuery" @input.debounce.150ms="majCompteur()" placeholder="Rechercher un produit..."
                         class="boutique-ring w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:border-transparent transition-shadow shadow-sm">
                 </div>
                 {{-- Tri --}}
-                <select x-model="sortBy" class="boutique-ring py-3 px-4 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-700 dark:text-white focus:ring-2 shadow-sm">
+                <select x-model="sortBy" @change="trier()" class="boutique-ring py-3 px-4 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-700 dark:text-white focus:ring-2 shadow-sm">
                     <option value="default">Tri : Défaut</option>
                     <option value="nom_asc">Nom : A → Z</option>
                     <option value="prix_asc">Prix : croissant</option>
@@ -125,52 +125,76 @@
             @endif
 
             <p class="text-sm text-gray-500 dark:text-slate-400">
-                <span x-text="produitsAffiches.length"></span> produit<span x-show="produitsAffiches.length > 1">s</span>
+                <span x-text="visibleCount">{{ $produits->count() }}</span> produit<span x-show="visibleCount > 1">s</span>
             </p>
         </div>
 
-        {{-- Grille produits --}}
-        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            <template x-for="produit in produitsAffiches" :key="produit.id">
-                <div class="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col">
+        {{-- Grille produits — RENDUE CÔTÉ SERVEUR.
+             Les produits sont donc toujours visibles, même si le JavaScript
+             (Alpine) ne se charge pas ou échoue. Alpine ne sert plus qu'au
+             filtrage / tri / panier. --}}
+        <div x-ref="grille" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            @forelse($produits as $p)
+                @php
+                    $prix  = $p->prix_promo ?: $p->prix_vente;
+                    $photo = $p->imagePrincipale?->chemin ?? $p->photo;
+                    $lien  = route('shop.produit', ['slug' => $institut->slug, 'id' => $p->id]);
+                @endphp
+                <div data-produit
+                     data-index="{{ $loop->index }}"
+                     data-nom="{{ $p->nom }}"
+                     data-prix="{{ (int) $prix }}"
+                     data-categorie="{{ $p->categorie_id }}"
+                     data-featured="{{ $p->featured ? 1 : 0 }}"
+                     x-show="matchFiltre($el)"
+                     class="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col">
+
                     {{-- Image produit --}}
-                    <a :href="'/shop/{{ $institut->slug }}/produit/' + produit.id" class="relative block aspect-square bg-gray-100 dark:bg-slate-900 overflow-hidden">
-                        <template x-if="produit.photo">
-                            <img :src="'/storage/' + produit.photo" :alt="produit.nom" class="w-full h-full object-cover" loading="lazy">
-                        </template>
-                        <template x-if="!produit.photo">
+                    <a href="{{ $lien }}" class="relative block aspect-square bg-gray-100 dark:bg-slate-900 overflow-hidden">
+                        @if($photo)
+                            <img src="{{ asset('storage/' . $photo) }}" alt="{{ $p->nom }}" class="w-full h-full object-cover" loading="lazy">
+                        @else
                             <div class="w-full h-full flex items-center justify-center">
                                 <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                             </div>
-                        </template>
-                        {{-- Badge vedette --}}
-                        <div x-show="produit.featured" class="absolute top-2 left-2 bg-amber-400 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full">★ Vedette</div>
-                        {{-- Badge stock faible --}}
-                        <div x-show="produit.stock > 0 && produit.stock <= 5" class="absolute top-2 right-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-lg">
-                            Plus que <span x-text="produit.stock"></span>
-                        </div>
+                        @endif
+                        @if($p->featured)
+                            {{-- Badge vedette --}}
+                            <div class="absolute top-2 left-2 bg-amber-400 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full">★ Vedette</div>
+                        @endif
+                        @if(($p->stock ?? 0) > 0 && $p->stock <= 5)
+                            {{-- Badge stock faible --}}
+                            <div class="absolute top-2 right-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-lg">
+                                Plus que {{ $p->stock }}
+                            </div>
+                        @endif
                     </a>
 
                     {{-- Infos produit --}}
                     <div class="p-3 sm:p-4 flex flex-col flex-1 gap-2">
                         <div>
-                            <a :href="'/shop/{{ $institut->slug }}/produit/' + produit.id">
-                                <h3 class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base line-clamp-2 boutique-accent-hover transition-colors" x-text="produit.nom"></h3>
+                            <a href="{{ $lien }}">
+                                <h3 class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base line-clamp-2 boutique-accent-hover transition-colors">{{ $p->nom }}</h3>
                             </a>
-                            <p x-show="produit.categorie" class="text-xs text-gray-400 mt-0.5" x-text="produit.categorie"></p>
+                            @if($p->categorie)
+                                <p class="text-xs text-gray-400 mt-0.5">{{ $p->categorie->nom }}</p>
+                            @endif
                         </div>
-                        <p x-show="produit.description_courte" class="text-xs text-gray-500 line-clamp-2" x-text="produit.description_courte"></p>
+                        @if($p->description_courte)
+                            <p class="text-xs text-gray-500 line-clamp-2">{{ $p->description_courte }}</p>
+                        @endif
                         <div class="mt-auto flex items-center justify-between gap-2">
                             <div>
-                                <p x-show="produit.prix_promo" class="text-xs text-gray-400 dark:text-gray-500 line-through">
-                                    <span x-text="new Intl.NumberFormat('fr-FR').format(produit.prix)"></span> F
-                                </p>
-                                <p class="text-base sm:text-lg font-bold"
-                                   :class="produit.prix_promo ? 'text-red-500 dark:text-red-400' : 'boutique-accent'">
-                                    <span x-text="new Intl.NumberFormat('fr-FR').format(produit.prix_promo || produit.prix)"></span> <span class="text-sm font-normal">F</span>
+                                @if($p->prix_promo)
+                                    <p class="text-xs text-gray-400 dark:text-gray-500 line-through">
+                                        {{ number_format($p->prix_vente, 0, ',', ' ') }} F
+                                    </p>
+                                @endif
+                                <p class="text-base sm:text-lg font-bold {{ $p->prix_promo ? 'text-red-500 dark:text-red-400' : 'boutique-accent' }}">
+                                    {{ number_format($prix, 0, ',', ' ') }} <span class="text-sm font-normal">F</span>
                                 </p>
                             </div>
-                            <button @click="ajouterAuPanier(produit)"
+                            <button @click="ajouterAuPanier('{{ $p->id }}')"
                                 class="boutique-btn inline-flex items-center gap-1 px-3 py-2 rounded-xl font-medium text-sm shadow-md hover:shadow-lg transition-all hover:scale-105">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
                                 <span class="hidden sm:inline">Ajouter</span>
@@ -178,17 +202,27 @@
                         </div>
                     </div>
                 </div>
-            </template>
+            @empty
+                <div class="col-span-full text-center py-16">
+                    <div class="w-20 h-20 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+                    </div>
+                    <p class="text-gray-500 text-lg">Boutique en cours de mise en ligne</p>
+                    <p class="text-sm text-gray-400 mt-1">Les produits seront bientôt disponibles.</p>
+                </div>
+            @endforelse
         </div>
 
-        {{-- Message aucun produit --}}
-        <div x-show="produitsAffiches.length === 0" class="text-center py-16">
+        {{-- Message aucun produit (filtre actif sans résultat) --}}
+        @if($produits->isNotEmpty())
+        <div x-show="visibleCount === 0" x-cloak class="text-center py-16">
             <div class="w-20 h-20 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             </div>
             <p class="text-gray-500 text-lg">Aucun produit trouvé</p>
-            <button @click="searchQuery = ''; selectedCategorie = null" class="mt-4 boutique-accent font-medium">Réinitialiser</button>
+            <button @click="resetFiltres()" class="mt-4 boutique-accent font-medium">Réinitialiser</button>
         </div>
+        @endif
 
         {{-- Info livraison --}}
         <br><br>
@@ -318,6 +352,7 @@
                 fraisLivraison: {{ $institut->boutique_frais_livraison ?? 0 }},
                 toast: { show: false, message: '' },
                 produits: @json($produitsJson),
+                visibleCount: {{ $produits->count() }},
 
                 init() {
                     this.panier = this.panier.filter(item => item.prix && item.prix > 0);
@@ -330,6 +365,18 @@
                         this.panierOpen = true;
                         history.replaceState(null, '', location.pathname);
                     }
+                    this.$nextTick(() => this.majCompteur());
+                },
+
+                // Filtre appliqué à CHAQUE carte rendue par le serveur
+                matchFiltre(el) {
+                    const nom = (el.dataset.nom || '').toLowerCase();
+                    const cat = el.dataset.categorie || '';
+                    const okCat = this.selectedCategorie === null
+                        || String(cat) === String(this.selectedCategorie);
+                    const okSearch = this.searchQuery === ''
+                        || nom.includes(this.searchQuery.toLowerCase());
+                    return okCat && okSearch;
                 },
 
                 // Watcher catégorie → mettre à jour l'URL
@@ -339,20 +386,52 @@
                     if (catId) url.searchParams.set('categorie', catId);
                     else url.searchParams.delete('categorie');
                     history.pushState(null, '', url);
+                    this.$nextTick(() => this.majCompteur());
                 },
 
-                get produitsAffiches() {
-                    let liste = this.produits.filter(p => {
-                        const matchCategorie = this.selectedCategorie === null || String(p.categorie_id) === String(this.selectedCategorie);
-                        const matchSearch = this.searchQuery === '' || p.nom.toLowerCase().includes(this.searchQuery.toLowerCase());
-                        return matchCategorie && matchSearch;
+                resetFiltres() {
+                    this.searchQuery = '';
+                    this.selectedCategorie = null;
+                    this.sortBy = 'default';
+                    this.trier();
+                    this.$nextTick(() => this.majCompteur());
+                },
+
+                // Compte les cartes réellement visibles (après x-show)
+                majCompteur() {
+                    this.$nextTick(() => {
+                        const grille = this.$refs.grille;
+                        if (!grille) return;
+                        let n = 0;
+                        grille.querySelectorAll('[data-produit]').forEach(c => {
+                            if (c.style.display !== 'none') n++;
+                        });
+                        this.visibleCount = n;
+                    });
+                },
+
+                // Tri en réordonnant le DOM (les cartes sont rendues par le serveur)
+                trier() {
+                    const grille = this.$refs.grille;
+                    if (!grille) return;
+
+                    const cartes = Array.from(grille.querySelectorAll('[data-produit]'));
+                    const num  = el => parseInt(el.dataset.prix || '0', 10);
+                    const nom  = el => (el.dataset.nom || '').toLowerCase();
+                    const feat = el => parseInt(el.dataset.featured || '0', 10);
+                    const idx  = el => parseInt(el.dataset.index || '0', 10);
+
+                    cartes.sort((a, b) => {
+                        switch (this.sortBy) {
+                            case 'nom_asc':   return nom(a).localeCompare(nom(b));
+                            case 'prix_asc':  return num(a) - num(b);
+                            case 'prix_desc': return num(b) - num(a);
+                            case 'featured':  return feat(b) - feat(a) || idx(a) - idx(b);
+                            default:          return idx(a) - idx(b);
+                        }
                     });
 
-                    if (this.sortBy === 'nom_asc') return liste.sort((a, b) => a.nom.localeCompare(b.nom));
-                    if (this.sortBy === 'prix_asc') return liste.sort((a, b) => a.prix - b.prix);
-                    if (this.sortBy === 'prix_desc') return liste.sort((a, b) => b.prix - a.prix);
-                    if (this.sortBy === 'featured') return liste.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
-                    return liste; // default: vedettes en premier (déjà trié côté serveur)
+                    cartes.forEach(c => grille.appendChild(c));
                 },
 
                 get totalArticles() {
@@ -367,8 +446,11 @@
                     return this.sousTotal + this.fraisLivraison;
                 },
 
-                ajouterAuPanier(produit) {
-                    const index = this.panier.findIndex(item => item.id === produit.id);
+                ajouterAuPanier(id) {
+                    const produit = this.produits.find(p => String(p.id) === String(id));
+                    if (!produit) return;
+
+                    const index = this.panier.findIndex(item => String(item.id) === String(id));
                     if (index >= 0) {
                         if (this.panier[index].quantite < produit.stock) {
                             this.panier[index].quantite++;

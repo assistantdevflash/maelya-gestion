@@ -9,6 +9,7 @@ use App\Models\Commande;
 use App\Models\CommandeItem;
 use App\Models\Institut;
 use App\Models\Produit;
+use App\Scopes\InstitutScope;
 use App\Services\NotificationService;
 use App\Services\PushNotificationService;
 use Illuminate\Http\Request;
@@ -19,28 +20,75 @@ use Illuminate\Support\Facades\Mail;
 class BoutiqueController extends Controller
 {
     /**
+     * Vérifie l'accès public à la boutique d'un établissement.
+     *
+     * Utilise le propriétaire « effectif » (repli si proprietaire_id est NULL)
+     * afin de ne plus renvoyer de 404 erronés sur les comptes anciens.
+     */
+    private function boutiqueAccessible(Institut $institut): bool
+    {
+        if (!$institut->boutique_active) {
+            return false;
+        }
+
+        $proprietaire = $institut->proprietaireEffectif();
+
+        // Aucun propriétaire identifiable → on se base sur l'option payée
+        // de l'établissement (évite un 404 définitif sur données legacy).
+        if (!$proprietaire) {
+            return $institut->hasBoutiqueOption();
+        }
+
+        return $proprietaire->hasBoutiqueAccess($institut);
+    }
+
+    private function verifierAcces(Institut $institut): void
+    {
+        if (!$this->boutiqueAccessible($institut)) {
+            abort(404, 'Cette boutique n\'est pas disponible.');
+        }
+    }
+
+    /**
+     * Requête de base des produits de la boutique PUBLIQUE.
+     *
+     * - `withoutGlobalScope` : un visiteur connecté (ou un gérant multi-établissements)
+     *   ne doit jamais voir la liste filtrée par SON établissement courant.
+     * - `visible_boutique` tolère NULL (produits legacy).
+     * - `stock` tolère NULL (produits legacy).
+     */
+    private function produitsBoutique(Institut $institut, bool $exigerStock = true)
+    {
+        $query = Produit::withoutGlobalScope(InstitutScope::class)
+            ->where('produits.institut_id', $institut->id)
+            ->where('produits.actif', true)
+            ->where(function ($q) {
+                $q->whereNull('produits.visible_boutique')
+                  ->orWhere('produits.visible_boutique', true);
+            });
+
+        if ($exigerStock) {
+            $query->where(function ($q) {
+                $q->whereNull('produits.stock')
+                  ->orWhere('produits.stock', '>', 0);
+            });
+        }
+
+        return $query;
+    }
+
+    /**
      * Page principale de la boutique d'un établissement
      */
     public function index(string $slug)
     {
         $institut = Institut::where('slug', $slug)->firstOrFail();
 
-        // Vérifier que la boutique est active
-        if (!$institut->boutique_active) {
-            abort(404, 'Cette boutique n\'est pas disponible.');
-        }
-
-        // Vérifier que le propriétaire a l'option boutique pour CET établissement (ou est en essai)
-        if (!$institut->proprietaire?->hasBoutiqueAccess($institut)) {
-            abort(404, 'Cette boutique n\'est pas disponible.');
-        }
+        $this->verifierAcces($institut);
 
         // Récupérer les produits directement (pas de cache — source de bugs)
-        $produits = $institut->produits()
+        $produits = $this->produitsBoutique($institut)
             ->with(['categorie', 'imagePrincipale'])
-            ->where('actif', true)
-            ->where('visible_boutique', true)
-            ->where('stock', '>', 0)
             ->orderByDesc('featured')
             ->orderBy('nom')
             ->get();
@@ -82,19 +130,10 @@ class BoutiqueController extends Controller
     {
         $institut = Institut::where('slug', $slug)->firstOrFail();
 
-        if (!$institut->boutique_active) {
-            abort(404, 'Cette boutique n\'est pas disponible.');
-        }
+        $this->verifierAcces($institut);
 
-        // Vérifier l'accès boutique pour CET établissement (abonnement + option par établissement)
-        if (!$institut->proprietaire?->hasBoutiqueAccess($institut)) {
-            abort(404, 'Cette boutique n\'est pas disponible.');
-        }
-
-        $produit = Produit::where('id', $id)
-            ->where('institut_id', $institut->id)
-            ->where('actif', true)
-            ->where('visible_boutique', true)
+        $produit = $this->produitsBoutique($institut, false)
+            ->where('produits.id', $id)
             ->with(['categorie', 'images'])
             ->first();
 
@@ -106,12 +145,9 @@ class BoutiqueController extends Controller
         }
 
         // Produits similaires (même catégorie)
-        $produitsSimilaires = Produit::where('institut_id', $institut->id)
-            ->where('categorie_id', $produit->categorie_id)
-            ->where('id', '!=', $produit->id)
-            ->where('actif', true)
-            ->where('visible_boutique', true)
-            ->where('stock', '>', 0)
+        $produitsSimilaires = $this->produitsBoutique($institut)
+            ->where('produits.categorie_id', $produit->categorie_id)
+            ->where('produits.id', '!=', $produit->id)
             ->limit(4)
             ->get();
 
@@ -132,9 +168,7 @@ class BoutiqueController extends Controller
     {
         $institut = Institut::where('slug', $slug)->firstOrFail();
 
-        if (!$institut->boutique_active) {
-            abort(404, 'Cette boutique n\'est pas disponible.');
-        }
+        $this->verifierAcces($institut);
 
         $zones = is_array($institut->boutique_zones_livraison) ? $institut->boutique_zones_livraison : [];
 
@@ -148,7 +182,7 @@ class BoutiqueController extends Controller
     {
         $institut = Institut::where('slug', $slug)->firstOrFail();
 
-        if (!$institut->boutique_active) {
+        if (!$this->boutiqueAccessible($institut)) {
             return back()->with('error', 'Cette boutique n\'est pas disponible.');
         }
 
@@ -172,10 +206,8 @@ class BoutiqueController extends Controller
 
             // Récupérer tous les produits du panier
             $produitIds = collect($data['panier'])->pluck('produit_id');
-            $produits = Produit::whereIn('id', $produitIds)
-                ->where('institut_id', $institut->id)
-                ->where('actif', true)
-                ->where('visible_boutique', true)
+            $produits = $this->produitsBoutique($institut, false)
+                ->whereIn('produits.id', $produitIds)
                 ->get()
                 ->keyBy('id');
 
@@ -193,7 +225,9 @@ class BoutiqueController extends Controller
             }
 
             // Créer ou récupérer le client — unicité par téléphone OU email
-            $client = Client::where('institut_id', $institut->id)
+            // (sans le scope « établissement courant » : commande publique)
+            $client = Client::withoutGlobalScope(InstitutScope::class)
+                ->where('clients.institut_id', $institut->id)
                 ->where(function ($q) use ($data) {
                     $q->where('telephone', $data['telephone']);
                     if (!empty($data['email'])) {
@@ -332,8 +366,10 @@ class BoutiqueController extends Controller
     {
         $institut = Institut::where('slug', $slug)->firstOrFail();
 
-        $commande = Commande::where('numero', $numero)
-            ->where('institut_id', $institut->id)
+        // Suivi public : ne pas appliquer le scope « établissement courant »
+        $commande = Commande::withoutGlobalScope(InstitutScope::class)
+            ->where('commandes.numero', $numero)
+            ->where('commandes.institut_id', $institut->id)
             ->with('items')
             ->firstOrFail();
 

@@ -13,8 +13,7 @@
             } catch(e) {}
         })();
     </script>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/public.js'])
 </head>
 <body class="min-h-screen bg-purple-50 dark:bg-gray-900 flex items-center justify-center p-4">
 

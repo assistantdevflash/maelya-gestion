@@ -55,6 +55,41 @@ class Institut extends Model
     }
 
     /**
+     * Propriétaire effectif de l'établissement, avec repli pour les données
+     * anciennes où `proprietaire_id` n'a pas été renseigné.
+     *
+     * Sans ce repli, `$institut->proprietaire` renvoyait null et la boutique
+     * publique renvoyait un 404 alors que l'établissement était bien payé.
+     */
+    public function proprietaireEffectif(): ?User
+    {
+        if ($this->relationLoaded('proprietaire') && $this->proprietaire) {
+            return $this->proprietaire;
+        }
+
+        if ($this->proprietaire_id) {
+            $owner = User::find($this->proprietaire_id);
+            if ($owner) {
+                $this->setRelation('proprietaire', $owner);
+                return $owner;
+            }
+        }
+
+        // Repli legacy : plus ancien utilisateur gestionnaire rattaché à l'établissement
+        $owner = User::where('institut_id', $this->id)
+            ->whereIn('role', ['admin', 'gerant', 'proprietaire'])
+            ->orderByRaw("CASE role WHEN 'proprietaire' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END")
+            ->orderBy('created_at')
+            ->first();
+
+        if ($owner) {
+            $this->setRelation('proprietaire', $owner);
+        }
+
+        return $owner;
+    }
+
+    /**
      * L'abonnement actif, récupéré via le propriétaire (proprietaire_id) de l'institut.
      * Fonctionne pour les instituts principaux ET secondaires.
      */

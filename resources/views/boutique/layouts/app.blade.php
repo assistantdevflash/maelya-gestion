@@ -33,8 +33,8 @@
     {{-- Favicon --}}
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
+    {{-- Alpine bundlé LOCALEMENT (plus de dépendance à un CDN externe) --}}
+    @vite(['resources/css/app.css', 'resources/js/public.js'])
 
     @stack('styles')
 

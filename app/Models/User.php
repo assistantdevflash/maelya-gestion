@@ -210,29 +210,80 @@ class User extends Authenticatable
             return false;
         }
 
-        // Cache 5 minutes (par établissement) pour éviter les vérifications répétées
-        // qui peuvent causer des 404 intempestifs si l'abonnement est temporairement inaccessible
         $key = "user_{$this->id}_boutique_access_{$institut->id}";
-        return Cache::remember($key, 300, function () use ($institut) {
-            // Vérifier la feature de base dans le plan
-            if (!$this->aFonctionnalite('boutique')) {
-                return false;
-            }
 
-            // Abonnement actif OU en période de sursis (≤ 2 jours expiré)
-            $abo = $this->abonnementActif ?? $this->abonnementEnSursis();
-            if (!$abo) {
-                return false;
-            }
+        // ⚠️ IMPORTANT : on ne mémorise QUE les autorisations (cache positif).
+        // Avant, un refus était mis en cache 5 minutes : la moindre condition
+        // transitoire (renouvellement, activation de l'option, cache vidé…) figeait
+        // un 404 pendant 5 min pour TOUS les visiteurs. C'était la cause principale
+        // des erreurs 404 intermittentes de la boutique.
+        if (Cache::get($key) === true) {
+            return true;
+        }
 
-            // Plan essai → boutique offerte
-            if ($abo->plan->slug === 'essai') {
-                return true;
-            }
+        $autorise = $this->calculerAccesBoutique($institut);
 
-            // Plan payant → vérifier l'option boutique PAR ÉTABLISSEMENT
-            return $institut->hasBoutiqueOption();
-        });
+        if ($autorise) {
+            Cache::put($key, true, now()->addMinutes(5));
+        } else {
+            // Un refus n'est jamais conservé : on revérifie à chaque requête.
+            Cache::forget($key);
+        }
+
+        return $autorise;
+    }
+
+    /**
+     * Calcul réel (non caché) de l'accès boutique pour un établissement.
+     *
+     * Règles :
+     * - l'abonnement du propriétaire doit être actif (ou en sursis de 2 jours) ;
+     * - le plan doit inclure la fonctionnalité « boutique » (essai = tout) ;
+     * - en essai : boutique offerte ;
+     * - en plan payant : l'option boutique doit être payée POUR CET établissement,
+     *   avec une tolérance de 2 jours (sursis) pour ne pas couper brutalement
+     *   pendant un renouvellement.
+     */
+    private function calculerAccesBoutique(Institut $institut): bool
+    {
+        // Abonnement actif, ou en période de sursis (2 jours)
+        $abo = $this->abonnementActif ?? $this->abonnementEnSursis();
+
+        if (!$abo) {
+            return false;
+        }
+
+        // Vérifier la feature sur le plan réel de l'abonnement (plus fiable que
+        // planActuelSlug() qui dépend d'une détection de propriétaire fragile).
+        $slug     = $abo->plan?->slug ?? $this->planActuelSlug();
+        $estEssai = $abo->plan?->duree_type === 'essai' || $slug === 'essai';
+
+        // Plan essai → boutique offerte (quelle que soit la matrice de features)
+        if ($estEssai) {
+            return true;
+        }
+
+        $features = config("plans-features.plans.$slug", []);
+        if (!in_array('*', $features, true) && !in_array('boutique', $features, true)) {
+            return false;
+        }
+
+        // Plan payant → option payée sur CET établissement
+        if ($institut->hasBoutiqueOption()) {
+            return true;
+        }
+
+        // Tolérance : option encore marquée active mais expirée depuis ≤ 2 jours.
+        // Évite une coupure sèche pendant un renouvellement ou un léger décalage
+        // de facturation. Une option explicitement désactivée ne bénéficie
+        // d'aucune tolérance.
+        if ($institut->boutique_option_active
+            && $institut->boutique_option_expire_le
+            && $institut->boutique_option_expire_le->copy()->addDays(2)->isFuture()) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

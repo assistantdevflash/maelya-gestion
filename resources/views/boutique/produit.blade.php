@@ -18,8 +18,8 @@
     <meta property="og:locale" content="fr_FR">
     <meta name="twitter:card" content="summary_large_image">
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {{-- Alpine est bundlé LOCALEMENT (plus de dépendance à unpkg/CDN) --}}
+    @vite(['resources/css/app.css', 'resources/js/public.js'])
 
     {{-- Couleurs de l'établissement --}}
     @include('boutique.partials.couleurs', ['institut' => $institut])
@@ -37,7 +37,7 @@
     <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{ $institut->facebook_pixel_id }}&ev=PageView&noscript=1"/></noscript>
     @endif
 </head>
-<body class="boutique-soft dark:bg-slate-900 min-h-screen" x-data="ficheProduit()" x-cloak>
+<body class="boutique-soft dark:bg-slate-900 min-h-screen" x-data="ficheProduit()">
 
     {{-- Toast --}}
     <div x-show="toast.show"
