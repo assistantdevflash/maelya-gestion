@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Credit extends Model
 {
-    use HasUuids, BelongsToInstitut;
+    use HasUuids, BelongsToInstitut, \App\Traits\EnregistreActivite;
 
     protected $fillable = [
         'vente_id', 'client_id', 'institut_id',

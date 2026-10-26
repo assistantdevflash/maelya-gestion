@@ -14,6 +14,7 @@ class Institut extends Model
 
     protected $fillable = [
         'nom', 'slug', 'email', 'telephone', 'ville', 'type', 'logo', 'actif', 'en_sommeil', 'sommeil_motif',
+        'derniere_activite_le', 'derniere_activite_type', 'derniere_activite_user_id',
         'vitrine_active', 'reservation_en_ligne',
         'boutique_active', 'boutique_frais_livraison', 'boutique_zones_livraison', 'boutique_delai_livraison', 'boutique_conditions',
         'boutique_option_active', 'boutique_option_expire_le', 'boutique_option_prix',
@@ -24,6 +25,7 @@ class Institut extends Model
     protected $casts = [
         'actif' => 'boolean',
         'en_sommeil' => 'boolean',
+        'derniere_activite_le' => 'datetime',
         'vitrine_active' => 'boolean',
         'reservation_en_ligne' => 'boolean',
         'boutique_active' => 'boolean',
@@ -69,6 +71,28 @@ class Institut extends Model
     public function scopeUtilisables($query)
     {
         return $query->where('actif', true)->where('en_sommeil', false);
+    }
+
+    /** Auteur de la dernière opération métier enregistrée. */
+    public function auteurDerniereActivite()
+    {
+        return $this->belongsTo(User::class, 'derniere_activite_user_id');
+    }
+
+    /** « 26/10/2026 à 14:32 » ou « Jamais ». */
+    public function getDerniereActiviteFormateeAttribute(): string
+    {
+        return $this->derniere_activite_le
+            ? $this->derniere_activite_le->format('d/m/Y à H:i')
+            : 'Jamais';
+    }
+
+    /** « il y a 3 heures », « il y a 12 jours »… */
+    public function getDerniereActiviteHumaineAttribute(): string
+    {
+        return $this->derniere_activite_le
+            ? $this->derniere_activite_le->diffForHumans()
+            : 'Jamais';
     }
 
     public function proprietaire()

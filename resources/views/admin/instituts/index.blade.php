@@ -28,7 +28,13 @@
                 <option value="{{ $plan->slug }}" @selected(request('plan') === $plan->slug)>{{ $plan->nom }}</option>
             @endforeach
         </select>
-        @if(request('q') || request('status') || request('plan'))
+        <select name="activite" class="form-input max-w-[200px]" onchange="document.getElementById('filter-form').submit()">
+            <option value="">Toute activité</option>
+            <option value="actif"   @selected(request('activite') === 'actif')>Actif (≤ 7 jours)</option>
+            <option value="inactif" @selected(request('activite') === 'inactif')>Dormant (&gt; 30 jours)</option>
+            <option value="jamais"  @selected(request('activite') === 'jamais')>Jamais utilisé</option>
+        </select>
+        @if(request('q') || request('status') || request('plan') || request('activite'))
             <a href="{{ route('admin.instituts.index') }}" class="btn-secondary">Réinitialiser</a>
         @endif
     </form>
@@ -101,6 +107,7 @@
                 <th class="hidden sm:table-cell">Ville</th>
                 <th>Statut</th>
                 <th class="hidden md:table-cell">Inscrit le</th>
+                <th class="hidden lg:table-cell">Dernière activité</th>
                 <th></th>
             </tr>
             </thead>
@@ -119,6 +126,16 @@
                     </span>
                 </td>
                 <td class="text-sm text-gray-500 hidden md:table-cell">{{ $inst->created_at->format('d/m/Y') }}</td>
+                <td class="hidden lg:table-cell">
+                    @if($inst->derniere_activite_le)
+                        <div class="text-sm text-gray-700 dark:text-gray-300">{{ $inst->derniere_activite_le->format('d/m/Y') }}</div>
+                        <div class="text-xs text-gray-400">
+                            {{ $inst->derniere_activite_le->format('H:i') }} · {{ $inst->derniere_activite_le->diffForHumans() }}
+                        </div>
+                    @else
+                        <span class="text-xs text-gray-400 italic">Jamais</span>
+                    @endif
+                </td>
                 <td>
                     <a href="{{ route('admin.instituts.show', $inst) }}" class="btn-outline btn-sm text-xs">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

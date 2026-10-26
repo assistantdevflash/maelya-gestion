@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Client extends Model
 {
-    use HasUuids, SoftDeletes, BelongsToInstitut, \App\Traits\Auditable;
+    use HasUuids, SoftDeletes, BelongsToInstitut, \App\Traits\Auditable, \App\Traits\EnregistreActivite;
 
     /** @var array Colonnes à ignorer (points_fidelite tracé par HistoriquePoints) */
     protected array $auditExclude = ['points_fidelite'];

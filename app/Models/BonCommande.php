@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 class BonCommande extends Model
 {
-    use HasUuids, BelongsToInstitut;
+    use HasUuids, BelongsToInstitut, \App\Traits\EnregistreActivite;
 
     protected $table = 'bons_commande';
 

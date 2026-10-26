@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Depense extends Model
 {
-    use HasUuids, BelongsToInstitut, \App\Traits\Auditable;
+    use HasUuids, BelongsToInstitut, \App\Traits\Auditable, \App\Traits\EnregistreActivite;
 
     public function auditLabel(): string
     {

@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
@@ -49,6 +50,22 @@ class AppServiceProvider extends ServiceProvider
                     return redirect()->route('contact')
                         ->withErrors(['email' => 'Trop de tentatives. Réessayez dans 1 heure.']);
                 });
+        });
+
+        // Suivi d'activité : date de dernière connexion + activité de l'établissement
+        Event::listen(\Illuminate\Auth\Events\Login::class, function ($event) {
+            $user = $event->user;
+
+            // Une connexion ne doit jamais faire échouer l'authentification
+            try {
+                $user->forceFill(['derniere_connexion_le' => now()])->saveQuietly();
+
+                $institutId = session('current_institut_id', $user->institut_id);
+                app(\App\Services\ActiviteInstitutService::class)
+                    ->marquer($institutId, 'connexion', $user);
+            } catch (\Throwable $e) {
+                \Log::warning('[ActiviteInstitut] ' . $e->getMessage());
+            }
         });
     }
 }

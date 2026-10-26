@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name', 'prenom', 'nom_famille', 'email', 'password',
         'telephone', 'role', 'avatar', 'actif', 'institut_id',
         'en_sommeil', 'sommeil_motif',
+        'derniere_connexion_le',
         'code_parrainage', 'parraine_par',
         'email_verified_at', 'code_verification_email', 'code_verification_expire_le',
     ];
@@ -38,6 +39,7 @@ class User extends Authenticatable
             'password'                     => 'hashed',
             'actif'                        => 'boolean',
             'en_sommeil'                   => 'boolean',
+            'derniere_connexion_le'        => 'datetime',
         ];
     }
 

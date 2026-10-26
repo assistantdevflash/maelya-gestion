@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class Commande extends Model
 {
-    use HasUuids, BelongsToInstitut;
+    use HasUuids, BelongsToInstitut, \App\Traits\EnregistreActivite;
 
     protected $fillable = [
         'institut_id',

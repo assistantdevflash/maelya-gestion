@@ -36,6 +36,18 @@ class AdminInstitutController extends Controller
                 ->orWhere('ville', 'like', "%{$search}%"))
             ->when($request->status, fn($q, $s) => $q->where('actif', $s === 'actif'))
             ->when($ownerIds !== null, fn($q) => $q->whereIn('proprietaire_id', $ownerIds))
+            ->when($request->activite, function ($q, $activite) {
+                $seuilActif   = \App\Services\ActiviteInstitutService::SEUIL_ACTIF_JOURS;
+                $seuilDormant = \App\Services\ActiviteInstitutService::SEUIL_DORMANT_JOURS;
+
+                return match ($activite) {
+                    'actif' => $q->where('derniere_activite_le', '>=', now()->subDays($seuilActif)),
+                    'inactif' => $q->where(fn ($x) => $x->whereNull('derniere_activite_le')
+                        ->orWhere('derniere_activite_le', '<', now()->subDays($seuilDormant))),
+                    'jamais' => $q->whereNull('derniere_activite_le'),
+                    default  => $q,
+                };
+            })
             ->latest()
             ->paginate(50)
             ->withQueryString();
@@ -125,6 +137,14 @@ class AdminInstitutController extends Controller
         $creditsMois = $institut->credits()->where('created_at', '>=', $debutMois)->count();
         $creditsJour = $institut->credits()->where('created_at', '>=', $debutJour)->count();
 
+        // ─── Activité ──────────────────────────────────────────────────────────
+        $serviceActivite  = app(\App\Services\ActiviteInstitutService::class);
+        $niveauActivite   = $serviceActivite->niveau($institut);
+        $libelleActivite  = $serviceActivite->libelleType($institut->derniere_activite_type);
+        $auteurActivite   = $institut->derniere_activite_user_id
+            ? User::find($institut->derniere_activite_user_id)
+            : null;
+
         return view('admin.instituts.show', compact(
             'institut', 'owner', 'abonnementActif', 'abonnementSursis', 'plans', 'historique',
             'totalProduits', 'totalPrestations', 'totalClients',
@@ -135,6 +155,7 @@ class AdminInstitutController extends Controller
             'totalDevis', 'devisMois', 'devisJour',
             'totalRdv', 'rdvMois', 'rdvJour',
             'totalCredits', 'creditsMois', 'creditsJour',
+            'niveauActivite', 'libelleActivite', 'auteurActivite',
         ));
     }
 

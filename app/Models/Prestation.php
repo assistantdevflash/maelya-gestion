@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Prestation extends Model
 {
-    use HasUuids, SoftDeletes, BelongsToInstitut, \App\Traits\Auditable;
+    use HasUuids, SoftDeletes, BelongsToInstitut, \App\Traits\Auditable, \App\Traits\EnregistreActivite;
 
     public function auditLabel(): string
     {

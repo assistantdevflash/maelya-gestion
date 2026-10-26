@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Devis extends Model
 {
-    use HasUuids, BelongsToInstitut;
+    use HasUuids, BelongsToInstitut, \App\Traits\EnregistreActivite;
 
     protected $table = 'devis';
 

@@ -231,6 +231,43 @@
 
         {{-- Abonnements --}}
         <div class="space-y-5 min-w-0">
+            {{-- 🕒 Activité --}}
+            <div class="card p-5">
+                <h2 class="font-bold text-sm text-gray-700 dark:text-gray-200 mb-3">Dernière activité</h2>
+
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="badge text-xs
+                        @if($niveauActivite['code'] === 'actif') badge-success
+                        @elseif($niveauActivite['code'] === 'recent') bg-amber-100 text-amber-700
+                        @elseif($niveauActivite['code'] === 'dormant') bg-red-100 text-red-700
+                        @else bg-gray-100 text-gray-600 @endif">
+                        {{ $niveauActivite['label'] }}
+                    </span>
+                    @if(!is_null($niveauActivite['jours']))
+                    <span class="text-xs text-gray-400">
+                        {{ $niveauActivite['jours'] }} jour(s) sans activité
+                    </span>
+                    @endif
+                </div>
+
+                @if($institut->derniere_activite_le)
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                    {{ $institut->derniere_activite_formatee }}
+                </p>
+                <p class="text-xs text-gray-400 mt-0.5">{{ $institut->derniere_activite_humaine }}</p>
+                <p class="text-xs text-gray-500 mt-2">
+                    Dernière opération&nbsp;: <strong>{{ $libelleActivite }}</strong>
+                    @if($auteurActivite)
+                    <br>Par&nbsp;: {{ $auteurActivite->nom_complet }}
+                    @endif
+                </p>
+                @else
+                <p class="text-sm text-gray-400 italic">
+                    Aucune activité métier enregistrée depuis la mise en place du suivi.
+                </p>
+                @endif
+            </div>
+
             <div class="card p-5">
                 <h2 class="font-bold text-sm text-gray-700 mb-3">Abonnement actuel</h2>
 
