@@ -175,8 +175,9 @@ class AdminInstitutController extends Controller
     public function offrirAbonnement(Request $request, Institut $institut)
     {
         $request->validate([
-            'plan_id' => ['required', 'uuid'],
-            'jours' => ['required', 'integer', 'min:1', 'max:1095'],
+            'plan_id'         => ['required', 'uuid'],
+            'jours'           => ['required', 'integer', 'min:1', 'max:1095'],
+            'option_boutique' => ['nullable', 'boolean'],
         ]);
 
         $jours = (int) $request->jours; // Cast explicite en int pour Carbon
@@ -187,6 +188,7 @@ class AdminInstitutController extends Controller
         }
 
         $plan = PlanAbonnement::findOrFail($request->plan_id);
+        $expireLe = now()->addDays($jours)->toDateString();
 
         // Expirer les abonnements précédents
         Abonnement::where('user_id', $owner->id)
@@ -201,12 +203,38 @@ class AdminInstitutController extends Controller
             'reference_transfert' => 'OFFERT-' . strtoupper(substr(md5(uniqid()), 0, 8)),
             'statut' => 'actif',
             'debut_le' => now()->toDateString(),
-            'expire_le' => now()->addDays($jours)->toDateString(),
+            'expire_le' => $expireLe,
             'valide_par' => auth()->id(),
             'notes_admin' => 'Abonnement offert par l\'administrateur.',
         ]);
 
-        return back()->with('success', "Accès offert pour {$jours} jours.");
+        // ── Option boutique en ligne (add-on, facturation par établissement) ──
+        $avecBoutique = $request->boolean('option_boutique');
+
+        if ($avecBoutique) {
+            $institut->setBoutiqueOption(true, $expireLe, 3900);
+        } else {
+            $institut->setBoutiqueOption(false);
+        }
+        $institut->save();
+
+        // Le cache d'accès boutique doit refléter le changement immédiatement
+        $owner->forgetBoutiqueAccessCache($institut->id);
+
+        // ── Réconcilier les quotas du plan attribué ──────────────────────────
+        try {
+            app(\App\Services\PlanLimitesService::class)->appliquer($plan, $owner);
+        } catch (\Throwable $e) {
+            \Log::warning('[PlanLimites] ' . $e->getMessage());
+        }
+
+        $message = "Accès offert pour {$jours} jours.";
+        if ($avecBoutique) {
+            $message .= ' Option boutique en ligne activée jusqu\'au '
+                . \Illuminate\Support\Carbon::parse($expireLe)->format('d/m/Y') . '.';
+        }
+
+        return back()->with('success', $message);
     }
 
     public function destroy(Institut $institut)
