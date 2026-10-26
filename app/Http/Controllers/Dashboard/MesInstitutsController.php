@@ -61,6 +61,7 @@ class MesInstitutsController extends Controller
         $data = $request->validate([
             'nom'       => ['required', 'string', 'max:100'],
             'ville'     => ['nullable', 'string', 'max:100'],
+            'adresse'   => ['nullable', 'string', 'max:255'],
             'telephone' => ['nullable', 'string', 'max:20'],
             'email'     => ['nullable', 'email', 'max:150'],
             'type'      => ['required', 'string', Rule::exists('etablissement_types', 'code')->where('actif', true)],
@@ -96,6 +97,7 @@ class MesInstitutsController extends Controller
         $data = $request->validate([
             'nom'       => ['required', 'string', 'max:100'],
             'ville'     => ['nullable', 'string', 'max:100'],
+            'adresse'   => ['nullable', 'string', 'max:255'],
             'telephone' => ['nullable', 'string', 'max:20'],
             'email'     => ['nullable', 'email', 'max:150'],
             'type'      => ['required', 'string', Rule::exists('etablissement_types', 'code')->where('actif', true)],

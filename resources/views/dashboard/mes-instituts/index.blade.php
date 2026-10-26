@@ -445,6 +445,11 @@
                                    placeholder="Ex: +225 07 00 00 00" value="{{ old('telephone') }}">
                         </div>
                         <div class="col-span-2 form-group mb-0">
+                            <label class="form-label">Adresse</label>
+                            <input type="text" name="adresse" maxlength="255" class="form-input"
+                                   placeholder="Ex: 8ème, en face de la Pharmacie des Arums" value="{{ old('adresse') }}">
+                        </div>
+                        <div class="col-span-2 form-group mb-0">
                             <label class="form-label">Email</label>
                             <input type="email" name="email" maxlength="150" class="form-input"
                                    placeholder="contact@maelya-cocody.ci" value="{{ old('email') }}">

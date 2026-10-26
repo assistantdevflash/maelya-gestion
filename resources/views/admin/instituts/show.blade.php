@@ -27,6 +27,7 @@
                     <div class="min-w-0"><span class="text-gray-400">Email</span><p class="font-medium break-all">{{ $institut->email ?? '—' }}</p></div>
                     <div class="min-w-0"><span class="text-gray-400">Téléphone</span><p class="font-medium">{{ $institut->telephone ?? '—' }}</p></div>
                     <div class="min-w-0"><span class="text-gray-400">Ville</span><p class="font-medium break-words">{{ $institut->ville ?? '—' }}</p></div>
+                    <div class="min-w-0 sm:col-span-2"><span class="text-gray-400">Adresse</span><p class="font-medium break-words">{{ $institut->adresse ?: '—' }}</p></div>
                     <div class="min-w-0"><span class="text-gray-400">Inscrit le</span><p class="font-medium">{{ $institut->created_at->format('d/m/Y') }}</p></div>
                 </div>
 

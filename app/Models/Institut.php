@@ -13,7 +13,7 @@ class Institut extends Model
     protected $table = 'instituts';
 
     protected $fillable = [
-        'nom', 'slug', 'email', 'telephone', 'ville', 'type', 'logo', 'actif', 'en_sommeil', 'sommeil_motif',
+        'nom', 'slug', 'email', 'telephone', 'ville', 'adresse', 'type', 'logo', 'actif', 'en_sommeil', 'sommeil_motif',
         'derniere_activite_le', 'derniere_activite_type', 'derniere_activite_user_id',
         // Colonne ajoutée après coup : sans elle, un create() la perdait
         // silencieusement. Toujours renseignée côté serveur.

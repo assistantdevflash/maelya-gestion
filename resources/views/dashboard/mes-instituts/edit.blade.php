@@ -43,6 +43,13 @@
                             <input type="text" name="telephone" maxlength="20" class="form-input" value="{{ old('telephone', $institut->telephone) }}">
                         </div>
                         <div class="col-span-2">
+                            <label class="form-label">Adresse</label>
+                            <input type="text" name="adresse" maxlength="255" class="form-input"
+                                   value="{{ old('adresse', $institut->adresse) }}"
+                                   placeholder="Ex : 8ème, en face de la Pharmacie des Arums">
+                            <p class="text-xs text-gray-400 mt-1">Reprise sur vos factures, devis et documents PDF.</p>
+                        </div>
+                        <div class="col-span-2">
                             <label class="form-label">Email</label>
                             <input type="email" name="email" maxlength="150" class="form-input" value="{{ old('email', $institut->email) }}">
                         </div>
