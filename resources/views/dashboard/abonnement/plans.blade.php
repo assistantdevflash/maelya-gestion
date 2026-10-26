@@ -261,10 +261,11 @@
                                 Mise à niveau
                             </a>
                         @elseif($estDowngrade)
-                            <button disabled class="btn-secondary w-full justify-center opacity-40 cursor-not-allowed text-xs">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
-                                Rétrogradation non disponible
-                            </button>
+                            <a href="{{ route('abonnement.souscrire.show', $plan) }}?periode=mensuel"
+                               class="btn-secondary w-full justify-center" title="Ce plan réduit vos quotas : un récapitulatif vous sera présenté avant validation.">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                                Rétrograder
+                            </a>
                         @else
                             <a href="{{ route('abonnement.souscrire.show', $plan) }}?periode=mensuel"
                                class="{{ $plan->slug === 'premium-plus' ? 'btn-primary' : 'btn-outline' }} w-full justify-center">

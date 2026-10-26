@@ -82,7 +82,7 @@
             @php
                 $__sidebarUser = auth()->user();
                 $__sidebarInstituts = $__sidebarUser->isAdmin()
-                    ? $__sidebarUser->mesInstituts()->orderBy('nom')->get()
+                    ? $__sidebarUser->mesInstituts()->where('en_sommeil', false)->orderBy('nom')->get()
                     : collect();
                 // Inclure l'institut principal s'il n'est pas dans mesInstituts()
                 if ($__sidebarUser->isAdmin() && $__sidebarUser->institut && !$__sidebarInstituts->contains('id', $__sidebarUser->institut_id)) {

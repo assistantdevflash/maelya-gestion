@@ -133,7 +133,20 @@
             <div x-data="{
                     logoOpen: false
                  }"
-                 class="card p-5 relative {{ $isActif ? 'ring-2 ring-primary-400' : '' }} transition-all">
+                 class="card p-5 relative {{ $isActif ? 'ring-2 ring-primary-400' : '' }} {{ $institut->en_sommeil ? 'opacity-75 border-2 border-dashed border-amber-300 dark:border-amber-700' : '' }} transition-all">
+
+                @if($institut->en_sommeil)
+                <div class="mb-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-3 py-2">
+                    <p class="text-xs font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                        En sommeil
+                    </p>
+                    <p class="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5">
+                        {{ $institut->sommeil_motif ?: 'Limite du plan atteinte.' }}
+                        Vos données sont conservées.
+                    </p>
+                </div>
+                @endif
 
                 {{-- En-tête carte : badge actif + bouton crayon --}}
                 <div class="flex items-start justify-between mb-4 gap-2">
@@ -187,8 +200,8 @@
                         <p class="text-xs text-gray-400">Employé(s)</p>
                     </div>
                     <div class="bg-gray-50 dark:bg-slate-800/60 rounded-xl px-3 py-2.5 text-center">
-                        <p class="text-lg font-bold {{ $institut->actif ? 'text-emerald-600' : 'text-red-500' }}">
-                            {{ $institut->actif ? 'Actif' : 'Inactif' }}
+                        <p class="text-lg font-bold {{ $institut->en_sommeil ? 'text-amber-500' : ($institut->actif ? 'text-emerald-600' : 'text-red-500') }}">
+                            {{ $institut->en_sommeil ? 'Sommeil' : ($institut->actif ? 'Actif' : 'Inactif') }}
                         </p>
                         <p class="text-xs text-gray-400">Statut</p>
                     </div>
@@ -202,6 +215,16 @@
                     </svg>
                     Établissement en cours de gestion
                 </div>
+                @elseif($institut->en_sommeil)
+                <form method="POST" action="{{ route('dashboard.mes-instituts.reactiver', $institut) }}">
+                    @csrf @method('PATCH')
+                    <button type="submit" class="w-full btn-outline justify-center text-sm py-2.5 border-amber-400 text-amber-700 hover:bg-amber-50 dark:text-amber-300 dark:hover:bg-amber-900/20">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        Réactiver cet établissement
+                    </button>
+                </form>
                 @else
                 <form method="POST" action="{{ route('dashboard.mes-instituts.switch', $institut) }}">
                     @csrf

@@ -113,4 +113,23 @@ class EmployeController extends Controller
         $employe->update(['actif' => !$employe->actif]);
         return back()->with('success', $employe->actif ? 'Compte activé.' : 'Compte désactivé.');
     }
+
+    /**
+     * Réactive un employé mis en sommeil, si le quota du plan le permet.
+     */
+    public function reactiver(User $employe)
+    {
+        $user = Auth::user();
+
+        abort_unless($user->isAdmin(), 403, 'Accès refusé.');
+
+        $ok = app(\App\Services\PlanLimitesService::class)->reactiverEmploye($employe, $user);
+
+        if (!$ok) {
+            return back()->with('error', 'Votre plan ne permet pas de réactiver cet employé. '
+                . 'Passez à un plan supérieur pour augmenter votre quota.');
+        }
+
+        return back()->with('success', "Le compte de {$employe->nom_complet} est de nouveau actif.");
+    }
 }

@@ -13,7 +13,8 @@ class Institut extends Model
     protected $table = 'instituts';
 
     protected $fillable = [
-        'nom', 'slug', 'email', 'telephone', 'ville', 'type', 'logo', 'actif', 'vitrine_active', 'reservation_en_ligne',
+        'nom', 'slug', 'email', 'telephone', 'ville', 'type', 'logo', 'actif', 'en_sommeil', 'sommeil_motif',
+        'vitrine_active', 'reservation_en_ligne',
         'boutique_active', 'boutique_frais_livraison', 'boutique_zones_livraison', 'boutique_delai_livraison', 'boutique_conditions',
         'boutique_option_active', 'boutique_option_expire_le', 'boutique_option_prix',
         'facebook_pixel_id', 'facebook_access_token', 'facebook_test_code', 'facebook_pixel_name', 'facebook_connected_at',
@@ -22,6 +23,7 @@ class Institut extends Model
 
     protected $casts = [
         'actif' => 'boolean',
+        'en_sommeil' => 'boolean',
         'vitrine_active' => 'boolean',
         'reservation_en_ligne' => 'boolean',
         'boutique_active' => 'boolean',
@@ -47,6 +49,26 @@ class Institut extends Model
     public function users()
     {
         return $this->hasMany(User::class, 'institut_id');
+    }
+
+    /**
+     * Établissement mis en sommeil pour dépassement de quota du plan.
+     * Distinct de `actif` : réversible automatiquement, aucune donnée perdue.
+     */
+    public function estEnSommeil(): bool
+    {
+        return (bool) $this->en_sommeil;
+    }
+
+    /** Établissement utilisable : ni désactivé par l'admin, ni en sommeil. */
+    public function estUtilisable(): bool
+    {
+        return (bool) $this->actif && !$this->en_sommeil;
+    }
+
+    public function scopeUtilisables($query)
+    {
+        return $query->where('actif', true)->where('en_sommeil', false);
     }
 
     public function proprietaire()

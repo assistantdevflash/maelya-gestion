@@ -35,6 +35,16 @@ class WebhookController extends Controller
                 'metadata' => $request->all(),
             ]);
 
+            // Réconcilier les quotas (mise en sommeil / réveil)
+            if ($abonnement->user) {
+                try {
+                    app(\App\Services\PlanLimitesService::class)
+                        ->appliquer($abonnement->plan, $abonnement->user);
+                } catch (\Throwable $e) {
+                    Log::warning('[PlanLimites] ' . $e->getMessage());
+                }
+            }
+
             Log::info("Abonnement {$abonnement->id} activé via CinetPay");
         } else {
             $abonnement->update([

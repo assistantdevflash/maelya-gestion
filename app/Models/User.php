@@ -20,6 +20,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'prenom', 'nom_famille', 'email', 'password',
         'telephone', 'role', 'avatar', 'actif', 'institut_id',
+        'en_sommeil', 'sommeil_motif',
         'code_parrainage', 'parraine_par',
         'email_verified_at', 'code_verification_email', 'code_verification_expire_le',
     ];
@@ -36,7 +37,16 @@ class User extends Authenticatable
             'code_verification_expire_le'  => 'datetime',
             'password'                     => 'hashed',
             'actif'                        => 'boolean',
+            'en_sommeil'                   => 'boolean',
         ];
+    }
+
+    /**
+     * Compte mis en sommeil pour dépassement du quota d'employés du plan.
+     */
+    public function estEnSommeil(): bool
+    {
+        return (bool) $this->en_sommeil;
     }
 
     public function institut()

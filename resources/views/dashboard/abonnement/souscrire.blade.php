@@ -41,6 +41,65 @@
         @csrf
         <input type="hidden" name="periode" :value="periode">
 
+        {{-- Récapitulatif d'impact : quotas réduits / fonctionnalités perdues --}}
+        @if($analyseLimites['impact'])
+        <div class="card border-2 border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30">
+            <div class="card-body space-y-4">
+                <div class="flex items-start gap-3">
+                    <svg class="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                    <div>
+                        <h3 class="font-bold text-amber-900 dark:text-amber-200">Ce plan réduit vos limites</h3>
+                        <p class="text-sm text-amber-800 dark:text-amber-300 mt-1">
+                            Rien n'est supprimé : les éléments concernés passent <strong>en sommeil</strong> et
+                            redeviennent actifs dès que vous repassez à un plan supérieur.
+                        </p>
+                    </div>
+                </div>
+
+                <ul class="space-y-2 text-sm text-amber-900 dark:text-amber-200">
+                    @if($analyseLimites['instituts']['excedent'] > 0)
+                    <li class="flex gap-2">
+                        <span>•</span>
+                        <span>
+                            <strong>{{ $analyseLimites['instituts']['excedent'] }} établissement(s)</strong> passeront en sommeil
+                            ({{ $analyseLimites['instituts']['total'] }} actuellement, {{ $analyseLimites['instituts']['autorises'] }} autorisé(s)).
+                            Votre établissement principal est toujours conservé.
+                        </span>
+                    </li>
+                    @endif
+                    @if($analyseLimites['employes']['excedent'] > 0)
+                    <li class="flex gap-2">
+                        <span>•</span>
+                        <span>
+                            <strong>{{ $analyseLimites['employes']['excedent'] }} employé(s)</strong> passeront en sommeil
+                            ({{ $analyseLimites['employes']['autorises'] }} autorisé(s) par établissement).
+                        </span>
+                    </li>
+                    @endif
+                    @if(!empty($analyseLimites['features_perdues']))
+                    <li class="flex gap-2">
+                        <span>•</span>
+                        <span>
+                            <strong>Fonctionnalités désactivées :</strong>
+                            @foreach($analyseLimites['features_perdues'] as $feature)
+                                {{ \App\Services\PlanLimitesService::FEATURES_LIBELLES[$feature] ?? $feature }}@if(!$loop->last), @endif
+                            @endforeach
+                        </span>
+                    </li>
+                    @endif
+                </ul>
+
+                <label class="flex items-start gap-3 cursor-pointer p-3 rounded-xl bg-white/60 dark:bg-slate-900/60 border border-amber-200 dark:border-amber-800">
+                    <input type="checkbox" name="confirmation_downgrade" value="1" required
+                           class="mt-0.5 rounded border-amber-400 text-amber-600 focus:ring-amber-500">
+                    <span class="text-sm font-medium text-amber-900 dark:text-amber-200">
+                        Je comprends et j'accepte que ces éléments passent en sommeil.
+                    </span>
+                </label>
+            </div>
+        </div>
+        @endif
+
         {{-- Section 1 : Plan et période --}}
         <div class="card">
             <div class="card-header">

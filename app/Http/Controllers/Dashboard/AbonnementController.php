@@ -414,6 +414,31 @@ class AbonnementController extends Controller
     }
 
     /**
+     * Message lisible décrivant l'impact d'un changement de plan.
+     */
+    private function messageImpactLimites(array $analyse): string
+    {
+        $parties = [];
+
+        if ($analyse['instituts']['excedent'] > 0) {
+            $parties[] = $analyse['instituts']['excedent'] . ' établissement(s) passeront en sommeil';
+        }
+        if ($analyse['employes']['excedent'] > 0) {
+            $parties[] = $analyse['employes']['excedent'] . ' employé(s) passeront en sommeil';
+        }
+        if (!empty($analyse['features_perdues'])) {
+            $libelles = array_map(
+                fn ($f) => \App\Services\PlanLimitesService::FEATURES_LIBELLES[$f] ?? $f,
+                $analyse['features_perdues']
+            );
+            $parties[] = 'fonctionnalités désactivées : ' . implode(', ', $libelles);
+        }
+
+        return 'Ce plan réduit vos limites — ' . implode(' ; ', $parties)
+            . '. Vos données sont conservées. Cochez la case de confirmation pour continuer.';
+    }
+
+    /**
      * Affiche la page de souscription complète pour un plan donné.
      */
     public function showSouscrire(Request $request, PlanAbonnement $plan)
@@ -448,8 +473,13 @@ class AbonnementController extends Controller
                 'slug'       => $i->slug,
                 'ville'      => $i->ville,
                 'optionActive' => $i->hasBoutiqueOption(),
+                'enSommeil'  => (bool) $i->en_sommeil,
             ])
             ->values();
+
+        // Impact d'un éventuel changement de plan (rétrogradation) :
+        // établissements/employés au-delà du quota + fonctionnalités perdues.
+        $analyseLimites = app(\App\Services\PlanLimitesService::class)->analyser($plan, $user);
 
         // Prix pour la période sélectionnée
         $prixPlan       = $plan->prixEffectif($periode);
@@ -458,7 +488,7 @@ class AbonnementController extends Controller
         return view('dashboard.abonnement.souscrire', compact(
             'plan', 'periode', 'prixPlan',
             'abonnementActif', 'demandeEnAttente', 'user', 'paymentMethods',
-            'estRenouvellement', 'etablissements'
+            'estRenouvellement', 'etablissements', 'analyseLimites'
         ));
     }
 
@@ -473,7 +503,19 @@ class AbonnementController extends Controller
             'methode_paiement'    => ['nullable', 'string', 'in:geniuspay,bank_transfer'],
             'reference_transfert' => ['nullable', 'string', 'max:100'],
             'preuve_paiement'     => ['nullable', 'file', 'mimes:jpeg,png,jpg,webp,pdf', 'max:10240'],
+            'confirmation_downgrade' => ['nullable', 'boolean'],
         ]);
+
+        // ── Garde-fou de rétrogradation ─────────────────────────────────────
+        // Une mise à niveau n'est jamais bloquée. Une rétrogradation qui réduit
+        // les quotas ou retire des fonctionnalités exige une confirmation
+        // explicite : l'utilisateur doit savoir ce qui passera en sommeil.
+        $analyseLimites = app(\App\Services\PlanLimitesService::class)
+            ->analyser($plan, Auth::user());
+
+        if ($analyseLimites['impact'] && !$request->boolean('confirmation_downgrade')) {
+            return back()->withInput()->with('error', $this->messageImpactLimites($analyseLimites));
+        }
 
         $methodCode = $request->input('methode_paiement', 'bank_transfer');
         $method     = PaymentMethod::where('code', $methodCode)->where('is_active', true)->first();
@@ -546,6 +588,11 @@ class AbonnementController extends Controller
                 'boutique_prix' => $nbBoutiques > 0 ? 3900 : 0,
                 'nb_boutiques' => $nbBoutiques,
                 'boutiques_ids' => $etablissementsValides,
+                'limites' => [
+                    'instituts_en_sommeil' => $analyseLimites['instituts']['excedent'],
+                    'employes_en_sommeil'  => $analyseLimites['employes']['excedent'],
+                    'features_perdues'     => $analyseLimites['features_perdues'],
+                ],
             ],
         ]);
 
@@ -731,6 +778,11 @@ class AbonnementController extends Controller
                 'nb_boutiques'   => $nbBoutiques,
                 'boutiques_ids'  => $etablissementsValides,
                 'payment_method' => 'geniuspay',
+                'limites'        => [
+                    'instituts_en_sommeil' => $analyseLimites['instituts']['excedent'],
+                    'employes_en_sommeil'  => $analyseLimites['employes']['excedent'],
+                    'features_perdues'     => $analyseLimites['features_perdues'],
+                ],
             ],
         ]);
 

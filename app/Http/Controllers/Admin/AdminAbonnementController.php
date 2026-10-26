@@ -143,6 +143,16 @@ class AdminAbonnementController extends Controller
         $user = $abonnement->user;
         if ($user) {
             $user->forgetBoutiqueAccessCache();
+
+            // ── Réconcilier les quotas du nouveau plan ─────────────────────
+            // Rétrogradation → les établissements/employés excédentaires
+            // passent en sommeil (réversible). Mise à niveau → ils sont
+            // réveillés automatiquement dans la limite du nouveau quota.
+            try {
+                app(\App\Services\PlanLimitesService::class)->appliquer($plan, $user);
+            } catch (\Throwable $e) {
+                \Log::warning('[PlanLimites] ' . $e->getMessage());
+            }
         }
 
         // ── Appliquer la liste des établissements boutique cochés ──────────

@@ -307,19 +307,28 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
         Route::middleware('feature:equipe')->group(function () {
             Route::resource('employes', EmployeController::class)->except(['show']);
             Route::patch('employes/{employe}/toggle', [EmployeController::class, 'toggle'])->name('employes.toggle');
+            Route::patch('employes/{employe}/reactiver', [EmployeController::class, 'reactiver'])->name('employes.reactiver');
         });
 
         // Mes instituts : paramètres & config → admin uniquement
         Route::middleware('role:admin')->group(function () {
             Route::get('mes-instituts', [MesInstitutsController::class, 'index'])->name('mes-instituts.index');
+
+            // ⚠️ Routes STATIQUES d'abord : sinon `mes-instituts/{institut}`
+            // capte « apparence » et la liaison de modèle échoue en 404.
+            Route::get('mes-instituts/apparence', [MesInstitutsController::class, 'apparence'])->name('mes-instituts.apparence');
+            Route::put('mes-instituts/apparence', [MesInstitutsController::class, 'updateApparence'])->name('mes-instituts.apparence.update');
+            Route::post('mes-instituts/apparence/reset', [MesInstitutsController::class, 'resetApparence'])->name('mes-instituts.apparence.reset');
+
+            // Routes dynamiques
             Route::get('mes-instituts/{institut}/edit', [MesInstitutsController::class, 'edit'])->name('mes-instituts.edit');
             Route::put('mes-instituts/{institut}', [MesInstitutsController::class, 'update'])->name('mes-instituts.update');
             Route::post('mes-instituts/{institut}/logo', [MesInstitutsController::class, 'updateLogo'])->name('mes-instituts.logo');
             Route::patch('mes-instituts/{institut}/vitrine', [MesInstitutsController::class, 'toggleVitrine'])->name('mes-instituts.vitrine');
             Route::patch('mes-instituts/{institut}/reservation', [MesInstitutsController::class, 'toggleReservation'])->name('mes-instituts.reservation');
-            Route::get('mes-instituts/apparence', [MesInstitutsController::class, 'apparence'])->name('mes-instituts.apparence');
-            Route::put('mes-instituts/apparence', [MesInstitutsController::class, 'updateApparence'])->name('mes-instituts.apparence.update');
-            Route::post('mes-instituts/apparence/reset', [MesInstitutsController::class, 'resetApparence'])->name('mes-instituts.apparence.reset');
+            // Réactivation d'un établissement en sommeil : accessible même sans
+            // multi_instituts, pour afficher un message clair de quota atteint.
+            Route::patch('mes-instituts/{institut}/reactiver', [MesInstitutsController::class, 'reactiver'])->name('mes-instituts.reactiver');
             Route::middleware('feature:multi_instituts')->group(function () {
                 Route::post('mes-instituts', [MesInstitutsController::class, 'store'])->name('mes-instituts.store');
                 Route::post('mes-instituts/{institut}/switch', [MesInstitutsController::class, 'switch'])->name('mes-instituts.switch');

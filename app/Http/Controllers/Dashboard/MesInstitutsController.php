@@ -186,9 +186,35 @@ class MesInstitutsController extends Controller
         // Vérifier que l'institut est actif
         abort_unless($institut->actif, 404, 'Cet institut n\'est pas disponible.');
 
+        // Un établissement en sommeil (quota du plan dépassé) n'est pas utilisable
+        if ($institut->estEnSommeil()) {
+            return back()->with('error', "L'établissement \"{$institut->nom}\" est en sommeil : "
+                . ($institut->sommeil_motif ?: 'limite du plan atteinte.')
+                . ' Passez à un plan supérieur pour le réactiver.');
+        }
+
         session(['current_institut_id' => $institut->id]);
 
         return redirect()->back();
+    }
+
+    /**
+     * Réactive un établissement mis en sommeil, si le quota le permet encore.
+     */
+    public function reactiver(Institut $institut)
+    {
+        $user = Auth::user();
+
+        abort_unless($institut->proprietaire_id === $user->id, 403, 'Accès refusé.');
+
+        $ok = app(\App\Services\PlanLimitesService::class)->reactiverInstitut($institut, $user);
+
+        if (!$ok) {
+            return back()->with('error', 'Votre plan ne permet pas de réactiver cet établissement. '
+                . 'Passez à un plan supérieur pour augmenter votre quota.');
+        }
+
+        return back()->with('success', "L'établissement \"{$institut->nom}\" est de nouveau actif.");
     }
 
     // ─── Apparence (couleurs) ───────────────────────────────────────────────
