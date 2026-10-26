@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\MessageContact;
 use App\Models\PlanAbonnement;
+use App\Services\NotificationService;
+use App\Services\PushNotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -96,7 +99,7 @@ class LandingController extends Controller
             $analyse['raisons'][] = 'Plus de 3 messages en 24 h';
         }
 
-        MessageContact::create([
+        $contact = MessageContact::create([
             'nom'        => $nom,
             'email'      => $email,
             'telephone'  => $data['telephone'] ?? null,
@@ -113,9 +116,41 @@ class LandingController extends Controller
             'lu' => $analyse['spam'],
         ]);
 
+        // ── Notification des super-admins (in-app + push) ──────────────────
+        // Uniquement pour les messages légitimes : notifier à chaque robot
+        // reviendrait à déplacer le spam du formulaire vers le téléphone.
+        if (!$analyse['spam']) {
+            $this->notifierNouveauMessage($contact);
+        }
+
         // Réponse identique dans tous les cas : ne jamais révéler la détection
         return redirect()->route('contact')
             ->with('success', 'Votre message a bien été envoyé ! Nous vous répondrons sous 24h.');
+    }
+
+    /**
+     * Prévient les super-admins qu'un message de contact vient d'arriver.
+     *
+     * Le formulaire est public : aucune erreur de notification ne doit
+     * empêcher l'enregistrement ni renvoyer une erreur au visiteur.
+     */
+    private function notifierNouveauMessage(MessageContact $contact): void
+    {
+        $url   = route('admin.messages.show', $contact);
+        $titre = '📩 Nouveau message de contact';
+        $corps = Str::limit($contact->nom . ' : ' . $contact->message, 120);
+
+        try {
+            NotificationService::notifyAdmins('nouveau_message', $titre, $corps, $url);
+        } catch (\Throwable $e) {
+            Log::warning('[Notif message contact] ' . $e->getMessage());
+        }
+
+        try {
+            app(PushNotificationService::class)->sendToAdmins($titre, $corps, $url);
+        } catch (\Throwable $e) {
+            Log::warning('[Push message contact] ' . $e->getMessage());
+        }
     }
 
     public function mentionsLegales()
