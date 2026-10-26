@@ -40,6 +40,27 @@ class InstitutTest extends TestCase
         $this->assertSame('mon-slug-custom', $institut->slug);
     }
 
+    /**
+     * `proprietaire_id` a été ajouté après la création de la table : sans
+     * entrée dans $fillable, create() l'ignorait silencieusement et
+     * l'établissement se retrouvait orphelin.
+     */
+    public function test_proprietaire_id_est_mass_assignable(): void
+    {
+        $proprietaire = $this->creerAdmin();
+
+        $institut = Institut::create([
+            'nom'             => 'Salon avec propriétaire',
+            'email'           => 'proprio@test.com',
+            'type'            => 'salon_coiffure',
+            'actif'           => true,
+            'proprietaire_id' => $proprietaire->id,
+        ]);
+
+        $this->assertSame($proprietaire->id, $institut->proprietaire_id);
+        $this->assertSame($proprietaire->id, $institut->fresh()->proprietaire_id);
+    }
+
     public function test_actif_cast_en_boolean(): void
     {
         $institut = $this->creerInstitut(['actif' => true]);

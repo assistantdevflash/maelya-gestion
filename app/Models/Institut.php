@@ -15,6 +15,9 @@ class Institut extends Model
     protected $fillable = [
         'nom', 'slug', 'email', 'telephone', 'ville', 'type', 'logo', 'actif', 'en_sommeil', 'sommeil_motif',
         'derniere_activite_le', 'derniere_activite_type', 'derniere_activite_user_id',
+        // Colonne ajoutée après coup : sans elle, un create() la perdait
+        // silencieusement. Toujours renseignée côté serveur.
+        'proprietaire_id',
         'vitrine_active', 'reservation_en_ligne',
         'boutique_active', 'boutique_frais_livraison', 'boutique_zones_livraison', 'boutique_delai_livraison', 'boutique_conditions',
         'boutique_option_active', 'boutique_option_expire_le', 'boutique_option_prix',

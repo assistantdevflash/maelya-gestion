@@ -16,28 +16,29 @@ class AdminInstitutController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('q');
-
-        // IDs des propriétaires ayant le plan demandé
         $planFilter = $request->input('plan');
-        $ownerIds = null;
-        if ($planFilter === '__aucun__') {
-            // Propriétaires sans abonnement actif
-            $avecAbo = Abonnement::where('statut', 'actif')->pluck('user_id');
-            $ownerIds = User::whereNotIn('id', $avecAbo)->pluck('id');
-        } elseif ($planFilter) {
-            $ownerIds = Abonnement::where('statut', 'actif')
-                ->whereHas('plan', fn($q) => $q->where('slug', $planFilter))
-                ->pluck('user_id');
-        }
 
-        $paginator = Institut::with(['proprietaire'])
+        $paginator = Institut::with(['proprietaire.abonnementActif.plan'])
             ->withCount('users')
             ->when($search, fn($q) => $q->where('nom', 'like', "%{$search}%")
                 ->orWhere('email', 'like', "%{$search}%")
                 ->orWhere('ville', 'like', "%{$search}%"))
             ->when($request->status, fn($q, $s) => $q->where('actif', $s === 'actif'))
             ->when($request->type, fn($q, $t) => $q->where('type', $t))
-            ->when($ownerIds !== null, fn($q) => $q->whereIn('proprietaire_id', $ownerIds))
+            ->when($planFilter, function ($q, $plan) {
+                // Sous-requête SQL : évite de charger en mémoire la liste
+                // complète des abonnés actifs avant de filtrer.
+                $abonnesActifs = Abonnement::where('statut', 'actif')->select('user_id');
+
+                if ($plan === '__aucun__') {
+                    return $q->whereNotIn('proprietaire_id', $abonnesActifs);
+                }
+
+                return $q->whereIn('proprietaire_id', $abonnesActifs->whereHas(
+                    'plan',
+                    fn ($p) => $p->where('slug', $plan)
+                ));
+            })
             ->when($request->activite, function ($q, $activite) {
                 $seuilActif   = \App\Services\ActiviteInstitutService::SEUIL_ACTIF_JOURS;
                 $seuilDormant = \App\Services\ActiviteInstitutService::SEUIL_DORMANT_JOURS;
@@ -59,14 +60,21 @@ class AdminInstitutController extends Controller
 
         // Types réellement utilisés par au moins un établissement :
         // on n'encombre pas le filtre avec les types jamais choisis.
-        $typeLabels = Institut::query()
+        $codesTypes = Institut::query()
             ->select('type')
             ->whereNotNull('type')
             ->where('type', '!=', '')
             ->distinct()
             ->orderBy('type')
-            ->pluck('type')
-            ->mapWithKeys(fn ($code) => [$code => EtablissementType::libellePour($code)])
+            ->pluck('type');
+
+        // Un seul SELECT pour tous les libellés (évite une requête par type)
+        $libellesConnus = EtablissementType::whereIn('code', $codesTypes)->pluck('libelle', 'code');
+
+        $typeLabels = $codesTypes
+            ->mapWithKeys(fn ($code) => [
+                $code => $libellesConnus[$code] ?? ucfirst(str_replace('_', ' ', $code)),
+            ])
             ->sort()
             ->all();
 
