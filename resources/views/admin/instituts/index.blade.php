@@ -28,35 +28,22 @@
                 <option value="{{ $plan->slug }}" @selected(request('plan') === $plan->slug)>{{ $plan->nom }}</option>
             @endforeach
         </select>
+        <select name="type" class="form-input max-w-[200px]" onchange="document.getElementById('filter-form').submit()">
+            <option value="">Tous les types</option>
+            @foreach($typeLabels as $code => $libelle)
+                <option value="{{ $code }}" @selected(request('type') === $code)>{{ $libelle }}</option>
+            @endforeach
+        </select>
         <select name="activite" class="form-input max-w-[200px]" onchange="document.getElementById('filter-form').submit()">
             <option value="">Toute activité</option>
             <option value="actif"   @selected(request('activite') === 'actif')>Actif (≤ 7 jours)</option>
             <option value="inactif" @selected(request('activite') === 'inactif')>Dormant (&gt; 30 jours)</option>
             <option value="jamais"  @selected(request('activite') === 'jamais')>Jamais utilisé</option>
         </select>
-        @if(request('q') || request('status') || request('plan') || request('activite'))
+        @if(request('q') || request('status') || request('plan') || request('type') || request('activite'))
             <a href="{{ route('admin.instituts.index') }}" class="btn-secondary">Réinitialiser</a>
         @endif
     </form>
-
-    @php
-        $typeLabels = [
-            'salon_coiffure'  => 'Salon de coiffure',
-            'institut_beaute' => 'Institut de beauté',
-            'barbier'         => 'Barbier',
-            'centre_esthetique' => 'Centre esthétique',
-            'boutique_mode'   => 'Boutique de mode',
-            'imprimerie'      => 'Imprimerie',
-            'lavage_auto'     => 'Lavage auto',
-            'pressing'        => 'Pressing / Laverie',
-            'business_center' => 'Business center',
-            'depot_gaz'       => 'Dépôt de gaz',
-            'commerce'        => 'Commerce / Alimentation',
-            'evenementiel'   => 'Évènementiel',
-            'informatique_telephonie' => 'Informatique / Téléphonie',
-            'autre'           => 'Autre',
-        ];
-    @endphp
 
     @forelse($grouped as $proprietaireId => $instituts)
     @php $proprio = $instituts->first()->proprietaire; @endphp

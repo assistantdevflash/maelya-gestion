@@ -16,25 +16,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <h1 class="page-title mb-0.5">{{ $institut->nom }}</h1>
-    @php
-                        $typeLabels = [
-                            'salon_coiffure'  => 'Salon de coiffure',
-                            'institut_beaute' => 'Institut de beauté',
-                            'barbier'         => 'Barbier',
-                            'centre_esthetique' => 'Centre esthétique',
-                            'boutique_mode'   => 'Boutique de mode',
-                            'imprimerie'      => 'Imprimerie',
-                            'lavage_auto'     => 'Lavage auto',
-                            'pressing'        => 'Pressing / Laverie',
-                            'business_center' => 'Business center',
-                            'depot_gaz'       => 'Dépôt de gaz',
-                            'commerce'        => 'Commerce / Alimentation',
-                            'evenementiel'   => 'Évènementiel',
-                            'informatique_telephonie' => 'Informatique / Téléphonie',
-                            'autre'           => 'Autre',
-                        ];
-                    @endphp
-                    <p class="text-sm text-gray-500">{{ $typeLabels[$institut->type] ?? ($institut->type ?? 'Institut') }} — {{ $institut->ville ?? '' }}</p>
+                    <p class="text-sm text-gray-500">{{ \App\Models\EtablissementType::libellePour($institut->type) }} — {{ $institut->ville ?? '' }}</p>
                     </div>
                     <span class="badge {{ $institut->actif ? 'badge-success' : 'bg-red-100 text-red-700' }}">
                         {{ $institut->actif ? 'Actif' : 'Suspendu' }}

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Abonnement;
+use App\Models\EtablissementType;
 use App\Models\Institut;
 use App\Models\PlanAbonnement;
 use App\Models\User;
@@ -35,6 +36,7 @@ class AdminInstitutController extends Controller
                 ->orWhere('email', 'like', "%{$search}%")
                 ->orWhere('ville', 'like', "%{$search}%"))
             ->when($request->status, fn($q, $s) => $q->where('actif', $s === 'actif'))
+            ->when($request->type, fn($q, $t) => $q->where('type', $t))
             ->when($ownerIds !== null, fn($q) => $q->whereIn('proprietaire_id', $ownerIds))
             ->when($request->activite, function ($q, $activite) {
                 $seuilActif   = \App\Services\ActiviteInstitutService::SEUIL_ACTIF_JOURS;
@@ -55,7 +57,20 @@ class AdminInstitutController extends Controller
         $grouped = $paginator->getCollection()->groupBy('proprietaire_id');
         $plans   = PlanAbonnement::where('actif', true)->orderBy('ordre')->get();
 
-        return view('admin.instituts.index', compact('paginator', 'grouped', 'search', 'plans'));
+        // Types réellement utilisés par au moins un établissement :
+        // on n'encombre pas le filtre avec les types jamais choisis.
+        $typeLabels = Institut::query()
+            ->select('type')
+            ->whereNotNull('type')
+            ->where('type', '!=', '')
+            ->distinct()
+            ->orderBy('type')
+            ->pluck('type')
+            ->mapWithKeys(fn ($code) => [$code => EtablissementType::libellePour($code)])
+            ->sort()
+            ->all();
+
+        return view('admin.instituts.index', compact('paginator', 'grouped', 'search', 'plans', 'typeLabels'));
     }
 
     public function show(Institut $institut)
