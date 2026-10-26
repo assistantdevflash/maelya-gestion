@@ -443,6 +443,9 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::get('config', [AdminConfigController::class, 'edit'])->name('config.edit');
     Route::put('config', [AdminConfigController::class, 'update'])->name('config.update');
     Route::get('messages', [AdminMessageController::class, 'index'])->name('messages.index');
+    Route::patch('messages/tout-lire', [AdminMessageController::class, 'marquerToutLu'])->name('messages.tout-lire');
+    Route::delete('messages/spam', [AdminMessageController::class, 'viderSpam'])->name('messages.vider-spam');
+    Route::get('messages/{message}', [AdminMessageController::class, 'show'])->name('messages.show');
     Route::patch('messages/{message}/lire', [AdminMessageController::class, 'marquerLu'])->name('messages.lire');
     Route::delete('messages/{message}', [AdminMessageController::class, 'destroy'])->name('messages.destroy');
     Route::get('emails', [AdminEmailController::class, 'index'])->name('emails.index');

@@ -46,14 +46,19 @@ class LandingController extends Controller
 
     public function sendContact(Request $request)
     {
-        // Honeypot anti-spam
+        // Leurre : un visiteur humain ne remplit jamais ce champ.
+        // On répond un succès sans rien enregistrer, pour ne pas informer le robot.
         if ($request->filled('website')) {
             return redirect()->route('contact')->with('success', 'Message envoyé !');
         }
 
+        // `dns` vérifie que le domaine a un enregistrement MX/A : efficace contre
+        // les adresses inventées, mais impossible à exécuter hors ligne (tests/CI).
+        $regleEmail = app()->environment('testing') ? 'email:rfc' : 'email:rfc,dns';
+
         $data = $request->validate([
             'nom'       => ['required', 'string', 'max:150', 'not_regex:/[\r\n<>{}|]/'],
-            'email'     => ['required', 'email:rfc,dns', 'max:255', 'not_regex:/[\r\n]/'],
+            'email'     => ['required', $regleEmail, 'max:255', 'not_regex:/[\r\n]/'],
             'telephone' => ['nullable', 'string', 'max:30', 'regex:/^[+\d\s().\-]*$/'],
             'message'   => ['required', 'string', 'min:10', 'max:2000'],
         ], [
@@ -71,16 +76,46 @@ class LandingController extends Controller
         $message = Str::limit(strip_tags($data['message']), 2000);
         $email   = filter_var($data['email'], FILTER_SANITIZE_EMAIL);
 
+        // ── Détection de spam (score cumulatif) ────────────────────────────
+        $analyse = app(\App\Services\AntiSpamService::class)->analyser([
+            'nom'     => $nom,
+            'email'   => $email,
+            'message' => $message,
+            'website' => $request->input('website'),
+            '_t'      => $request->input('_t'),
+        ], (string) $request->ip());
+
+        // Rafale depuis la même adresse email
+        $dejaEnvoyes = MessageContact::where('email', $email)
+            ->where('created_at', '>=', now()->subDay())
+            ->count();
+
+        if ($dejaEnvoyes >= 3) {
+            $analyse['spam'] = true;
+            $analyse['score'] += 40;
+            $analyse['raisons'][] = 'Plus de 3 messages en 24 h';
+        }
+
         MessageContact::create([
-            'nom'       => $nom,
-            'email'     => $email,
-            'telephone' => $data['telephone'] ?? null,
-            'message'   => $message,
-            'honeypot'  => $request->input('website'),
+            'nom'        => $nom,
+            'email'      => $email,
+            'telephone'  => $data['telephone'] ?? null,
+            'message'    => $message,
+            'honeypot'   => $request->input('website'),
             'ip_address' => $request->ip(),
+            'user_agent' => substr((string) $request->userAgent(), 0, 255),
+            'est_spam'   => $analyse['spam'],
+            'spam_score' => min(255, $analyse['score']),
+            'spam_raison' => $analyse['raisons']
+                ? Str::limit(implode(' · ', $analyse['raisons']), 250)
+                : null,
+            // Un spam ne doit pas gonfler le compteur de non-lus
+            'lu' => $analyse['spam'],
         ]);
 
-        return redirect()->route('contact')->with('success', 'Votre message a bien été envoyé ! Nous vous répondrons sous 24h.');
+        // Réponse identique dans tous les cas : ne jamais révéler la détection
+        return redirect()->route('contact')
+            ->with('success', 'Votre message a bien été envoyé ! Nous vous répondrons sous 24h.');
     }
 
     public function mentionsLegales()

@@ -70,7 +70,11 @@
 
                     <form method="POST" action="{{ route('contact.send') }}" class="space-y-5">
                         @csrf
-                        <input type="text" name="website" class="hidden" tabindex="-1" autocomplete="off">
+                        {{-- Leurres anti-robot : masqués et hors du parcours clavier --}}
+                        <div class="hidden" aria-hidden="true">
+                            <input type="text" name="website" tabindex="-1" autocomplete="off" value="">
+                        </div>
+                        <input type="hidden" name="_t" value="{{ \App\Services\AntiSpamService::jetonHorodatage() }}">
 
                         <div class="grid sm:grid-cols-2 gap-5">
                             <div>

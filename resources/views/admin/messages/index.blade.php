@@ -4,48 +4,78 @@
 @section('content')
 <div class="space-y-6">
 
-    <div class="flex items-center justify-between">
+    <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
             <h1 class="page-title">Messages de contact</h1>
-            <p class="page-subtitle">{{ $nonLus }} message(s) non lu(s)</p>
+            <p class="page-subtitle">
+                {{ $total }} message(s) au total ·
+                <span class="{{ $nonLus > 0 ? 'text-primary-600 dark:text-primary-400 font-semibold' : '' }}">{{ $nonLus }} non lu(s)</span>
+                @if($spam > 0)
+                    · <span class="text-gray-400">{{ $spam }} indésirable(s)</span>
+                @endif
+            </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+            @if($nonLus > 0)
+            <form method="POST" action="{{ route('admin.messages.tout-lire') }}">
+                @csrf @method('PATCH')
+                <button class="btn-secondary text-sm">Tout marquer lu</button>
+            </form>
+            @endif
+            @if($spam > 0)
+            <form method="POST" action="{{ route('admin.messages.vider-spam') }}"
+                  onsubmit="return confirm('Supprimer définitivement les {{ $spam }} message(s) indésirable(s) ?')">
+                @csrf @method('DELETE')
+                <button class="btn-secondary text-sm text-red-600 dark:text-red-400">Vider les indésirables</button>
+            </form>
+            @endif
         </div>
     </div>
+
+    {{-- Filtres --}}
+    <form method="GET" id="msg-filter" class="flex flex-wrap gap-3">
+        <input type="text" name="q" value="{{ $search }}" placeholder="Rechercher un nom, un email, un contenu…"
+               class="form-input max-w-sm">
+        <select name="statut" class="form-input max-w-[200px]">
+            <option value="tous"    @selected($statut === 'tous')>Tous les messages</option>
+            <option value="non_lus" @selected($statut === 'non_lus')>Non lus</option>
+            <option value="lus"     @selected($statut === 'lus')>Lus</option>
+            <option value="spam"    @selected($statut === 'spam')>Indésirables</option>
+        </select>
+        <button type="submit" class="btn-primary text-sm">Filtrer</button>
+        @if($search !== '' || $statut !== 'tous')
+            <a href="{{ route('admin.messages.index') }}" class="btn-secondary text-sm">Réinitialiser</a>
+        @endif
+    </form>
 
     <div class="card overflow-hidden">
 
         {{-- Mobile : cartes --}}
-        <div class="sm:hidden divide-y divide-gray-100">
+        <div class="sm:hidden divide-y divide-gray-100 dark:divide-slate-700">
             @forelse($messages as $msg)
-            <div class="p-4 {{ $msg->lu ? '' : 'bg-primary-50' }}">
+            <a href="{{ route('admin.messages.show', $msg) }}" class="block p-4 hover:bg-gray-50 dark:hover:bg-slate-800/60 transition">
                 <div class="flex items-start gap-3">
+                    <div class="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold
+                                bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-gray-200">
+                        {{ $msg->initiales }}
+                    </div>
                     <div class="flex-1 min-w-0">
-                        <div class="flex items-start justify-between gap-2 mb-1">
+                        <div class="flex items-start justify-between gap-2">
                             <div class="min-w-0">
-                                <p class="font-{{ $msg->lu ? 'medium' : 'bold' }} text-sm text-gray-900 truncate">{{ $msg->nom }}</p>
+                                <p class="text-sm truncate {{ $msg->lu || $msg->est_spam ? 'font-medium text-gray-700 dark:text-gray-300' : 'font-bold text-gray-900 dark:text-white' }}">{{ $msg->nom }}</p>
                                 <p class="text-xs text-gray-400 truncate">{{ $msg->email }}</p>
                             </div>
-                            @if($msg->lu)
-                            <span class="badge badge-success text-xs flex-shrink-0">Lu</span>
-                            @else
-                            <span class="badge bg-yellow-100 text-yellow-700 text-xs flex-shrink-0">Non lu</span>
+                            @if($msg->est_spam)
+                                <span class="badge text-xs flex-shrink-0 bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-gray-400">Indésirable</span>
+                            @elseif(!$msg->lu)
+                                <span class="badge text-xs flex-shrink-0 bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300">Non lu</span>
                             @endif
                         </div>
-                        <p class="text-sm {{ $msg->lu ? 'text-gray-500' : 'font-semibold text-gray-800' }} mb-2">{{ Str::limit($msg->message, 60) }}</p>
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs text-gray-400">{{ $msg->created_at->format('d/m/Y H:i') }}</span>
-                            <div class="flex items-center gap-3">
-                                <button onclick="document.getElementById('modal-{{ $msg->id }}').showModal()"
-                                        class="text-primary-600 text-xs font-medium hover:underline">Lire</button>
-                                <form id="form-mob-msg-{{ $msg->id }}" action="{{ route('admin.messages.destroy', $msg) }}" method="POST">
-                                    @csrf @method('DELETE')
-                                    <button type="button" class="text-red-500 text-xs hover:underline"
-                                            onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-mob-msg-{{ $msg->id }}',title:'Supprimer',message:'Ce message sera supprimé.',confirmLabel:'Supprimer',confirmClass:'!bg-red-600',danger:true}}))">Supprimer</button>
-                                </form>
-                            </div>
-                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{{ $msg->apercu }}</p>
+                        <p class="text-xs text-gray-400 mt-1.5">{{ $msg->created_at->format('d/m/Y à H:i') }}</p>
                     </div>
                 </div>
-            </div>
+            </a>
             @empty
             <div class="p-10 text-center text-gray-400 text-sm">Aucun message.</div>
             @endforelse
@@ -53,84 +83,74 @@
 
         {{-- Desktop : tableau --}}
         <div class="hidden sm:block overflow-x-auto">
-        <table class="table-auto">
+        <table class="table-auto w-full">
             <thead>
             <tr>
+                <th class="w-8"></th>
                 <th>Expéditeur</th>
-                <th>Sujet</th>
+                <th>Aperçu</th>
                 <th>Reçu le</th>
-                <th>Lu</th>
-                <th></th>
+                <th>Statut</th>
+                <th class="text-right">Actions</th>
             </tr>
             </thead>
-            <tbody>
+            <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
             @forelse($messages as $msg)
-            <tr class="{{ $msg->lu ? 'bg-white' : 'bg-primary-50' }} hover:bg-gray-50">
-                <td>
-                    <div class="font-medium text-gray-900 {{ !$msg->lu ? 'font-bold' : '' }}">{{ $msg->nom }}</div>
-                    <div class="text-xs text-gray-400">{{ $msg->email }}</div>
+            <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/60 transition">
+                <td class="pl-4">
+                    @unless($msg->lu || $msg->est_spam)
+                    <span class="inline-block w-2 h-2 rounded-full bg-primary-500" title="Non lu"></span>
+                    @endunless
                 </td>
-                <td class="text-sm {{ !$msg->lu ? 'font-semibold text-gray-900' : 'text-gray-600' }}">
-                    {{ Str::limit($msg->message, 50) }}
-                </td>
-                <td class="text-sm text-gray-500">{{ $msg->created_at->format('d/m/Y H:i') }}</td>
                 <td>
-                    @if($msg->lu)
-                        <span class="badge badge-success text-xs">Lu</span>
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold
+                                    bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-gray-200">
+                            {{ $msg->initiales }}
+                        </div>
+                        <div class="min-w-0">
+                            <div class="truncate {{ $msg->lu || $msg->est_spam ? 'font-medium text-gray-700 dark:text-gray-300' : 'font-bold text-gray-900 dark:text-white' }}">{{ $msg->nom }}</div>
+                            <div class="text-xs text-gray-400 truncate">{{ $msg->email }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="text-sm text-gray-500 dark:text-gray-400 max-w-md">
+                    <span class="line-clamp-1">{{ $msg->apercu }}</span>
+                </td>
+                <td class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                    {{ $msg->created_at->format('d/m/Y') }}<br>
+                    <span class="text-xs text-gray-400">{{ $msg->created_at->format('H:i') }}</span>
+                </td>
+                <td>
+                    @if($msg->est_spam)
+                        <span class="badge text-xs bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-gray-400">Indésirable</span>
+                    @elseif($msg->lu)
+                        <span class="badge text-xs bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-gray-400">Lu</span>
                     @else
-                        <span class="badge bg-yellow-100 text-yellow-700 text-xs">Non lu</span>
+                        <span class="badge text-xs bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300">Non lu</span>
                     @endif
                 </td>
-                <td class="flex items-center gap-3">
-                    <button onclick="document.getElementById('modal-{{ $msg->id }}').showModal()"
-                            class="text-primary-600 text-sm hover:underline">Lire</button>
-                    <form id="form-msg-{{ $msg->id }}" action="{{ route('admin.messages.destroy', $msg) }}" method="POST">
-                        @csrf @method('DELETE')
-                        <button type="button" class="text-red-500 text-sm hover:underline"
-                                onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-msg-{{ $msg->id }}',title:'Supprimer ce message',message:'Ce message sera définitivement supprimé.',confirmLabel:'Supprimer',confirmClass:'!bg-red-600 hover:!bg-red-700',danger:true}}))">Supprimer</button>
-                    </form>
+                <td>
+                    <div class="flex items-center justify-end gap-2">
+                        <a href="{{ route('admin.messages.show', $msg) }}" class="btn-outline btn-sm text-xs">Lire</a>
+                        <form action="{{ route('admin.messages.destroy', $msg) }}" method="POST">
+                            @csrf @method('DELETE')
+                            <button type="button" class="text-xs text-red-600 dark:text-red-400 hover:underline px-2"
+                                    onclick="if(confirm('Supprimer définitivement ce message ?')) this.closest('form').submit()">Supprimer</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
             @empty
-            <tr><td colspan="5" class="text-center py-10 text-gray-400">Aucun message.</td></tr>
+            <tr><td colspan="6" class="text-center py-10 text-gray-400">Aucun message.</td></tr>
             @endforelse
             </tbody>
         </table>
         </div>
     </div>
 
-    {{-- Dialogs toujours dans le DOM (utilisés par mobile ET desktop) --}}
-    @foreach($messages as $msg)
-    <dialog id="modal-{{ $msg->id }}" class="rounded-2xl shadow-2xl max-w-lg w-full p-8 backdrop:bg-black/50 bg-white dark:bg-slate-800">
-        <h2 class="font-bold text-lg text-gray-900 dark:text-white mb-1">Message de {{ $msg->nom }}</h2>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">De : <strong class="text-gray-700 dark:text-gray-200">{{ $msg->nom }}</strong> ({{ $msg->email }}) — {{ $msg->telephone ?? '' }}</p>
-        <div class="bg-gray-50 dark:bg-slate-700 rounded-xl p-4 text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-line">{{ $msg->message }}</div>
-        <div class="mt-5 flex justify-between items-center">
-            @if(!$msg->lu)
-            <form action="{{ route('admin.messages.lire', $msg) }}" method="POST">
-                @csrf @method('PATCH')
-                <button class="text-sm text-primary-600 hover:underline">Marquer comme lu</button>
-            </form>
-            @else
-            <span></span>
-            @endif
-            <button onclick="document.getElementById('modal-{{ $msg->id }}').close()"
-                    class="btn-secondary text-sm">Fermer</button>
-        </div>
-    </dialog>
-    @endforeach
-
-    {{ $messages->links() }}
+    <div class="pt-2">
+        {{ $messages->links() }}
+    </div>
 </div>
-
-@push('scripts')
-<script>
-    // Auto-open dialog on page load if #msg=xxx in URL (optional)
-    const params = new URLSearchParams(location.search);
-    if (params.get('open')) {
-        const d = document.getElementById('modal-' + params.get('open'));
-        if (d) d.showModal();
-    }
-</script>
-@endpush
 @endsection
