@@ -461,12 +461,20 @@ class AbonnementController extends Controller
             ->with('plan')
             ->first();
 
+        // Impact d'un éventuel changement de plan (rétrogradation) :
+        // établissements/employés au-delà du quota + fonctionnalités perdues.
+        $analyseLimites = app(\App\Services\PlanLimitesService::class)->analyser($plan, $user);
+
         // ── Facturation PAR établissement ─────────────────────────────────────
-        // On transmet TOUS les établissements du compte avec leur état d'option
-        // boutique : pré-cochés si l'option est active, décochés sinon.
+        // Les établissements qui passeront en sommeil sont exclus : il serait
+        // incohérent de proposer de payer une boutique pour un établissement
+        // que le plan ne permet plus d'exploiter.
+        $idsEnSommeil = collect($analyseLimites['instituts']['liste'])->pluck('id')->all();
+
         $estRenouvellement = (bool) $abonnementActif;
         $etablissements = $user->mesInstituts()
             ->get()
+            ->reject(fn ($i) => in_array($i->id, $idsEnSommeil, true))
             ->map(fn ($i) => [
                 'id'         => $i->id,
                 'nom'        => $i->nom,
@@ -476,10 +484,6 @@ class AbonnementController extends Controller
                 'enSommeil'  => (bool) $i->en_sommeil,
             ])
             ->values();
-
-        // Impact d'un éventuel changement de plan (rétrogradation) :
-        // établissements/employés au-delà du quota + fonctionnalités perdues.
-        $analyseLimites = app(\App\Services\PlanLimitesService::class)->analyser($plan, $user);
 
         // Prix pour la période sélectionnée
         $prixPlan       = $plan->prixEffectif($periode);

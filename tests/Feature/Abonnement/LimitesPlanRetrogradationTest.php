@@ -400,9 +400,80 @@ class LimitesPlanRetrogradationTest extends TestCase
     }
 
     // ─────────────────────────────────────────────────────────────────────
-    // 5. Validation admin → application effective des quotas
+    // 4 bis. Page de souscription : transparence sur les exclusions
     // ─────────────────────────────────────────────────────────────────────
 
+    public function test_la_page_liste_les_etablissements_qui_seront_en_sommeil(): void
+    {
+        [$owner, $instituts] = $this->creerCompte(3);
+        $this->abonner($owner, $this->planPremiumPlus());
+
+        $this->actingAs($owner->fresh())
+            ->get(route('abonnement.souscrire.show', $this->planPremium()))
+            ->assertOk()
+            ->assertSee('Ce plan réduit vos limites')
+            // Les deux établissements exclus sont nommés
+            ->assertSee($instituts[1]->nom)
+            ->assertSee($instituts[2]->nom);
+    }
+
+    public function test_les_etablissements_en_sommeil_ne_sont_pas_proposes_pour_la_boutique(): void
+    {
+        [$owner, $instituts] = $this->creerCompte(3);
+        $this->abonner($owner, $this->planPremiumPlus());
+
+        $reponse = $this->actingAs($owner->fresh())
+            ->get(route('abonnement.souscrire.show', $this->planPremium()))
+            ->assertOk();
+
+        // L'établissement conservé reste sélectionnable…
+        $reponse->assertSee('value="' . $instituts[0]->id . '"', false);
+
+        // …les deux autres, non
+        $reponse->assertDontSee('value="' . $instituts[1]->id . '"', false);
+        $reponse->assertDontSee('value="' . $instituts[2]->id . '"', false);
+    }
+
+    public function test_une_montee_de_plan_propose_tous_les_etablissements(): void
+    {
+        [$owner, $instituts] = $this->creerCompte(3);
+        $this->abonner($owner, $this->planPremium());
+
+        $reponse = $this->actingAs($owner->fresh())
+            ->get(route('abonnement.souscrire.show', $this->planPremiumPlus()))
+            ->assertOk()
+            ->assertDontSee('Ce plan réduit vos limites');
+
+        foreach ($instituts as $institut) {
+            $reponse->assertSee('value="' . $institut->id . '"', false);
+        }
+    }
+
+    public function test_la_confirmation_est_obligatoire_cote_serveur_pour_geniuspay(): void
+    {
+        [$owner] = $this->creerCompte(3);
+        $premiumPlus = $this->planPremiumPlus();
+        $premium = $this->planPremium();
+
+        $this->abonner($owner, $premiumPlus, 'expire', now()->subDays(10)->toDateString());
+
+        // Sans la case cochée, même en choisissant GeniusPay, l'envoi est refusé
+        $this->actingAs($owner->fresh())
+            ->post(route('abonnement.souscrire', $premium), [
+                'periode'          => 'mensuel',
+                'methode_paiement' => 'geniuspay',
+            ])
+            ->assertSessionHas('error');
+
+        $this->assertDatabaseMissing('abonnements', [
+            'user_id' => $owner->id,
+            'plan_id' => $premium->id,
+        ]);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // 5. Validation admin → application effective des quotas
+    // ─────────────────────────────────────────────────────────────────────
     public function test_la_validation_admin_applique_les_quotas_du_nouveau_plan(): void
     {
         $superAdmin = User::factory()->create([

@@ -64,6 +64,11 @@
                             <strong>{{ $analyseLimites['instituts']['excedent'] }} établissement(s)</strong> passeront en sommeil
                             ({{ $analyseLimites['instituts']['total'] }} actuellement, {{ $analyseLimites['instituts']['autorises'] }} autorisé(s)).
                             Votre établissement principal est toujours conservé.
+                            <span class="block mt-1.5">
+                                @foreach($analyseLimites['instituts']['liste'] as $exclu)
+                                    <span class="block font-semibold pl-3">— {{ $exclu['nom'] }}</span>
+                                @endforeach
+                            </span>
                         </span>
                     </li>
                     @endif
@@ -196,6 +201,12 @@
                         <p class="text-xs text-gray-500 dark:text-slate-400 mb-3">
                             Cochez les établissements pour lesquels vous voulez la boutique en ligne. {{ $estRenouvellement ? 'Ceux déjà actifs restent cochés — décochez pour arrêter, cochez pour ajouter.' : 'Vos clients pourront commander en ligne avec livraison.' }}
                         </p>
+
+                        @if($analyseLimites['instituts']['excedent'] > 0)
+                        <p class="text-xs font-medium text-amber-700 dark:text-amber-400 mb-3">
+                            {{ $analyseLimites['instituts']['excedent'] }} établissement(s) passeront en sommeil avec ce plan : ils ne sont pas proposés ici.
+                        </p>
+                        @endif
 
                         @forelse($etablissements as $etab)
                         <label class="flex items-center gap-3 cursor-pointer p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700/50 transition-colors border border-gray-200 dark:border-slate-700 mb-2">
