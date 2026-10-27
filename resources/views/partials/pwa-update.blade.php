@@ -20,6 +20,25 @@
     var CHECK_INTERVAL = 30 * 60 * 1000; // 30 minutes
     var updating       = false;
 
+    // ── Réparation manuelle : /?reset-pwa=1 ──
+    // Ouvre cette URL si l'application affiche une page blanche ou reste
+    // coincée sur une ancienne version : on désinscrit le SW et on vide
+    // tous les caches, puis on recharge proprement.
+    if (new URLSearchParams(location.search).get('reset-pwa') === '1') {
+        (async function () {
+            try {
+                var regs = await navigator.serviceWorker.getRegistrations();
+                await Promise.all(regs.map(function (r) { return r.unregister(); }));
+                var keys = await caches.keys();
+                await Promise.all(keys.map(function (k) { return caches.delete(k); }));
+            } catch (e) {
+                console.warn('[PWA] Réinitialisation partielle :', e);
+            }
+            location.replace(location.origin + location.pathname);
+        })();
+        return;
+    }
+
     // ── Rechargement protégé contre les boucles ──
     function reloadPage() {
         try {

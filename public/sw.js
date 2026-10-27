@@ -1,20 +1,23 @@
 // ⚠️ Incrémenter cette valeur à chaque déploiement qui modifie la liste
 // PRECACHE_ASSETS ou la stratégie de cache : l'activation supprime alors tous
 // les anciens caches et les utilisateurs repartent sur des fichiers frais.
-const CACHE_VERSION = 'maelya-v7';
+const CACHE_VERSION  = 'maelya-v8';
+const OFFLINE_URL    = '/offline.html';
 
 // Assets statiques à mettre en cache au premier chargement
 const PRECACHE_ASSETS = [
-    '/offline.html',
+    OFFLINE_URL,
 ];
 
-// ── Installation ────────────────────────────────────────────────────────────
+// ── Installation ──────────────────────────────────────────────────
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_VERSION).then(cache => {
-            // On précache uniquement la page offline
-            return cache.addAll(PRECACHE_ASSETS).catch(() => {
-                // Si offline.html n'existe pas encore, on ignore
+            // Précache la page hors-ligne. `reload` évite de récupérer une
+            // version périmée depuis le cache HTTP.
+            return cache.add(new Request(OFFLINE_URL, { cache: 'reload' })).catch(() => {
+                // Si offline.html est indisponible, le SW reste fonctionnel
+                // (offlineFallback() génère un HTML de secours).
             });
         }).then(() => self.skipWaiting())
     );
@@ -42,20 +45,26 @@ self.addEventListener('fetch', event => {
     if (request.method !== 'GET') return;
     if (url.origin !== location.origin) return;
 
+    // Ne jamais intercepter le Service Worker lui-même
+    if (url.pathname === '/sw.js') return;
+
+    // Pages HTML (navigations) → Network-first, cache de secours, puis offline.
+    // ⚠️ C'est LE point critique : si cette branche renvoyait une réponse vide,
+    // le navigateur afficherait une page blanche.
+    const accept = request.headers.get('Accept') || '';
+    if (request.mode === 'navigate' || accept.includes('text/html')) {
+        event.respondWith(pageNetworkFirst(request));
+        return;
+    }
+
     // Assets statiques (JS, CSS, images, fonts) → Cache-first
     if (isStaticAsset(url.pathname)) {
         event.respondWith(cacheFirst(request));
         return;
     }
 
-    // Pages HTML (dashboard, etc.) → Network-first avec fallback offline
-    if (request.headers.get('Accept')?.includes('text/html')) {
-        event.respondWith(networkFirstWithOfflineFallback(request));
-        return;
-    }
-
-    // API / JSON → Network-only (données toujours fraîches)
-    if (url.pathname.startsWith('/api/')) {
+    // API / JSON / Livewire → jamais mis en cache (données toujours fraîches)
+    if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/livewire/')) {
         return; // pas d'interception
     }
 
@@ -70,6 +79,44 @@ function isStaticAsset(pathname) {
            /\.(png|jpg|jpeg|svg|ico|woff2?|ttf)$/i.test(pathname);
 }
 
+/**
+ * Navigation de page : réseau d'abord (contenu frais), puis dernière version
+ * connue, puis page hors-ligne. Ne renvoie JAMAIS un corps vide.
+ */
+async function pageNetworkFirst(request) {
+    try {
+        const response = await fetch(request);
+        if (response && response.ok) {
+            const cache = await caches.open(CACHE_VERSION);
+            cache.put(request, response.clone());
+        }
+        return response;
+    } catch {
+        const cached = await caches.match(request);
+        if (cached) return cached;
+        return offlineFallback();
+    }
+}
+
+async function offlineFallback() {
+    const cached = await caches.match(OFFLINE_URL);
+    if (cached) return cached;
+
+    // Filet de sécurité : HTML minimal, jamais une page blanche.
+    return new Response(
+        '<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">' +
+        '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+        '<title>Hors-ligne — Maëlya Gestion</title></head>' +
+        '<body style="font-family:system-ui,-apple-system,sans-serif;padding:2rem;text-align:center;color:#1f2937">' +
+        '<h1 style="font-size:1.25rem;margin-bottom:.75rem">Connexion indisponible</h1>' +
+        '<p style="color:#6b7280;margin-bottom:1.25rem">Vérifiez votre connexion internet, puis réessayez.</p>' +
+        '<button onclick="location.reload()" style="background:#9333ea;color:#fff;border:none;' +
+        'padding:.6rem 1.2rem;border-radius:.5rem;font:inherit;font-weight:600;cursor:pointer">Réessayer</button>' +
+        '</body></html>',
+        { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+    );
+}
+
 async function cacheFirst(request) {
     const cached = await caches.match(request);
     if (cached) return cached;
@@ -82,7 +129,9 @@ async function cacheFirst(request) {
         }
         return response;
     } catch {
-        return new Response('', { status: 503 });
+        // Un asset manquant laisse la page utilisable (contrairement à une
+        // navigation vide). On renvoie un code explicite plutôt que du vide.
+        return new Response('', { status: 504, statusText: 'Hors-ligne' });
     }
 }
 
@@ -96,22 +145,8 @@ async function networkFirst(request) {
         return response;
     } catch {
         const cached = await caches.match(request);
-        return cached ?? new Response('', { status: 503 });
-    }
-}
-
-async function networkFirstWithOfflineFallback(request) {
-    try {
-        const response = await fetch(request);
-        return response;
-    } catch {
-        const cached = await caches.match(request);
         if (cached) return cached;
-
-        const offline = await caches.match('/offline.html');
-        return offline ?? new Response('<h1>Hors-ligne</h1>', {
-            headers: { 'Content-Type': 'text/html' },
-        });
+        return new Response('', { status: 504, statusText: 'Hors-ligne' });
     }
 }
 
