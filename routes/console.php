@@ -28,3 +28,6 @@ Schedule::command('credits:rappels-echeances')->dailyAt('08:00');
 
 // Purge hebdomadaire du journal d'activité (conserve 90 jours)
 Schedule::command('audit:purge --days=90')->weeklyOn(0, '02:00');
+
+// Bilan financier du mois écoulé, envoyé le 1er de chaque mois
+Schedule::command('rapports:mensuel')->monthlyOn(1, '07:00');
