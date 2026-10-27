@@ -278,15 +278,8 @@
 
     @livewireScripts
     @stack('scripts')
-    {{-- PWA Service Worker --}}
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .catch(err => console.warn('[PWA] SW admin échec :', err));
-            });
-        }
-    </script>
+    {{-- PWA Service Worker + détection de mise à jour --}}
+    @include('partials.pwa-update')
     @include('partials.push-init')
 </body>
 </html>

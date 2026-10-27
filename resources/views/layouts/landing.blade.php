@@ -370,15 +370,10 @@
     </div>
 </div>
 
-<script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js')
-                .then(reg => console.log('[PWA] SW enregistré', reg.scope))
-                .catch(err => console.warn('[PWA] Échec SW:', err));
-        });
-    }
+{{-- PWA Service Worker + détection de mise à jour --}}
+@include('partials.pwa-update')
 
+<script>
     (function () {
         // Déjà en mode standalone = déjà ouvert comme app → rien à faire
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) return;

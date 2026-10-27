@@ -1,4 +1,7 @@
-const CACHE_VERSION = 'maelya-v6';
+// ⚠️ Incrémenter cette valeur à chaque déploiement qui modifie la liste
+// PRECACHE_ASSETS ou la stratégie de cache : l'activation supprime alors tous
+// les anciens caches et les utilisateurs repartent sur des fichiers frais.
+const CACHE_VERSION = 'maelya-v7';
 
 // Assets statiques à mettre en cache au premier chargement
 const PRECACHE_ASSETS = [
