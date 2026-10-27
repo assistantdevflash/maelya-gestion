@@ -123,5 +123,7 @@
             </div>
         </div>
     </div>
+
+    @include('partials.pwa-update')
 </body>
 </html>
