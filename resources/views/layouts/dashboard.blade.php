@@ -814,7 +814,7 @@
                     <div>
                         <p class="font-semibold">Mode lecture seule — Abonnement expiré</p>
                         <p class="text-red-600 dark:text-red-400 mt-0.5">
-                            Votre abonnement a expiré il y a {{ $sursisJours }} jour(s).
+                            Votre abonnement a expiré il y a {{ \App\Helpers\TexteHelper::pluriel($sursisJours, 'jour', 'jours') }}.
                             Vous ne pouvez plus enregistrer de ventes, ajouter des clients ni modifier vos données.
                         </p>
                     </div>
@@ -873,7 +873,7 @@
                         </h3>
                         <p class="text-sm text-amber-700 dark:text-amber-300 mb-3">
                             @if($joursGrace > 0)
-                                Il vous reste <strong>{{ $joursGrace }} jour(s)</strong> pour valider votre adresse <strong>{{ auth()->user()->email }}</strong>. Passé ce délai, l'accès sera bloqué.
+                                Il vous reste <strong>{{ \App\Helpers\TexteHelper::pluriel($joursGrace, 'jour', 'jours') }}</strong> pour valider votre adresse <strong>{{ auth()->user()->email }}</strong>. Passé ce délai, l'accès sera bloqué.
                             @else
                                 Votre délai de 3 jours est dépassé. Veuillez vérifier votre email pour continuer.
                             @endif

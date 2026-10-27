@@ -35,7 +35,7 @@ class DetecterAnomalies extends Command
                 NotificationService::notifyUser(
                     $admin, 'anomalie_stock',
                     '⚠️ Stock épuisé',
-                    $stockZero . ' produit(s) en rupture de stock.',
+                    \App\Helpers\TexteHelper::pluriel($stockZero, 'produit', 'produits') . ' en rupture de stock.',
                     '/dashboard/stock'
                 );
                 $totalAlertes++;
@@ -54,7 +54,7 @@ class DetecterAnomalies extends Command
                 NotificationService::notifyUser(
                     $admin, 'anomalie_rdv_doublon',
                     '⚠️ RDV en doublon',
-                    $doublons->count() . ' créneau(x) avec plusieurs RDV sur le même employé.',
+                    \App\Helpers\TexteHelper::pluriel($doublons->count(), 'créneau', 'créneaux') . ' avec plusieurs RDV sur le même employé.',
                     '/dashboard/rdv'
                 );
                 $totalAlertes++;
@@ -76,7 +76,7 @@ class DetecterAnomalies extends Command
                     NotificationService::notifyUser(
                         $admin, 'anomalie_vente',
                         '⚠️ Ventes inhabituelles',
-                        $anormales->count() . ' vente(s) hier hors moyenne (' . number_format($venteMoy, 0, ',', ' ') . ' F).',
+                        \App\Helpers\TexteHelper::pluriel($anormales->count(), 'vente', 'ventes') . ' hier hors moyenne (' . number_format($venteMoy, 0, ',', ' ') . ' F).',
                         '/dashboard/ventes'
                     );
                     $totalAlertes++;

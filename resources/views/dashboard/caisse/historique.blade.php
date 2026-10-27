@@ -113,7 +113,7 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 hidden md:table-cell text-gray-500 text-xs">
-                                {{ $vente->items->count() }} article(s)
+                                {{ \App\Helpers\TexteHelper::pluriel($vente->items->count(), 'article', 'articles') }}
                             </td>
                             <td class="px-4 py-3 text-center">
                                 @if($vente->statut === 'annulee')
@@ -197,7 +197,7 @@
                     </div>
                     <div class="text-right flex-shrink-0">
                         <p class="text-xs font-bold text-gray-900">{{ number_format($stat->total_ventes, 0, ',', ' ') }}</p>
-                        <p class="text-[9px] text-gray-400">{{ $stat->nb_ventes }} vente(s)</p>
+                        <p class="text-[9px] text-gray-400">{{ \App\Helpers\TexteHelper::pluriel($stat->nb_ventes, 'vente', 'ventes') }}</p>
                     </div>
                 </div>
                 @endforeach

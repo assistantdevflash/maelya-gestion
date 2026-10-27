@@ -40,9 +40,9 @@ class MessagesAdminTest extends TestCase
         $this->actingAs($this->superAdmin())
             ->get(route('admin.messages.index'))
             ->assertOk()
-            ->assertSee('3 message(s) au total')
-            ->assertSee('1 non lu(s)')
-            ->assertSee('1 indésirable(s)');
+            ->assertSee('3 messages au total')
+            ->assertSee('1 non lu')
+            ->assertSee('1 indésirable');
     }
 
     public function test_le_filtre_non_lus_exclut_les_lus_et_les_spams(): void

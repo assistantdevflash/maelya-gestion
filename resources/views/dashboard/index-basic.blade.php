@@ -95,7 +95,7 @@
         <div class="flex-1 min-w-0">
             <p class="font-semibold text-gray-900 text-sm">{{ $abonnementSursis->plan->nom ?? 'Abonnement' }} — {{ $dansSursis ? 'Période de sursis' : 'Expiré' }}</p>
             <p class="text-xs text-gray-500 mt-0.5">
-                Expiré depuis {{ $abonnementSursis->joursDepuisExpiration() }} jour(s)
+                Expiré depuis {{ \App\Helpers\TexteHelper::pluriel($abonnementSursis->joursDepuisExpiration(), 'jour', 'jours') }}
                 · {{ $dansSursis ? 'Tout fonctionne normalement. Renouvelez.' : 'Lecture seule. Renouvelez.' }}
             </p>
         </div>

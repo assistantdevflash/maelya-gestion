@@ -53,7 +53,7 @@ class EmployeController extends Controller
         if ($abonnement && $abonnement->plan && $abonnement->plan->max_employes !== null) {
             $nbEmployes = User::where('institut_id', $institutId)->whereIn('role', ['employe', 'gerant', 'admin'])->where('id', '!=', $user->id)->count();
             if ($nbEmployes >= $abonnement->plan->max_employes) {
-                return back()->with('error', "Limite atteinte : votre plan autorise {$abonnement->plan->max_employes} employé(s). Passez au plan supérieur.");
+                return back()->with('error', 'Limite atteinte : votre plan autorise ' . \App\Helpers\TexteHelper::pluriel($abonnement->plan->max_employes, 'employé', 'employés') . '. Passez au plan supérieur.');
             }
         }
 

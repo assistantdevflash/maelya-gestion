@@ -4,7 +4,7 @@
     <div class="space-y-4">
         <div>
             <h1 class="text-2xl font-display font-bold text-gray-900">Comparatif multi-établissements</h1>
-            <p class="text-sm text-gray-500 mt-1">{{ now()->translatedFormat('F Y') }} — {{ count($stats) }} établissement(s) actif(s)</p>
+            <p class="text-sm text-gray-500 mt-1">{{ now()->translatedFormat('F Y') }} — {{ \App\Helpers\TexteHelper::pluriel(count($stats), 'établissement actif', 'établissements actifs') }}</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

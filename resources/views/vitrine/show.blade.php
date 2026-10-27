@@ -466,7 +466,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-medium mb-1" style="color:#d1d5db;">Prestation(s) souhaitée(s) *</label>
+                        <label class="block text-xs font-medium mb-1" style="color:#d1d5db;">Prestations souhaitées *</label>
                         <template x-for="id in selectedIds" :key="'hi-'+id">
                             <input type="hidden" name="prestations[]" :value="id">
                         </template>

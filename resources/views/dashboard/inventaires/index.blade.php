@@ -5,7 +5,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
                 <h1 class="text-xl sm:text-2xl font-display font-bold text-gray-900">Inventaires physiques</h1>
-                <p class="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">{{ $inventaires->total() }} inventaire(s)</p>
+                <p class="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">{{ \App\Helpers\TexteHelper::pluriel($inventaires->total(), 'inventaire', 'inventaires') }}</p>
             </div>
             <a href="{{ route('dashboard.inventaires.create') }}" class="btn-primary self-start sm:self-auto">+ Nouvel inventaire</a>
         </div>

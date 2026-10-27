@@ -3,7 +3,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-display font-bold text-gray-900 tracking-tight">Produits</h1>
-                <p class="text-sm text-gray-500 mt-1">{{ $produits->total() }} produit(s) dans votre catalogue</p>
+                <p class="text-sm text-gray-500 mt-1">{{ \App\Helpers\TexteHelper::pluriel($produits->total(), 'produit', 'produits') }} dans votre catalogue</p>
             </div>
             <div class="flex gap-2">
                 <button x-data @click="$dispatch('open-categories')" class="btn-outline">
@@ -426,7 +426,7 @@
                         <template x-if="!editing">
                             <div class="flex items-center justify-between w-full">
                                 <span class="text-sm font-medium text-gray-900">{{ $cat->nom }}</span>
-                                <span class="text-xs text-gray-400">{{ $cat->produits_count ?? $cat->produits()->count() }} produit(s)</span>
+                                <span class="text-xs text-gray-400">{{ \App\Helpers\TexteHelper::pluriel($cat->produits_count ?? $cat->produits()->count(), 'produit', 'produits') }}</span>
                             </div>
                         </template>
                         <template x-if="editing">

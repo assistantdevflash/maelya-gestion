@@ -5,7 +5,7 @@
                 <h1 class="text-2xl font-display font-bold text-gray-900 tracking-tight">Gestion du Stock</h1>
                 <p class="text-sm text-gray-500 mt-1">
                     @if($nbAlertes > 0)
-                        <span class="text-amber-600 font-medium">⚠️ {{ $nbAlertes }} produit(s) en alerte</span>
+                        <span class="text-amber-600 font-medium">⚠️ {{ \App\Helpers\TexteHelper::pluriel($nbAlertes, 'produit', 'produits') }} en alerte</span>
                     @else
                         Tous les stocks sont à niveau ✅
                     @endif

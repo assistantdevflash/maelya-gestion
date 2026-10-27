@@ -49,7 +49,7 @@
             </table>
 
             @if($rdv->prestations->isNotEmpty())
-            <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7280;margin-bottom:12px;">Prestation(s) demandée(s)</p>
+            <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7280;margin-bottom:12px;">Prestations demandées</p>
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
                 @foreach($rdv->prestations as $p)
                 <tr>

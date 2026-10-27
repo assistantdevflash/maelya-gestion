@@ -41,7 +41,7 @@
             </table>
 
             @if($rdv->prestations->isNotEmpty())
-            <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7280;margin-bottom:12px;">Prestation(s) prévue(s)</p>
+            <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7280;margin-bottom:12px;">Prestations prévues</p>
             @foreach($rdv->prestations as $p)
             <p style="margin:4px 0;font-size:14px;color:#374151;">· {{ $p->nom }}@if($p->duree) <span style="color:#9ca3af;">({{ $p->duree }} min)</span>@endif</p>
             @endforeach

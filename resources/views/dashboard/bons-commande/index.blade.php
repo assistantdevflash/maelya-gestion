@@ -5,7 +5,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
                 <h1 class="text-xl sm:text-2xl font-display font-bold text-gray-900">Bons de commande</h1>
-                <p class="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">{{ $bons->total() }} bon(s) de commande</p>
+                <p class="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">{{ \App\Helpers\TexteHelper::pluriel($bons->total(), 'bon de commande', 'bons de commande') }}</p>
             </div>
             <a href="{{ route('dashboard.bons-commande.create') }}" class="btn-primary self-start sm:self-auto">+ Nouveau bon</a>
         </div>

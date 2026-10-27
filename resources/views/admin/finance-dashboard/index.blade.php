@@ -252,7 +252,7 @@
                         <div class="h-2 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
                             <div class="h-full bg-purple-500 rounded-full" style="width: {{ round($item->total / $parTypeMax * 100) }}%"></div>
                         </div>
-                        <p class="text-xs text-gray-400 mt-0.5">{{ $item->nb }} transaction(s)</p>
+                        <p class="text-xs text-gray-400 mt-0.5">{{ \App\Helpers\TexteHelper::pluriel($item->nb, 'transaction', 'transactions') }}</p>
                     </div>
                     @endforeach
                 </div>
@@ -276,7 +276,7 @@
                         <div class="h-2 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
                             <div class="h-full bg-pink-500 rounded-full" style="width: {{ round($item->total / $parMethodeMax * 100) }}%"></div>
                         </div>
-                        <p class="text-xs text-gray-400 mt-0.5">{{ $item->nb }} transaction(s)</p>
+                        <p class="text-xs text-gray-400 mt-0.5">{{ \App\Helpers\TexteHelper::pluriel($item->nb, 'transaction', 'transactions') }}</p>
                     </div>
                     @endforeach
                 </div>

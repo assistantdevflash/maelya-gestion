@@ -46,7 +46,7 @@ class ClientsRappelAnniversaire extends Command
                 $admin,
                 'anniversaire_a_venir',
                 '🎂 Anniversaires dans ' . $jours . ' jours',
-                $liste->count() . ' client(s) : ' . $noms,
+                \App\Helpers\TexteHelper::pluriel($liste->count(), 'client', 'clients') . ' : ' . $noms,
                 '/dashboard/clients?mois_anniv=' . now()->addDays($jours)->format('m')
             );
 

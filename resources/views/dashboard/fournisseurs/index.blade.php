@@ -5,7 +5,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
                 <h1 class="text-xl sm:text-2xl font-display font-bold text-gray-900">Fournisseurs</h1>
-                <p class="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">{{ $fournisseurs->total() }} fournisseur(s)</p>
+                <p class="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">{{ \App\Helpers\TexteHelper::pluriel($fournisseurs->total(), 'fournisseur', 'fournisseurs') }}</p>
             </div>
             <button @click="showForm = true; editing = null" class="btn-primary self-start sm:self-auto">+ Nouveau fournisseur</button>
         </div>

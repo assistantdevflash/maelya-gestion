@@ -421,10 +421,18 @@ class AbonnementController extends Controller
         $parties = [];
 
         if ($analyse['instituts']['excedent'] > 0) {
-            $parties[] = $analyse['instituts']['excedent'] . ' établissement(s) passeront en sommeil';
+            $parties[] = \App\Helpers\TexteHelper::accord(
+                $analyse['instituts']['excedent'],
+                'établissement', 'établissements',
+                'passera', 'passeront'
+            ) . ' en sommeil';
         }
         if ($analyse['employes']['excedent'] > 0) {
-            $parties[] = $analyse['employes']['excedent'] . ' employé(s) passeront en sommeil';
+            $parties[] = \App\Helpers\TexteHelper::accord(
+                $analyse['employes']['excedent'],
+                'employé', 'employés',
+                'passera', 'passeront'
+            ) . ' en sommeil';
         }
         if (!empty($analyse['features_perdues'])) {
             $libelles = array_map(

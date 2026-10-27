@@ -292,7 +292,7 @@
     $msgAnnuler = $facture->montant_paye > 0
         ? "⚠️ Cette facture a déjà <strong>" . number_format($facture->montant_paye, 0, ',', ' ') . " F</strong> de paiements enregistrés.<br><br>"
           . "En l'annulant :<br>"
-          . "• Les <strong>" . $facture->paiements->count() . " paiement(s)</strong> seront supprimés<br>"
+          . "• Les <strong>" . \App\Helpers\TexteHelper::pluriel($facture->paiements->count(), 'paiement', 'paiements') . "</strong> seront supprimés<br>"
           . "• Les ventes associées seront <strong>retirées du chiffre d'affaires</strong><br>"
           . "• Le montant de <strong>" . number_format($facture->montant_paye, 0, ',', ' ') . " F</strong> ne sera plus comptabilisé<br><br>"
           . "Cette action est <strong>irréversible</strong>."

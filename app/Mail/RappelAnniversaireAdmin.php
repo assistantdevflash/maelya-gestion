@@ -22,7 +22,7 @@ class RappelAnniversaireAdmin extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '🎂 ' . $this->clients->count() . ' anniversaire(s) dans ' . $this->jours . ' jours – ' . $this->institutNom,
+            subject: '🎂 ' . \App\Helpers\TexteHelper::pluriel($this->clients->count(), 'anniversaire', 'anniversaires') . ' dans ' . \App\Helpers\TexteHelper::pluriel($this->jours, 'jour', 'jours') . ' – ' . $this->institutNom,
         );
     }
 

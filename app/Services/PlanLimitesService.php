@@ -196,7 +196,9 @@ class PlanLimitesService
         $quotaInstituts = $plan->max_instituts;
 
         $motifInstitut = "Limite du plan {$plan->nom} : "
-            . ($quotaInstituts ?? '∞') . ' établissement(s) maximum.';
+            . ($quotaInstituts === null
+                ? 'aucun établissement autorisé'
+                : \App\Helpers\TexteHelper::pluriel($quotaInstituts, 'établissement', 'établissements') . ' maximum.');
 
         foreach ($instituts as $index => $institut) {
             $doitDormir = $quotaInstituts !== null && $index >= $quotaInstituts;
@@ -212,7 +214,9 @@ class PlanLimitesService
 
         $quotaEmployes = $plan->max_employes;
         $motifEmploye = "Limite du plan {$plan->nom} : "
-            . ($quotaEmployes ?? '∞') . ' employé(s) maximum par établissement.';
+            . ($quotaEmployes === null
+                ? 'aucun employé autorisé'
+                : \App\Helpers\TexteHelper::pluriel($quotaEmployes, 'employé', 'employés') . ' maximum par établissement.');
 
         foreach ($instituts as $institut) {
             if ($institut->en_sommeil) {

@@ -62,7 +62,8 @@ class RapportCategorieTest extends TestCase
             'nom_snapshot' => 'Shampoing', 'prix_snapshot' => 3000, 'quantite' => 1, 'sous_total' => 3000,
         ]);
 
-        $response = $this->actingAs($admin)->get(route('dashboard.rapports.categories'));
+        // Le rapport par catégorie est un onglet de la page Finances.
+        $response = $this->actingAs($admin)->get(route('dashboard.finances.index'));
 
         $response->assertOk();
         $response->assertSee('Coiffure');

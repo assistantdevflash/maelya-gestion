@@ -428,7 +428,7 @@
                                     </p>
                                     <p class="text-xs text-gray-400">
                                         JPG, PNG, WebP · Max 5 Mo / image ·
-                                        <span x-text="max - images.length"></span> emplacement(s) restant(s)
+                                        <span x-text="max - images.length"></span> <span x-text="(max - images.length) > 1 ? 'emplacements restants' : 'emplacement restant'"></span>
                                     </p>
                                 </div>
                             </template>
@@ -487,12 +487,12 @@
                 // Validation côté client
                 const slotsLeft = this.max - this.images.length;
                 if (files.length > slotsLeft) {
-                    this.errorMsg = `Vous pouvez ajouter au maximum ${slotsLeft} image(s) supplémentaire(s).`;
+                    this.errorMsg = `Vous pouvez ajouter au maximum ${slotsLeft} image${slotsLeft > 1 ? 's' : ''} supplémentaire${slotsLeft > 1 ? 's' : ''}.`;
                     return;
                 }
                 const oversized = files.filter(f => f.size > 5 * 1024 * 1024);
                 if (oversized.length) {
-                    this.errorMsg = `${oversized.length} fichier(s) dépassent 5 Mo : ${oversized.map(f => f.name).join(', ')}`;
+                    this.errorMsg = `${oversized.length} fichier${oversized.length > 1 ? 's' : ''} dépasse${oversized.length > 1 ? 'nt' : ''} 5 Mo : ${oversized.map(f => f.name).join(', ')}`;
                     return;
                 }
 

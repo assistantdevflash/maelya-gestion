@@ -81,8 +81,8 @@
                         <div class="flex items-center gap-2 mt-1.5">
                             @php $modeColors = ['tous'=>'bg-blue-50 text-blue-700','selection'=>'bg-purple-50 text-purple-700','un'=>'bg-gray-100 text-gray-700','personnalise'=>'bg-pink-50 text-pink-700']; @endphp
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ $modeColors[$campagne->mode] ?? 'bg-gray-100 text-gray-600' }}">{{ $campagne->mode_libelle }}</span>
-                            <span class="text-xs text-gray-500">{{ $campagne->nb_envoyes }} envoyé(s)</span>
-                            @if($campagne->nb_echecs > 0)<span class="text-xs text-red-500">{{ $campagne->nb_echecs }} échec(s)</span>@endif
+                            <span class="text-xs text-gray-500">{{ \App\Helpers\TexteHelper::pluriel($campagne->nb_envoyes, 'envoyé', 'envoyés') }}</span>
+                            @if($campagne->nb_echecs > 0)<span class="text-xs text-red-500">{{ \App\Helpers\TexteHelper::pluriel($campagne->nb_echecs, 'échec', 'échecs') }}</span>@endif
                         </div>
                     </div>
                     <button type="button" @click="open = !open"
@@ -218,7 +218,7 @@
                         <div class="flex items-center flex-wrap gap-2 mt-1.5">
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ $typeColors[$banniere->type] ?? 'bg-gray-100 text-gray-600' }}">{{ $typeLabels[$banniere->type] ?? $banniere->type }}</span>
                             <span class="text-xs text-gray-500">{{ $cibleLabels[$banniere->cible] ?? $banniere->cible }}</span>
-                            <span class="text-xs {{ $banniere->lecteurs_count > 0 ? 'text-green-600' : 'text-gray-400' }}">{{ $banniere->lecteurs_count }} lecture(s)</span>
+                            <span class="text-xs {{ $banniere->lecteurs_count > 0 ? 'text-green-600' : 'text-gray-400' }}">{{ \App\Helpers\TexteHelper::pluriel($banniere->lecteurs_count, 'lecture', 'lectures') }}</span>
                             @if($banniere->actif && (!$banniere->expire_le || $banniere->expire_le->isFuture()))
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">● Active</span>
                             @else

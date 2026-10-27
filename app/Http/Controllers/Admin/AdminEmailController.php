@@ -191,13 +191,13 @@ class AdminEmailController extends Controller
         }
 
         $what = match($sendMode) {
-            'both'  => 'Email + notification envoyé(s)',
+            'both'  => 'Email + notification envoyés',
             'push'  => 'Notification envoyée',
             default => 'Email envoyé',
         };
-        $message = "{$what} à {$envoyes} destinataire(s) avec succès.";
+        $message = "{$what} à " . \App\Helpers\TexteHelper::pluriel($envoyes, 'destinataire', 'destinataires') . ' avec succès.';
         if ($echecs > 0) {
-            $message .= " ({$echecs} échec(s))";
+            $message .= ' (' . \App\Helpers\TexteHelper::pluriel($echecs, 'échec', 'échecs') . ')';
         }
 
         return redirect()->route('admin.emails.index')->with('success', $message);
@@ -241,10 +241,12 @@ class AdminEmailController extends Controller
         ]);
 
         $nbCibles = $cible === 'tous' ? Institut::count() : count($institutIds);
-        $dureeText = $request->filled('banner_duree') ? " (expire dans {$request->banner_duree} jour(s))" : ' (sans expiration)';
+        $dureeText = $request->filled('banner_duree')
+            ? ' (expire dans ' . \App\Helpers\TexteHelper::pluriel((int) $request->banner_duree, 'jour', 'jours') . ')'
+            : ' (sans expiration)';
 
         return redirect()->route('admin.emails.index')
-            ->with('success', "Bannière créée et visible pour {$nbCibles} établissement(s){$dureeText}.");
+            ->with('success', 'Bannière créée et visible pour ' . \App\Helpers\TexteHelper::pluriel($nbCibles, 'établissement', 'établissements') . $dureeText . '.');
     }
 
     /**

@@ -11,11 +11,15 @@ class ProduitCodeBarreTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function premiumAdmin()
+    /**
+     * Le scan de code-barres est réservé aux plans premium-plus et supérieurs
+     * (feature:scan_code_barre).
+     */
+    private function premiumPlusAdmin()
     {
         $admin = $this->creerAdmin();
         $premium = \App\Models\PlanAbonnement::create([
-            'nom' => 'Premium', 'slug' => 'premium', 'duree_type' => 'mensuel',
+            'nom' => 'Premium+', 'slug' => 'premium-plus', 'duree_type' => 'mensuel',
             'duree_jours' => 30, 'prix' => 10000, 'actif' => true,
         ]);
         $admin->abonnements()->update(['plan_id' => $premium->id]);
@@ -24,7 +28,7 @@ class ProduitCodeBarreTest extends TestCase
 
     public function test_recherche_par_code_barre_trouve_le_produit(): void
     {
-        $admin = $this->premiumAdmin();
+        $admin = $this->premiumPlusAdmin();
         $cat = CategorieProduit::create(['institut_id' => $admin->institut_id, 'nom' => 'C']);
         $produit = Produit::create([
             'institut_id'  => $admin->institut_id,
@@ -53,7 +57,7 @@ class ProduitCodeBarreTest extends TestCase
 
     public function test_recherche_par_code_barre_inconnu_retourne_404(): void
     {
-        $admin = $this->premiumAdmin();
+        $admin = $this->premiumPlusAdmin();
 
         $response = $this->actingAs($admin)
             ->getJson(route('dashboard.produits.scan', ['code' => 'INCONNU']));

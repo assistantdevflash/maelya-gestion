@@ -21,7 +21,7 @@ class RappelAbonnement extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "⏳ Votre abonnement expire dans {$this->joursRestants} jour(s) – " . config('app.name'),
+            subject: '⏳ Votre abonnement expire dans ' . \App\Helpers\TexteHelper::pluriel($this->joursRestants, 'jour', 'jours') . ' – ' . config('app.name'),
         );
     }
 

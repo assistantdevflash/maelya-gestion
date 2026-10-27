@@ -180,7 +180,7 @@
                     </div>
                     <div class="flex items-center gap-3 flex-shrink-0">
                         <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-                            <span class="font-bold text-purple-600 dark:text-purple-400" x-text="selectedInstituts.length"></span> sélectionné(s)
+                            <span class="font-bold text-purple-600 dark:text-purple-400" x-text="selectedInstituts.length"></span> <span x-text="selectedInstituts.length > 1 ? 'sélectionnés' : 'sélectionné'"></span>
                         </span>
                         <button type="button"
                                 @click="toggleAll({{ $instituts->map(fn($i) => ['id' => $i->id])->values()->toJson() }})"
@@ -492,7 +492,7 @@
         <div class="flex items-center justify-between">
             <p class="text-sm text-gray-500 dark:text-gray-400">
                 <span x-show="mode === 'tous'">Envoi à <strong class="text-gray-700 dark:text-gray-200">{{ $instituts->count() }} établissements</strong></span>
-                <span x-show="mode === 'selection'" x-cloak>Envoi à <strong class="text-gray-700 dark:text-gray-200" x-text="selectedInstituts.length + ' établissement(s)'"></strong></span>
+                <span x-show="mode === 'selection'" x-cloak>Envoi à <strong class="text-gray-700 dark:text-gray-200" x-text="selectedInstituts.length + (selectedInstituts.length > 1 ? ' établissements' : ' établissement')"></strong></span>
                 <span x-show="mode === 'un'" x-cloak>Envoi à <strong class="text-gray-700 dark:text-gray-200">1 établissement</strong></span>
                 <span x-show="mode === 'personnalise'" x-cloak>Envoi à <strong class="text-pink-600 dark:text-pink-400" x-text="emailPerso || '—'"></strong></span>
             </p>

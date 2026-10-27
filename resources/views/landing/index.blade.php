@@ -298,16 +298,16 @@
                             @php
                                 if ($plan->slug === 'basic') {
                                     $features = [
-                                        $plan->max_instituts === null ? 'Établissements illimités' : $plan->max_instituts . ' établissement',
-                                        $plan->max_employes === null ? 'Employés illimités' : $plan->max_employes . ' employé(s)',
+                                        $plan->max_instituts === null ? 'Établissements illimités' : \App\Helpers\TexteHelper::pluriel($plan->max_instituts, 'établissement', 'établissements'),
+                                        $plan->max_employes === null ? 'Employés illimités' : \App\Helpers\TexteHelper::pluriel($plan->max_employes, 'employé', 'employés'),
                                         'Caisse simple',
                                         'Catalogue prestations',
                                         'Historique des ventes',
                                     ];
                                 } else {
                                     $features = [
-                                        $plan->max_instituts === null ? 'Établissements illimités' : $plan->max_instituts . ' établissement',
-                                        $plan->max_employes === null ? 'Employés illimités' : $plan->max_employes . ' employé(s)',
+                                        $plan->max_instituts === null ? 'Établissements illimités' : \App\Helpers\TexteHelper::pluriel($plan->max_instituts, 'établissement', 'établissements'),
+                                        $plan->max_employes === null ? 'Employés illimités' : \App\Helpers\TexteHelper::pluriel($plan->max_employes, 'employé', 'employés'),
                                         'Caisse illimitée', 'Agenda & Rendez-vous', 'Gestion stock & clients', 'Rapports financiers',
                                     ];
                                     if ($plan->slug === 'premium-plus' || $plan->slug === 'ultra') $features[] = 'Support prioritaire';

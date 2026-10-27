@@ -5,7 +5,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-display font-bold text-gray-900 tracking-tight">Crédits clients</h1>
-                <p class="text-sm text-gray-500 mt-1">{{ $credits->total() }} crédit(s)</p>
+                <p class="text-sm text-gray-500 mt-1">{{ \App\Helpers\TexteHelper::pluriel($credits->total(), 'crédit', 'crédits') }}</p>
             </div>
             <a href="{{ route('dashboard.credits.create') }}" class="btn-primary">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -75,7 +75,7 @@
                 <thead class="bg-gray-50 border-b border-gray-100">
                     <tr>
                         <th class="px-4 py-3 text-left font-semibold text-gray-600">Client</th>
-                        <th class="px-4 py-3 text-left font-semibold text-gray-600 hidden sm:table-cell">Article(s)</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 hidden sm:table-cell">Articles</th>
                         <th class="px-4 py-3 text-right font-semibold text-gray-600">Total</th>
                         <th class="px-4 py-3 text-right font-semibold text-gray-600 hidden md:table-cell">Payé</th>
                         <th class="px-4 py-3 text-right font-semibold text-gray-600">Reste</th>

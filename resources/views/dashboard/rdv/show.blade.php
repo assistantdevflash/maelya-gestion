@@ -79,7 +79,7 @@
 
         @if($rdv->prestations->isNotEmpty())
         <div class="pt-2 border-t border-gray-100">
-            <p class="text-xs text-gray-400 font-medium mb-2">Prestation(s)</p>
+            <p class="text-xs text-gray-400 font-medium mb-2">Prestations</p>
             <div class="flex flex-wrap gap-2">
                 @foreach($rdv->prestations as $p)
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style="background:#f3e8ff;color:#7e22ce;">

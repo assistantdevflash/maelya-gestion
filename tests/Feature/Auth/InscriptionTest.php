@@ -13,6 +13,12 @@ class InscriptionTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seedTypesEtablissement();
+    }
+
     private array $donneesValides = [
         'nom_institut'      => 'Salon Beauté Awa',
         'type_institut'     => 'salon_coiffure',

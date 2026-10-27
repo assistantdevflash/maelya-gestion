@@ -72,7 +72,7 @@ class AdminMessageController extends Controller
         $nb = $requete->count();
         $requete->update(['lu' => true]);
 
-        return back()->with('success', $nb . ' message(s) marqué(s) comme lu(s).');
+        return back()->with('success', \App\Helpers\TexteHelper::pluriel($nb, 'message marqué', 'messages marqués') . ' comme lu' . ($nb > 1 ? 's' : '') . '.');
     }
 
     public function destroy(MessageContact $message)
@@ -88,6 +88,6 @@ class AdminMessageController extends Controller
         $nb = MessageContact::spam()->count();
         MessageContact::spam()->delete();
 
-        return back()->with('success', $nb . ' message(s) indésirable(s) supprimé(s).');
+        return back()->with('success', \App\Helpers\TexteHelper::pluriel($nb, 'message indésirable supprimé', 'messages indésirables supprimés') . '.');
     }
 }

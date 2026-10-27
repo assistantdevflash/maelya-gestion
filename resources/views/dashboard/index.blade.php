@@ -75,7 +75,7 @@
                     {{ $expiryLabel }}
                     @if($abonnement->plan->max_employes)
                         <span class="text-gray-400 dark:text-gray-600">·</span>
-                        {{ $abonnement->plan->max_employes }} employé(s) max
+                        {{ \App\Helpers\TexteHelper::pluriel($abonnement->plan->max_employes, 'employé', 'employés') }} max
                     @endif
                 </p>
             </div>
@@ -101,7 +101,7 @@
                     {{ $abonnementSursis->plan->nom ?? 'Abonnement' }} — {{ $dansSursis ? 'Période de sursis' : 'Expiré' }}
                 </p>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    Expiré depuis {{ $sursisJours }} jour(s) ({{ $abonnementSursis->expire_le->format('d/m/Y') }})
+                    Expiré depuis {{ \App\Helpers\TexteHelper::pluriel($sursisJours, 'jour', 'jours') }} ({{ $abonnementSursis->expire_le->format('d/m/Y') }})
                     · {{ $dansSursis ? 'Tout fonctionne normalement. Renouvelez avant la fin du sursis.' : 'Accès en lecture seule. Renouvelez pour rétablir toutes les fonctions.' }}
                 </p>
             </div>

@@ -64,7 +64,7 @@
                     {{ $abonnementSursis->plan->nom ?? 'Abonnement' }} — {{ $dansSursis ? 'Période de sursis' : 'Expiré' }}
                 </p>
                 <p class="text-sm {{ $dansSursis ? 'text-amber-700' : 'text-red-700' }}">
-                    Expiré depuis {{ $abonnementSursis->joursDepuisExpiration() }} jour(s)
+                    Expiré depuis {{ \App\Helpers\TexteHelper::pluriel($abonnementSursis->joursDepuisExpiration(), 'jour', 'jours') }}
                     ({{ $abonnementSursis->expire_le->format('d/m/Y') }})
                     · {{ $dansSursis ? 'Tout fonctionne normalement. Renouvelez avant la fin du sursis.' : 'Accès en lecture seule. Choisissez un plan ci-dessous pour renouveler.' }}
                 </p>
@@ -185,11 +185,11 @@
                         <ul class="space-y-2.5 text-sm text-gray-600">
                             <li class="flex items-center gap-2.5">
                                 <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                                {{ $plan->max_instituts === null ? 'Établissements illimités' : $plan->max_instituts . ' établissement' }}
+                                {{ $plan->max_instituts === null ? 'Établissements illimités' : \App\Helpers\TexteHelper::pluriel($plan->max_instituts, 'établissement', 'établissements') }}
                             </li>
                             <li class="flex items-center gap-2.5">
                                 <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                                {{ $plan->max_employes === null ? 'Employés illimités' : $plan->max_employes . ' employé(s)' }}
+                                {{ $plan->max_employes === null ? 'Employés illimités' : \App\Helpers\TexteHelper::pluriel($plan->max_employes, 'employé', 'employés') }}
                             </li>
                             @if($plan->slug === 'basic')
                             <li class="flex items-center gap-2.5">

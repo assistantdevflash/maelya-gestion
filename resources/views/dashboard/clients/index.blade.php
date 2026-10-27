@@ -39,7 +39,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h1 class="text-2xl font-display font-bold text-gray-900 tracking-tight">Clients</h1>
-            <p class="text-sm text-gray-500 mt-1">{{ $totalClients }} client(s) au total</p>
+            <p class="text-sm text-gray-500 mt-1">{{ \App\Helpers\TexteHelper::pluriel($totalClients, 'client', 'clients') }} au total</p>
         </div>
         <button @click="createOpen = true" x-show="onglet === 'clients'" class="btn-primary group">
             <svg class="w-4 h-4 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">

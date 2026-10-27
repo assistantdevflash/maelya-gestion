@@ -62,7 +62,7 @@
                 <tr>
                     <td class="text-sm text-gray-500">{{ $vente->created_at->format('d/m/Y H:i') }}</td>
                     <td class="text-sm">{{ $vente->client?->prenom }} {{ $vente->client?->nom }}</td>
-                    <td class="text-sm text-gray-500">{{ $vente->items->count() }} article(s)</td>
+                    <td class="text-sm text-gray-500">{{ \App\Helpers\TexteHelper::pluriel($vente->items->count(), 'article', 'articles') }}</td>
                     <td class="text-sm font-medium text-right">{{ number_format($vente->total, 0, ',', ' ') }} F</td>
                 </tr>
                 @empty

@@ -197,7 +197,7 @@
                 <div class="grid grid-cols-2 gap-2 mb-4">
                     <div class="bg-gray-50 dark:bg-slate-800/60 rounded-xl px-3 py-2.5 text-center">
                         <p class="text-lg font-bold text-gray-900 dark:text-white">{{ $institut->users_count ?? $institut->users()->count() }}</p>
-                        <p class="text-xs text-gray-400">Employé(s)</p>
+                        <p class="text-xs text-gray-400">Employés</p>
                     </div>
                     <div class="bg-gray-50 dark:bg-slate-800/60 rounded-xl px-3 py-2.5 text-center">
                         <p class="text-lg font-bold {{ $institut->en_sommeil ? 'text-amber-500' : ($institut->actif ? 'text-emerald-600' : 'text-red-500') }}">

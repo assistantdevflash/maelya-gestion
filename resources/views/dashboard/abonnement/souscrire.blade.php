@@ -58,11 +58,16 @@
 
                 <ul class="space-y-2 text-sm text-amber-900 dark:text-amber-200">
                     @if($analyseLimites['instituts']['excedent'] > 0)
+                    @php
+                        $nbInstituts  = $analyseLimites['instituts']['excedent'];
+                        $nbAutorises  = $analyseLimites['instituts']['autorises'];
+                    @endphp
                     <li class="flex gap-2">
                         <span>•</span>
                         <span>
-                            <strong>{{ $analyseLimites['instituts']['excedent'] }} établissement(s)</strong> passeront en sommeil
-                            ({{ $analyseLimites['instituts']['total'] }} actuellement, {{ $analyseLimites['instituts']['autorises'] }} autorisé(s)).
+                            <strong>{{ \App\Helpers\TexteHelper::pluriel($nbInstituts, 'établissement', 'établissements') }}</strong>
+                            {{ \App\Helpers\TexteHelper::verbe($nbInstituts, 'passera', 'passeront') }} en sommeil
+                            ({{ $analyseLimites['instituts']['total'] }} au total, {{ \App\Helpers\TexteHelper::verbe($nbAutorises, 'autorisé', 'autorisés') }}).
                             Votre établissement principal est toujours conservé.
                             <span class="block mt-1.5">
                                 @foreach($analyseLimites['instituts']['liste'] as $exclu)
@@ -73,11 +78,16 @@
                     </li>
                     @endif
                     @if($analyseLimites['employes']['excedent'] > 0)
+                    @php
+                        $nbEmployes = $analyseLimites['employes']['excedent'];
+                        $maxParInstitut = $analyseLimites['employes']['autorises'];
+                    @endphp
                     <li class="flex gap-2">
                         <span>•</span>
                         <span>
-                            <strong>{{ $analyseLimites['employes']['excedent'] }} employé(s)</strong> passeront en sommeil
-                            ({{ $analyseLimites['employes']['autorises'] }} autorisé(s) par établissement).
+                            <strong>{{ \App\Helpers\TexteHelper::pluriel($nbEmployes, 'employé', 'employés') }}</strong>
+                            {{ \App\Helpers\TexteHelper::verbe($nbEmployes, 'passera', 'passeront') }} en sommeil
+                            ({{ \App\Helpers\TexteHelper::pluriel($maxParInstitut, 'autorisé', 'autorisés') }} par établissement).
                         </span>
                     </li>
                     @endif
@@ -203,8 +213,11 @@
                         </p>
 
                         @if($analyseLimites['instituts']['excedent'] > 0)
+                        @php $nbExclus = $analyseLimites['instituts']['excedent']; @endphp
                         <p class="text-xs font-medium text-amber-700 dark:text-amber-400 mb-3">
-                            {{ $analyseLimites['instituts']['excedent'] }} établissement(s) passeront en sommeil avec ce plan : ils ne sont pas proposés ici.
+                            {{ \App\Helpers\TexteHelper::pluriel($nbExclus, 'établissement', 'établissements') }}
+                            {{ \App\Helpers\TexteHelper::verbe($nbExclus, 'passera', 'passeront') }} en sommeil avec ce plan :
+                            {{ \App\Helpers\TexteHelper::verbe($nbExclus, "il n'est pas proposé ici.", 'ils ne sont pas proposés ici.') }}
                         </p>
                         @endif
 

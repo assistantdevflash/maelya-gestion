@@ -134,9 +134,9 @@
                                 <span x-show="periode === 'jour'" x-cloak>{{ number_format($statsVentes->ca_jour, 0, ',', ' ') }} FCFA</span>
                             </p>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                <span x-show="periode === 'total'" x-cloak>{{ $statsVentes->nb_total }} vente(s)</span>
-                                <span x-show="periode === 'mois'" x-cloak>{{ $statsVentes->nb_mois }} vente(s) ce mois</span>
-                                <span x-show="periode === 'jour'" x-cloak>{{ $statsVentes->nb_jour }} vente(s) aujourd'hui</span>
+                                <span x-show="periode === 'total'" x-cloak>{{ \App\Helpers\TexteHelper::pluriel($statsVentes->nb_total, 'vente', 'ventes') }}</span>
+                                <span x-show="periode === 'mois'" x-cloak>{{ \App\Helpers\TexteHelper::pluriel($statsVentes->nb_mois, 'vente', 'ventes') }} ce mois</span>
+                                <span x-show="periode === 'jour'" x-cloak>{{ \App\Helpers\TexteHelper::pluriel($statsVentes->nb_jour, 'vente', 'ventes') }} aujourd'hui</span>
                             </p>
                         </div>
                         <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
@@ -164,9 +164,9 @@
                         <span x-show="periode === 'jour'" x-cloak>{{ number_format($statsCommandes->ca_jour, 0, ',', ' ') }} FCFA</span>
                     </p>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        <span x-show="periode === 'total'" x-cloak>{{ $statsCommandes->nb_total }} commande(s)</span>
-                        <span x-show="periode === 'mois'" x-cloak>{{ $statsCommandes->nb_mois }} commande(s) ce mois</span>
-                        <span x-show="periode === 'jour'" x-cloak>{{ $statsCommandes->nb_jour }} commande(s) aujourd'hui</span>
+                        <span x-show="periode === 'total'" x-cloak>{{ \App\Helpers\TexteHelper::pluriel($statsCommandes->nb_total, 'commande', 'commandes') }}</span>
+                        <span x-show="periode === 'mois'" x-cloak>{{ \App\Helpers\TexteHelper::pluriel($statsCommandes->nb_mois, 'commande', 'commandes') }} ce mois</span>
+                        <span x-show="periode === 'jour'" x-cloak>{{ \App\Helpers\TexteHelper::pluriel($statsCommandes->nb_jour, 'commande', 'commandes') }} aujourd'hui</span>
                     </p>
                     @if($boutiqueActive)
                     <div class="mt-3 pt-3 border-t border-gray-200 dark:border-slate-700 flex items-center gap-2" x-data="{ copied: false }">
@@ -198,7 +198,7 @@
                     </span>
                     @if(!is_null($niveauActivite['jours']))
                     <span class="text-xs text-gray-400">
-                        {{ $niveauActivite['jours'] }} jour(s) sans activité
+                        {{ \App\Helpers\TexteHelper::pluriel($niveauActivite['jours'], 'jour', 'jours') }} sans activité
                     </span>
                     @endif
                 </div>
@@ -246,7 +246,7 @@
                         <span class="badge bg-amber-100 text-amber-700 text-xs flex-shrink-0">Sursis</span>
                     </div>
                     <p class="text-xs text-amber-700">
-                        Expiré depuis {{ $abonnementSursis->joursDepuisExpiration() }} jour(s)
+                        Expiré depuis {{ \App\Helpers\TexteHelper::pluriel($abonnementSursis->joursDepuisExpiration(), 'jour', 'jours') }}
                         ({{ $abonnementSursis->expire_le?->format('d/m/Y') }}).
                     </p>
                     <p class="text-xs text-gray-500 mt-1">Période de grâce de 2 jours — accès restreint en écriture.</p>

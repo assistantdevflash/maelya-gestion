@@ -180,8 +180,11 @@ class AbonnementNotificationsTest extends TestCase
 
         $this->actingAs($etabl)
             ->post(route('abonnement.souscrire', $plan), [
-                'periode'             => 'mensuel',
-                'reference_transfert' => 'REF-XYZ-001',
+                'periode'                => 'mensuel',
+                'reference_transfert'    => 'REF-XYZ-001',
+                // Passer d'un plan d'essai (toutes les features) à un plan
+                // sans ces features exige une confirmation explicite.
+                'confirmation_downgrade' => true,
             ])
             ->assertRedirect();
 
@@ -205,8 +208,9 @@ class AbonnementNotificationsTest extends TestCase
 
         $this->actingAs($etabl)
             ->post(route('abonnement.souscrire', $plan), [
-                'periode'             => 'mensuel',
-                'reference_transfert' => 'REF-456',
+                'periode'                => 'mensuel',
+                'reference_transfert'    => 'REF-456',
+                'confirmation_downgrade' => true,
             ]);
 
         $notif = Notif::where('user_id', $superAdmin->id)->where('type', 'nouvelle_demande')->first();

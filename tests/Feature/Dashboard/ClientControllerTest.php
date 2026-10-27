@@ -66,9 +66,10 @@ class ClientControllerTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('dashboard.clients.store'), [
-                'prenom'    => 'Marie',
-                'nom'       => 'Dupont',
-                'telephone' => '0707070707',
+                'type_client' => 'personne_physique',
+                'prenom'      => 'Marie',
+                'nom'         => 'Dupont',
+                'telephone'   => '0707070707',
             ])
             ->assertRedirect(route('dashboard.clients.index'))
             ->assertSessionHas('success');
@@ -87,7 +88,19 @@ class ClientControllerTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('dashboard.clients.store'), [])
-            ->assertSessionHasErrors(['prenom', 'nom', 'telephone']);
+            ->assertSessionHasErrors(['type_client', 'telephone']);
+    }
+
+    public function test_store_echoue_si_personne_physique_sans_nom(): void
+    {
+        $user = $this->creerAdmin();
+
+        $this->actingAs($user)
+            ->post(route('dashboard.clients.store'), [
+                'type_client' => 'personne_physique',
+                'telephone'   => '0707070707',
+            ])
+            ->assertSessionHasErrors(['prenom', 'nom']);
     }
 
     public function test_store_echoue_si_email_invalide(): void
@@ -96,10 +109,11 @@ class ClientControllerTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('dashboard.clients.store'), [
-                'prenom'    => 'Test',
-                'nom'       => 'User',
-                'telephone' => '0000',
-                'email'     => 'pas-un-email',
+                'type_client' => 'personne_physique',
+                'prenom'      => 'Test',
+                'nom'         => 'User',
+                'telephone'   => '0000',
+                'email'       => 'pas-un-email',
             ])
             ->assertSessionHasErrors(['email']);
     }
@@ -131,9 +145,10 @@ class ClientControllerTest extends TestCase
 
         $this->actingAs($user)
             ->put(route('dashboard.clients.update', $client), [
-                'prenom'    => 'Awa Modifiée',
-                'nom'       => 'Koné',
-                'telephone' => '222',
+                'type_client' => 'personne_physique',
+                'prenom'      => 'Awa Modifiée',
+                'nom'         => 'Koné',
+                'telephone'   => '222',
             ])
             ->assertRedirect();
 
@@ -142,7 +157,7 @@ class ClientControllerTest extends TestCase
 
     // ── Destroy ───────────────────────────────────────────────────────────────
 
-    public function test_destroy_supprime_le_client_soft_delete(): void
+    public function test_destroy_supprime_definitivement_le_client(): void
     {
         $user = $this->creerAdmin();
         $this->actingAs($user);
@@ -153,6 +168,7 @@ class ClientControllerTest extends TestCase
             ->delete(route('dashboard.clients.destroy', $client))
             ->assertRedirect();
 
-        $this->assertSoftDeleted('clients', ['id' => $client->id]);
+        // La suppression est définitive (forceDelete) et non un soft delete.
+        $this->assertDatabaseMissing('clients', ['id' => $client->id]);
     }
 }

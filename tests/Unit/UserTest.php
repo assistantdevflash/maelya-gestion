@@ -46,7 +46,8 @@ class UserTest extends TestCase
     public function test_abonnement_en_sursis_si_expire_depuis_moins_de_2_jours(): void
     {
         $user = $this->creerAdmin();
-        $plan = $this->creerPlan();
+        // Le sursis (2 jours) ne s'applique qu'aux plans payants, pas aux essais.
+        $plan = $this->creerPlan(['duree_type' => 'mensuel']);
 
         Abonnement::create([
             'user_id'   => $user->id,
@@ -64,7 +65,7 @@ class UserTest extends TestCase
     public function test_pas_de_sursis_si_expire_depuis_plus_de_2_jours(): void
     {
         $user = $this->creerAdmin();
-        $plan = $this->creerPlan();
+        $plan = $this->creerPlan(['duree_type' => 'mensuel']);
 
         Abonnement::create([
             'user_id'   => $user->id,

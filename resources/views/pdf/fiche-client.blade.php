@@ -77,7 +77,7 @@
     @if($show['achats'] && $ventes->isNotEmpty())
     <div class="title">Derniers achats</div>
     <table class="data">
-        <thead><tr><th>Date</th><th>Article(s)</th><th style="text-align:right;">Total</th><th style="text-align:center;">Mode</th></tr></thead>
+        <thead><tr><th>Date</th><th>Articles</th><th style="text-align:right;">Total</th><th style="text-align:center;">Mode</th></tr></thead>
         <tbody>
             @foreach($ventes as $v)
             <tr>

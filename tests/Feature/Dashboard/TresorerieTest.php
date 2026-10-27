@@ -18,8 +18,10 @@ class TresorerieTest extends TestCase
         ]);
         $admin->abonnements()->update(['plan_id' => $premium->id]);
 
-        $response = $this->actingAs($admin)->get(route('dashboard.tresorerie.index'));
+        $response = $this->actingAs($admin)->get(route('dashboard.finances.index'));
         $response->assertOk();
-        $response->assertSee('Trésorerie prévisionnelle');
+        // La trésorerie prévisionnelle est un onglet de la page Finances.
+        $response->assertSee('Projection financière');
+        $response->assertSee('Entrées prévues');
     }
 }

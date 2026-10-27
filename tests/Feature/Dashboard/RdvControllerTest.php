@@ -76,8 +76,11 @@ class RdvControllerTest extends TestCase
 
     public function test_index_bloque_sans_feature_rdv(): void
     {
-        // creerAdmin() crée un plan slug aléatoire sans 'rdv'
+        // Plan dont le slug n'est pas listé dans config/plans-features.php
+        // → aucune fonctionnalité, donc pas d'accès aux RDV.
         $user = $this->creerAdmin();
+        $basique = $this->creerPlan(['slug' => 'basic', 'nom' => 'Basic']);
+        $user->abonnements()->update(['plan_id' => $basique->id]);
 
         $this->actingAs($user)
             ->get(route('dashboard.rdv.index'))

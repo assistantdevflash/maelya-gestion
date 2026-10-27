@@ -41,7 +41,7 @@
             </table>
 
             @if($rdv->prestations->isNotEmpty())
-            <p style="font-size:13px;color:#374151;margin-bottom:8px;"><strong>Prestation(s) :</strong></p>
+            <p style="font-size:13px;color:#374151;margin-bottom:8px;"><strong>Prestations :</strong></p>
             @foreach($rdv->prestations as $p)
             <p style="margin:4px 0;font-size:13px;color:#6b7280;">· {{ $p->nom }}</p>
             @endforeach

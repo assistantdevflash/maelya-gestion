@@ -30,6 +30,7 @@ class EvenementsNotificationsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seedTypesEtablissement();
         DB::table('commercial_config')->insertOrIgnore(['taux' => 20, 'duree_mois' => 6]);
         Mail::fake();
     }

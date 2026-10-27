@@ -188,7 +188,7 @@
     <div class="card overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
             <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Articles / Prestations</p>
-            <span class="text-xs text-gray-400">{{ $devis->items->count() }} ligne(s)</span>
+            <span class="text-xs text-gray-400">{{ \App\Helpers\TexteHelper::pluriel($devis->items->count(), 'ligne', 'lignes') }}</span>
         </div>
         <div class="overflow-x-auto">
         <table class="w-full">

@@ -347,17 +347,17 @@ class ClientController extends Controller
         $fidelite = $client->historiquePoints()->count();
 
         $bloqueurs = array_filter([
-            $ventes > 0 ? "$ventes vente(s)" : '',
-            $rdvs > 0 ? "$rdvs rendez-vous" : '',
-            $credits > 0 ? "$credits crédit(s)" : '',
-            $commandes > 0 ? "$commandes commande(s) boutique" : '',
-            $devis > 0 ? "$devis devis" : '',
-            $factures > 0 ? "$factures facture(s)" : '',
-            $brouillons > 0 ? "$brouillons brouillon(s) caisse" : '',
-            $codesReduction > 0 ? "$codesReduction code(s) réduction" : '',
-            $avoirs > 0 ? "$avoirs avoir(s)" : '',
-            $avis > 0 ? "$avis avis" : '',
-            $photos > 0 ? "$photos photo(s)" : '',
+            $ventes > 0 ? \App\Helpers\TexteHelper::pluriel($ventes, 'vente', 'ventes') : '',
+            $rdvs > 0 ? \App\Helpers\TexteHelper::pluriel($rdvs, 'rendez-vous', 'rendez-vous') : '',
+            $credits > 0 ? \App\Helpers\TexteHelper::pluriel($credits, 'crédit', 'crédits') : '',
+            $commandes > 0 ? \App\Helpers\TexteHelper::pluriel($commandes, 'commande', 'commandes') . ' boutique' : '',
+            $devis > 0 ? \App\Helpers\TexteHelper::pluriel($devis, 'devis', 'devis') : '',
+            $factures > 0 ? \App\Helpers\TexteHelper::pluriel($factures, 'facture', 'factures') : '',
+            $brouillons > 0 ? \App\Helpers\TexteHelper::pluriel($brouillons, 'brouillon', 'brouillons') . ' caisse' : '',
+            $codesReduction > 0 ? \App\Helpers\TexteHelper::pluriel($codesReduction, 'code', 'codes') . ' réduction' : '',
+            $avoirs > 0 ? \App\Helpers\TexteHelper::pluriel($avoirs, 'avoir', 'avoirs') : '',
+            $avis > 0 ? \App\Helpers\TexteHelper::pluriel($avis, 'avis', 'avis') : '',
+            $photos > 0 ? \App\Helpers\TexteHelper::pluriel($photos, 'photo', 'photos') : '',
             $fidelite > 0 ? 'historique fidélité' : '',
         ]);
 

@@ -35,6 +35,7 @@ class InscriptionCodeCommercialTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seedTypesEtablissement();
         DB::table('commercial_config')->insertOrIgnore(['taux' => 20, 'duree_mois' => 6]);
         Mail::fake();
     }
@@ -234,12 +235,10 @@ class InscriptionCodeCommercialTest extends TestCase
         $code = 'SAME01';
 
         $profilCommercial = $this->creerCommercialActif($code);
-        // Crée un parrain classique avec le même code (edge case)
-        User::factory()->create([
-            'role'            => 'admin',
-            'actif'           => true,
-            'code_parrainage' => $code,
-        ]);
+        // Crée un parrain classique avec le même code (edge case).
+        // Il doit avoir un abonnement actif, sinon la validation considère
+        // le code comme suspendu avant même d'appliquer la priorité.
+        $this->creerAdmin(['code_parrainage' => $code]);
 
         $this->post(route('inscription.store'), array_merge($this->base, [
             'email'           => 'fatou@example.com',

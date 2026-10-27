@@ -417,7 +417,7 @@
                               class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] rounded-full text-[10px] font-bold text-white flex items-center justify-center px-1 shadow-sm"
                               style="background: linear-gradient(135deg, #9333ea, #ec4899);"></span>
                     </div>
-                    <span class="text-xs font-bold text-gray-600 uppercase tracking-wider">Article(s)</span>
+                    <span class="text-xs font-bold text-gray-600 uppercase tracking-wider">Articles</span>
                 </div>
                 <button x-show="!panierVide" @click="viderPanier" class="text-xs text-red-500 hover:text-red-700 font-medium">Vider</button>
             </div>

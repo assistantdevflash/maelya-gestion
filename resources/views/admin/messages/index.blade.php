@@ -8,10 +8,10 @@
         <div>
             <h1 class="page-title">Messages de contact</h1>
             <p class="page-subtitle">
-                {{ $total }} message(s) au total ·
-                <span class="{{ $nonLus > 0 ? 'text-primary-600 dark:text-primary-400 font-semibold' : '' }}">{{ $nonLus }} non lu(s)</span>
+                {{ \App\Helpers\TexteHelper::pluriel($total, 'message', 'messages') }} au total ·
+                <span class="{{ $nonLus > 0 ? 'text-primary-600 dark:text-primary-400 font-semibold' : '' }}">{{ \App\Helpers\TexteHelper::pluriel($nonLus, 'non lu', 'non lus') }}</span>
                 @if($spam > 0)
-                    · <span class="text-gray-400">{{ $spam }} indésirable(s)</span>
+                    · <span class="text-gray-400">{{ \App\Helpers\TexteHelper::pluriel($spam, 'indésirable', 'indésirables') }}</span>
                 @endif
             </p>
         </div>
@@ -24,7 +24,7 @@
             @endif
             @if($spam > 0)
             <form method="POST" action="{{ route('admin.messages.vider-spam') }}"
-                  onsubmit="return confirm('Supprimer définitivement les {{ $spam }} message(s) indésirable(s) ?')">
+                  onsubmit="return confirm('Supprimer définitivement les {{ \App\Helpers\TexteHelper::pluriel($spam, 'message indésirable', 'messages indésirables') }} ?')">
                 @csrf @method('DELETE')
                 <button class="btn-secondary text-sm text-red-600 dark:text-red-400">Vider les indésirables</button>
             </form>

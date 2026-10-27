@@ -56,7 +56,7 @@
         </div>
         <div class="min-w-0 flex-1">
             <p class="font-semibold text-gray-900 text-sm truncate">{{ $proprio?->nom_complet ?? 'Propriétaire inconnu' }}</p>
-            <p class="text-xs text-gray-400 truncate">{{ $proprio?->email }} — {{ $instituts->count() }} établissement(s)</p>
+            <p class="text-xs text-gray-400 truncate">{{ $proprio?->email }} — {{ \App\Helpers\TexteHelper::pluriel($instituts->count(), 'établissement', 'établissements') }}</p>
         </div>
         @if($proprio)
             @php $abo = $proprio->abonnementActif; @endphp
@@ -75,7 +75,7 @@
             <div class="flex items-center gap-3 p-3">
                 <div class="flex-1 min-w-0">
                     <p class="font-semibold text-sm text-gray-900 truncate">{{ $inst->nom }}</p>
-                    <p class="text-xs text-gray-400">{{ $inst->ville ?? '' }} · {{ $inst->users_count }} utilisateur(s)</p>
+                    <p class="text-xs text-gray-400">{{ $inst->ville ?? '' }} · {{ \App\Helpers\TexteHelper::pluriel($inst->users_count, 'utilisateur', 'utilisateurs') }}</p>
                 </div>
                 <span class="badge {{ $inst->actif ? 'badge-success' : 'bg-red-100 text-red-700' }} text-xs flex-shrink-0">
                     {{ $inst->actif ? 'Actif' : 'Suspendu' }}
@@ -103,7 +103,7 @@
             <tr class="hover:bg-gray-50">
                 <td>
                     <div class="font-medium text-gray-900">{{ $inst->nom }}</div>
-                    <div class="text-xs text-gray-400">{{ $inst->users_count }} utilisateur(s)</div>
+                    <div class="text-xs text-gray-400">{{ \App\Helpers\TexteHelper::pluriel($inst->users_count, 'utilisateur', 'utilisateurs') }}</div>
                 </td>
                 <td class="text-sm text-gray-600 hidden sm:table-cell">{{ $typeLabels[$inst->type] ?? ($inst->type ?? '—') }}</td>
                 <td class="text-sm text-gray-600 hidden sm:table-cell">{{ $inst->ville ?? '—' }}</td>
