@@ -31,7 +31,7 @@
                 <label class="form-label">Libellé *</label>
                 <input type="text" name="libelle" value="{{ old('libelle', $etablissementType->libelle) }}" required autofocus maxlength="200"
                        class="form-input @error('libelle') border-red-400 @enderror"
-                       placeholder="Ex: Salon de coiffure">
+                       placeholder="Ex: Espace bien-être">
                 @error('libelle')
                     <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                 @enderror
@@ -43,7 +43,7 @@
                 <label class="form-label">Code technique *</label>
                 <input type="text" name="code" value="{{ old('code', $etablissementType->code) }}" required maxlength="100"
                        class="form-input @error('code') border-red-400 @enderror"
-                       placeholder="Ex: salon_coiffure">
+                       placeholder="Ex: espace_bien_etre">
                 @error('code')
                     <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                 @enderror

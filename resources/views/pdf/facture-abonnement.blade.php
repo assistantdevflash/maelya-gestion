@@ -14,7 +14,11 @@
     .header { display: table; width: 100%; margin-bottom: 24px; }
     .header-left, .header-right { display: table-cell; vertical-align: top; }
     .header-right { text-align: right; }
-    .plateforme-nom { font-size: 20px; font-weight: bold; color: {{ $cp }}; margin-bottom: 4px; }
+    .brand { display: table; margin-bottom: 5px; }
+    .brand-logo-cell, .brand-nom-cell { display: table-cell; vertical-align: middle; }
+    .brand-logo { height: 34px; width: 34px; }
+    .brand-nom-cell { padding-left: 9px; }
+    .plateforme-nom { font-size: 20px; font-weight: bold; color: {{ $cp }}; line-height: 1; }
     .plateforme-meta { font-size: 10px; color: #6b7280; line-height: 1.6; }
     .badge { display: inline-block; background: {{ $estPayee ? $cp : $cs }}; color: #fff; padding: 6px 14px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
     .numero { font-size: 14px; font-weight: bold; color: #111827; }
@@ -47,9 +51,16 @@
 <body>
 <div class="header">
     <div class="header-left">
-        <div class="plateforme-nom">Maëlya Gestion</div>
+        <div class="brand">
+            <div class="brand-logo-cell">
+                <img class="brand-logo" src="{{ public_path('images/logo.png') }}" alt="Maëlya Gestion">
+            </div>
+            <div class="brand-nom-cell">
+                <div class="plateforme-nom">Maëlya Gestion</div>
+            </div>
+        </div>
         <div class="plateforme-meta">
-            Plateforme de gestion pour salons & instituts de beauté<br>
+            Plateforme de gestion conçue pour les indépendants et PME de service<br>
             maelyagestion.com<br>
             contact@maelyagestion.com
         </div>

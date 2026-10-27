@@ -198,7 +198,7 @@
                         <label class="form-label">Email *</label>
                         <input type="email" name="email" required maxlength="150"
                                x-model="form.email" class="form-input"
-                               placeholder="marie@votresalon.ci">
+                               placeholder="marie@votre-entreprise.ci">
                     </div>
 
                     <div class="form-group">

@@ -19,6 +19,8 @@ class LandingController extends Controller
         return view('landing.index', [
             'plans' => $plans,
             'title' => 'Maëlya Gestion — Logiciel de gestion pour indépendants, PME et entreprises de service',
+            // SEO : l'énumération des secteurs est volontaire et doit être conservée
+            // (couverture des requêtes « logiciel de gestion salon », « spa », etc.).
             'metaDescription' => 'Solution de gestion complète pour salons, instituts, spas, auto-écoles, cabinets, ateliers et PME de service. Caisse, clients, rendez-vous, stocks et finances dans une seule application. Essai gratuit 14 jours.',
         ]);
     }

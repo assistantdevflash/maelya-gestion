@@ -236,6 +236,10 @@
                 <tr><td>Onglerie / Nail bar solo</td><td>Réservation en ligne 24h/24</td><td>Galerie photos avant/après</td><td>Vitrine + Galerie</td></tr>
                 <tr><td>Institut de beauté</td><td>Galerie avant/après + réservation</td><td>Agenda calendrier + fidélité</td><td>Galerie + Vitrine + RDV</td></tr>
                 <tr><td>Barbershop</td><td>Caisse professionnelle + équipe</td><td>Tickets imprimables</td><td>Caisse + Tickets</td></tr>
+                <tr><td>Auto-école</td><td>Planning des leçons + suivi élèves</td><td>Devis et factures aux apprenants</td><td>Calendrier + Devis & Factures</td></tr>
+                <tr><td>Cabinet médical / paramédical</td><td>Prise de RDV + fiche patient</td><td>Rappels automatiques J-1</td><td>RDV + Clients</td></tr>
+                <tr><td>Atelier / Service technique</td><td>Devis puis facture en 1 clic</td><td>Suivi des interventions et stocks</td><td>Devis & Factures + Stock</td></tr>
+                <tr><td>Centre de formation</td><td>Sessions et suivi des stagiaires</td><td>Encaissement des inscriptions</td><td>Caisse + Clients</td></tr>
                 <tr><td>Spa / Multi-établissements</td><td>Comparatif multi-établissements (Premium+)</td><td>Contrôle à distance temps réel</td><td>Comparatif + Dashboard</td></tr>
                 <tr><td>Établissement avec boutique</td><td>Inventaire physique + bons commande</td><td>Alertes rupture stock</td><td>Inventaire + Fournisseurs</td></tr>
                 </tbody>

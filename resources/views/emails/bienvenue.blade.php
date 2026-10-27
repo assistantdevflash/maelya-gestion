@@ -66,7 +66,7 @@
     {{-- Header --}}
     <div class="header">
         <div class="header-logo">Maëlya <span>Gestion</span></div>
-        <div class="header-tagline">La plateforme de gestion des établissements</div>
+        <div class="header-tagline">La plateforme de gestion des indépendants et PME de service</div>
         <div class="header-welcome">
             <p>🎉 Bienvenue, {{ $user->prenom ?: $user->name }} !</p>
             <small>Votre espace est prêt. Commencez dès maintenant.</small>

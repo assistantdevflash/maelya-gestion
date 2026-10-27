@@ -103,7 +103,7 @@ class VitrineController extends Controller
 
         $rdv->prestations()->attach($prestations->pluck('id'));
 
-        // ── Email à l'admin/propriétaire du salon (sync comme les autres mails) ──
+        // ── Email à l'admin/propriétaire de l'établissement (sync comme les autres mails) ──
         $adminEmail = $institut->email ?? $institut->proprietaire?->email;
         if ($adminEmail) {
             Mail::to($adminEmail)->send(new NouveauRdvVitrineEtablissement($rdv));
@@ -114,7 +114,7 @@ class VitrineController extends Controller
             Mail::to($data['client_email'])->send(new NouveauRdvVitrineClient($rdv));
         }
 
-        // ── Notification in-app + push pour le propriétaire du salon ──────
+        // ── Notification in-app + push pour le propriétaire de l'établissement ──
         $proprietaire = $institut->proprietaire;
         if ($proprietaire) {
             $rdvUrl = route('dashboard.rdv.show', $rdv);

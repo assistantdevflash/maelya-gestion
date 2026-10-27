@@ -41,7 +41,7 @@
                     <input type="email" name="email" required maxlength="150"
                            value="{{ old('email', $employe->email ?? '') }}"
                            class="form-input @error('email') border-red-400 @enderror"
-                           placeholder="marie@votresalon.ci">
+                           placeholder="marie@votre-entreprise.ci">
                     @error('email') <p class="form-error">{{ $message }}</p> @enderror
                 </div>
 

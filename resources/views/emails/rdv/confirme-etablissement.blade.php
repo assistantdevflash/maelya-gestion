@@ -83,7 +83,7 @@
     {{-- FOOTER --}}
     <tr>
         <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 32px;text-align:center;font-size:12px;color:#9ca3af;">
-            <p style="margin:0 0 4px;">{{ config('app.name') }} · Gestion de salon de beauté</p>
+            <p style="margin:0 0 4px;">{{ config('app.name') }} · Gestion pour les indépendants et PME de service</p>
             <p style="margin:0;">Cet e-mail a été envoyé automatiquement. Ne pas répondre directement.</p>
         </td>
     </tr>

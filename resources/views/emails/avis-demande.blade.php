@@ -69,7 +69,7 @@
                 </p>
             @else
                 <p style="margin:0 0 4px;"><strong style="color:#6b7280;">{{ config('app.name') }}</strong></p>
-                <p style="margin:0 0 4px;color:#9ca3af;">Gestion de salon de beauté</p>
+                <p style="margin:0 0 4px;color:#9ca3af;">Gestion pour les indépendants et PME de service</p>
             @endif
             <p style="margin:0;font-size:10px;color:#c4c4c4;">Cet e-mail a été envoyé automatiquement par Maëlya Gestion. Ne pas répondre directement.</p>
         </td>

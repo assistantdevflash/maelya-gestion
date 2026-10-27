@@ -197,7 +197,7 @@ Cocody/Riviera → Marcory/Zone 4 → Plateau/Adjamé → Yopougon → Treichvil
 <tr><td><strong>Ticket de caisse</strong></td><td>Numérique (WhatsApp) ou PDF imprimable</td><td>«&nbsp;Professionnel comme une caisse de supermarché&nbsp;»</td></tr>
 <tr><td><strong>Facture PDF</strong></td><td>Facture numérotée pour chaque vente</td><td>«&nbsp;Vos clients ont une vraie facture&nbsp;»</td></tr>
 <tr><td><strong>Devis & Factures</strong></td><td>Devis pro → facture en 1 clic, suivi paiements, PDF, WhatsApp</td><td>«&nbsp;Vos devis inspirent confiance&nbsp;»</td></tr>
-<tr><td><strong>Boutique en ligne</strong></td><td>Page web publique, commandes 24h/24, gestion livraisons</td><td>«&nbsp;Vendez même quand le salon est fermé&nbsp;»</td></tr>
+<tr><td><strong>Boutique en ligne</strong></td><td>Page web publique, commandes 24h/24, gestion livraisons</td><td>«&nbsp;Vendez même quand l\'établissement est fermé&nbsp;»</td></tr>
 <tr><td><strong>Brouillons caisse</strong></td><td>Sauvegarder une vente en cours</td><td>«&nbsp;Reprenez où vous en étiez&nbsp;»</td></tr>
 <tr><td><strong>Tableau de bord</strong></td><td>CA jour/mois, alertes stocks, anniversaires</td><td>«&nbsp;Tout d\'un coup d\'œil&nbsp;»</td></tr>
 <tr><td><strong>Clients</strong></td><td>Fiche + historique complet</td><td>«&nbsp;Vous connaissez vos clients mieux qu\'eux-mêmes&nbsp;»</td></tr>
@@ -284,6 +284,10 @@ Cocody/Riviera → Marcory/Zone 4 → Plateau/Adjamé → Yopougon → Treichvil
 <tr><td>Onglerie / Nail bar solo</td><td>Réservation en ligne 24h/24</td><td>Galerie photos avant/après</td><td>Vitrine + Galerie</td></tr>
 <tr><td>Institut de beauté</td><td>Galerie avant/après + réservation</td><td>Agenda calendrier + fidélité</td><td>Galerie + Vitrine + RDV</td></tr>
 <tr><td>Barbershop</td><td>Caisse professionnelle + équipe</td><td>Tickets imprimables</td><td>Caisse + Tickets</td></tr>
+<tr><td>Auto-école</td><td>Planning des leçons + suivi élèves</td><td>Devis et factures aux apprenants</td><td>Calendrier + Devis & Factures</td></tr>
+<tr><td>Cabinet médical / paramédical</td><td>Prise de RDV + fiche patient</td><td>Rappels automatiques J-1</td><td>RDV + Clients</td></tr>
+<tr><td>Atelier / Service technique</td><td>Devis puis facture en 1 clic</td><td>Suivi des interventions et stocks</td><td>Devis & Factures + Stock</td></tr>
+<tr><td>Centre de formation</td><td>Sessions et suivi des stagiaires</td><td>Encaissement des inscriptions</td><td>Caisse + Clients</td></tr>
 <tr><td>Spa / Multi-établissements</td><td>Comparatif multi-établissements (Premium+)</td><td>Contrôle à distance temps réel</td><td>Comparatif + Dashboard</td></tr>
 <tr><td>Établissement avec boutique</td><td>Inventaire physique + bons commande</td><td>Alertes rupture stock</td><td>Inventaire + Fournisseurs</td></tr>
 </tbody></table>

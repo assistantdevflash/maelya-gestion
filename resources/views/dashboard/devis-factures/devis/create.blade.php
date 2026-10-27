@@ -182,7 +182,7 @@
 
                 <div class="card">
                     <div class="card-header"><h2 class="text-lg font-semibold">Titre (optionnel)</h2></div>
-                    <div class="card-body"><input type="text" name="titre" maxlength="200" value="{{ old('titre') }}" placeholder="Ex: Mariage de Fatou, Pack coiffure..." class="form-input text-sm"></div>
+                    <div class="card-body"><input type="text" name="titre" maxlength="200" value="{{ old('titre') }}" placeholder="Ex: Prestation de mariage, Pack complet..." class="form-input text-sm"></div>
                 </div>
 
                 <div class="card">
