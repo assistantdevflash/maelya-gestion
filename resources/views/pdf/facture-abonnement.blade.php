@@ -1,7 +1,8 @@
 @php
     $cp = '#9333ea';
     $cs = '#ec4899';
-    $estPayee = in_array($invoice['statut_label'], ['Payé', 'Actif'], true);
+    // Une facture n'est émise que pour un encaissement réel (garde-fou serveur).
+    $estPayee = $invoice['est_payee'] ?? in_array($invoice['statut_label'], ['Payé', 'Actif', 'Expiré'], true);
 @endphp
 <!DOCTYPE html>
 <html lang="fr">
@@ -107,7 +108,7 @@
 
 <table class="totals">
     <tr class="total">
-        <td class="label">Total à payer</td>
+        <td class="label">{{ $estPayee ? 'Total payé' : 'Total à payer' }}</td>
         <td class="value">{{ number_format($invoice['montant'], 0, ',', ' ') }} {{ $invoice['devise'] }}</td>
     </tr>
 </table>
@@ -122,7 +123,11 @@
 </table>
 
 <div class="mentions">
+    @if($estPayee)
     <p>Cette facture atteste du paiement effectué sur la plateforme Maëlya Gestion. Elle fait foi des informations relatives à la transaction ci-dessus.</p>
+    @else
+    <p>Ce document ne constitue pas une preuve de paiement : aucun encaissement n'a été enregistré pour cette transaction.</p>
+    @endif
     <p>Pour toute question, contactez-nous à l'adresse contact@maelyagestion.com.</p>
 </div>
 

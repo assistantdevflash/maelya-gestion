@@ -103,13 +103,19 @@
                                 </div>
                             </div>
 
-                            {{-- Action : télécharger la facture --}}
+                            {{-- Action : télécharger la facture (uniquement si paiement encaissé) --}}
                             <div class="flex-shrink-0 flex flex-col items-end gap-2">
+                                @if($item['facture_disponible'] ?? false)
                                 <a href="{{ $item['facture_url'] }}"
                                    class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors" title="Télécharger la facture">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
                                     Facture
                                 </a>
+                                @else
+                                <span class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-400 bg-gray-50 dark:bg-slate-800/60 rounded-lg" title="Aucun paiement encaissé : pas de facture">
+                                    Aucune facture
+                                </span>
+                                @endif
                             </div>
                         </div>
                     </div>

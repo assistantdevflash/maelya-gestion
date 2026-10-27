@@ -70,12 +70,12 @@ class AbonnementController extends Controller
         // pour éviter les doublons.
         $paiementsParAbonnement = $paiements
             ->filter(fn ($tx) => in_array($tx->type, ['abonnement', 'renouvellement', 'upgrade'], true) && $tx->abonnement_id)
-            ->keyBy('abonnement_id');
+            ->groupBy('abonnement_id');
 
         $items = collect();
 
         foreach ($abonnements as $abo) {
-            $items->push($this->transactionDepuisAbonnement($abo, $paiementsParAbonnement->get($abo->id)));
+            $items->push($this->transactionDepuisAbonnement($abo, $paiementsParAbonnement->get($abo->id, collect())));
         }
 
         // 3. Paiements boutique en ligne INDIVIDUELS (GeniusPay) : ils n'ont pas
@@ -106,8 +106,12 @@ class AbonnementController extends Controller
      * Construit une entrée d'historique unifiée à partir d'un abonnement
      * (souscription classique ou demande d'option boutique par virement).
      */
-    private function transactionDepuisAbonnement(Abonnement $abo, ?PaymentTransaction $tx = null): array
+    private function transactionDepuisAbonnement(Abonnement $abo, ?\Illuminate\Support\Collection $transactions = null): array
     {
+        $transactions ??= $this->transactionsAbonnement($abo);
+        $tx = $transactions->first(fn ($t) => $this->transactionPayee($t)) ?? $transactions->first();
+        $factureDisponible = $this->factureDisponible($abo, $transactions);
+
         $isBoutique = ($abo->metadata['type'] ?? null) === 'ajout_option_boutique'
             || $abo->periode === 'option_boutique';
 
@@ -118,8 +122,6 @@ class AbonnementController extends Controller
         $titre = $isBoutique ? 'Boutique en ligne' : ($abo->plan?->nom ?? 'Abonnement');
 
         [$statut, $statutLabel] = $this->normaliserStatut($abo->statut);
-
-        $factureUrl = $this->factureUrlAbonnement($abo);
 
         return [
             'id'                => $abo->id,
@@ -140,7 +142,8 @@ class AbonnementController extends Controller
             'notes_admin'       => $abo->notes_admin,
             'is_boutique'       => $isBoutique,
             'institut_nom'      => $this->institutNomPour($abo),
-            'facture_url'       => $factureUrl,
+            'facture_url'       => $factureDisponible ? $this->factureUrlAbonnement($abo) : null,
+            'facture_disponible'=> $factureDisponible,
         ];
     }
 
@@ -171,8 +174,64 @@ class AbonnementController extends Controller
             'notes_admin'       => null,
             'is_boutique'       => true,
             'institut_nom'      => $this->institutNomPourPaiement($tx),
-            'facture_url'       => route('abonnement.facture-transaction', $tx),
+            'facture_url'       => $this->transactionPayee($tx) ? route('abonnement.facture-transaction', $tx) : null,
+            'facture_disponible'=> $this->transactionPayee($tx),
         ];
+    }
+
+    /**
+     * Transactions de paiement rattachées à un abonnement (souscription,
+     * renouvellement, mise à niveau).
+     */
+    private function transactionsAbonnement(Abonnement $abo): \Illuminate\Support\Collection
+    {
+        return PaymentTransaction::where('abonnement_id', $abo->id)
+            ->whereIn('type', ['abonnement', 'renouvellement', 'upgrade'])
+            ->orderByDesc('created_at')
+            ->get();
+    }
+
+    /**
+     * La transaction GeniusPay correspond-elle à un encaissement réel ?
+     * Un échec, une annulation ou une expiration ne sont jamais des paiements.
+     */
+    private function transactionPayee(?PaymentTransaction $tx): bool
+    {
+        if (! $tx) {
+            return false;
+        }
+
+        if (in_array($tx->status, ['failed', 'cancelled', 'expired'], true)) {
+            return false;
+        }
+
+        return $tx->status === 'completed' || $tx->paid_at !== null;
+    }
+
+    /**
+     * Une facture n'est émise que si un paiement a réellement été encaissé.
+     *
+     * - GeniusPay : transaction « completed » (ou horodatée comme payée).
+     * - Virement bancaire : abonnement activé par un admin → statut « actif »
+     *   ou « expiré » (le paiement a bien eu lieu, l'abonnement est terminé).
+     * - Abonnement offert (0 FCFA), demande en attente, rejetée ou rattachée
+     *   à une transaction en échec : aucune facture.
+     */
+    private function factureDisponible(Abonnement $abo, \Illuminate\Support\Collection $transactions): bool
+    {
+        if ($transactions->contains(fn ($t) => $this->transactionPayee($t))) {
+            return true;
+        }
+
+        if ($transactions->contains(fn ($t) => in_array($t->status, ['failed', 'cancelled', 'expired'], true))) {
+            return false;
+        }
+
+        if ((int) $abo->montant <= 0) {
+            return false;
+        }
+
+        return in_array($abo->statut, ['actif', 'expire'], true);
     }
 
     private function normaliserStatut(string $raw): array
@@ -247,14 +306,20 @@ class AbonnementController extends Controller
     {
         $this->autoriserFacture($abonnement->user_id);
 
+        $transactions = $this->transactionsAbonnement($abonnement);
+
+        // Aucune facture sans encaissement réel (échec, en attente, offert…)
+        abort_unless(
+            $this->factureDisponible($abonnement, $transactions),
+            404,
+            "Aucune facture disponible : aucun paiement n'a été encaissé pour cette transaction."
+        );
+
         $isBoutique = ($abonnement->metadata['type'] ?? null) === 'ajout_option_boutique'
             || $abonnement->periode === 'option_boutique';
 
         // Paiement GeniusPay rattaché éventuellement à cet abonnement
-        $tx = PaymentTransaction::where('abonnement_id', $abonnement->id)
-            ->whereIn('type', ['abonnement', 'renouvellement', 'upgrade'])
-            ->latest()
-            ->first();
+        $tx = $transactions->first(fn ($t) => $this->transactionPayee($t)) ?? $transactions->first();
 
         [$statut, $statutLabel] = $this->normaliserStatut($abonnement->statut);
 
@@ -291,6 +356,7 @@ class AbonnementController extends Controller
             statutLabel: $statutLabel,
             reference: $tx?->reference ?? $abonnement->reference_transfert,
             details: $details,
+            estPayee: $this->transactionPayee($tx) || in_array($abonnement->statut, ['actif', 'expire'], true),
         );
 
         $pdf = Pdf::loadView('pdf.facture-abonnement', compact('invoice'))->setPaper('a4', 'portrait');
@@ -303,6 +369,13 @@ class AbonnementController extends Controller
     public function factureTransaction(PaymentTransaction $paymentTransaction)
     {
         $this->autoriserFacture($paymentTransaction->user_id);
+
+        // Aucune facture sans encaissement réel (échec, en attente, annulé…)
+        abort_unless(
+            $this->transactionPayee($paymentTransaction),
+            404,
+            "Aucune facture disponible : ce paiement n'a pas abouti."
+        );
 
         $paymentTransaction->loadMissing('abonnement.plan', 'user');
 
@@ -336,6 +409,7 @@ class AbonnementController extends Controller
             statutLabel: $statutLabel,
             reference: $paymentTransaction->reference,
             details: $details,
+            estPayee: true,
         );
 
         $pdf = Pdf::loadView('pdf.facture-abonnement', compact('invoice'))->setPaper('a4', 'portrait');
@@ -363,6 +437,7 @@ class AbonnementController extends Controller
         string $statutLabel,
         ?string $reference,
         array $details,
+        bool $estPayee = true,
     ): array {
         $user = Auth::user();
 
@@ -376,6 +451,7 @@ class AbonnementController extends Controller
             'methode'       => $methode,
             'statut_label'  => $statutLabel,
             'reference'     => $reference,
+            'est_payee'     => $estPayee,
             'details'       => $details,
             'client'        => [
                 'nom'        => $user->nom_complet ?: $user->name,
