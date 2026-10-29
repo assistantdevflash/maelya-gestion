@@ -44,7 +44,28 @@
             .fc .fc-list-event-title a { color: #374151; text-decoration: none; }
             .fc .fc-list-event-time { color: #6b7280; }
             .fc .fc-event { border-radius: 5px; padding: 2px 4px; }
-            .fc .fc-event-title, .fc .fc-event-time { color: #fff !important; font-weight: 600; }
+            .fc .fc-event-title, .fc .fc-event-time { font-weight: 600; }
+
+            /* Vue Mois — rendu « point + libellé » : le texte est posé
+               directement SUR la cellule (fond clair). En blanc il devenait
+               invisible → on force un texte foncé en thème clair. */
+            .fc .fc-daygrid-event .fc-event-title,
+            .fc .fc-daygrid-event .fc-event-time { color: #1f2937 !important; }
+            .dark .fc .fc-daygrid-event .fc-event-title,
+            .dark .fc .fc-daygrid-event .fc-event-time { color: #f1f5f9 !important; }
+
+            /* Vue Mois — rendu « bloc coloré » : texte blanc sur la couleur.
+               (placé après la règle précédente pour la surcharger) */
+            .fc .fc-daygrid-block-event .fc-event-title,
+            .fc .fc-daygrid-block-event .fc-event-time { color: #ffffff !important; }
+            .fc .fc-daygrid-event { padding: 1px 3px; border-radius: 4px; }
+            .fc .fc-daygrid-dot-event:hover { background: rgba(124,58,237,0.08); }
+            .dark .fc .fc-daygrid-dot-event:hover { background: rgba(255,255,255,0.06); }
+
+            /* Vues Semaine / Jour — blocs colorés, texte blanc */
+            .fc .fc-timegrid-event .fc-event-title,
+            .fc .fc-timegrid-event .fc-event-time { color: #ffffff !important; }
+
             /* Vue liste : texte foncé sur fond clair (sinon invisible) */
             .fc .fc-list-event .fc-event-title, .fc .fc-list-event .fc-event-time { color: #111827 !important; }
             .dark .fc .fc-list-event .fc-event-title, .dark .fc .fc-list-event .fc-event-time { color: #f1f5f9 !important; }
