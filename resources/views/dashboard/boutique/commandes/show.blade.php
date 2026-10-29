@@ -98,6 +98,7 @@
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
                         <thead class="bg-gray-50 dark:bg-slate-800">
                             <tr>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase w-20">Image</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase">Produit</th>
                                 <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase">Qté</th>
                                 <th class="px-6 py-4 text-right text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase">Prix unitaire</th>
@@ -106,25 +107,46 @@
                         </thead>
                         <tbody class="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-slate-700">
                             @foreach($commande->items as $item)
+                                @php
+                                    // Le produit peut avoir été supprimé (produit_id nullable)
+                                    $urlImage = $item->produit?->photo_url;
+                                @endphp
                                 <tr>
-                                    <td class="px-6 py-4 text-gray-900 dark:text-white font-medium">{{ $item->nom_snapshot }}</td>
-                                    <td class="px-6 py-4 text-center text-gray-700 dark:text-slate-300 font-semibold">{{ $item->quantite }}</td>
-                                    <td class="px-6 py-4 text-right text-gray-700 dark:text-slate-300">{{ number_format($item->prix_snapshot, 0, ',', ' ') }} FCFA</td>
-                                    <td class="px-6 py-4 text-right font-bold text-gray-900 dark:text-white">{{ number_format($item->sous_total, 0, ',', ' ') }} FCFA</td>
+                                    <td class="px-6 py-3">
+                                        @if($urlImage)
+                                            <img src="{{ $urlImage }}"
+                                                 alt="{{ $item->nom_snapshot }}"
+                                                 loading="lazy"
+                                                 class="w-12 h-12 rounded-lg object-cover ring-1 ring-gray-200 dark:ring-slate-700 bg-gray-50 dark:bg-slate-800">
+                                        @else
+                                            <div class="w-12 h-12 rounded-lg ring-1 ring-gray-200 dark:ring-slate-700 bg-gray-50 dark:bg-slate-800 flex items-center justify-center" title="Aucune image">
+                                                <svg class="w-5 h-5 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            </div>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-3 text-gray-900 dark:text-white font-medium">
+                                        {{ $item->nom_snapshot }}
+                                        @if(!$item->produit)
+                                            <span class="block text-xs font-normal text-gray-400 dark:text-slate-500">Produit supprimé</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-3 text-center text-gray-700 dark:text-slate-300 font-semibold">{{ $item->quantite }}</td>
+                                    <td class="px-6 py-3 text-right text-gray-700 dark:text-slate-300">{{ number_format($item->prix_snapshot, 0, ',', ' ') }} FCFA</td>
+                                    <td class="px-6 py-3 text-right font-bold text-gray-900 dark:text-white">{{ number_format($item->sous_total, 0, ',', ' ') }} FCFA</td>
                                 </tr>
                             @endforeach
                         </tbody>
                         <tfoot class="bg-gray-50 dark:bg-slate-800">
                             <tr>
-                                <td colspan="3" class="px-6 py-4 text-right text-sm font-semibold text-gray-700 dark:text-slate-300">Sous-total</td>
+                                <td colspan="4" class="px-6 py-4 text-right text-sm font-semibold text-gray-700 dark:text-slate-300">Sous-total</td>
                                 <td class="px-6 py-4 text-right font-bold text-gray-900 dark:text-white">{{ number_format($commande->sous_total, 0, ',', ' ') }} FCFA</td>
                             </tr>
                             <tr>
-                                <td colspan="3" class="px-6 py-4 text-right text-sm font-semibold text-gray-700 dark:text-slate-300">Frais de livraison</td>
+                                <td colspan="4" class="px-6 py-4 text-right text-sm font-semibold text-gray-700 dark:text-slate-300">Frais de livraison</td>
                                 <td class="px-6 py-4 text-right font-bold text-gray-900 dark:text-white">{{ number_format($commande->frais_livraison, 0, ',', ' ') }} FCFA</td>
                             </tr>
                             <tr class="bg-gray-100 dark:bg-slate-700">
-                                <td colspan="3" class="px-6 py-4 text-right text-lg font-bold text-gray-900 dark:text-white">Total</td>
+                                <td colspan="4" class="px-6 py-4 text-right text-lg font-bold text-gray-900 dark:text-white">Total</td>
                                 <td class="px-6 py-4 text-right text-xl font-bold text-primary-600 dark:text-primary-400">{{ number_format($commande->total, 0, ',', ' ') }} FCFA</td>
                             </tr>
                         </tfoot>
@@ -277,25 +299,46 @@
             @endif
             @endcan
 
+            {{-- Paiement — carte unique (statut, montant et action au même endroit) --}}
             <div class="card">
-                <div class="card-body space-y-3">
+                <div class="card-body space-y-4">
                     <p class="text-sm font-semibold text-gray-900 dark:text-white">Paiement</p>
+
                     <div class="flex items-center gap-2">
                         <span class="px-3 py-1.5 text-xs font-semibold rounded-lg {{ $commande->payee ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-slate-400' }}">
                             {{ $commande->payee ? 'Payée' : 'Non payée' }}
                         </span>
                         <span class="text-xs text-gray-400">{{ $commande->mode_paiement === 'cash' ? 'Cash à la livraison' : ucfirst($commande->mode_paiement ?? 'cash') }}</span>
                     </div>
-                    @if($commande->statut === 'livree' && !$commande->payee)
-                    @can('update', $commande)
-                    <form method="POST" action="{{ route('dashboard.boutique.commandes.payer', $commande) }}">
-                        @csrf
-                        <button type="submit" class="btn-success w-full">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            Marquer payée
-                        </button>
-                    </form>
-                    @endcan
+
+                    @if($commande->payee)
+                        <div class="p-4 bg-emerald-50 dark:bg-emerald-950/30 border-2 border-emerald-200 dark:border-emerald-800/40 rounded-xl">
+                            <div class="flex items-center gap-2 text-emerald-700 dark:text-emerald-300">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <p class="font-semibold">Commande payée</p>
+                            </div>
+                            @if($commande->payee_at)
+                            <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-1">Payée le {{ $commande->payee_at->format('d/m/Y à H:i') }}</p>
+                            @endif
+                        </div>
+                    @elseif($commande->peutEtreMarqueePayee())
+                        @can('update', $commande)
+                        <form method="POST" action="{{ route('dashboard.boutique.commandes.payer', $commande) }}" class="space-y-4">
+                            @csrf
+                            <div class="p-4 bg-emerald-50 dark:bg-emerald-950/30 border-2 border-emerald-200 dark:border-emerald-800/40 rounded-xl">
+                                <p class="text-sm text-emerald-800 dark:text-emerald-200 font-medium">Montant à encaisser</p>
+                                <p class="text-2xl font-bold text-emerald-900 dark:text-emerald-100 mt-1">{{ number_format($commande->total, 0, ',', ' ') }} FCFA</p>
+                            </div>
+                            <button type="submit" class="btn-success w-full">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                Marquer comme payée
+                            </button>
+                        </form>
+                        @endcan
+                    @else
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            Le paiement pourra être enregistré une fois la commande livrée.
+                        </p>
                     @endif
                 </div>
             </div>
@@ -310,41 +353,6 @@
                     </a>
                 </div>
             </div>
-
-            @if(!$commande->payee && $commande->peutEtreMarqueePayee())
-            @can('update', $commande)
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Paiement</h2>
-                </div>
-                <div class="card-body space-y-4">
-                    <form method="POST" action="{{ route('dashboard.boutique.commandes.payer', $commande) }}">
-                        @csrf
-                        <div class="p-4 bg-emerald-50 dark:bg-emerald-950/30 border-2 border-emerald-200 dark:border-emerald-800/40 rounded-xl mb-4">
-                            <p class="text-sm text-emerald-800 dark:text-emerald-200 font-medium">Montant à encaisser</p>
-                            <p class="text-2xl font-bold text-emerald-900 dark:text-emerald-100 mt-1">{{ number_format($commande->total, 0, ',', ' ') }} FCFA</p>
-                        </div>
-                        <button type="submit" class="btn-success w-full btn-lg">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            Marquer comme payée
-                        </button>
-                    </form>
-                </div>
-            </div>
-            @endcan
-            @elseif($commande->payee)
-            <div class="card">
-                <div class="card-body">
-                    <div class="p-5 bg-emerald-50 dark:bg-emerald-950/30 border-2 border-emerald-200 dark:border-emerald-800/40 rounded-xl">
-                        <div class="flex items-center gap-3 text-emerald-700 dark:text-emerald-300 mb-2">
-                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            <p class="font-bold text-lg">Commande payée</p>
-                        </div>
-                        <p class="text-sm text-emerald-600 dark:text-emerald-400">Le {{ $commande->payee_le?->format('d/m/Y à H:i') }}</p>
-                    </div>
-                </div>
-            </div>
-            @endif
 
             @if($commande->peutEtreAnnulee())
             @can('delete', $commande)

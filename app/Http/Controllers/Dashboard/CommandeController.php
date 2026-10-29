@@ -68,7 +68,7 @@ class CommandeController extends Controller
     {
         $this->authorize('view', $commande);
 
-        $commande->load(['client', 'items.produit', 'vente']);
+        $commande->load(['client', 'items.produit.imagePrincipale', 'vente']);
 
         return view('dashboard.boutique.commandes.show', compact('commande'));
     }

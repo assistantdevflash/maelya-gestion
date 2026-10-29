@@ -3,6 +3,22 @@
     $cp = $institut->couleur_primaire ?? '#9333ea';
     $cs = $institut->couleur_secondaire ?? '#ec4899';
     $ca = $institut->couleur_accent ?? '#f59e0b';
+
+    // Libellés lisibles (accents corrects) pour un document officiel
+    $statutLabels = [
+        'nouvelle'       => 'Nouvelle',
+        'acceptee'       => 'Acceptée',
+        'en_preparation' => 'En préparation',
+        'en_livraison'   => 'En livraison',
+        'livree'         => 'Livrée',
+        'annulee'        => 'Annulée',
+        'refusee'        => 'Refusée',
+    ];
+    $modeLabels = [
+        'cash'      => 'Cash à la livraison',
+        'livraison' => 'À la livraison',
+        'mobile'    => 'Mobile Money',
+    ];
 @endphp
 <!DOCTYPE html>
 <html lang="fr">
@@ -15,7 +31,9 @@
     .header { display: table; width: 100%; margin-bottom: 24px; }
     .header-left, .header-right { display: table-cell; vertical-align: top; }
     .header-right { text-align: right; }
-    .institut-nom { font-size: 18px; font-weight: bold; color: {{ $cp }}; margin-bottom: 4px; }
+    .institut-logo { margin-bottom: 6px; line-height: 0; }
+    .institut-logo img { max-height: 48px; max-width: 140px; display: block; }
+    .institut-nom { font-size: 18px; font-weight: bold; color: {{ $cp }}; margin-bottom: 4px; display: block; }
     .institut-meta { font-size: 10px; color: #6b7280; line-height: 1.5; }
     .facture-badge { display: inline-block; background: {{ $cp }}; color: #fff; padding: 6px 14px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
     .facture-numero { font-size: 14px; font-weight: bold; color: #111827; }
@@ -48,26 +66,30 @@
 
     .footer { margin-top: 40px; text-align: center; font-size: 9px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 12px; }
 
-    .statut-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
+    /* Badge de statut : pas d'inline-block (DomPDF le fait déborder vers le
+       haut et chevaucher la ligne précédente). Il est placé sur sa propre
+       ligne dans le HTML. */
+    .statut-badge { display: inline; padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.04em; }
     .statut-payee { background: #d1fae5; color: #065f46; }
     .statut-non-payee { background: #fee2e2; color: #991b1b; }
+    .statut-ligne { margin-top: 6px; line-height: 1.6; }
 </style>
 </head>
 <body>
 
 <div class="header">
     <div class="header-left">
-        <div class="institut-nom">
-            @if($commande->institut->logo ?? null)
-                <img src="{{ storage_path('app/public/' . $commande->institut->logo) }}" style="max-height: 50px; max-width: 140px; margin-bottom: 4px; display: block;">
-            @endif
-            {{ $commande->institut->nom ?? 'Institut' }}
-        </div>
-        @if($commande->institut->adresse ?? null)
-            <div class="institut-meta">{{ $commande->institut->adresse }}</div>
+        @if($institut->logo ?? null)
+            <div class="institut-logo">
+                <img src="{{ storage_path('app/public/' . $institut->logo) }}" alt="">
+            </div>
         @endif
-        @if($commande->institut->telephone ?? null)
-            <div class="institut-meta">Tél : {{ $commande->institut->telephone }}</div>
+        <div class="institut-nom">{{ $institut->nom ?? 'Institut' }}</div>
+        @if($institut->adresse ?? null)
+            <div class="institut-meta">{{ $institut->adresse }}</div>
+        @endif
+        @if($institut->telephone ?? null)
+            <div class="institut-meta">Tél : {{ $institut->telephone }}</div>
         @endif
     </div>
     <div class="header-right">
@@ -91,11 +113,12 @@
         <div class="partie-label">Livraison</div>
         <div class="partie-meta">{{ $commande->adresse_livraison }}</div>
         <div class="partie-meta" style="margin-top:6px;">
-            Mode de paiement : {{ $commande->mode_paiement == 'livraison' ? 'À la livraison' : ucfirst($commande->mode_paiement) }}
+            Mode de paiement : {{ $modeLabels[$commande->mode_paiement] ?? ucfirst($commande->mode_paiement ?? 'cash') }}
         </div>
         <div class="partie-meta">
-            Statut : {{ ucfirst(str_replace('_', ' ', $commande->statut)) }}
-            &nbsp;|&nbsp;
+            Statut : {{ $statutLabels[$commande->statut] ?? ucfirst(str_replace('_', ' ', $commande->statut)) }}
+        </div>
+        <div class="statut-ligne">
             @if($commande->payee)
                 <span class="statut-badge statut-payee">Payée</span>
             @else
