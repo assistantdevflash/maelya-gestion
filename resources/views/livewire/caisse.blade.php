@@ -65,13 +65,30 @@
              x-init="$nextTick(() => {
                 const el = $refs.catsScroll, g = $refs.catsLeft, d = $refs.catsRight;
                 if (!el || !g || !d) return;
+
                 const maj = () => {
+                    // Élément masqué (x-show) ou pas encore mesuré : ne rien
+                    // toucher, sinon les deux flèches se désactivent.
+                    if (!el.clientWidth || !el.scrollWidth) return;
                     g.disabled = el.scrollLeft <= 4;
                     d.disabled = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
                 };
-                maj();
+
                 el.addEventListener('scroll', maj, { passive: true });
                 window.addEventListener('resize', maj);
+
+                // Le contenu change de largeur (changement d'onglet, filtre
+                // catégorie, réapparition après masquage) → on recalcule.
+                if (window.ResizeObserver) {
+                    const ro = new ResizeObserver(() => maj());
+                    ro.observe(el);
+                    if (el.firstElementChild) ro.observe(el.firstElementChild);
+                }
+
+                // Nouvel onglet = nouvelle liste : on repart du début.
+                $watch('categories', () => $nextTick(() => { el.scrollLeft = 0; maj(); }));
+
+                maj();
              })"
              class="flex items-center gap-2">
 
