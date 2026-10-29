@@ -17,6 +17,16 @@ class PrestationController extends Controller
 
         $categoriesForFilter = CategoriePrestation::orderBy('ordre')->orderBy('nom')->get();
 
+        // Statistiques globales (indépendantes des filtres de recherche).
+        // Les modèles appliquent le scope établissement : les compteurs sont
+        // donc automatiquement limités à l'institut courant.
+        $stats = [
+            'prestations' => Prestation::count(),
+            'categories'  => CategoriePrestation::count(),
+            'actives'     => Prestation::where('actif', true)->count(),
+            'inactives'   => Prestation::where('actif', false)->count(),
+        ];
+
         $categories = CategoriePrestation::with(['prestations' => function ($q) use ($search) {
             $q->orderBy('nom');
             if ($search) {
@@ -34,7 +44,7 @@ class PrestationController extends Controller
             $categories = $categories->filter(fn ($cat) => $cat->prestations->count() > 0);
         }
 
-        return view('dashboard.prestations.index', compact('categories', 'categoriesForFilter', 'search', 'categorieId'));
+        return view('dashboard.prestations.index', compact('categories', 'categoriesForFilter', 'search', 'categorieId', 'stats'));
     }
 
     public function create()

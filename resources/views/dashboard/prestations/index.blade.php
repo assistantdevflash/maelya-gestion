@@ -13,6 +13,61 @@
             </button>
         </div>
 
+        {{-- Statistiques --}}
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {{-- Total prestations --}}
+            <div class="card p-4 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
+                    </svg>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs font-medium text-gray-500 dark:text-slate-400 truncate">Total prestations</p>
+                    <p class="text-xl font-bold text-gray-900 dark:text-white leading-tight">{{ $stats['prestations'] }}</p>
+                </div>
+            </div>
+
+            {{-- Total catégories --}}
+            <div class="card p-4 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>
+                    </svg>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs font-medium text-gray-500 dark:text-slate-400 truncate">Total catégories</p>
+                    <p class="text-xl font-bold text-gray-900 dark:text-white leading-tight">{{ $stats['categories'] }}</p>
+                </div>
+            </div>
+
+            {{-- Prestations actives --}}
+            <div class="card p-4 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs font-medium text-gray-500 dark:text-slate-400 truncate">Prestations actives</p>
+                    <p class="text-xl font-bold text-emerald-600 dark:text-emerald-400 leading-tight">{{ $stats['actives'] }}</p>
+                </div>
+            </div>
+
+            {{-- Prestations inactives --}}
+            <div class="card p-4 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-gray-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                    </svg>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs font-medium text-gray-500 dark:text-slate-400 truncate">Prestations inactives</p>
+                    <p class="text-xl font-bold text-gray-600 dark:text-slate-300 leading-tight">{{ $stats['inactives'] }}</p>
+                </div>
+            </div>
+        </div>
+
         {{-- Filtres --}}
         <form method="GET" action="{{ route('dashboard.prestations.index') }}" class="flex flex-wrap gap-3 items-center">
             <div class="relative flex-1 min-w-[200px]">

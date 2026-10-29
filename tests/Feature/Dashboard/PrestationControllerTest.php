@@ -34,6 +34,74 @@ class PrestationControllerTest extends TestCase
             ->assertViewIs('dashboard.prestations.index');
     }
 
+    public function test_index_affiche_les_compteurs_de_statistiques(): void
+    {
+        $user = $this->creerAdmin();
+        $this->actingAs($user); // nécessaire pour l'auto-remplissage de institut_id
+
+        $cat1 = $this->creerCategorie('Coiffure');
+        $this->creerCategorie('Soins');
+
+        foreach ([['Coupe', true], ['Brushing', true], ['Coloration', false]] as [$nom, $actif]) {
+            Prestation::create([
+                'institut_id'  => $user->institut_id,
+                'categorie_id' => $cat1->id,
+                'nom'          => $nom,
+                'prix'         => 5000,
+                'duree'        => 30,
+                'actif'        => $actif,
+            ]);
+        }
+
+        $response = $this->actingAs($user)->get(route('dashboard.prestations.index'));
+
+        $response->assertOk()
+            ->assertSee('Total prestations')
+            ->assertSee('Total catégories')
+            ->assertSee('Prestations actives')
+            ->assertSee('Prestations inactives')
+            ->assertViewHas('stats', fn ($stats) => $stats === [
+                'prestations' => 3,
+                'categories'  => 2,
+                'actives'     => 2,
+                'inactives'   => 1,
+            ]);
+    }
+
+    public function test_les_compteurs_ignorent_les_prestations_des_autres_instituts(): void
+    {
+        $user  = $this->creerAdmin();
+        $autre = $this->creerAdmin(); // autre établissement
+
+        $this->actingAs($user);
+        $cat = $this->creerCategorie('Coiffure');
+
+        Prestation::create([
+            'institut_id'  => $user->institut_id,
+            'categorie_id' => $cat->id,
+            'nom'          => 'Coupe',
+            'prix'         => 5000,
+            'duree'        => 30,
+            'actif'        => true,
+        ]);
+
+        Prestation::create([
+            'institut_id'  => $autre->institut_id,
+            'categorie_id' => $cat->id,
+            'nom'          => 'Prestation autre institut',
+            'prix'         => 9000,
+            'duree'        => 60,
+            'actif'        => false,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard.prestations.index'))
+            ->assertOk()
+            ->assertViewHas('stats', fn ($stats) => $stats['prestations'] === 1
+                && $stats['actives'] === 1
+                && $stats['inactives'] === 0);
+    }
+
     // ── Store ─────────────────────────────────────────────────────────────────
 
     public function test_store_cree_une_prestation_valide(): void
