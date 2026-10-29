@@ -61,23 +61,58 @@
         </div>
 
         {{-- Filtre catégorie (hors card pour permettre le scroll horizontal) --}}
-        <div x-show="categories.length > 0" class="relative lg:static left-0 w-screen lg:w-auto -ml-4 lg:ml-0 overflow-x-auto scrollbar-hide">
-            <div class="flex gap-2 pb-0.5 px-4 lg:px-0 w-max">
-                <button @click="categorieId = ''"
-                        :class="categorieId === '' ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
-                        :style="categorieId === '' ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
-                        class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 whitespace-nowrap">
-                    Toutes
-                </button>
-                <template x-for="cat in categories" :key="cat.id">
-                    <button @click="categorieId = cat.id"
-                            :class="categorieId === cat.id ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
-                            :style="categorieId === cat.id ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
-                            class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 whitespace-nowrap"
-                            x-text="cat.nom">
+        <div x-show="categories.length > 0"
+             x-init="$nextTick(() => {
+                const el = $refs.catsScroll, g = $refs.catsLeft, d = $refs.catsRight;
+                if (!el || !g || !d) return;
+                const maj = () => {
+                    g.disabled = el.scrollLeft <= 4;
+                    d.disabled = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+                };
+                maj();
+                el.addEventListener('scroll', maj, { passive: true });
+                window.addEventListener('resize', maj);
+             })"
+             class="flex items-center gap-2">
+
+            {{-- Flèche gauche — desktop uniquement (mobile : balayage tactile) --}}
+            <button type="button" x-ref="catsLeft"
+                    @click="$refs.catsScroll.scrollBy({ left: -240, behavior: 'smooth' })"
+                    class="hidden lg:inline-flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-full border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all duration-150 disabled:opacity-25 disabled:cursor-default disabled:hover:bg-white dark:disabled:hover:bg-slate-800"
+                    aria-label="Catégories précédentes" title="Catégories précédentes">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </button>
+
+            <div x-ref="catsScroll" class="relative lg:static left-0 w-screen lg:w-auto lg:flex-1 min-w-0 -ml-4 lg:ml-0 overflow-x-auto scrollbar-hide">
+                <div class="flex gap-2 pb-0.5 px-4 lg:px-0 w-max">
+                    <button @click="categorieId = ''"
+                            :class="categorieId === '' ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
+                            :style="categorieId === '' ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
+                            class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 whitespace-nowrap">
+                        Toutes
                     </button>
-                </template>
+                    <template x-for="cat in categories" :key="cat.id">
+                        <button @click="categorieId = cat.id"
+                                :class="categorieId === cat.id ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'"
+                                :style="categorieId === cat.id ? 'background: linear-gradient(135deg, #9333ea, #ec4899);' : ''"
+                                class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 whitespace-nowrap"
+                                x-text="cat.nom">
+                        </button>
+                    </template>
+                </div>
             </div>
+
+            {{-- Flèche droite — desktop uniquement --}}
+            <button type="button" x-ref="catsRight"
+                    @click="$refs.catsScroll.scrollBy({ left: 240, behavior: 'smooth' })"
+                    class="hidden lg:inline-flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-full border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all duration-150 disabled:opacity-25 disabled:cursor-default disabled:hover:bg-white dark:disabled:hover:bg-slate-800"
+                    aria-label="Catégories suivantes" title="Catégories suivantes">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
         </div>
 
         <div class="card p-4 space-y-3">
