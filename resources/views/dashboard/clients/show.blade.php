@@ -14,7 +14,18 @@ $tabs = [
 $currentTab = request('onglet', 'achats');
 @endphp
 
-<div x-data="{ tab: '{{ $currentTab }}', setTab(t) { this.tab = t; history.replaceState(null, '', '?onglet=' + t); } }" class="max-w-6xl mx-auto space-y-5 py-4">
+<div x-data="{ tab: '{{ $currentTab }}', setTab(t) {
+        this.tab = t;
+        history.replaceState(null, '', '?onglet=' + t);
+        this.$nextTick(() => this.centrerOnglet());
+    },
+    centrerOnglet() {
+        const el = this.$refs.tabsScroll;
+        const b = el ? el.querySelector('.onglet-actif') : null;
+        if (!el || !b || !el.clientWidth) return;
+        el.scrollTo({ left: b.offsetLeft - el.clientWidth / 2 + b.offsetWidth / 2, behavior: 'smooth' });
+    }
+}" class="max-w-6xl mx-auto space-y-5 py-4">
 
     {{-- ═══ IDENTITY CARD ═══ --}}
     <div class="card overflow-hidden">
@@ -90,10 +101,62 @@ $currentTab = request('onglet', 'achats');
             <a href="{{ route('dashboard.clients.index') }}" class="hidden lg:flex items-center justify-center gap-2 p-3 rounded-xl bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-sm text-gray-500 dark:text-gray-400 transition">← Retour aux clients</a>
         </div>
         <div class="lg:col-span-3 card overflow-hidden">
-            <div class="flex items-center gap-0.5 px-3 py-2.5 border-b border-gray-100 dark:border-slate-700 overflow-x-auto bg-gray-50/50 dark:bg-slate-800/50">
-                @foreach($tabs as $t)@if(!isset($t['feature'])||auth()->user()->aFonctionnalite($t['feature']))
-                <button @click="setTab('{{ $t['id'] }}')" class="flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold flex-shrink-0 whitespace-nowrap transition-all" :class="tab==='{{ $t['id'] }}'?'bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300':'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'"><span class="hidden sm:inline">{{ $t['icon'] }}</span> {{ $t['label'] }} <span class="text-[10px] font-bold opacity-60">({{ $t['count'] }})</span></button>
-                @endif @endforeach
+            <div class="flex items-center gap-1 px-2 py-2 border-b border-gray-100 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-800/50"
+                 x-init="$nextTick(() => {
+                    const el = $refs.tabsScroll, g = $refs.tabsLeft, d = $refs.tabsRight;
+                    if (!el || !g || !d) return;
+
+                    const maj = () => {
+                        // Élément masqué ou pas encore mesuré : ne rien toucher,
+                        // sinon les deux flèches se désactivent à tort.
+                        if (!el.clientWidth || !el.scrollWidth) return;
+                        g.disabled = el.scrollLeft <= 4;
+                        d.disabled = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+                    };
+
+                    el.addEventListener('scroll', maj, { passive: true });
+                    window.addEventListener('resize', maj);
+
+                    if (window.ResizeObserver) {
+                        new ResizeObserver(() => maj()).observe(el);
+                    }
+
+                    maj();
+
+                    // Au chargement avec ?onglet=photos, l'onglet actif peut être
+                    // hors champ : on le recentre sans faire défiler la page.
+                    if (el.scrollWidth > el.clientWidth) {
+                        const b = el.querySelector('.onglet-actif');
+                        if (b) el.scrollLeft = b.offsetLeft - el.clientWidth / 2 + b.offsetWidth / 2;
+                        maj();
+                    }
+                 })">
+
+                {{-- Flèche gauche — desktop uniquement (mobile : balayage) --}}
+                <button type="button" x-ref="tabsLeft" disabled
+                        @click="$refs.tabsScroll.scrollBy({ left: -240, behavior: 'smooth' })"
+                        class="hidden md:inline-flex items-center justify-center w-7 h-7 flex-shrink-0 rounded-full border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-all duration-150 disabled:opacity-25 disabled:cursor-default disabled:hover:bg-white dark:disabled:hover:bg-slate-800"
+                        aria-label="Onglets précédents" title="Onglets précédents">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+
+                <div x-ref="tabsScroll" class="flex items-center gap-0.5 flex-1 min-w-0 overflow-x-auto scrollbar-hide scroll-smooth">
+                    @foreach($tabs as $t)@if(!isset($t['feature'])||auth()->user()->aFonctionnalite($t['feature']))
+                    <button @click="setTab('{{ $t['id'] }}')" class="flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold flex-shrink-0 whitespace-nowrap transition-all" :class="tab==='{{ $t['id'] }}'?'onglet-actif bg-white dark:bg-slate-700 shadow-sm text-primary-700 dark:text-primary-300':'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'"><span class="hidden sm:inline">{{ $t['icon'] }}</span> {{ $t['label'] }} <span class="text-[10px] font-bold opacity-60">({{ $t['count'] }})</span></button>
+                    @endif @endforeach
+                </div>
+
+                {{-- Flèche droite — desktop uniquement --}}
+                <button type="button" x-ref="tabsRight" disabled
+                        @click="$refs.tabsScroll.scrollBy({ left: 240, behavior: 'smooth' })"
+                        class="hidden md:inline-flex items-center justify-center w-7 h-7 flex-shrink-0 rounded-full border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-all duration-150 disabled:opacity-25 disabled:cursor-default disabled:hover:bg-white dark:disabled:hover:bg-slate-800"
+                        aria-label="Onglets suivants" title="Onglets suivants">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
             </div>
             <div class="max-h-[55vh] overflow-y-auto">
 
