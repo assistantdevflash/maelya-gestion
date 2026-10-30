@@ -8,6 +8,11 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/app.js',
                 'resources/js/public.js',
+                // Alpine autonome pour les pages sans Livewire (~15 Ko au lieu
+                // des ~237 Ko de Livewire sur chaque page du dashboard)
+                'resources/js/alpine-app.js',
+                // Chargé uniquement sur les formulaires avec éditeur riche
+                'resources/js/quill-editor.js',
             ],
             refresh: true,
         }),
@@ -17,7 +22,7 @@ export default defineConfig({
             output: {
                 manualChunks: {
                     'alpine': ['alpinejs'],
-                    'vendor': ['axios'],
+                    'quill': ['quill'],
                 },
                 assetFileNames: (assetInfo) => {
                     let extType = assetInfo.name.split('.').at(1);
@@ -50,6 +55,6 @@ export default defineConfig({
         chunkSizeWarningLimit: 1000,
     },
     optimizeDeps: {
-        include: ['alpinejs', 'axios'],
+        include: ['alpinejs'],
     },
 });

@@ -77,11 +77,25 @@ class ClientController extends Controller
             ->paginate(25)
             ->withQueryString();
 
-        // KPIs globaux (tous les clients, pas seulement la page courante)
-        $totalClients  = Client::count();
-        $vipTotal      = Client::whereHas('ventes', fn($q) => $q->where('statut','validee'), '>=', 10)->count();
-        $inactifTotal  = Client::whereDoesntHave('ventes', fn($q) => $q->where('statut','validee')->where('created_at','>=',now()->subDays(90)))->count();
-        $annivMoisTotal = Client::whereNotNull('date_naissance')->where('date_naissance','like',now()->format('m').'-%')->count();
+        // KPIs globaux (tous les clients, pas seulement la page courante).
+        // Mis en cache 5 min : ce sont 3 sous-requêtes corrélées (whereHas /
+        // whereDoesntHave) exécutées à chaque affichage de la liste.
+        $iid = $this->institutId();
+        $kpis = \Illuminate\Support\Facades\Cache::remember(
+            'clients_kpis_' . $iid,
+            now()->addMinutes(5),
+            fn () => [
+                'total'  => Client::count(),
+                'vip'    => Client::whereHas('ventes', fn ($q) => $q->where('statut', 'validee'), '>=', 10)->count(),
+                'inactif' => Client::whereDoesntHave('ventes', fn ($q) => $q->where('statut', 'validee')->where('created_at', '>=', now()->subDays(90)))->count(),
+                'anniv'  => Client::whereNotNull('date_naissance')->where('date_naissance', 'like', now()->format('m') . '-%')->count(),
+            ]
+        );
+
+        $totalClients   = $kpis['total'];
+        $vipTotal       = $kpis['vip'];
+        $inactifTotal   = $kpis['inactif'];
+        $annivMoisTotal = $kpis['anniv'];
 
         return view('dashboard.clients.index', compact('clients', 'search', 'anniversairesAujourdhui', 'avis', 'statutAvis', 'totalClients', 'vipTotal', 'inactifTotal', 'annivMoisTotal'));
     }
@@ -133,6 +147,10 @@ class ClientController extends Controller
         }
 
         Client::create($data);
+
+        // Le nombre de clients / VIP / inactifs est mis en cache : on l'invalide
+        // immédiatement pour que les compteurs restent justes.
+        \Illuminate\Support\Facades\Cache::forget('clients_kpis_' . $this->institutId());
 
         return redirect()->route('dashboard.clients.index')
             ->with('success', 'Client ajouté avec succès.');

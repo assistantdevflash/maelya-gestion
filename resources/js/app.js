@@ -1,10 +1,9 @@
-import './bootstrap';
+// ⚠️ Ne JAMAIS importer Quill ici : il est chargé à la demande via
+// `resources/js/quill-editor.js` (voir produits/form.blade.php).
 import caisseApp from './caisse';
-import Quill from 'quill';
 
 // Expose le composant Caisse POS en global pour Alpine x-data
 window.caisseApp = caisseApp;
-window.Quill = Quill;
 
 // ═══════════════════════════════════════════════════════════════
 //  GLOBAL FORM LOADING — disable bouton + spinner au submit

@@ -7,8 +7,17 @@
     <title>{{ isset($title) ? $title . ' — ' : '' }}Maëlya Gestion</title>
 
     {{-- Performance: DNS prefetch & Preconnect --}}
-    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    {{-- Polices : chargement NON bloquant (media=print puis bascule en all).
+         L'ancien `@import` dans app.css bloquait le premier rendu de la page
+         tant que fonts.googleapis.com n'avait pas répondu. --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap"
+          media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap">
+    </noscript>
 
     {{-- PWA --}}
     <link rel="manifest" href="/manifest.json">
@@ -272,10 +281,15 @@
                 @php
                     $rdvEchusBadge = 0;
                     if ($featureHas('rdv')) {
-                        $rdvEchusBadge = \App\Models\RendezVous::where('institut_id', session('current_institut_id', auth()->user()->institut_id))
-                            ->where('statut', 'en_attente')
-                            ->where('debut_le', '<', now())
-                            ->count();
+                        $__iid = session('current_institut_id', auth()->user()->institut_id);
+                        $rdvEchusBadge = \Illuminate\Support\Facades\Cache::remember(
+                            'sidebar_rdv_echus_' . $__iid,
+                            now()->addMinute(),
+                            fn () => \App\Models\RendezVous::where('institut_id', $__iid)
+                                ->where('statut', 'en_attente')
+                                ->where('debut_le', '<', now())
+                                ->count()
+                        );
                     }
                 @endphp
                 <p class="px-3 mt-14 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">Clients &amp; RDV</p>
@@ -366,12 +380,17 @@
 
                 @php
                     $fideliteBadge = 0;
-                    $fideliteProgramme = \App\Models\ProgrammeFidelite::where('institut_id', session('current_institut_id', auth()->user()->institut_id))->first();
+                    $__iidFid = session('current_institut_id', auth()->user()->institut_id);
+                    $fideliteProgramme = \App\Models\ProgrammeFidelite::where('institut_id', $__iidFid)->first();
                     if ($fideliteProgramme && $fideliteProgramme->actif) {
-                        $fideliteBadge = \App\Models\Client::where('institut_id', session('current_institut_id', auth()->user()->institut_id))
-                            ->where('actif', true)
-                            ->where('points_fidelite', '>=', $fideliteProgramme->seuil_recompense)
-                            ->count();
+                        $fideliteBadge = \Illuminate\Support\Facades\Cache::remember(
+                            'sidebar_fidelite_' . $__iidFid . '_' . $fideliteProgramme->seuil_recompense,
+                            now()->addMinute(),
+                            fn () => \App\Models\Client::where('institut_id', $__iidFid)
+                                ->where('actif', true)
+                                ->where('points_fidelite', '>=', $fideliteProgramme->seuil_recompense)
+                                ->count()
+                        );
                     }
                 @endphp
                 <a href="{{ $featureHref('fidelite', route('dashboard.fidelite.index')) }}"
@@ -418,9 +437,14 @@
                 {{-- Boutique en ligne --}}
                 @php
                     $boutiqueOpen = request()->routeIs('dashboard.boutique.*');
-                    $nouvellesCommandes = \App\Models\Commande::where('institut_id', session('current_institut_id', auth()->user()->institut_id))
-                        ->where('statut', 'nouvelle')
-                        ->count();
+                    $__iidCmd = session('current_institut_id', auth()->user()->institut_id);
+                    $nouvellesCommandes = \Illuminate\Support\Facades\Cache::remember(
+                        'sidebar_commandes_nouvelles_' . $__iidCmd,
+                        now()->addMinute(),
+                        fn () => \App\Models\Commande::where('institut_id', $__iidCmd)
+                            ->where('statut', 'nouvelle')
+                            ->count()
+                    );
                 @endphp
                 <div x-data="{ open: {{ $boutiqueOpen ? 'true' : 'false' }} }">
                     <button @click="open = !open"
@@ -507,7 +531,7 @@
                 </a>
                 @endif
 
-                @php $alertesStock = \App\Models\Produit::where('actif', true)->whereColumn('stock', '<=', 'seuil_alerte')->count(); @endphp
+                @php $__iidStock = session('current_institut_id', auth()->user()->institut_id); $alertesStock = \Illuminate\Support\Facades\Cache::remember('sidebar_stock_alertes_' . $__iidStock, now()->addMinute(), fn () => \App\Models\Produit::where('institut_id', $__iidStock)->where('actif', true)->whereColumn('stock', '<=', 'seuil_alerte')->count()); @endphp
                 @php $stockOpen = request()->routeIs('dashboard.stock.*') || request()->routeIs('dashboard.produits.*') || request()->routeIs('dashboard.categories-produits.*') || request()->routeIs('dashboard.fournisseurs.*') || request()->routeIs('dashboard.bons-commande.*') || request()->routeIs('dashboard.inventaires.*'); @endphp
 
                 @if(!$featureHas('stock') && !$featureHas('produits'))
@@ -1156,8 +1180,11 @@
     </script>
 </div>
 
-{{-- Livewire scripts --}}
-@livewireScripts
+{{-- Livewire n'est utilisé que par l'écran Caisse. Ailleurs, on charge Alpine
+     seul (~15 Ko) au lieu du bundle Livewire complet (~237 Ko). --}}
+@if(request()->routeIs('dashboard.caisse', 'dashboard.caisse.*'))
+    @livewireScripts
+@endif
 <script>
     window.csrfToken = '{{ csrf_token() }}';
 </script>
@@ -1416,5 +1443,12 @@
 </script>
 @include('partials.push-init')
 @stack('scripts')
+
+{{-- Alpine autonome : doit venir APRÈS @stack('scripts') pour que les
+     composants enregistrés sur `alpine:init` existent avant le démarrage.
+     Sur la caisse, Alpine est fourni par Livewire : ne pas charger les deux. --}}
+@unless(request()->routeIs('dashboard.caisse', 'dashboard.caisse.*'))
+    @vite('resources/js/alpine-app.js')
+@endunless
 </body>
 </html>

@@ -1,5 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap');
-@import 'quill/dist/quill.snow.css';
+/*
+ * ⚠️ Aucun `@import` externe ici.
+ *
+ * Les Google Fonts étaient auparavant importées en tête de ce fichier : le
+ * navigateur devait télécharger la feuille distante AVANT de peindre la page
+ * (requête bloquante vers fonts.googleapis.com). Sur réseau lent ou filtré,
+ * cela retardait le premier rendu de plusieurs secondes.
+ *
+ * Les polices sont désormais déclarées via <link> non bloquant dans les
+ * layouts (voir layouts/*.blade.php).
+ *
+ * Idem pour Quill : sa feuille de style n'est plus inlinée ici, elle est
+ * chargée uniquement sur les pages qui utilisent l'éditeur
+ * (resources/js/quill-editor.js).
+ */
 
 @tailwind base;
 @tailwind components;

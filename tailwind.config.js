@@ -6,7 +6,9 @@ export default {
     darkMode: 'class',
     content: [
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
-        './storage/framework/views/*.php',
+        // ⚠️ Ne PAS scanner `storage/framework/views/*.php` : ce sont les vues
+        // Blade déjà compilées, souvent obsolètes. Les inclure gonflait le CSS
+        // final avec des classes d'anciennes versions de l'interface.
         './resources/views/**/*.blade.php',
         './resources/js/**/*.js',
         './app/Livewire/**/*.php',

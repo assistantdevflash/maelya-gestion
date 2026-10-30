@@ -3,12 +3,12 @@
     "file": "assets/js/alpine-C_7Wj1QD.js",
     "name": "alpine"
   },
-  "_vendor-DBnUWTm1.js": {
-    "file": "assets/js/vendor-DBnUWTm1.js",
-    "name": "vendor"
+  "_quill-B712n8lz.js": {
+    "file": "assets/js/quill-B712n8lz.js",
+    "name": "quill"
   },
   "resources/css/app.css": {
-    "file": "assets/css/app-p1E88e09.css",
+    "file": "assets/css/app-DWgGRFlR.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -16,14 +16,20 @@
       "app.css"
     ]
   },
-  "resources/js/app.js": {
-    "file": "assets/js/app-DawrGPJu.js",
-    "name": "app",
-    "src": "resources/js/app.js",
+  "resources/js/alpine-app.js": {
+    "file": "assets/js/alpine-app-Wzs4BlLJ.js",
+    "name": "alpine-app",
+    "src": "resources/js/alpine-app.js",
     "isEntry": true,
     "imports": [
-      "_vendor-DBnUWTm1.js"
+      "_alpine-C_7Wj1QD.js"
     ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/js/app-DdbTy3dD.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
   },
   "resources/js/public.js": {
     "file": "assets/js/public-Wzs4BlLJ.js",
@@ -32,6 +38,18 @@
     "isEntry": true,
     "imports": [
       "_alpine-C_7Wj1QD.js"
+    ]
+  },
+  "resources/js/quill-editor.js": {
+    "file": "assets/js/quill-editor-CVQmnbze.js",
+    "name": "quill-editor",
+    "src": "resources/js/quill-editor.js",
+    "isEntry": true,
+    "imports": [
+      "_quill-B712n8lz.js"
+    ],
+    "css": [
+      "assets/css/quill-editor-CQ7DNbul.css"
     ]
   }
 }

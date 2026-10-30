@@ -28,6 +28,10 @@ class AppServiceProvider extends ServiceProvider
         // Route model binding pour le paramètre {offre}
         Route::model('offre', \App\Models\OffrePromotionnelle::class);
 
+        // Le script Livewire est en fin de <body> : `defer` évite de bloquer
+        // le parseur sur le reste du document.
+        \Livewire\Livewire::useScriptTagAttributes(['defer' => true]);
+
         // Badge anniversaire dans la sidebar pour toutes les vues dashboard (cache 1h)
         View::composer('layouts.dashboard', function ($view) {
             if (auth()->check()) {

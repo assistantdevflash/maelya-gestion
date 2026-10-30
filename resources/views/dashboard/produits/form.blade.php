@@ -665,6 +665,8 @@
 @endpush
 
 @push('scripts')
+{{-- Éditeur riche : chargé uniquement ici (et non plus dans le bundle global) --}}
+@vite('resources/js/quill-editor.js')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const textarea = document.getElementById('desc-textarea');
