@@ -24,6 +24,10 @@ class InstitutScope implements Scope
         'fb.event.',
         'payment.',
         'webhooks.',
+        // Liens partagés par le gérant : suivi de crédit + fiche PDF signée.
+        // Sans ça, un gérant connecté qui ouvre le lien d'un client d'un autre
+        // établissement voyait un échéancier vide (relations filtrées).
+        'credit.',
     ];
 
     public function apply(Builder $builder, Model $model): void

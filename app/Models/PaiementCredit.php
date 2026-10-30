@@ -20,7 +20,10 @@ class PaiementCredit extends Model
         'encaisse_par', 'notes', 'created_at',
     ];
 
-    protected $casts = ['montant' => 'integer'];
+    protected $casts = [
+        'montant'    => 'integer',
+        'created_at' => 'datetime',
+    ];
 
     public function credit()    { return $this->belongsTo(Credit::class); }
     public function echeance()  { return $this->belongsTo(Echeance::class); }

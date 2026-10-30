@@ -322,6 +322,55 @@ class CreditModuleTest extends TestCase
         $this->get('/suivi-credit/' . $credit->id)->assertForbidden();
     }
 
+    /**
+     * Non-régression : `paiements_credit` n'a pas de timestamps Eloquent, donc
+     * `created_at` revenait sous forme de chaîne et `->format()` provoquait une
+     * erreur 500 dès qu'un crédit avait au moins un paiement.
+     */
+    public function test_la_page_de_suivi_publique_affiche_les_paiements(): void
+    {
+        $credit   = $this->creerCredit(30000, 2);
+        $echeance = $credit->echeances()->orderBy('numero')->first();
+
+        PaiementCredit::create([
+            'credit_id'     => $credit->id,
+            'echeance_id'   => $echeance->id,
+            'institut_id'   => $this->institut->id,
+            'montant'       => 10000,
+            'mode_paiement' => 'cash',
+            'encaisse_par'  => $this->user->id,
+            'created_at'    => now(),
+        ]);
+
+        $url = app(CreditService::class)->urlSuivi($credit->fresh());
+
+        $this->get($url)
+            ->assertOk()
+            ->assertSee('Mes paiements')
+            ->assertSee(now()->format('d/m/Y'));
+    }
+
+    public function test_le_recu_de_paiement_contient_la_date(): void
+    {
+        $credit   = $this->creerCredit(30000, 2);
+        $echeance = $credit->echeances()->orderBy('numero')->first();
+
+        PaiementCredit::create([
+            'credit_id'     => $credit->id,
+            'echeance_id'   => $echeance->id,
+            'institut_id'   => $this->institut->id,
+            'montant'       => 5000,
+            'mode_paiement' => 'cash',
+            'encaisse_par'  => $this->user->id,
+            'created_at'    => now(),
+        ]);
+
+        $recu = app(CreditService::class)->recuPaiement(PaiementCredit::first());
+
+        $this->assertStringContainsString(now()->format('d/m/Y'), $recu);
+        $this->assertStringContainsString('5 000', $recu);
+    }
+
     // ─────────────────────────────────────────────────────────────────────
     // Axe 1 — Relances automatiques
     // ─────────────────────────────────────────────────────────────────────

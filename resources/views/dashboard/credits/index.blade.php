@@ -90,23 +90,53 @@
         {{-- Top débiteurs --}}
         @if($topDebiteurs->isNotEmpty())
         <div class="card p-4">
-            <p class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">Clients les plus endettés</p>
-            <div class="flex flex-wrap gap-2">
-                @foreach($topDebiteurs as $d)
-                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700">
-                        <span class="text-xs font-semibold text-gray-900 dark:text-white">{{ $d['client']?->nom_complet }}</span>
-                        <span class="text-xs font-bold text-red-600">{{ number_format($d['du'], 0, ',', ' ') }} F</span>
-                        @if($d['retards'] > 0)
-                            <span class="badge badge-danger text-[10px]">{{ $d['retards'] }} retard{{ $d['retards'] > 1 ? 's' : '' }}</span>
-                        @endif
-                    </div>
-                @endforeach
+            <div class="flex items-center justify-between gap-3 mb-2.5">
+                <div class="flex items-baseline gap-2 min-w-0">
+                    <p class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider truncate">Clients les plus endettés</p>
+                    <span class="text-[10px] font-bold text-gray-400 dark:text-slate-500 whitespace-nowrap">Top {{ $topDebiteurs->count() }}</span>
+                </div>
+                <a href="#liste-credits" class="text-[11px] font-semibold text-primary-600 hover:text-primary-700 whitespace-nowrap flex-shrink-0">Voir la liste</a>
             </div>
+
+            {{-- Mobile : une seule ligne défilable horizontalement (hauteur constante).
+                 Desktop : retour à la ligne classique. --}}
+            <div class="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto sm:overflow-visible -webkit-overflow-scrolling:touch">
+                <div class="flex gap-2 sm:flex-wrap min-w-max sm:min-w-0 snap-x snap-mandatory">
+                    @foreach($topDebiteurs as $i => $d)
+                        @php
+                            $part = $balance['total'] > 0 ? round($d['du'] * 100 / $balance['total']) : 0;
+                        @endphp
+                        <a href="{{ route('dashboard.credits.index', ['q' => $d['client']?->nom]) }}"
+                           class="snap-start flex-shrink-0 sm:flex-shrink w-[210px] sm:w-auto group
+                                  rounded-xl border border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800
+                                  px-3 py-2 hover:border-primary-200 dark:hover:border-primary-800 hover:bg-white dark:hover:bg-slate-700 transition-colors">
+                            <div class="flex items-center gap-2">
+                                <span class="w-5 h-5 flex-shrink-0 rounded-md bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-slate-300
+                                             text-[10px] font-bold flex items-center justify-center">{{ $i + 1 }}</span>
+                                <span class="text-xs font-semibold text-gray-900 dark:text-white truncate">{{ $d['client']?->nom_complet }}</span>
+                                @if($d['retards'] > 0)
+                                    <span class="ml-auto flex-shrink-0 w-1.5 h-1.5 rounded-full bg-red-500" title="{{ $d['retards'] }} crédit(s) en retard"></span>
+                                @endif
+                            </div>
+                            <div class="flex items-center justify-between mt-1 pl-7 gap-2">
+                                <span class="text-xs font-bold text-red-600 whitespace-nowrap">{{ number_format($d['du'], 0, ',', ' ') }} F</span>
+                                <span class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 whitespace-nowrap">{{ $part }} %</span>
+                            </div>
+                            @if($d['retards'] > 0)
+                                <p class="text-[10px] text-red-600 dark:text-red-400 font-semibold mt-0.5 pl-7">
+                                    {{ \App\Helpers\TexteHelper::pluriel($d['retards'], 'crédit en retard', 'crédits en retard') }}
+                                </p>
+                            @endif
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+            <p class="text-[10px] text-gray-400 dark:text-slate-500 mt-2 sm:hidden">Glissez vers la gauche pour voir les autres.</p>
         </div>
         @endif
 
         {{-- Filtres --}}
-        <div class="card p-4">
+        <div class="card p-4" id="liste-credits">
             <div class="flex flex-wrap items-end gap-3">
                 {{-- Boutons de filtre statut --}}
                 <div class="flex gap-1">
