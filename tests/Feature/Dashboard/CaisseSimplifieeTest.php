@@ -126,4 +126,69 @@ class CaisseSimplifieeTest extends TestCase
         $this->assertStringContainsString('Coiffure', $html);
         $this->assertStringContainsString("changerOnglet('prestations')", $html);
     }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Restriction au plan Premium+ (scan code-barres)
+    // ─────────────────────────────────────────────────────────────────────
+
+    /** Bascule l'utilisateur courant sur un plan Premium (sans scan code-barres). */
+    private function passerAuPlanPremium(): void
+    {
+        $plan = $this->creerPlan([
+            'nom'        => 'Premium',
+            'slug'       => 'premium',
+            'duree_type' => 'mensuel',
+            'prix'       => 9900,
+        ]);
+
+        \App\Models\Abonnement::where('user_id', $this->user->id)->update(['plan_id' => $plan->id]);
+
+        $this->user = $this->user->fresh();
+        $this->assertFalse($this->user->aFonctionnalite('scan_code_barre'));
+    }
+
+    public function test_la_caisse_simplifiee_est_inaccessible_sans_premium_plus(): void
+    {
+        $this->passerAuPlanPremium();
+
+        $this->actingAs($this->user)
+            ->get(route('dashboard.caisse.simplifiee'))
+            ->assertRedirect(route('abonnement.upgrade', ['feature' => 'scan_code_barre']));
+    }
+
+    public function test_le_bouton_est_verrouille_sans_premium_plus(): void
+    {
+        $this->passerAuPlanPremium();
+
+        $this->actingAs($this->user)
+            ->get(route('dashboard.caisse'))
+            ->assertOk()
+            ->assertSee('Premium+')
+            ->assertSee(route('abonnement.upgrade', ['feature' => 'scan_code_barre']), false)
+            ->assertDontSee(route('dashboard.caisse.simplifiee'), false);
+    }
+
+    public function test_le_mode_simple_ne_peut_pas_etre_force_sans_premium_plus(): void
+    {
+        $this->passerAuPlanPremium();
+
+        // Garde-fou serveur : même en forçant l'argument du composant,
+        // on retombe sur la caisse complète.
+        $this->actingAs($this->user);
+
+        \Livewire\Livewire::test(\App\Livewire\Caisse::class, ['mode' => 'simple'])
+            ->assertSet('mode', 'complet');
+
+        \Livewire\Livewire::test(\App\Livewire\Caisse::class, ['mode' => 'complet'])
+            ->assertSet('mode', 'complet');
+    }
+
+    public function test_le_mode_simple_fonctionne_avec_premium_plus(): void
+    {
+        $this->assertTrue($this->user->aFonctionnalite('scan_code_barre'));
+        $this->actingAs($this->user);
+
+        \Livewire\Livewire::test(\App\Livewire\Caisse::class, ['mode' => 'simple'])
+            ->assertSet('mode', 'simple');
+    }
 }

@@ -39,7 +39,7 @@
                 </svg>
                 <span>Caisse complète</span>
             </a>
-            @else
+            @elseif(auth()->user()->aFonctionnalite('scan_code_barre'))
             <a href="{{ route('dashboard.caisse.simplifiee') }}"
                class="btn-outline text-xs sm:text-sm"
                title="Caisse optimisée pour les commerces et supermarchés">
@@ -47,6 +47,17 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                 </svg>
                 <span>Caisse simplifiée</span>
+            </a>
+            @else
+            {{-- Verrouillé : la caisse simplifiée repose sur le scan code-barres (Premium+) --}}
+            <a href="{{ route('abonnement.upgrade', ['feature' => 'scan_code_barre']) }}"
+               class="btn-outline text-xs sm:text-sm opacity-70"
+               title="Disponible à partir de la formule Premium+ (scan code-barres)">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+                <span>Caisse simplifiée</span>
+                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-primary-100 text-primary-700">Premium+</span>
             </a>
             @endif
             <p x-show="status" x-text="status" class="text-xs"
