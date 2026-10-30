@@ -23,6 +23,8 @@ class Institut extends Model
         'boutique_option_active', 'boutique_option_expire_le', 'boutique_option_prix',
         'facebook_pixel_id', 'facebook_access_token', 'facebook_test_code', 'facebook_pixel_name', 'facebook_connected_at',
         'couleur_primaire', 'couleur_secondaire', 'couleur_accent',
+        // Paramétrage du module crédits
+        'credit_plafond_defaut', 'credit_relance_active', 'credit_message_relance',
     ];
 
     protected $casts = [

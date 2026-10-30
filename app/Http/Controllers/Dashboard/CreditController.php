@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\Credit;
 use App\Models\Echeance;
+use App\Services\CreditService;
 use App\Models\Institut;
 use App\Models\PaiementCredit;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -47,7 +48,94 @@ class CreditController extends Controller
                 COALESCE(SUM(CASE WHEN statut != 'solde' THEN reste_a_payer ELSE 0 END), 0) as total_du
             ")->first();
 
-        return view('dashboard.credits.index', compact('credits', 'filtre', 'totaux'));
+        // ── Pilotage du recouvrement ──────────────────────────────────────
+        $service   = app(CreditService::class);
+        $balance   = $service->balanceAgee($this->institutId());
+        $taux      = $service->tauxRecouvrement($this->institutId());
+        $delaiMoyen = $service->delaiMoyenEncaissement($this->institutId());
+        $topDebiteurs = $service->topDebiteurs($this->institutId(), 5);
+
+        return view('dashboard.credits.index', compact(
+            'credits', 'filtre', 'totaux', 'balance', 'taux', 'delaiMoyen', 'topDebiteurs'
+        ));
+    }
+
+    /**
+     * Export CSV des encours (pour le comptable).
+     */
+    public function exportEncours()
+    {
+        $credits = Credit::where('institut_id', $this->institutId())
+            ->where('statut', '!=', 'solde')
+            ->with(['client', 'echeances'])
+            ->orderByDesc('reste_a_payer')
+            ->get();
+
+        $service = app(CreditService::class);
+        $nomFichier = 'encours-credits-' . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($credits, $service) {
+            $out = fopen('php://output', 'w');
+            // BOM UTF-8 pour Excel
+            fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            fputcsv($out, [
+                'Client', 'Téléphone', 'Montant total', 'Apport', 'Déjà payé',
+                'Reste à payer', 'Statut', 'Ouvert le', 'Fin prévue',
+                'Échéances en retard', 'Jours de retard max',
+            ], ';');
+
+            foreach ($credits as $credit) {
+                $enRetard = $credit->echeances->where('statut', 'retard');
+                $retardMax = $credit->echeances
+                    ->filter(fn ($e) => $e->statut !== 'payee' && $e->date_prevue?->isPast())
+                    ->map(fn ($e) => (int) $e->date_prevue->diffInDays(now(), false))
+                    ->max() ?? 0;
+
+                fputcsv($out, [
+                    $credit->client?->nom_complet ?? '—',
+                    $credit->client?->telephone ?? '',
+                    (int) $credit->montant_total,
+                    (int) $credit->apport_initial,
+                    (int) $credit->montant_total - (int) $credit->reste_a_payer,
+                    (int) $credit->reste_a_payer,
+                    $credit->statut === 'retard' ? 'En retard' : ($credit->statut === 'solde' ? 'Soldé' : 'En cours'),
+                    $credit->date_debut?->format('d/m/Y'),
+                    $credit->date_fin_prevue?->format('d/m/Y'),
+                    $enRetard->count(),
+                    max(0, (int) $retardMax),
+                ], ';');
+            }
+
+            fclose($out);
+        }, $nomFichier, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /**
+     * Paramétrage du module crédits (plafond, relances, modèle de message).
+     */
+    public function parametres()
+    {
+        $institut = Institut::findOrFail($this->institutId());
+
+        return view('dashboard.credits.parametres', compact('institut'));
+    }
+
+    public function enregistrerParametres(Request $request)
+    {
+        $data = $request->validate([
+            'credit_plafond_defaut' => ['nullable', 'integer', 'min:0', 'max:100000000'],
+            'credit_message_relance' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $institut = Institut::findOrFail($this->institutId());
+        $institut->update([
+            'credit_plafond_defaut'  => $data['credit_plafond_defaut'] ?: null,
+            'credit_message_relance' => $data['credit_message_relance'] ?: null,
+            'credit_relance_active'  => $request->boolean('credit_relance_active'),
+        ]);
+
+        return back()->with('success', 'Paramètres du module crédits enregistrés.');
     }
 
     public function show(Credit $credit)
@@ -56,7 +144,7 @@ class CreditController extends Controller
         return view('dashboard.credits.show', compact('credit'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $institutId = $this->institutId();
         $allClients = \App\Models\Client::where('institut_id', $institutId)
@@ -82,7 +170,34 @@ class CreditController extends Controller
             ->map(fn($p) => ['id' => 'prod_'.$p->id, 'type' => 'produit', 'designation' => $p->nom, 'prix' => $p->prix_vente, 'search' => strtolower($p->nom)]);
         $catalogue = $prestations->concat($produits)->values();
 
-        return view('dashboard.credits.create', compact('allClients', 'catalogue'));
+        // Pré-remplissage depuis une vente existante (?vente=ID)
+        $prefill = null;
+        $venteSource = null;
+
+        if ($request->filled('vente')) {
+            $vente = \App\Models\Vente::with('items')
+                ->where('institut_id', $institutId)
+                ->find($request->input('vente'));
+
+            if ($vente) {
+                $venteSource = [
+                    'id'      => $vente->id,
+                    'numero'  => $vente->numero ?? $vente->reference ?? null,
+                    'total'   => (int) ($vente->total ?? 0),
+                ];
+
+                $prefill = [
+                    'client' => $vente->client_id ? $allClients->firstWhere('id', $vente->client_id) : null,
+                    'lignes' => $vente->items->map(fn($item) => [
+                        'designation'   => $item->nom_snapshot,
+                        'quantite'      => (int) ($item->quantite ?: 1),
+                        'prix_unitaire' => (int) ($item->prix_snapshot ?: 0),
+                    ])->values()->all(),
+                ];
+            }
+        }
+
+        return view('dashboard.credits.create', compact('allClients', 'catalogue', 'prefill', 'venteSource'));
     }
 
     /**
@@ -93,6 +208,8 @@ class CreditController extends Controller
     public function encoursClient(Client $client)
     {
         abort_unless($client->institut_id === $this->institutId(), 404);
+
+        $service = app(CreditService::class);
 
         $credits = Credit::where('client_id', $client->id)
             ->where('statut', '!=', 'solde')
@@ -129,6 +246,8 @@ class CreditController extends Controller
         })->values();
 
         $totalDu = (int) $credits->sum('reste_a_payer');
+        $plafond = $service->plafondEffectif($client);
+        $score   = $service->scoreClient($client);
 
         return response()->json([
             'credits'        => $lignes,
@@ -136,6 +255,11 @@ class CreditController extends Controller
             'nb_retard'      => $credits->where('statut', 'retard')->count(),
             'total_du'       => $totalDu,
             'total_du_label' => number_format($totalDu, 0, ',', ' ') . ' F',
+            'plafond'        => $plafond,
+            'plafond_label'  => $plafond !== null ? number_format($plafond, 0, ',', ' ') . ' F' : null,
+            'reste_disponible'       => $plafond !== null ? max(0, $plafond - $totalDu) : null,
+            'reste_disponible_label' => $plafond !== null ? number_format(max(0, $plafond - $totalDu), 0, ',', ' ') . ' F' : null,
+            'score'          => $score,
         ]);
     }
 
@@ -182,6 +306,16 @@ class CreditController extends Controller
         $total  = $totalBrut;
         $apport = $data['apport_initial'];
         $reste  = max(0, $total - $apport);
+
+        // ── Plafond d'encours ────────────────────────────────────────────
+        $client   = Client::findOrFail($data['client_id']);
+        $verifPlafond = app(CreditService::class)->verifierPlafond($client, $reste);
+
+        if ($verifPlafond['depasse'] && ! $request->boolean('forcer_plafond')) {
+            return back()
+                ->withErrors(['plafond' => $verifPlafond['message'] . ' Cochez « passer outre le plafond » pour continuer.'])
+                ->withInput();
+        }
 
         $credit = DB::transaction(function () use ($data, $institutId, $total, $apport, $reste, $itemsToSave) {
             $vente = \App\Models\Vente::create([
@@ -432,7 +566,9 @@ class CreditController extends Controller
 
     public function fichePdfPublic(string $id)
     {
-        $credit = Credit::where('id', $id)->firstOrFail();
+        $credit = Credit::withoutGlobalScope(\App\Scopes\InstitutScope::class)
+            ->whereKey($id)
+            ->firstOrFail();
         $credit->load(['client', 'vente.items', 'echeances', 'paiements.encaisseur']);
         $institut = Institut::find($credit->institut_id);
 
@@ -440,6 +576,95 @@ class CreditController extends Controller
             ->setPaper('a4', 'portrait');
 
         return $pdf->stream("fiche-credit-" . substr($credit->id, 0, 8) . ".pdf");
+    }
+
+    /**
+     * Enregistre une relance (canal whatsapp | email | inapp) puis redirige
+     * vers WhatsApp si disponible.
+     */
+    public function relancer(Request $request, Credit $credit)
+    {
+        $data = $request->validate([
+            'canal' => ['required', 'in:whatsapp,email,inapp'],
+        ]);
+
+        $service = app(CreditService::class);
+        $canal = $data['canal'];
+
+        \App\Models\CreditRelance::firstOrCreate(
+            [
+                'credit_id' => $credit->id,
+                'palier'    => 'manuel',
+                'canal'     => $canal,
+            ],
+            [
+                'institut_id' => $credit->institut_id,
+                'envoye_le'   => now(),
+            ]
+        );
+
+        if ($canal === 'email' && $credit->client?->email) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($credit->client->email)
+                    ->send(new \App\Mail\RelanceCredit($credit, $service->messageRelance($credit)));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('[Relance crédit email] ' . $e->getMessage());
+            }
+        }
+
+        if ($canal === 'whatsapp') {
+            $lien = $service->lienWhatsApp($credit);
+
+            if (! $lien) {
+                return back()->with('error', "Ce client n'a pas de numéro de téléphone exploitable.");
+            }
+
+            return redirect()->away($lien);
+        }
+
+        return back()->with('success', 'Relance enregistrée.');
+    }
+
+    /**
+     * Rééchelonne les échéances restantes d'un crédit.
+     */
+    public function reechelonner(Request $request, Credit $credit)
+    {
+        abort_if($credit->statut === 'solde', 403, 'Ce crédit est déjà soldé.');
+
+        $data = $request->validate([
+            'nb_echeances' => ['required', 'integer', 'min:1', 'max:36'],
+            'frequence'    => ['required', 'in:hebdomadaire,mensuelle'],
+        ]);
+
+        app(CreditService::class)->reechelonner(
+            $credit,
+            (int) $data['nb_echeances'],
+            $data['frequence']
+        );
+
+        return back()->with('success', 'Échéancier réaménagé : '
+            . $data['nb_echeances'] . ' échéance(s) ' . $data['frequence'] . '(s).');
+    }
+
+    /**
+     * Reporte une échéance à une nouvelle date.
+     */
+    public function reporterEcheance(Request $request, Credit $credit, Echeance $echeance)
+    {
+        abort_if($echeance->credit_id !== $credit->id, 403);
+
+        $data = $request->validate([
+            'date_prevue' => ['required', 'date', 'after:today'],
+        ]);
+
+        app(CreditService::class)->reporterEcheance(
+            $echeance,
+            \Illuminate\Support\Carbon::parse($data['date_prevue'])
+        );
+
+        return back()->with('success', 'Échéance reportée au '
+            . \Illuminate\Support\Carbon::parse($data['date_prevue'])->format('d/m/Y') . '.');
     }
 
     public function payer(Request $request, Credit $credit)
@@ -454,14 +679,14 @@ class CreditController extends Controller
         $echeance = Echeance::findOrFail($data['echeance_id']);
         abort_if($echeance->credit_id !== $credit->id, 403);
 
-        DB::transaction(function () use ($credit, $echeance, $data) {
-            PaiementCredit::create([
+        $paiement = DB::transaction(function () use ($credit, $echeance, $data) {
+            $paiement = PaiementCredit::create([
                 'credit_id'     => $credit->id,
                 'echeance_id'   => $echeance->id,
                 'institut_id'   => $this->institutId(),
                 'montant'       => $data['montant'],
                 'mode_paiement' => $data['mode_paiement'],
-                'reference'     => $data['reference'],
+                'reference'     => $data['reference'] ?? null,
                 'encaisse_par'  => Auth::id(),
                 'created_at'    => now(),
             ]);
@@ -491,8 +716,17 @@ class CreditController extends Controller
             $credit->vente->montant_paye += $data['montant'];
             $credit->vente->save();
             $credit->save();
+
+            return $paiement;
         });
 
-        return back()->with('success', 'Paiement de ' . number_format($data['montant'], 0, ',', ' ') . ' FCFA enregistré.');
+        $service = app(CreditService::class);
+        $recu    = $service->recuPaiement($paiement);
+        $tel     = $service->numeroWhatsApp($credit->client?->telephone);
+
+        return back()
+            ->with('success', 'Paiement de ' . number_format($data['montant'], 0, ',', ' ') . ' FCFA enregistré.')
+            ->with('recu_credit', $recu)
+            ->with('recu_whatsapp', $tel ? 'https://wa.me/' . $tel . '?text=' . rawurlencode($recu) : null);
     }
 }

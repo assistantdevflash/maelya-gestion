@@ -62,7 +62,7 @@
             @endforeach
 
             <div style="text-align:center;margin:32px 0 8px;">
-                <a href="{{ url('/fiche-credit/' . $credit->id) }}"
+                <a href="{{ app(\App\Services\CreditService::class)->urlFiche($credit) }}"
                    style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,{{ $cp }},{{ $cs }});color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;">
                     Voir ma fiche de credit
                 </a>

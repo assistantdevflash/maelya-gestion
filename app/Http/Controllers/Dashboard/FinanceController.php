@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Credit;
 use App\Models\Depense;
 use App\Models\Vente;
 use App\Models\VenteItem;
@@ -222,6 +223,17 @@ class FinanceController extends Controller
             ->count();
         $revenusPrevu += $commandesPrevues;
 
+        // Échéances de crédit client à encaisser sur l'horizon (y compris les
+        // retards : c'est de l'argent attendu, pas encore encaissé).
+        $echeancesCredit = \App\Models\Echeance::whereIn('statut', ['en_attente', 'retard'])
+            ->whereIn('credit_id', Credit::where('statut', '!=', 'solde')->select('id'))
+            ->whereDate('date_prevue', '<=', $finPrevi)
+            ->get(['date_prevue', 'montant', 'montant_paye']);
+
+        $creditsPrevu       = (int) $echeancesCredit->sum(fn ($e) => max(0, (int) $e->montant - (int) $e->montant_paye));
+        $nbEcheancesPrevu   = $echeancesCredit->count();
+        $revenusPrevu      += $creditsPrevu;
+
         // Moyenne quotidienne des ventes des 30 derniers jours (hors crédits non payés)
         $caRecent = Vente::where('statut', 'validee')
             ->where('created_at', '>=', now()->subDays(30))
@@ -270,6 +282,11 @@ class FinanceController extends Controller
             // Commandes boutique : lissage uniforme
             $entrees += $cmdQuotidien;
 
+            // Échéances de crédit tombant ce jour
+            $entrees += $echeancesCredit
+                ->filter(fn ($e) => $e->date_prevue && $e->date_prevue->isSameDay($d))
+                ->sum(fn ($e) => max(0, (int) $e->montant - (int) $e->montant_paye));
+
             $jourEntrees[] = (int) ($entrees + $caQuotidien);
             $jourSorties[] = (int) $depQuotidienne;
         }
@@ -281,7 +298,8 @@ class FinanceController extends Controller
             'prestationsParCategorie', 'produitsParCategorie',
             'joursPrevi', 'revenusPrevu', 'projectionVentes', 'projectionDepenses',
             'soldePrevi', 'jourLabel', 'jourEntrees', 'jourSorties', 'rdvFuturs',
-            'devisPrevu', 'commandesPrevues', 'nbDevisPrevu', 'nbCommandesPrevues'
+            'devisPrevu', 'commandesPrevues', 'nbDevisPrevu', 'nbCommandesPrevues',
+            'creditsPrevu', 'nbEcheancesPrevu'
         ));
     }
 

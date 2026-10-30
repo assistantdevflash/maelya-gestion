@@ -286,7 +286,13 @@
                         {{ $rdvFuturs->count() }} RDV{{ $rdvFuturs->count() > 1 ? 's' : '' }}
                         @if($nbDevisPrevu > 0) · {{ $nbDevisPrevu }} devis @endif
                         @if($nbCommandesPrevues > 0) · {{ $nbCommandesPrevues }} cmd @endif
+                        @if(($nbEcheancesPrevu ?? 0) > 0) · {{ $nbEcheancesPrevu }} échéance{{ $nbEcheancesPrevu > 1 ? 's' : '' }} crédit @endif
                     </p>
+                    @if(($creditsPrevu ?? 0) > 0)
+                    <p class="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1">
+                        dont {{ number_format($creditsPrevu, 0, ',', ' ') }} F de crédits à recouvrer
+                    </p>
+                    @endif
                 </div>
                 <div class="card p-4">
                     <p class="text-xs text-gray-500 dark:text-slate-400 uppercase">Ventes prévues</p>

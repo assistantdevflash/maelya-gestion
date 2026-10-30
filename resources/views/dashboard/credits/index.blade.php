@@ -7,12 +7,22 @@
                 <h1 class="text-2xl font-display font-bold text-gray-900 tracking-tight">Crédits clients</h1>
                 <p class="text-sm text-gray-500 mt-1">{{ \App\Helpers\TexteHelper::pluriel($credits->total(), 'crédit', 'crédits') }}</p>
             </div>
-            <a href="{{ route('dashboard.credits.create') }}" class="btn-primary">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                </svg>
-                Nouveau crédit
-            </a>
+            <div class="flex items-center gap-2 flex-wrap">
+                <a href="{{ route('dashboard.credits.export-encours') }}" class="btn-outline text-sm" title="Exporter les encours (CSV)">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    <span class="hidden sm:inline">Export CSV</span>
+                </a>
+                <a href="{{ route('dashboard.credits.parametres') }}" class="btn-outline text-sm" title="Paramètres du module">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span class="hidden sm:inline">Paramètres</span>
+                </a>
+                <a href="{{ route('dashboard.credits.create') }}" class="btn-primary">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    Nouveau crédit
+                </a>
+            </div>
         </div>
 
         {{-- Stats --}}
@@ -34,6 +44,66 @@
                 <p class="text-2xl font-bold text-amber-600">{{ number_format($totaux->total_du ?? 0, 0, ',', ' ') }} F</p>
             </div>
         </div>
+
+        {{-- Balance âgée + indicateurs de recouvrement --}}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div class="card p-4 lg:col-span-2">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Balance âgée des créances</p>
+                    <span class="text-[11px] text-gray-400">{{ $balance['nb'] }} échéance(s) non réglée(s)</span>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                    @php
+                        $tranches = [
+                            ['label' => 'À venir',  'valeur' => $balance['a_venir'],  'classe' => 'text-blue-600 border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800/40'],
+                            ['label' => '0-30 j',   'valeur' => $balance['t0_30'],    'classe' => 'text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800/40'],
+                            ['label' => '31-60 j',  'valeur' => $balance['t31_60'],   'classe' => 'text-orange-600 border-orange-200 bg-orange-50 dark:bg-orange-950/30 dark:border-orange-800/40'],
+                            ['label' => '61-90 j',  'valeur' => $balance['t61_90'],   'classe' => 'text-red-500 border-red-200 bg-red-50 dark:bg-red-950/30 dark:border-red-800/40'],
+                            ['label' => '+90 j',    'valeur' => $balance['t90_plus'], 'classe' => 'text-red-700 border-red-300 bg-red-100 dark:bg-red-950/50 dark:border-red-800/60'],
+                        ];
+                    @endphp
+                    @foreach($tranches as $t)
+                        <div class="rounded-xl border {{ $t['classe'] }} px-3 py-2">
+                            <p class="text-[10px] font-bold uppercase tracking-wide opacity-80">{{ $t['label'] }}</p>
+                            <p class="text-sm font-bold mt-0.5 whitespace-nowrap">{{ number_format($t['valeur'], 0, ',', ' ') }} F</p>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="card p-4 grid grid-cols-2 lg:grid-cols-1 gap-3">
+                <div>
+                    <p class="text-xs text-gray-500 dark:text-slate-400">Taux de recouvrement</p>
+                    <p class="text-2xl font-bold text-emerald-600">{{ $taux !== null ? $taux . ' %' : '—' }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500 dark:text-slate-400">Délai moyen d'encaissement</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                        {{ $delaiMoyen !== null ? $delaiMoyen . ' j' : '—' }}
+                    </p>
+                    <p class="text-[10px] text-gray-400 mt-0.5">négatif = payé en avance</p>
+                </div>
+            </div>
+        </div>
+
+        {{-- Top débiteurs --}}
+        @if($topDebiteurs->isNotEmpty())
+        <div class="card p-4">
+            <p class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">Clients les plus endettés</p>
+            <div class="flex flex-wrap gap-2">
+                @foreach($topDebiteurs as $d)
+                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700">
+                        <span class="text-xs font-semibold text-gray-900 dark:text-white">{{ $d['client']?->nom_complet }}</span>
+                        <span class="text-xs font-bold text-red-600">{{ number_format($d['du'], 0, ',', ' ') }} F</span>
+                        @if($d['retards'] > 0)
+                            <span class="badge badge-danger text-[10px]">{{ $d['retards'] }} retard{{ $d['retards'] > 1 ? 's' : '' }}</span>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
 
         {{-- Filtres --}}
         <div class="card p-4">

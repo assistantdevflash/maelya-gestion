@@ -27,27 +27,25 @@
                     🖨️ <span class="hidden sm:inline">Imprimer</span>
                 </a>
                 @php
-                    $waPhonePrint = $credit->client?->telephone ? preg_replace('/[^0-9+]/', '', $credit->client->telephone) : null;
-                    if ($waPhonePrint) {
-                        $waPhonePrint = ltrim($waPhonePrint, '+');
-                        if (str_starts_with($waPhonePrint, '0')) {
-                            $waPhonePrint = '225' . $waPhonePrint;
-                        }
-                    }
-                    $ficheUrl = route('credit.fiche.public', $credit->id);
-                    $waMsgPrint = $waPhonePrint ? rawurlencode(
-                        "Bonjour " . ($credit->client->prenom ?? '') . ",\n\n"
-                        . "Voici votre fiche de credit :\n"
-                        . "Montant total : " . number_format($credit->montant_total, 0, ',', ' ') . " FCFA\n"
-                        . "Reste a payer : " . number_format($credit->reste_a_payer, 0, ',', ' ') . " FCFA\n"
-                        . "Fiche : " . $ficheUrl . "\n\n"
-                        . "Merci de votre confiance !"
-                    ) : null;
+                    $creditService = app(\App\Services\CreditService::class);
+                    $waLinkRelance = $creditService->lienWhatsApp($credit);
+                    $waLinkFiche = $creditService->lienWhatsApp($credit, 'fiche');
                 @endphp
-                @if($waPhonePrint)
-                <a href="https://wa.me/{{ $waPhonePrint }}?text={{ $waMsgPrint }}" target="_blank" class="btn-outline text-xs py-1.5 px-3 text-green-600 border-green-200 hover:bg-green-50 whitespace-nowrap" title="Partager par WhatsApp">
+                @if($waLinkFiche)
+                <a href="{{ $waLinkFiche }}" target="_blank" class="btn-outline text-xs py-1.5 px-3 text-green-600 border-green-200 hover:bg-green-50 whitespace-nowrap" title="Partager la fiche par WhatsApp">
                     💬 <span class="hidden sm:inline">WhatsApp</span>
                 </a>
+                @endif
+                @if($credit->statut !== 'solde' && $waLinkRelance)
+                <a href="{{ $waLinkRelance }}" target="_blank" class="btn-outline text-xs py-1.5 px-3 text-orange-600 border-orange-200 hover:bg-orange-50 whitespace-nowrap" title="Relancer par WhatsApp">
+                    🔔 <span class="hidden sm:inline">Relancer</span>
+                </a>
+                @endif
+                @if($credit->statut !== 'solde')
+                <button onclick="document.getElementById('modal-reechelonner').showModal()"
+                        class="btn-outline text-xs py-1.5 px-3 whitespace-nowrap" title="Réaménager l'échéancier">
+                    🔄 <span class="hidden sm:inline">Réaménager</span>
+                </button>
                 @endif
                 @if($credit->paiements->isEmpty())
                 <x-dropdown-actions>
@@ -76,6 +74,27 @@
         </div>
         @endif
 
+        @if(session('recu_credit'))
+        <div class="rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                    <p class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 mb-1">Reçu de paiement</p>
+                    <pre class="text-xs whitespace-pre-wrap font-mono text-gray-700 dark:text-slate-300 leading-relaxed">{{ session('recu_credit') }}</pre>
+                </div>
+                <div class="flex flex-col gap-2 flex-shrink-0">
+                    @if(session('recu_whatsapp'))
+                    <a href="{{ session('recu_whatsapp') }}" target="_blank"
+                       class="btn-outline text-xs py-1.5 px-3 text-green-600 border-green-200 hover:bg-green-50 whitespace-nowrap">
+                        💬 Envoyer
+                    </a>
+                    @endif
+                    <button type="button" onclick="navigator.clipboard.writeText(@js(session('recu_credit'))); this.textContent='Copié ✓'"
+                            class="btn-outline text-xs py-1.5 px-3 whitespace-nowrap">Copier</button>
+                </div>
+            </div>
+        </div>
+        @endif
+
         {{-- Résumé --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="card p-5">
@@ -83,6 +102,21 @@
                 <p class="font-bold text-gray-900">{{ $credit->client?->nom_complet ?? '—' }}</p>
                 @if($credit->client?->telephone)
                 <p class="text-sm text-gray-500">{{ $credit->client->telephone }}</p>
+                @endif
+                @php $sc = $credit->client ? $creditService->scoreClient($credit->client) : null; @endphp
+                @if($sc)
+                <div class="flex items-center gap-2 mt-2">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold
+                        {{ $sc['couleur'] === 'success' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : '' }}
+                        {{ $sc['couleur'] === 'warning' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' : '' }}
+                        {{ $sc['couleur'] === 'danger'  ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' : '' }}
+                        {{ $sc['couleur'] === 'secondary' ? 'bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-slate-300' : '' }}">
+                        Score {{ $sc['score'] !== null ? $sc['score'] . '/100' : '—' }} · {{ $sc['libelle'] }}
+                    </span>
+                </div>
+                @if($sc['en_retard'] > 0)
+                <p class="text-[11px] text-red-600 dark:text-red-400 mt-1">{{ $sc['en_retard'] }} échéance{{ $sc['en_retard'] > 1 ? 's' : '' }} en retard</p>
+                @endif
                 @endif
                 <a href="{{ route('dashboard.clients.show', $credit->client) }}" class="text-xs text-primary-600 hover:underline mt-1 inline-block">Voir fiche client</a>
             </div>
@@ -168,6 +202,31 @@
                                     class="text-xs font-semibold text-primary-600 hover:text-primary-700 whitespace-nowrap">
                                 Encaisser
                             </button>
+                            <button onclick="document.getElementById('reporter-{{ $echeance->id }}').showModal()"
+                                    class="ml-2 text-xs font-semibold text-amber-600 hover:text-amber-700 whitespace-nowrap"
+                                    title="Reporter cette échéance">
+                                Reporter
+                            </button>
+
+                            {{-- Dialogue de report d'échéance --}}
+                            <dialog id="reporter-{{ $echeance->id }}" class="rounded-2xl shadow-2xl border-0 p-0 w-full max-w-xs backdrop:bg-black/50 dark:backdrop:bg-black/70 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100">
+                                <form method="POST" action="{{ route('dashboard.credits.echeances.reporter', [$credit, $echeance]) }}" class="p-5 space-y-4">
+                                    @csrf
+                                    <h3 class="text-base font-bold text-gray-900 dark:text-white">Reporter l'échéance {{ $echeance->numero }}</h3>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Initialement prévue le {{ \Carbon\Carbon::parse($echeance->date_prevue)->format('d/m/Y') }}.</p>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Nouvelle date</label>
+                                        <input type="date" name="date_prevue" required
+                                               min="{{ now()->addDay()->format('Y-m-d') }}"
+                                               value="{{ \Carbon\Carbon::parse($echeance->date_prevue)->max(now()->addDay())->format('Y-m-d') }}"
+                                               class="w-full form-input text-sm">
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button type="button" onclick="this.closest('dialog').close()" class="btn-outline flex-1 text-sm">Annuler</button>
+                                        <button type="submit" class="btn-primary flex-1 text-sm">Reporter</button>
+                                    </div>
+                                </form>
+                            </dialog>
 
                             {{-- Dialogue de paiement --}}
                             <dialog id="payer-{{ $echeance->id }}" class="rounded-2xl shadow-2xl border-0 p-0 w-full max-w-sm backdrop:bg-black/50 dark:backdrop:bg-black/70 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100">
@@ -288,6 +347,41 @@
     <x-modal-confirm id="modal-supprimer-credit" title="Supprimer ce crédit ?"
         message="Le crédit de <strong>{{ $credit->client?->nom_complet ?? '—' }}</strong> d'un montant de <strong>{{ number_format($credit->montant_total, 0, ',', ' ') }} F</strong> sera définitivement supprimé. Cette action est <strong>irréversible</strong>."
         action="{{ route('dashboard.credits.destroy', $credit) }}" method="DELETE" confirm="Supprimer" danger="true" />
+
+    @if($credit->statut !== 'solde')
+    <dialog id="modal-reechelonner" class="rounded-2xl shadow-2xl border-0 p-0 w-full max-w-sm backdrop:bg-black/50 dark:backdrop:bg-black/70 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100">
+        <form method="POST" action="{{ route('dashboard.credits.reechelonner', $credit) }}" class="p-6 space-y-4">
+            @csrf
+            <div>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Réaménager l'échéancier</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Reste à payer : <strong class="text-gray-900 dark:text-white">{{ number_format($credit->reste_a_payer, 0, ',', ' ') }} F</strong>.
+                    Les échéances déjà réglées ne sont pas modifiées.
+                </p>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Nombre d'échéances restantes</label>
+                <input type="number" name="nb_echeances" min="1" max="36" value="{{ max(1, $credit->echeances->where('statut', '!=', 'payee')->count()) }}" required class="w-full form-input text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Fréquence</label>
+                <select name="frequence" class="w-full form-input text-sm">
+                    <option value="hebdomadaire">Chaque semaine</option>
+                    <option value="mensuelle" selected>Chaque mois</option>
+                    <option value="quinzaine">Tous les 15 jours</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Première échéance</label>
+                <input type="date" name="date_debut" value="{{ now()->addMonth()->format('Y-m-d') }}" min="{{ now()->addDay()->format('Y-m-d') }}" class="w-full form-input text-sm">
+            </div>
+            <div class="flex gap-2 pt-1">
+                <button type="button" onclick="this.closest('dialog').close()" class="btn-outline flex-1 text-sm">Annuler</button>
+                <button type="submit" class="btn-primary flex-1 text-sm">Réaménager</button>
+            </div>
+        </form>
+    </dialog>
+    @endif
 
     <script>function openModal(id){document.getElementById(id).classList.remove('hidden');}</script>
 </x-dashboard-layout>

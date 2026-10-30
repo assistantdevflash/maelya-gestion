@@ -94,10 +94,15 @@ Route::get('/ticket/{id}', [VenteController::class, 'ticketPdfPublic'])
     ->middleware('throttle:30,1')
     ->name('ticket.public');
 
-// ─── Fiche crédit PDF publique (lien partageable, accès par UUID) ────────────
+// ─── Fiche crédit PDF publique (lien signé, non falsifiable) ────────────────
 Route::get('/fiche-credit/{id}', [\App\Http\Controllers\Dashboard\CreditController::class, 'fichePdfPublic'])
-    ->middleware('throttle:30,1')
+    ->middleware(['signed', 'throttle:30,1'])
     ->name('credit.fiche.public');
+
+// ─── Suivi de crédit public pour le client (lien signé) ──────────────────
+Route::get('/suivi-credit/{id}', [\App\Http\Controllers\CreditPublicController::class, 'show'])
+    ->middleware(['signed', 'throttle:60,1'])
+    ->name('credit.suivi.public');
 
 // ─── Devis PDF public (lien partageable, accès par UUID) ─────────────────────
 Route::get('/devis/{id}', [\App\Http\Controllers\Dashboard\DevisController::class, 'pdfPublic'])
@@ -215,6 +220,9 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
     // Crédits clients & échéanciers (essai 14j + Premium+ uniquement)
     Route::middleware('feature:credits')->group(function () {
         Route::get('credits', [\App\Http\Controllers\Dashboard\CreditController::class, 'index'])->name('credits.index');
+        Route::get('credits/export-encours', [\App\Http\Controllers\Dashboard\CreditController::class, 'exportEncours'])->name('credits.export-encours');
+        Route::get('credits/parametres', [\App\Http\Controllers\Dashboard\CreditController::class, 'parametres'])->name('credits.parametres');
+        Route::post('credits/parametres', [\App\Http\Controllers\Dashboard\CreditController::class, 'enregistrerParametres'])->name('credits.parametres.store');
         Route::get('credits/create', [\App\Http\Controllers\Dashboard\CreditController::class, 'create'])->name('credits.create');
         Route::get('credits/client/{client}/encours', [\App\Http\Controllers\Dashboard\CreditController::class, 'encoursClient'])->name('credits.client-encours');
         Route::post('credits', [\App\Http\Controllers\Dashboard\CreditController::class, 'store'])->name('credits.store');
@@ -222,6 +230,9 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
         Route::put('credits/{credit}', [\App\Http\Controllers\Dashboard\CreditController::class, 'update'])->name('credits.update');
         Route::delete('credits/{credit}', [\App\Http\Controllers\Dashboard\CreditController::class, 'destroy'])->name('credits.destroy');
         Route::get('credits/{credit}/fiche-pdf', [\App\Http\Controllers\Dashboard\CreditController::class, 'fichePdf'])->name('credits.fiche-pdf');
+        Route::post('credits/{credit}/reechelonner', [\App\Http\Controllers\Dashboard\CreditController::class, 'reechelonner'])->name('credits.reechelonner');
+        Route::post('credits/{credit}/echeances/{echeance}/reporter', [\App\Http\Controllers\Dashboard\CreditController::class, 'reporterEcheance'])->name('credits.echeances.reporter');
+        Route::post('credits/{credit}/relancer', [\App\Http\Controllers\Dashboard\CreditController::class, 'relancer'])->name('credits.relancer');
         Route::get('credits/{credit}', [\App\Http\Controllers\Dashboard\CreditController::class, 'show'])->name('credits.show');
         Route::post('credits/{credit}/payer', [\App\Http\Controllers\Dashboard\CreditController::class, 'payer'])->name('credits.payer');
     });

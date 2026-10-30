@@ -29,4 +29,5 @@ class Credit extends Model
     public function client()    { return $this->belongsTo(Client::class); }
     public function echeances() { return $this->hasMany(Echeance::class)->orderBy('numero'); }
     public function paiements() { return $this->hasMany(PaiementCredit::class)->latest(); }
+    public function relances()  { return $this->hasMany(CreditRelance::class); }
 }

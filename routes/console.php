@@ -26,6 +26,9 @@ Schedule::command('credits:detecter-retards')->dailyAt('08:00');
 // Rappels J-1 pour les échéances de crédit du lendemain
 Schedule::command('credits:rappels-echeances')->dailyAt('08:00');
 
+// Cascade de relances : J-3, J+1, J+7, J+15, J+30
+Schedule::command('credits:relances')->dailyAt('08:30');
+
 // Purge hebdomadaire du journal d'activité (conserve 90 jours)
 Schedule::command('audit:purge --days=90')->weeklyOn(0, '02:00');
 

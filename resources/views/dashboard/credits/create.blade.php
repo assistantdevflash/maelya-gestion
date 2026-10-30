@@ -1,10 +1,30 @@
 <x-dashboard-layout>
 {{-- Même largeur que la liste des crédits (conteneur max-w-7xl du layout) --}}
-<div class="space-y-6" x-data="creditForm(@js($allClients->toArray()), @js($catalogue->toArray()), null)">
+<div class="space-y-6" x-data="creditForm(@js($allClients->toArray()), @js($catalogue->toArray()), @js($prefill ?? null))">
     <div class="flex items-center gap-4">
         <a href="{{ route('dashboard.credits.index') }}" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition">←</a>
         <div><h1 class="text-2xl font-bold text-gray-900 dark:text-white">Nouveau crédit client</h1></div>
     </div>
+
+    @if(! empty($venteSource))
+    <div class="flex items-start gap-3 p-4 rounded-xl border border-blue-200 dark:border-blue-800/50 bg-blue-50 dark:bg-blue-950/30">
+        <svg class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <div class="min-w-0">
+            <p class="text-sm font-bold text-blue-800 dark:text-blue-300">
+                Crédit créé depuis la vente {{ $venteSource['numero'] ?? '' }}
+            </p>
+            <p class="text-xs text-blue-700 dark:text-blue-400/90 mt-0.5">
+                Les articles et le client ont été pré-remplis depuis la vente
+                @if(! empty($venteSource['total']))
+                    ({{ number_format($venteSource['total'], 0, ',', ' ') }} F)
+                @endif.
+                Vérifiez les modalités avant d'enregistrer — la vente d'origine reste inchangée.
+            </p>
+        </div>
+    </div>
+    @endif
 
     <form method="POST" action="{{ route('dashboard.credits.store') }}">
         @csrf
@@ -106,6 +126,15 @@
                                     <p class="text-[11px] text-red-700 dark:text-red-400/90 mt-0.5">
                                         Reste dû : <strong x-text="totalDuCredits"></strong>
                                     </p>
+                                    <p class="text-[11px] text-red-700 dark:text-red-400/90 mt-0.5" x-show="plafondLabel" x-cloak>
+                                        Plafond autorisé : <strong x-text="plafondLabel"></strong>
+                                        · disponible : <strong x-text="resteDisponibleLabel"></strong>
+                                    </p>
+                                    <p class="text-[11px] mt-1" x-show="scoreClient" x-cloak>
+                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded font-bold"
+                                              :class="scoreClient && scoreClient.couleur === 'success' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : (scoreClient && scoreClient.couleur === 'warning' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300')"
+                                              x-text="scoreClient ? ('Score ' + (scoreClient.score !== null ? scoreClient.score + '/100' : '—') + ' · ' + scoreClient.libelle) : ''"></span>
+                                    </p>
                                 </div>
                             </div>
                             <ul class="mt-2 space-y-1.5">
@@ -124,6 +153,24 @@
                                     </li>
                                 </template>
                             </ul>
+                        </div>
+
+                        {{-- Dépassement de plafond --}}
+                        <div x-show="plafondDepasse" x-cloak
+                             class="rounded-xl border-2 border-red-400 dark:border-red-600 bg-red-100 dark:bg-red-950/50 p-3">
+                            <p class="text-xs font-bold text-red-800 dark:text-red-300">
+                                ⚠️ Plafond d'encours dépassé
+                            </p>
+                            <p class="text-[11px] text-red-700 dark:text-red-400 mt-0.5">
+                                Plafond autorisé : <strong x-text="plafondLabel"></strong> —
+                                encours actuel <strong x-text="formatPrix(encoursDu) + ' FCFA'"></strong>,
+                                ce crédit porterait le total à <strong x-text="formatPrix(totalAvecCredit) + ' FCFA'"></strong>.
+                            </p>
+                            <label class="mt-2 flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" name="forcer_plafond" value="1" x-model="forcerPlafond"
+                                       class="mt-0.5 rounded border-red-300 text-red-600 focus:ring-red-500">
+                                <span class="text-[11px] font-semibold text-red-800 dark:text-red-300">Passer outre le plafond (décision assumée)</span>
+                            </label>
                         </div>
                         <template x-if="!clientChoisi">
                             <div>
@@ -185,15 +232,33 @@
                         </div>
                         <div>
                             <label class="form-label">Nombre d'échéances</label>
-                            <input type="number" name="nb_echeances" min="1" max="24"
+                            <input type="number" name="nb_echeances" min="1" max="24" x-model.number="nbEcheances"
                                    value="{{ old('nb_echeances', 3) }}" class="form-input text-sm">
                         </div>
                         <div>
                             <label class="form-label">Fréquence</label>
-                            <select name="frequence" class="form-input text-sm">
+                            <select name="frequence" x-model="frequence" class="form-input text-sm">
                                 <option value="mensuelle" {{ old('frequence') === 'mensuelle' ? 'selected' : '' }}>Mensuelle</option>
                                 <option value="hebdomadaire" {{ old('frequence') === 'hebdomadaire' ? 'selected' : '' }}>Hebdomadaire</option>
                             </select>
+                        </div>
+
+                        {{-- Aperçu de l'échéancier --}}
+                        <div class="rounded-xl bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700 p-3"
+                             x-show="echeancierPreview.length > 0" x-cloak>
+                            <p class="text-[11px] font-bold uppercase tracking-wide text-gray-500 dark:text-slate-400 mb-2">Aperçu de l'échéancier</p>
+                            <div class="space-y-1 max-h-40 overflow-y-auto">
+                                <template x-for="(e, i) in echeancierPreview" :key="i">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="text-gray-500 dark:text-slate-400" x-text="'Échéance ' + (i + 1) + ' — ' + e.date"></span>
+                                        <span class="font-mono font-bold text-gray-900 dark:text-white" x-text="formatPrix(e.montant) + ' F'"></span>
+                                    </div>
+                                </template>
+                            </div>
+                            <p class="text-[10px] text-gray-400 mt-2">
+                                Aperçu indicatif. La première échéance est fixée à 1 mois après aujourd'hui
+                                (ou 7 jours en hebdomadaire).
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -341,6 +406,12 @@ document.addEventListener('alpine:init', () => {
             ? editData.lignes.map(l => ({...l, pickerOpen: false, pickerSearch: ''}))
             : [{designation:'', quantite:1, prix_unitaire:0, pickerOpen: false, pickerSearch: ''}]),
         catalogue: catalogueInit,
+        init() {
+            // Pré-remplissage depuis une vente : on charge l'encours du client
+            if (this.clientChoisi?.id) {
+                this.chargerCreditsClient(this.clientChoisi.id);
+            }
+        },
         ajouterLigne() { this.lignes.push({designation:'', quantite:1, prix_unitaire:0, pickerOpen: false, pickerSearch: ''}); },
         catalogueFiltered(ligne) {
             const q = (ligne.pickerSearch || '').toLowerCase();
@@ -356,6 +427,35 @@ document.addEventListener('alpine:init', () => {
         get sousTotal() { return this.lignes.reduce((s, l) => s + ((l.prix_unitaire||0) * (l.quantite||1)), 0); },
         apport: editData?.apport ?? {{ old('apport_initial', 0) }},
         get reste() { return Math.max(0, this.sousTotal - this.apport); },
+        nbEcheances: {{ (int) old('nb_echeances', 3) }},
+        frequence: @js(old('frequence', 'mensuelle')),
+        plafond: null,
+        plafondLabel: '',
+        resteDisponibleLabel: '',
+        encoursDu: 0,
+        scoreClient: null,
+        forcerPlafond: false,
+        get totalAvecCredit() { return this.encoursDu + this.reste; },
+        get plafondDepasse() {
+            return this.plafond !== null && this.plafond > 0 && this.totalAvecCredit > this.plafond;
+        },
+        get echeancierPreview() {
+            const n = Math.max(1, Math.min(24, parseInt(this.nbEcheances) || 1));
+            if (!this.reste || this.reste <= 0) return [];
+            const base = Math.floor(this.reste / n);
+            const solde = this.reste - base * n;
+            const pas = this.frequence === 'hebdomadaire' ? 7 : 30;
+            const out = [];
+            for (let i = 1; i <= n; i++) {
+                const d = new Date();
+                d.setDate(d.getDate() + pas * i);
+                out.push({
+                    date: d.toLocaleDateString('fr-FR'),
+                    montant: base + (i === n ? solde : 0),
+                });
+            }
+            return out;
+        },
         formatPrix(v) { return new Intl.NumberFormat('fr-FR').format(v); },
         clientsList: clientsInit,
         clientChoisi: editData?.client ?? null,
@@ -370,10 +470,26 @@ document.addEventListener('alpine:init', () => {
             this.clientChoisi = client;
             this.chargerCreditsClient(client.id);
         },
-        retirerClient() { this.clientChoisi = null; this.creditsEnCours = []; this.totalDuCredits = ''; },
+        retirerClient() {
+            this.clientChoisi = null;
+            this.creditsEnCours = [];
+            this.totalDuCredits = '';
+            this.plafond = null;
+            this.plafondLabel = '';
+            this.resteDisponibleLabel = '';
+            this.encoursDu = 0;
+            this.scoreClient = null;
+            this.forcerPlafond = false;
+        },
         async chargerCreditsClient(clientId) {
             this.creditsEnCours = [];
             this.totalDuCredits = '';
+            this.plafond = null;
+            this.plafondLabel = '';
+            this.resteDisponibleLabel = '';
+            this.encoursDu = 0;
+            this.scoreClient = null;
+            this.forcerPlafond = false;
             if (!clientId) return;
             this.chargementCredits = true;
             try {
@@ -384,6 +500,11 @@ document.addEventListener('alpine:init', () => {
                     const data = await res.json();
                     this.creditsEnCours = data.credits || [];
                     this.totalDuCredits = data.total_du_label || '';
+                    this.plafond = data.plafond ?? null;
+                    this.plafondLabel = data.plafond_label || '';
+                    this.resteDisponibleLabel = data.reste_disponible_label || '';
+                    this.encoursDu = data.total_du ?? 0;
+                    this.scoreClient = data.score ?? null;
                 }
             } catch (e) {
                 // silencieux : l'alerte est informative, elle ne doit pas bloquer la saisie
