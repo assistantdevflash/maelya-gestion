@@ -8,7 +8,7 @@
     "name": "quill"
   },
   "resources/css/app.css": {
-    "file": "assets/css/app-DWgGRFlR.css",
+    "file": "assets/css/app-DxIQTNre.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -26,7 +26,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/js/app-DdbTy3dD.js",
+    "file": "assets/js/app-C8NqijKM.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true

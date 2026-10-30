@@ -5,7 +5,7 @@
  * côté client pour un rendu instantané. Seuls la recherche client, le code
  * promo et la validation de vente passent par Livewire (requêtes DB).
  */
-export default function caisseApp({ prestations, produits, catPrestations, catProduits, allCatPrestations = [], allCatProduits = [], prefilledItems = [], prefilledPanier = [], routeBrouillonStore = '/dashboard/caisse/brouillons' }) {
+export default function caisseApp({ prestations, produits, catPrestations, catProduits, allCatPrestations = [], allCatProduits = [], prefilledItems = [], prefilledPanier = [], routeBrouillonStore = '/dashboard/caisse/brouillons', mode = 'complet' }) {
     return {
         // ── Catalogue (chargé une seule fois) ──
         prestations,
@@ -15,12 +15,17 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         allCatPrestations,
         allCatProduits,
         routeBrouillonStore,
+        mode,
 
         // ── Pré-remplissage (ex: depuis un RDV) ──
         prefilledItems,
         prefilledPanier,
 
         init() {
+            // Mode simplifié : produits uniquement, pas d'onglet prestations.
+            if (this.mode === 'simple') {
+                this.onglet = 'produits';
+            }
             if (Array.isArray(this.prefilledPanier) && this.prefilledPanier.length) {
                 const next = {};
                 this.prefilledPanier.forEach(it => {
@@ -77,6 +82,17 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         onglet: 'prestations',
         categorieId: '',
 
+        /**
+         * 'complet' : caisse par défaut (prestations + produits, grille + catégories)
+         * 'simple'  : caisse commerce / supermarché — produits uniquement, ajout
+         *             par scan ou recherche, ni grille ni catégories.
+         */
+        mode: 'complet',
+
+        get simple() {
+            return this.mode === 'simple';
+        },
+
         // ── Panier ──
         panier: {},
         animatingItems: {}, // {key: 'add'|'remove'}
@@ -128,6 +144,15 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
                 items = items.filter(i => i.categorie_id === this.categorieId);
             }
             return items;
+        },
+
+        /**
+         * Mode simple : résultats affichés sous forme de liste. On n'affiche
+         * rien tant que la recherche est vide (pas de grille catalogue).
+         */
+        get resultatsRecherche() {
+            if (!this.simple || !this.search || this.search.trim().length < 1) return [];
+            return this.filteredItems.slice(0, 40);
         },
 
         get categories() {

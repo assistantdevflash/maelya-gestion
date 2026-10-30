@@ -41,7 +41,18 @@ class AssetLoadingTest extends TestCase
         $html = $this->html('dashboard.clients.index');
 
         $this->assertStringContainsString('alpine-app', $html, 'Alpine autonome manquant : les menus déroulants ne fonctionneraient pas.');
-        $this->assertStringNotContainsString('livewire.js', $html, 'Livewire ne doit pas être chargé sur les pages qui ne l\'utilisent pas.');
+
+        // Garde-fou au niveau du layout : Livewire ne doit être inclus que pour
+        // la caisse. (On ne teste pas le HTML rendu ici : Livewire injecte son
+        // script de façon statique dans le process de test, ce qui rendrait
+        // l'assertion dépendante de l'ordre d'exécution des tests.)
+        $layout = file_get_contents(resource_path('views/layouts/dashboard.blade.php'));
+
+        $this->assertMatchesRegularExpression(
+            '/@unless\(request\(\)->routeIs\(\'dashboard\.caisse\', \'dashboard\.caisse\.\*\'\)\)\s*@vite\(\'resources\/js\/alpine-app\.js\'\)/s',
+            $layout,
+            'Le layout doit charger Alpine seul sur toutes les pages sauf la caisse.'
+        );
     }
 
     public function test_la_caisse_charge_livewire_et_pas_alpine_en_double(): void

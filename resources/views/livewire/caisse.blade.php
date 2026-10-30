@@ -1,3 +1,4 @@
+@php $simple = ($mode ?? 'complet') === 'simple'; @endphp
 <div
     x-data="caisseApp({
         prestations: @js($prestations),
@@ -9,6 +10,7 @@
         prefilledItems: @js($this->prefilledItems),
         prefilledPanier: @js($this->prefilledPanier),
         routeBrouillonStore: @js(route('dashboard.caisse.brouillons.store')),
+        mode: @js($mode ?? 'complet'),
     })"
     class="grid lg:grid-cols-5 gap-4 lg:gap-5 min-h-0"
 >
@@ -25,7 +27,7 @@
     @endif
 
     {{-- ═══ Catalogue gauche (100 % Alpine – zéro requête serveur) ═══ --}}
-    <div class="lg:col-span-3 space-y-4 pb-24 lg:pb-0" wire:ignore>
+    <div class="{{ $simple ? 'lg:col-span-2' : 'lg:col-span-3' }} space-y-4 pb-24 lg:pb-0" wire:ignore>
 
         {{-- Recherche + onglets --}}
         <div class="card p-4 space-y-3">
@@ -36,10 +38,11 @@
                 <input
                     type="text"
                     x-model.debounce.150ms="search"
-                    placeholder="Rechercher un service ou produit..."
+                    placeholder="{{ $simple ? 'Scanner ou rechercher un produit…' : 'Rechercher un service ou produit...' }}"
                     class="form-input pl-10"
                     autofocus>
             </div>
+            @if(! $simple)
             <div class="flex gap-1.5 p-1 bg-gray-100/80 dark:bg-slate-700/50 rounded-xl">
                 <button @click="changerOnglet('prestations')"
                         :class="onglet === 'prestations' ? 'bg-white dark:bg-slate-800 text-primary-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
@@ -58,8 +61,10 @@
                     Produits
                 </button>
             </div>
+            @endif
         </div>
 
+        @if(! $simple)
         {{-- Filtre catégorie (hors card pour permettre le scroll horizontal) --}}
         <div x-show="categories.length > 0"
              x-init="$nextTick(() => {
@@ -131,10 +136,11 @@
                 </svg>
             </button>
         </div>
+        @endif
 
         <div class="card p-4 space-y-3">
-            {{-- Bouton Vente rapide --}}
-            <button x-show="!showVenteRapide"
+            {{-- Bouton Vente rapide (masqué en mode simplifié) --}}
+            <button x-show="!showVenteRapide && !simple"
                     @click="toggleVenteRapide()"
                     class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold border-2 border-amber-200 dark:border-amber-700/60 bg-amber-50/50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-100/70 dark:hover:bg-amber-900/40 transition-all duration-200">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -312,8 +318,8 @@
             </div>
         </div>
 
-        {{-- Grille items --}}
-        <div x-show="!showVenteRapide" class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[55vh] overflow-y-auto pr-1">
+        {{-- Grille items (masquée en mode simplifié : pas de catalogue) --}}
+        <div x-show="!showVenteRapide && !simple" class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[55vh] overflow-y-auto pr-1">
             <template x-for="item in filteredItems" :key="item.id">
                 <button
                     @click="ajouterItem(item)"
@@ -366,10 +372,70 @@
                 <p class="text-sm text-gray-400">Aucun résultat</p>
             </div>
         </div>
+
+        {{-- ═══ MODE SIMPLIFIÉ : résultats de recherche (produits uniquement) ═══ --}}
+        <div x-show="simple" x-cloak class="card overflow-hidden">
+            <div class="px-4 py-2.5 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
+                <p class="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Résultats</p>
+                <span class="text-[11px] text-gray-400" x-show="resultatsRecherche.length > 0"
+                      x-text="resultatsRecherche.length + ' produit' + (resultatsRecherche.length > 1 ? 's' : '')"></span>
+            </div>
+
+            {{-- Liste compacte : clic sur une ligne = ajout au panier --}}
+            <div class="max-h-[52vh] overflow-y-auto divide-y divide-gray-50 dark:divide-slate-700/60">
+                <template x-for="item in resultatsRecherche" :key="item.id">
+                    <button type="button" @click="ajouterItem(item)"
+                            class="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-primary-50/60 dark:hover:bg-slate-700/50 transition-colors">
+                        <template x-if="item.photo">
+                            <img :src="item.photo" :alt="item.nom" class="w-9 h-9 rounded-lg object-cover border border-gray-200 dark:border-slate-600 flex-shrink-0">
+                        </template>
+                        <template x-if="!item.photo">
+                            <div class="w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                </svg>
+                            </div>
+                        </template>
+
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate" x-text="item.nom"></p>
+                            <p class="text-[11px] text-gray-400">Stock : <span x-text="item.stock ?? '—'"></span></p>
+                        </div>
+
+                        <span x-show="quantiteDans(item) > 0" x-text="quantiteDans(item)"
+                              class="min-w-[20px] h-5 px-1 rounded-full text-[10px] font-bold text-white flex items-center justify-center flex-shrink-0"
+                              style="background: linear-gradient(135deg, #9333ea, #ec4899);"></span>
+
+                        <span class="text-sm font-bold text-gray-900 dark:text-white whitespace-nowrap flex-shrink-0"
+                              x-text="formatNumber(item.prix) + ' F'"></span>
+
+                        <svg class="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                    </button>
+                </template>
+
+                {{-- Aucun résultat pour la recherche en cours --}}
+                <div x-show="search.trim().length > 0 && resultatsRecherche.length === 0" class="py-10 text-center">
+                    <p class="text-sm text-gray-400">Aucun produit trouvé pour « <span x-text="search"></span> »</p>
+                </div>
+
+                {{-- État initial : ni grille ni catégories, on invite à scanner --}}
+                <div x-show="search.trim().length === 0" class="py-10 text-center px-6">
+                    <div class="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">Scannez ou recherchez un produit</p>
+                    <p class="text-xs text-gray-400 mt-1">Le catalogue n'est pas affiché dans la caisse simplifiée.</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     {{-- ═══ Panier droit (masqué sur mobile) ═══ --}}
-    <div class="hidden lg:flex lg:col-span-2 flex-col gap-4">
+    <div class="hidden lg:flex {{ $simple ? 'lg:col-span-3' : 'lg:col-span-2' }} flex-col gap-4">
 
         {{-- Client (Livewire – seule section nécessitant le serveur) --}}
         @if(auth()->user()->aFonctionnalite('caisse_client'))
@@ -474,7 +540,7 @@
                 <button x-show="!panierVide" @click="viderPanier" class="text-xs text-red-500 hover:text-red-700 font-medium">Vider</button>
             </div>
 
-            <div class="flex-1 overflow-y-auto divide-y divide-gray-50 max-h-52">
+            <div class="flex-1 overflow-y-auto divide-y divide-gray-50 {{ $simple ? 'lg:max-h-none max-h-60' : 'max-h-52' }}">
                 <template x-for="key in panierKeys" :key="key">
                     <div class="px-3 sm:px-4 py-3 hover:bg-gray-50/50 transition-colors"
                          :class="{
@@ -593,7 +659,7 @@
                             class="py-2 px-1 rounded-xl text-[11px] font-semibold border-2 transition-all duration-200 text-center">
                         🔀 Mixte
                     </button>
-                    @if($hasCredits)
+                    @if($hasCredits && ! $simple)
                     <button @click="modePaiement = 'credit'"
                             :class="modePaiement === 'credit' ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm' : 'border-gray-200 text-gray-500 hover:border-gray-300'"
                             class="py-2 px-1 rounded-xl text-[11px] font-semibold border-2 transition-all duration-200 text-center">
@@ -1430,7 +1496,7 @@
                                 class="w-12 h-12 rounded-xl text-2xl border-2 transition-all duration-200 flex items-center justify-center">
                             🔀
                         </button>
-                        @if($hasCredits)
+                        @if($hasCredits && ! $simple)
                         <button @click="modePaiement = 'credit'"
                                 :class="modePaiement === 'credit' ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 shadow-sm scale-110' : 'border-gray-200 dark:border-slate-600 hover:border-gray-300'"
                                 class="w-12 h-12 rounded-xl text-2xl border-2 transition-all duration-200 flex items-center justify-center">

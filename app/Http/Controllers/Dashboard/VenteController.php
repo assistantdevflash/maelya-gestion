@@ -30,7 +30,17 @@ class VenteController extends Controller
 
     public function caisse()
     {
-        return view('dashboard.caisse.index');
+        return view('dashboard.caisse.index', ['simple' => false]);
+    }
+
+    /**
+     * Caisse simplifiée : pour les commerces / supermarchés.
+     * Produits uniquement, ajout au panier par scan ou recherche, sans grille
+     * ni catégories et sans vente à crédit.
+     */
+    public function caisseSimplifiee()
+    {
+        return view('dashboard.caisse.index', ['simple' => true]);
     }
 
     public function store(Request $request)

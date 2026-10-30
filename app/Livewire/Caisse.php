@@ -16,6 +16,13 @@ use Livewire\Component;
 
 class Caisse extends Component
 {
+    /**
+     * 'complet' = caisse par défaut (prestations + produits, grille + catégories)
+     * 'simple'  = caisse commerce / supermarché : produits uniquement, vendus
+     *             au scan ou par recherche, sans grille ni catégories.
+     */
+    public string $mode = 'complet';
+
     public string $clientSearch = '';
     public ?string $clientId = null;
     public bool $submitted = false;
@@ -51,8 +58,9 @@ class Caisse extends Component
     /** Message succès après vente crédit */
     public ?string $creditSuccess = null;
 
-    public function mount(?string $client = null, ?string $rdv = null, ?string $brouillon = null)
+    public function mount(?string $client = null, ?string $rdv = null, ?string $brouillon = null, ?string $mode = null)
     {
+        $this->mode = $mode === 'simple' ? 'simple' : 'complet';
         $this->clientId = $client;
 
         if ($rdv) {
@@ -406,6 +414,39 @@ class Caisse extends Component
     {
         $institutId = $this->institutId();
 
+        // Mode simplifié (commerce / supermarché) : uniquement des produits,
+        // pas de prestations ni de catégories → moins de données transférées.
+        if ($this->mode === 'simple') {
+            $catalog = \Illuminate\Support\Facades\Cache::remember(
+                'caisse_produits_simple_' . $institutId,
+                now()->addHour(),
+                fn () => Produit::where('institut_id', $institutId)
+                    ->where('actif', true)
+                    ->orderBy('nom')
+                    ->get()
+                    ->map(fn ($p) => [
+                        'id'            => $p->id,
+                        'nom'           => $p->nom,
+                        'prix'          => (int) $p->prix_vente,
+                        'stock'         => $p->stock,
+                        'photo'         => $p->photo ? asset('storage/' . $p->photo) : null,
+                        'categorie_id'  => null,
+                        'categorie_nom' => null,
+                    ])
+            );
+
+            return view('livewire.caisse', [
+                'mode'              => 'simple',
+                'prestations'       => [],
+                'produits'          => $catalog,
+                'catPrestations'    => [],
+                'catProduits'       => [],
+                'allCatPrestations' => [],
+                'allCatProduits'    => [],
+                'allClients'        => $this->clientsPourCaisse($institutId),
+            ]);
+        }
+
         $catalog = \Illuminate\Support\Facades\Cache::remember(
             'caisse_catalog_' . $institutId,
             now()->addHour(),
@@ -474,25 +515,32 @@ class Caisse extends Component
             'catProduits'        => $catProduits,
             'allCatPrestations'  => $allCatPrestations,
             'allCatProduits'     => $allCatProduits,
-            'allClients' => Client::where('institut_id', $institutId)
-                ->where('actif', true)
-                ->orderBy('prenom')
-                ->limit(200)
-                ->get()
-                ->map(fn ($c) => [
-                    'id'        => $c->id,
-                    'nom'       => $c->nom_affichage,
-                    'initiale'  => $c->isEntreprise() 
-                        ? '🏢' 
-                        : strtoupper(substr($c->prenom ?? $c->nom ?? '?', 0, 1)),
-                    'telephone' => $c->telephone ?? '',
-                    'search'    => mb_strtolower(
-                        ($c->prenom ?? '') . ' ' . 
-                        ($c->nom ?? '') . ' ' . 
-                        ($c->raison_sociale ?? '') . ' ' . 
-                        ($c->telephone ?? '')
-                    ),
-                ]),
+            'mode'               => 'complet',
+            'allClients'         => $this->clientsPourCaisse($institutId),
         ]);
+    }
+
+    /** Liste légère des clients pour le sélecteur Alpine de la caisse. */
+    private function clientsPourCaisse(string $institutId)
+    {
+        return Client::where('institut_id', $institutId)
+            ->where('actif', true)
+            ->orderBy('prenom')
+            ->limit(200)
+            ->get()
+            ->map(fn ($c) => [
+                'id'        => $c->id,
+                'nom'       => $c->nom_affichage,
+                'initiale'  => $c->isEntreprise()
+                    ? '🏢'
+                    : strtoupper(substr($c->prenom ?? $c->nom ?? '?', 0, 1)),
+                'telephone' => $c->telephone ?? '',
+                'search'    => mb_strtolower(
+                    ($c->prenom ?? '') . ' ' .
+                    ($c->nom ?? '') . ' ' .
+                    ($c->raison_sociale ?? '') . ' ' .
+                    ($c->telephone ?? '')
+                ),
+            ]);
     }
 }

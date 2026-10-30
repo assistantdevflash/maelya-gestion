@@ -1,8 +1,9 @@
 <x-dashboard-layout>
+    @php $simple = $simple ?? false; @endphp
     <div class="space-y-4">
         <div>
             <div class="flex items-center justify-between gap-2">
-                <h1 class="page-title">Caisse</h1>
+                <h1 class="page-title">{{ $simple ? 'Caisse simplifiée' : 'Caisse' }}</h1>
                 <div class="flex items-center gap-2 flex-shrink-0">
                     <a href="{{ route('dashboard.caisse.brouillons.index') }}" class="btn-outline text-xs sm:text-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -18,7 +19,7 @@
                     </a>
                 </div>
             </div>
-            <p class="page-subtitle">Enregistrez rapidement vos ventes.</p>
+            <p class="page-subtitle">{{ $simple ? 'Mode commerce — scannez ou recherchez un produit.' : 'Enregistrez rapidement vos ventes.' }}</p>
         </div>
 
         {{-- Scanner QR carte fidélité --}}
@@ -29,6 +30,25 @@
                 </svg>
                 <span>Scanner carte fidélité</span>
             </button>
+
+            {{-- Bascule entre la caisse complète et la caisse simplifiée --}}
+            @if($simple)
+            <a href="{{ route('dashboard.caisse') }}" class="btn-outline text-xs sm:text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
+                </svg>
+                <span>Caisse complète</span>
+            </a>
+            @else
+            <a href="{{ route('dashboard.caisse.simplifiee') }}"
+               class="btn-outline text-xs sm:text-sm"
+               title="Caisse optimisée pour les commerces et supermarchés">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <span>Caisse simplifiée</span>
+            </a>
+            @endif
             <p x-show="status" x-text="status" class="text-xs"
                :class="error ? 'text-red-600' : 'text-emerald-600'"></p>
 
@@ -98,7 +118,7 @@
                 form.submit();
             "
         >
-            @livewire('caisse', ['client' => request('client'), 'rdv' => request('rdv'), 'brouillon' => request('brouillon')])
+            @livewire('caisse', ['client' => request('client'), 'rdv' => request('rdv'), 'brouillon' => request('brouillon'), 'mode' => $simple ? 'simple' : 'complet'])
         </div>
 
         {{-- Formulaire caché pour soumettre via POST classique --}}
