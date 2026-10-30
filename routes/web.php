@@ -216,6 +216,7 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
     Route::middleware('feature:credits')->group(function () {
         Route::get('credits', [\App\Http\Controllers\Dashboard\CreditController::class, 'index'])->name('credits.index');
         Route::get('credits/create', [\App\Http\Controllers\Dashboard\CreditController::class, 'create'])->name('credits.create');
+        Route::get('credits/client/{client}/encours', [\App\Http\Controllers\Dashboard\CreditController::class, 'encoursClient'])->name('credits.client-encours');
         Route::post('credits', [\App\Http\Controllers\Dashboard\CreditController::class, 'store'])->name('credits.store');
         Route::get('credits/{credit}/edit', [\App\Http\Controllers\Dashboard\CreditController::class, 'edit'])->name('credits.edit');
         Route::put('credits/{credit}', [\App\Http\Controllers\Dashboard\CreditController::class, 'update'])->name('credits.update');

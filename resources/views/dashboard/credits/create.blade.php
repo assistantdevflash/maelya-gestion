@@ -90,6 +90,41 @@
                                 <button type="button" @click="retirerClient()" class="text-xs text-red-500 hover:text-red-700 font-medium">Changer</button>
                             </div>
                         </template>
+
+                        {{-- Alerte : le client a déjà un encours (en cours ou en retard) --}}
+                        <div x-show="creditsEnCours.length > 0" x-cloak
+                             class="rounded-xl border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-950/30 p-3">
+                            <div class="flex items-start gap-2">
+                                <svg class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                                </svg>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-xs font-bold text-red-800 dark:text-red-300">
+                                        Ce client a déjà <span x-text="creditsEnCours.length"></span>
+                                        <span x-text="creditsEnCours.length > 1 ? 'crédits non soldés' : 'crédit non soldé'"></span>
+                                    </p>
+                                    <p class="text-[11px] text-red-700 dark:text-red-400/90 mt-0.5">
+                                        Reste dû : <strong x-text="totalDuCredits"></strong>
+                                    </p>
+                                </div>
+                            </div>
+                            <ul class="mt-2 space-y-1.5">
+                                <template x-for="c in creditsEnCours" :key="c.id">
+                                    <li>
+                                        <a :href="c.url"
+                                           class="block rounded-lg bg-white dark:bg-slate-900/50 px-2.5 py-2 hover:bg-white/80 dark:hover:bg-slate-900 transition-colors">
+                                            <div class="flex items-center justify-between gap-2">
+                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold"
+                                                      :class="c.statut === 'retard' ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'"
+                                                      x-text="c.statut_label"></span>
+                                                <span class="text-[11px] font-bold text-gray-900 dark:text-white" x-text="c.reste_label"></span>
+                                            </div>
+                                            <p class="text-[10px] text-gray-500 dark:text-slate-400 mt-1" x-text="c.details"></p>
+                                        </a>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
                         <template x-if="!clientChoisi">
                             <div>
                                 <div x-data="{
@@ -324,12 +359,38 @@ document.addEventListener('alpine:init', () => {
         formatPrix(v) { return new Intl.NumberFormat('fr-FR').format(v); },
         clientsList: clientsInit,
         clientChoisi: editData?.client ?? null,
+        creditsEnCours: [],
+        totalDuCredits: '',
+        chargementCredits: false,
         newClientOpen: false,
         newClientSaving: false,
         newClientError: '',
         newClient: { type_client: 'personne_physique', prenom: '', nom: '', raison_sociale: '', telephone: '', email: '', date_naissance_mois: '', date_naissance_jour: '', notes: '', adresse: '', piece_identite: '' },
-        selectClient(client) { this.clientChoisi = client; },
-        retirerClient() { this.clientChoisi = null; },
+        selectClient(client) {
+            this.clientChoisi = client;
+            this.chargerCreditsClient(client.id);
+        },
+        retirerClient() { this.clientChoisi = null; this.creditsEnCours = []; this.totalDuCredits = ''; },
+        async chargerCreditsClient(clientId) {
+            this.creditsEnCours = [];
+            this.totalDuCredits = '';
+            if (!clientId) return;
+            this.chargementCredits = true;
+            try {
+                const res = await fetch(`{{ url('/dashboard/credits/client') }}/${clientId}/encours`, {
+                    headers: { 'Accept': 'application/json' },
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    this.creditsEnCours = data.credits || [];
+                    this.totalDuCredits = data.total_du_label || '';
+                }
+            } catch (e) {
+                // silencieux : l'alerte est informative, elle ne doit pas bloquer la saisie
+            } finally {
+                this.chargementCredits = false;
+            }
+        },
         async creerClient() {
             this.newClientError = '';
             const nc = this.newClient;
@@ -361,7 +422,7 @@ document.addEventListener('alpine:init', () => {
                 if (!res.ok) { const err = await res.json(); this.newClientError = err.message || 'Erreur lors de la création.'; return; }
                 const client = await res.json();
                 this.clientsList.unshift(client);
-                this.clientChoisi = client;
+                this.selectClient(client);
                 this.newClient = { type_client:'personne_physique', prenom:'',nom:'',raison_sociale:'',telephone:'',email:'',date_naissance_mois:'',date_naissance_jour:'',notes:'',adresse:'',piece_identite:'' };
                 this.newClientOpen = false;
                 document.body.classList.remove('overflow-hidden');

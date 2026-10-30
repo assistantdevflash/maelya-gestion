@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Dashboard;
 
+use App\Helpers\TexteHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Client;
 use App\Models\Credit;
 use App\Models\Echeance;
 use App\Models\Institut;
@@ -81,6 +83,60 @@ class CreditController extends Controller
         $catalogue = $prestations->concat($produits)->values();
 
         return view('dashboard.credits.create', compact('allClients', 'catalogue'));
+    }
+
+    /**
+     * Crédits non soldés d'un client (en cours et en retard).
+     * Utilisé par le formulaire de création pour alerter l'utilisateur
+     * dès qu'il sélectionne un client qui a déjà un encours.
+     */
+    public function encoursClient(Client $client)
+    {
+        abort_unless($client->institut_id === $this->institutId(), 404);
+
+        $credits = Credit::where('client_id', $client->id)
+            ->where('statut', '!=', 'solde')
+            ->with('echeances')
+            ->orderBy('date_debut')
+            ->get();
+
+        $lignes = $credits->map(function (Credit $credit) {
+            $enRetard = $credit->echeances->where('statut', 'retard');
+            $prochaine = $credit->echeances
+                ->whereIn('statut', ['en_attente', 'retard'])
+                ->sortBy('date_prevue')
+                ->first();
+
+            $details = 'Ouvert le ' . ($credit->date_debut?->format('d/m/Y') ?? '—');
+
+            if ($enRetard->isNotEmpty()) {
+                $details .= ' · ' . TexteHelper::pluriel($enRetard->count(), 'échéance en retard', 'échéances en retard');
+            } elseif ($prochaine?->date_prevue) {
+                $details .= ' · prochaine échéance le ' . $prochaine->date_prevue->format('d/m/Y');
+            } elseif ($credit->date_fin_prevue) {
+                $details .= ' · fin prévue le ' . $credit->date_fin_prevue->format('d/m/Y');
+            }
+
+            return [
+                'id'           => $credit->id,
+                'statut'       => $credit->statut,
+                'statut_label' => $credit->statut === 'retard' ? 'En retard' : 'En cours',
+                'reste_label'  => number_format($credit->reste_a_payer, 0, ',', ' ') . ' F',
+                'total_label'  => number_format($credit->montant_total, 0, ',', ' ') . ' F',
+                'details'      => $details,
+                'url'          => route('dashboard.credits.show', $credit),
+            ];
+        })->values();
+
+        $totalDu = (int) $credits->sum('reste_a_payer');
+
+        return response()->json([
+            'credits'        => $lignes,
+            'nb'             => $lignes->count(),
+            'nb_retard'      => $credits->where('statut', 'retard')->count(),
+            'total_du'       => $totalDu,
+            'total_du_label' => number_format($totalDu, 0, ',', ' ') . ' F',
+        ]);
     }
 
     public function store(Request $request)
