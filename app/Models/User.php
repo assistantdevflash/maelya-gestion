@@ -202,6 +202,37 @@ class User extends Authenticatable
     }
 
     /**
+     * La caisse simplifiée (mode commerce / supermarché) est-elle accessible ?
+     *
+     * Elle repose entièrement sur le scan de codes-barres, réservé à la formule
+     * Premium+. Deux exceptions :
+     *  - la période d'essai : toutes les fonctionnalités sont offertes, donc la
+     *    caisse simplifiée aussi (c'est justement là qu'on veut la faire essayer) ;
+     *  - super admin / commercial.
+     */
+    public function peutUtiliserCaisseSimplifiee(): bool
+    {
+        if ($this->isSuperAdmin() || $this->isCommercial()) {
+            return true;
+        }
+
+        if ($this->aFonctionnalite('scan_code_barre')) {
+            return true;
+        }
+
+        // Essai gratuit : on se base sur le type de durée du plan, plus fiable
+        // que la matrice de features (qui peut restreindre un plan d'essai).
+        $abo = $this->abonnementActif ?? $this->abonnementEnSursis();
+
+        if (! $abo) {
+            return false;
+        }
+
+        return $abo->plan?->duree_type === 'essai'
+            || ($abo->plan?->slug ?? $this->planActuelSlug()) === 'essai';
+    }
+
+    /**
      * L'utilisateur a-t-il accès au module boutique en ligne pour un établissement ?
      *
      * Depuis le passage à la facturation PAR établissement, l'accès est vérifié

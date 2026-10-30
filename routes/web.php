@@ -139,10 +139,10 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
 
     // Caisse & Ventes (tous les rôles)
     Route::get('caisse', [VenteController::class, 'caisse'])->name('caisse');
-    // La caisse simplifiée repose entièrement sur le scan code-barres : elle
-    // n'est donc accessible qu'avec la formule Premium+ qui débloque ce scan.
+    // La caisse simplifiée repose entièrement sur le scan code-barres : elle est
+    // réservée à Premium+, mais reste accessible pendant la période d'essai
+    // (vérification dans le contrôleur via User::peutUtiliserCaisseSimplifiee()).
     Route::get('caisse/simplifiee', [VenteController::class, 'caisseSimplifiee'])
-        ->middleware('feature:scan_code_barre')
         ->name('caisse.simplifiee');
     Route::get('caisse/brouillons', [\App\Http\Controllers\Dashboard\CaisseBrouillonController::class, 'index'])->name('caisse.brouillons.index');
     Route::post('caisse/brouillons', [\App\Http\Controllers\Dashboard\CaisseBrouillonController::class, 'store'])->name('caisse.brouillons.store');

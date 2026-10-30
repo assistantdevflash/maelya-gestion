@@ -60,10 +60,10 @@ class Caisse extends Component
 
     public function mount(?string $client = null, ?string $rdv = null, ?string $brouillon = null, ?string $mode = null)
     {
-        // La caisse simplifiée est réservée à la formule Premium+ (scan code-barres).
-        // Garde-fou serveur : même si le paramètre est forcé, on retombe sur la
-        // caisse complète si la fonctionnalité n'est pas débloquée.
-        $this->mode = ($mode === 'simple' && auth()->user()?->aFonctionnalite('scan_code_barre'))
+        // La caisse simplifiée est réservée à la formule Premium+ (scan code-barres),
+        // mais reste disponible pendant l'essai gratuit. Garde-fou serveur : même
+        // si le paramètre est forcé, on retombe sur la caisse complète.
+        $this->mode = ($mode === 'simple' && auth()->user()?->peutUtiliserCaisseSimplifiee())
             ? 'simple'
             : 'complet';
         $this->clientId = $client;

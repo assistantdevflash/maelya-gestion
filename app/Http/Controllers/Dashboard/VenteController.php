@@ -37,9 +37,15 @@ class VenteController extends Controller
      * Caisse simplifiée : pour les commerces / supermarchés.
      * Produits uniquement, ajout au panier par scan ou recherche, sans grille
      * ni catégories et sans vente à crédit.
+     *
+     * Réservée à Premium+ (scan code-barres), mais offerte pendant l'essai.
      */
     public function caisseSimplifiee()
     {
+        if (! auth()->user()->peutUtiliserCaisseSimplifiee()) {
+            return redirect()->route('abonnement.upgrade', ['feature' => 'scan_code_barre']);
+        }
+
         return view('dashboard.caisse.index', ['simple' => true]);
     }
 

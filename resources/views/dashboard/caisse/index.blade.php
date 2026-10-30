@@ -39,7 +39,7 @@
                 </svg>
                 <span>Caisse complète</span>
             </a>
-            @elseif(auth()->user()->aFonctionnalite('scan_code_barre'))
+            @elseif(auth()->user()->peutUtiliserCaisseSimplifiee())
             <a href="{{ route('dashboard.caisse.simplifiee') }}"
                class="btn-outline text-xs sm:text-sm"
                title="Caisse optimisée pour les commerces et supermarchés">

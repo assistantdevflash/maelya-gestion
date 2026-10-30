@@ -191,4 +191,51 @@ class CaisseSimplifieeTest extends TestCase
         \Livewire\Livewire::test(\App\Livewire\Caisse::class, ['mode' => 'simple'])
             ->assertSet('mode', 'simple');
     }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Période d'essai : la caisse simplifiée doit rester accessible
+    // ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * Simule un plan d'essai dont la matrice de fonctionnalités NE contient PAS
+     * le scan code-barres : l'accès doit malgré tout être accordé.
+     */
+    private function passerAuPlanEssaiRestreint(): void
+    {
+        $plan = $this->creerPlan([
+            'nom'        => 'Essai',
+            'slug'       => 'premium', // matrice sans scan_code_barre
+            'duree_type' => 'essai',   // mais période d'essai
+            'duree_jours'=> 14,
+            'prix'       => 0,
+        ]);
+
+        \App\Models\Abonnement::where('user_id', $this->user->id)->update(['plan_id' => $plan->id]);
+
+        $this->user = $this->user->fresh();
+        $this->assertFalse($this->user->aFonctionnalite('scan_code_barre'));
+    }
+
+    public function test_la_caisse_simplifiee_est_accessible_pendant_l_essai(): void
+    {
+        $this->passerAuPlanEssaiRestreint();
+
+        $this->assertTrue($this->user->peutUtiliserCaisseSimplifiee());
+
+        $this->actingAs($this->user)
+            ->get(route('dashboard.caisse.simplifiee'))
+            ->assertOk()
+            ->assertSee('Caisse simplifiée');
+    }
+
+    public function test_le_bouton_reste_actif_pendant_l_essai(): void
+    {
+        $this->passerAuPlanEssaiRestreint();
+
+        $this->actingAs($this->user)
+            ->get(route('dashboard.caisse'))
+            ->assertOk()
+            ->assertSee(route('dashboard.caisse.simplifiee'), false)
+            ->assertDontSee(route('abonnement.upgrade', ['feature' => 'scan_code_barre']), false);
+    }
 }
