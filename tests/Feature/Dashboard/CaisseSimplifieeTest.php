@@ -238,4 +238,58 @@ class CaisseSimplifieeTest extends TestCase
             ->assertSee(route('dashboard.caisse.simplifiee'), false)
             ->assertDontSee(route('abonnement.upgrade', ['feature' => 'scan_code_barre']), false);
     }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Rendu du mode simplifié (indépendant d'Alpine)
+    // ─────────────────────────────────────────────────────────────────────
+
+    public function test_le_catalogue_est_rendu_cote_serveur_et_absent_en_simplifie(): void
+    {
+        $html = $this->actingAs($this->user)
+            ->get(route('dashboard.caisse.simplifiee'))
+            ->assertOk()
+            ->getContent();
+
+        // Bloc résultats présent, grille catalogue absente du HTML
+        $this->assertStringContainsString('>Résultats<', $html);
+        $this->assertStringNotContainsString('grid-cols-2 sm:grid-cols-3 gap-3', $html, 'La grille du catalogue ne doit pas être rendue.');
+        $this->assertStringContainsString('Scannez ou recherchez un produit', $html);
+    }
+
+    public function test_le_scanner_est_visible_en_mode_simplifie(): void
+    {
+        $html = $this->actingAs($this->user)
+            ->get(route('dashboard.caisse.simplifiee'))
+            ->assertOk()
+            ->getContent();
+
+        // Le scanner ne doit plus dépendre de l'onglet (il n'y a plus d'onglets)
+        $this->assertStringContainsString('scannerCodeBarre()', $html);
+        $this->assertStringNotContainsString("x-show=\"onglet === 'produits'\"", $html, 'Le scanner doit être visible sans condition d\'onglet en mode simplifié.');
+    }
+
+    public function test_la_vente_rapide_n_a_que_deux_champs_en_simplifie(): void
+    {
+        $html = $this->actingAs($this->user)
+            ->get(route('dashboard.caisse.simplifiee'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('Vente rapide', $html);
+        $this->assertStringContainsString('Prix (F)', $html);
+        $this->assertStringNotContainsString('Type (optionnel)', $html, 'Aucun sélecteur de type en caisse simplifiée.');
+        $this->assertStringNotContainsString('Catégorie (optionnel)', $html);
+    }
+
+    public function test_la_vente_rapide_complete_garde_ses_champs_en_mode_complet(): void
+    {
+        $html = $this->actingAs($this->user)
+            ->get(route('dashboard.caisse'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('Type (optionnel)', $html);
+        $this->assertStringContainsString("x-show=\"onglet === 'produits'\"", $html);
+        $this->assertStringContainsString('grid-cols-2 sm:grid-cols-3 gap-3', $html);
+    }
 }

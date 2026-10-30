@@ -79,15 +79,15 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
 
         // ── État filtres ──
         search: '',
-        onglet: 'prestations',
+        // Mode simple : uniquement des produits (aucun onglet prestations).
+        onglet: mode === 'simple' ? 'produits' : 'prestations',
         categorieId: '',
 
         /**
-         * 'complet' : caisse par défaut (prestations + produits, grille + catégories)
-         * 'simple'  : caisse commerce / supermarché — produits uniquement, ajout
-         *             par scan ou recherche, ni grille ni catégories.
+         * Mode courant : 'complet' (défaut) ou 'simple'.
+         * ⚠️ La valeur provient de l'option `mode` passée par la vue Livewire ;
+         * ne PAS redéclarer `mode` ici (une seconde clé écraserait la première).
          */
-        mode: 'complet',
 
         get simple() {
             return this.mode === 'simple';
@@ -151,7 +151,8 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
          * rien tant que la recherche est vide (pas de grille catalogue).
          */
         get resultatsRecherche() {
-            if (!this.simple || !this.search || this.search.trim().length < 1) return [];
+            const q = (this.search || '').trim();
+            if (q.length < 1) return [];
             return this.filteredItems.slice(0, 40);
         },
 
@@ -272,8 +273,9 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
                     nom: this.venteRapideNom.trim(),
                     prix: Math.round(this.venteRapidePrix),
                     quantite: 1,
-                    typeLibre: this.venteRapideType || null,
-                    categorieId: this.venteRapideCategorieId || null,
+                    // Caisse simplifiée : article libre typé « produit », sans catégorie
+                    typeLibre: this.simple ? 'produit' : (this.venteRapideType || null),
+                    categorieId: this.simple ? null : (this.venteRapideCategorieId || null),
                 },
             };
             this.venteRapideNom = '';

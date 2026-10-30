@@ -139,8 +139,8 @@
         @endif
 
         <div class="card p-4 space-y-3">
-            {{-- Bouton Vente rapide (masqué en mode simplifié) --}}
-            <button x-show="!showVenteRapide && !simple"
+            {{-- Bouton Vente rapide (disponible dans les deux modes) --}}
+            <button x-show="!showVenteRapide"
                     @click="toggleVenteRapide()"
                     class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold border-2 border-amber-200 dark:border-amber-700/60 bg-amber-50/50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-100/70 dark:hover:bg-amber-900/40 transition-all duration-200">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,7 +151,9 @@
 
             {{-- Bouton Scanner code-barres produit + champ scanner externe (essai + premium-plus uniquement) --}}
             @if(auth()->user()->aFonctionnalite('scan_code_barre'))
-            <div x-data="scannerCodeBarre()" x-init="init()" x-show="onglet === 'produits'" class="flex flex-col gap-1">
+            <div x-data="scannerCodeBarre()" x-init="init()"
+                 @if(! $simple) x-show="onglet === 'produits'" @endif
+                 class="flex flex-col gap-1">
                 <div class="flex items-center gap-2">
                     <button type="button" @click="ouvrir()"
                             class="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold border-2 border-blue-200 dark:border-blue-700/60 bg-blue-50/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100/70 dark:hover:bg-blue-900/40 transition-all duration-200 flex-shrink-0">
@@ -230,11 +232,11 @@
                 </div>
             </div>
             <div class="space-y-3">
-                {{-- Article ou prestation --}}
+                {{-- Article --}}
                 <div>
-                    <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Article ou prestation *</label>
+                    <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ $simple ? 'Article' : 'Article ou prestation' }} *</label>
                     <input type="text" x-model="venteRapideNom"
-                           placeholder="Ex : Tresse spéciale, Soin visage..."
+                           placeholder="{{ $simple ? 'Ex : Bloc-notes, Riz 5 kg...' : 'Ex : Tresse spéciale, Soin visage...' }}"
                            class="form-input mt-1.5"
                            maxlength="150"
                            @keydown.enter="ajouterVenteRapide()">
@@ -249,6 +251,7 @@
                            inputmode="numeric"
                            @keydown.enter="ajouterVenteRapide()">
                 </div>
+                @if(! $simple)
                 {{-- Type (optionnel) --}}
                 <div>
                     <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type (optionnel)</label>
@@ -295,6 +298,7 @@
                         </template>
                     </div>
                 </div>
+                @endif
                 {{-- Erreur --}}
                 <p x-show="venteRapideErreur" x-text="venteRapideErreur" class="text-xs text-red-500 !mt-1"></p>
                 {{-- Actions : Annuler | Ajouter --}}
@@ -318,8 +322,9 @@
             </div>
         </div>
 
-        {{-- Grille items (masquée en mode simplifié : pas de catalogue) --}}
-        <div x-show="!showVenteRapide && !simple" class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[55vh] overflow-y-auto pr-1">
+        @if(! $simple)
+        {{-- Grille items (mode complet uniquement) --}}
+        <div x-show="!showVenteRapide" class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[55vh] overflow-y-auto pr-1">
             <template x-for="item in filteredItems" :key="item.id">
                 <button
                     @click="ajouterItem(item)"
@@ -372,9 +377,11 @@
                 <p class="text-sm text-gray-400">Aucun résultat</p>
             </div>
         </div>
+        @endif
 
+        @if($simple)
         {{-- ═══ MODE SIMPLIFIÉ : résultats de recherche (produits uniquement) ═══ --}}
-        <div x-show="simple" x-cloak class="card overflow-hidden">
+        <div class="card overflow-hidden">
             <div class="px-4 py-2.5 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
                 <p class="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Résultats</p>
                 <span class="text-[11px] text-gray-400" x-show="resultatsRecherche.length > 0"
@@ -385,8 +392,7 @@
             <div class="max-h-[52vh] overflow-y-auto divide-y divide-gray-50 dark:divide-slate-700/60">
                 <template x-for="item in resultatsRecherche" :key="item.id">
                     <button type="button" @click="ajouterItem(item)"
-                            class="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-primary-50/60 dark:hover:bg-slate-700/50 transition-colors">
-                        <template x-if="item.photo">
+                            class="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-primary-50/60 dark:hover:bg-slate-700/50 transition-colors">                        <template x-if="item.photo">
                             <img :src="item.photo" :alt="item.nom" class="w-9 h-9 rounded-lg object-cover border border-gray-200 dark:border-slate-600 flex-shrink-0">
                         </template>
                         <template x-if="!item.photo">
@@ -432,6 +438,7 @@
                 </div>
             </div>
         </div>
+        @endif
     </div>
 
     {{-- ═══ Panier droit (masqué sur mobile) ═══ --}}
