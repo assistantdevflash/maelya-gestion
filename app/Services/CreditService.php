@@ -335,15 +335,21 @@ class CreditService
     // ─────────────────────────────────────────────────────────────────────
 
     /**
-     * Rééchelonne les échéances **restantes** (non soldées) d'un crédit.
-     * Les échéances déjà payées ne sont pas touchées.
+     * Rééchelonne les échéances **restantes** d'un crédit.
+     *
+     * Règles :
+     *  - les échéances totalement réglées ne sont **jamais** touchées (historique comptable) ;
+     *  - les échéances partiellement réglées sont conservées telles quelles : le montant
+     *    déjà encaissé reste rattaché à son échéance, et seul `reste_a_payer` est redistribué ;
+     *  - les échéances non entamées sont supprimées puis régénérées, et toute la
+     *    numérotation est refaite de 1 à n dans l'ordre chronologique.
      */
     public function reechelonner(Credit $credit, int $nbEcheances, string $frequence, ?Carbon $dateDebut = null): Credit
     {
         return DB::transaction(function () use ($credit, $nbEcheances, $frequence, $dateDebut) {
             $restant = (int) $credit->reste_a_payer;
 
-            // On supprime uniquement les échéances non entamées
+            // Seules les échéances non entamées sont remplacées.
             $credit->echeances()
                 ->where('statut', '!=', 'payee')
                 ->where('montant_paye', '<=', 0)
@@ -352,8 +358,6 @@ class CreditService
             $date = ($dateDebut ?? Carbon::today())->copy();
             $parEcheance = $nbEcheances > 0 ? (int) floor($restant / $nbEcheances) : $restant;
             $cumul = 0;
-
-            $dernierNumero = (int) $credit->echeances()->max('numero');
 
             for ($i = 1; $i <= max(1, $nbEcheances); $i++) {
                 $date = $frequence === 'hebdomadaire' ? $date->copy()->addWeek() : $date->copy()->addMonth();
@@ -367,11 +371,29 @@ class CreditService
                 Echeance::create([
                     'credit_id'   => $credit->id,
                     'institut_id' => $credit->institut_id,
-                    'numero'      => $dernierNumero + $i,
+                    // Numérotation provisoire : refaite juste après, une fois
+                    // les échéances conservées remises dans l'ordre.
+                    'numero'      => 1000 + $i,
                     'date_prevue' => $date->copy(),
                     'montant'     => $montant,
                     'statut'      => 'en_attente',
                 ]);
+            }
+
+            // Renumérotation séquentielle 1..n dans l'ordre chronologique,
+            // pour que l'affichage « 2/5 » reste cohérent. Le tri se fait sur la
+            // date seule (les heures diffèrent entre échéances générées et
+            // originelles) puis sur le numéro d'origine pour départager.
+            $triees = $credit->echeances()->reorder()->get()->sortBy(
+                fn (Echeance $e) => $e->date_prevue->format('Y-m-d') . '|' . str_pad((string) $e->numero, 6, '0', STR_PAD_LEFT)
+            )->values();
+
+            $numero = 1;
+            foreach ($triees as $echeance) {
+                if ((int) $echeance->numero !== $numero) {
+                    $echeance->updateQuietly(['numero' => $numero]);
+                }
+                $numero++;
             }
 
             $credit->update([

@@ -635,12 +635,14 @@ class CreditController extends Controller
         $data = $request->validate([
             'nb_echeances' => ['required', 'integer', 'min:1', 'max:36'],
             'frequence'    => ['required', 'in:hebdomadaire,mensuelle'],
+            'date_debut'   => ['nullable', 'date', 'after_or_equal:today'],
         ]);
 
         app(CreditService::class)->reechelonner(
             $credit,
             (int) $data['nb_echeances'],
-            $data['frequence']
+            $data['frequence'],
+            ! empty($data['date_debut']) ? \Illuminate\Support\Carbon::parse($data['date_debut']) : null
         );
 
         return back()->with('success', 'Échéancier réaménagé : '

@@ -380,13 +380,58 @@ class CreditModuleTest extends TestCase
         $credit = $this->creerCredit(60000, 3);
         $premiere = $credit->echeances()->orderBy('numero')->first();
         $premiere->update(['montant_paye' => $premiere->montant, 'statut' => 'payee']);
+        $credit->update(['reste_a_payer' => 40000]);
 
         app(CreditService::class)->reechelonner($credit, 4, 'mensuelle');
 
         $echeances = $credit->fresh()->echeances()->orderBy('numero')->get();
 
-        $this->assertTrue($echeances->first()->statut === 'payee');
-        $this->assertSame(4, $echeances->where('statut', '!=', 'payee')->count());
+        $this->assertSame('payee', $echeances->first()->statut);
+        $this->assertSame((int) $premiere->montant, (int) $echeances->first()->montant_paye);
+        // 1 échéance réglée conservée + 4 nouvelles
+        $this->assertCount(5, $echeances);
+    }
+
+    public function test_le_reechelonnement_renumerote_de_1_a_n(): void
+    {
+        $credit = $this->creerCredit(60000, 3);
+        $premiere = $credit->echeances()->orderBy('numero')->first();
+        $premiere->update(['montant_paye' => $premiere->montant, 'statut' => 'payee']);
+        $credit->update(['reste_a_payer' => 40000]);
+
+        $credit = app(CreditService::class)->reechelonner($credit, 3, 'mensuelle');
+
+        $numeros = $credit->echeances()->orderBy('numero')->pluck('numero')->map(fn ($n) => (int) $n)->all();
+
+        $this->assertSame([1, 2, 3, 4], $numeros);
+        $this->assertSame(4, (int) $credit->nb_echeances);
+    }
+
+    public function test_le_reechelonnement_conserve_les_echeances_partiellement_reglees(): void
+    {
+        $credit = $this->creerCredit(60000, 3);
+        $premiere = $credit->echeances()->orderBy('numero')->first();
+        $premiere->update(['montant_paye' => 5000]);
+        $credit->update(['reste_a_payer' => 55000]);
+
+        app(CreditService::class)->reechelonner($credit, 2, 'mensuelle');
+
+        $conservee = $credit->fresh()->echeances()->where('montant_paye', 5000)->first();
+
+        $this->assertNotNull($conservee);
+        $this->assertSame(5000, (int) $conservee->montant_paye);
+    }
+
+    public function test_le_reechelonnement_accepte_une_date_de_debut(): void
+    {
+        $credit = $this->creerCredit(30000, 2);
+        $debut  = Carbon::today()->addDays(10);
+
+        app(CreditService::class)->reechelonner($credit, 2, 'mensuelle', $debut);
+
+        $premiere = $credit->fresh()->echeances()->orderBy('numero')->first();
+
+        $this->assertTrue($premiere->date_prevue->isSameDay($debut->copy()->addMonth()));
     }
 
     public function test_le_report_d_echeance_remet_le_statut_en_attente(): void
@@ -479,5 +524,44 @@ class CreditModuleTest extends TestCase
             ->assertSessionHasNoErrors();
 
         $this->assertSame(1, PaiementCredit::count());
+    }
+
+    public function test_le_bouton_relancer_n_apparait_pas_sans_retard(): void
+    {
+        $this->creerCredit(30000, 3);
+
+        $this->actingAs($this->user)
+            ->get(route('dashboard.credits.show', Credit::first()))
+            ->assertOk()
+            ->assertDontSee('Relancer par WhatsApp')
+            ->assertDontSee('Relancer par e-mail')
+            ->assertSee('Réaménager', false);
+    }
+
+    public function test_le_bouton_relancer_apparait_si_une_echeance_est_depassee(): void
+    {
+        $credit = $this->creerCredit(30000, 3);
+        // Crédit encore « en cours » mais une échéance dépassée non réglée
+        $credit->echeances()->orderBy('numero')->first()?->update([
+            'date_prevue' => now()->subDays(5),
+        ]);
+
+        $this->actingAs($this->user)
+            ->get(route('dashboard.credits.show', $credit->fresh()))
+            ->assertOk()
+            ->assertSee('Relancer par WhatsApp')
+            ->assertSee('1 en retard');
+    }
+
+    public function test_le_bouton_relancer_n_apparait_pas_sur_un_credit_solde(): void
+    {
+        $credit = $this->creerCredit(30000, 2);
+        $credit->update(['statut' => 'solde', 'reste_a_payer' => 0]);
+        $credit->echeances()->update(['date_prevue' => now()->subDays(5)]);
+
+        $this->actingAs($this->user)
+            ->get(route('dashboard.credits.show', $credit->fresh()))
+            ->assertOk()
+            ->assertDontSee('Relancer par WhatsApp');
     }
 }

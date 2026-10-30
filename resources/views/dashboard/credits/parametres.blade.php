@@ -1,7 +1,7 @@
 <x-dashboard-layout>
     <x-slot name="title">Paramètres crédits</x-slot>
 
-    <div class="space-y-5 max-w-3xl">
+    <div class="space-y-5 max-w-3xl mx-auto">
         <div class="flex items-center gap-3">
             <a href="{{ route('dashboard.credits.index') }}" class="btn-icon flex-shrink-0" title="Retour">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

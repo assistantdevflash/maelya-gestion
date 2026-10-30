@@ -30,38 +30,67 @@
                     $creditService = app(\App\Services\CreditService::class);
                     $waLinkRelance = $creditService->lienWhatsApp($credit);
                     $waLinkFiche = $creditService->lienWhatsApp($credit, 'fiche');
+                    // Échéances réellement en retard : statut « retard » ou date
+                    // dépassée sans règlement complet.
+                    $nbEcheancesRetard = $credit->echeances->filter(
+                        fn ($e) => (int) $e->montant_paye < (int) $e->montant
+                            && ($e->statut === 'retard' || ($e->date_prevue && $e->date_prevue->lt(today())))
+                    )->count();
                 @endphp
                 @if($waLinkFiche)
                 <a href="{{ $waLinkFiche }}" target="_blank" class="btn-outline text-xs py-1.5 px-3 text-green-600 border-green-200 hover:bg-green-50 whitespace-nowrap" title="Partager la fiche par WhatsApp">
                     💬 <span class="hidden sm:inline">WhatsApp</span>
                 </a>
                 @endif
-                @if($credit->statut !== 'solde' && $waLinkRelance)
-                <a href="{{ $waLinkRelance }}" target="_blank" class="btn-outline text-xs py-1.5 px-3 text-orange-600 border-orange-200 hover:bg-orange-50 whitespace-nowrap" title="Relancer par WhatsApp">
-                    🔔 <span class="hidden sm:inline">Relancer</span>
-                </a>
-                @endif
-                @if($credit->statut !== 'solde')
-                <button onclick="document.getElementById('modal-reechelonner').showModal()"
-                        class="btn-outline text-xs py-1.5 px-3 whitespace-nowrap" title="Réaménager l'échéancier">
-                    🔄 <span class="hidden sm:inline">Réaménager</span>
-                </button>
-                @endif
-                @if($credit->paiements->isEmpty())
                 <x-dropdown-actions>
+                    @if($credit->paiements->isEmpty())
                     <a href="{{ route('dashboard.credits.edit', $credit) }}"
                        class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition">
                         <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                         Modifier
                     </a>
+                    @endif
+
+                    @if($credit->statut !== 'solde')
+                    <button type="button" onclick="document.getElementById('modal-reechelonner').showModal()"
+                       class="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition">
+                        <svg class="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        Réaménager l'échéancier
+                    </button>
+                    @endif
+
+                    @if($credit->statut !== 'solde' && $nbEcheancesRetard > 0)
+                    <div class="border-t border-gray-100 dark:border-slate-700 my-1"></div>
+                    @if($waLinkRelance)
+                    <a href="{{ $waLinkRelance }}" target="_blank"
+                       class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition">
+                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                        Relancer par WhatsApp
+                        <span class="ml-auto text-[10px] font-bold text-red-600 dark:text-red-400">{{ $nbEcheancesRetard }} en retard</span>
+                    </a>
+                    @endif
+                    @if($credit->client?->email)
+                    <form method="POST" action="{{ route('dashboard.credits.relancer', $credit) }}">
+                        @csrf
+                        <input type="hidden" name="canal" value="email">
+                        <button type="submit"
+                           class="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition">
+                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            Relancer par e-mail
+                        </button>
+                    </form>
+                    @endif
+                    @endif
+
+                    @if($credit->paiements->isEmpty())
                     <div class="border-t border-gray-100 dark:border-slate-700 my-1"></div>
                     <button onclick="openModal('modal-supprimer-credit')"
                        class="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                         Supprimer
                     </button>
+                    @endif
                 </x-dropdown-actions>
-                @endif
             </div>
         </div>
 
@@ -349,6 +378,10 @@
         action="{{ route('dashboard.credits.destroy', $credit) }}" method="DELETE" confirm="Supprimer" danger="true" />
 
     @if($credit->statut !== 'solde')
+    @php
+        $nbReglees   = $credit->echeances->where('statut', 'payee')->count();
+        $nbPartielles = $credit->echeances->filter(fn ($e) => $e->statut !== 'payee' && (int) $e->montant_paye > 0)->count();
+    @endphp
     <dialog id="modal-reechelonner" class="rounded-2xl shadow-2xl border-0 p-0 w-full max-w-sm backdrop:bg-black/50 dark:backdrop:bg-black/70 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100">
         <form method="POST" action="{{ route('dashboard.credits.reechelonner', $credit) }}" class="p-6 space-y-4">
             @csrf
@@ -356,24 +389,37 @@
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white">Réaménager l'échéancier</h3>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Reste à payer : <strong class="text-gray-900 dark:text-white">{{ number_format($credit->reste_a_payer, 0, ',', ' ') }} F</strong>.
-                    Les échéances déjà réglées ne sont pas modifiées.
+                    Ce montant sera redistribué sur les nouvelles échéances.
                 </p>
             </div>
+
+            @if($nbReglees > 0 || $nbPartielles > 0)
+            <div class="rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 p-3">
+                <p class="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                    @if($nbReglees > 0)
+                        <strong>{{ $nbReglees }}</strong> échéance{{ $nbReglees > 1 ? 's' : '' }} déjà réglée{{ $nbReglees > 1 ? 's' : '' }} {{ $nbReglees > 1 ? 'sont conservées' : 'est conservée' }} intacts{{ $nbReglees > 1 ? 'es' : 'e' }} (historique et paiements inchangés).
+                    @endif
+                    @if($nbPartielles > 0)
+                        <br><strong>{{ $nbPartielles }}</strong> échéance{{ $nbPartielles > 1 ? 's' : '' }} partiellement réglée{{ $nbPartielles > 1 ? 's' : '' }} {{ $nbPartielles > 1 ? 'restent' : 'reste' }} en place, avec {{ $nbPartielles > 1 ? 'leurs' : 'son' }} encaissement{{ $nbPartielles > 1 ? 's' : '' }}.
+                    @endif
+                </p>
+            </div>
+            @endif
+
             <div>
-                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Nombre d'échéances restantes</label>
-                <input type="number" name="nb_echeances" min="1" max="36" value="{{ max(1, $credit->echeances->where('statut', '!=', 'payee')->count()) }}" required class="w-full form-input text-sm">
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Nombre de nouvelles échéances</label>
+                <input type="number" name="nb_echeances" min="1" max="36" value="{{ max(1, $credit->echeances->where('statut', '!=', 'payee')->where('montant_paye', '<=', 0)->count()) }}" required class="w-full form-input text-sm">
             </div>
             <div>
                 <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Fréquence</label>
                 <select name="frequence" class="w-full form-input text-sm">
-                    <option value="hebdomadaire">Chaque semaine</option>
                     <option value="mensuelle" selected>Chaque mois</option>
-                    <option value="quinzaine">Tous les 15 jours</option>
+                    <option value="hebdomadaire">Chaque semaine</option>
                 </select>
             </div>
             <div>
                 <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Première échéance</label>
-                <input type="date" name="date_debut" value="{{ now()->addMonth()->format('Y-m-d') }}" min="{{ now()->addDay()->format('Y-m-d') }}" class="w-full form-input text-sm">
+                <input type="date" name="date_debut" value="{{ now()->format('Y-m-d') }}" min="{{ now()->format('Y-m-d') }}" class="w-full form-input text-sm">
             </div>
             <div class="flex gap-2 pt-1">
                 <button type="button" onclick="this.closest('dialog').close()" class="btn-outline flex-1 text-sm">Annuler</button>
