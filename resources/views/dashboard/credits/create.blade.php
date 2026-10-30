@@ -1,5 +1,6 @@
 <x-dashboard-layout>
-<div class="max-w-4xl mx-auto space-y-6" x-data="creditForm(@js($allClients->toArray()), @js($catalogue->toArray()), null)">
+{{-- Même largeur que la liste des crédits (conteneur max-w-7xl du layout) --}}
+<div class="space-y-6" x-data="creditForm(@js($allClients->toArray()), @js($catalogue->toArray()), null)">
     <div class="flex items-center gap-4">
         <a href="{{ route('dashboard.credits.index') }}" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition">←</a>
         <div><h1 class="text-2xl font-bold text-gray-900 dark:text-white">Nouveau crédit client</h1></div>
