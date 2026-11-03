@@ -113,102 +113,141 @@
 
     {{-- Actions --}}
     @if(!in_array($rdv->statut, ['termine', 'annule']))
-    <div class="card p-5" x-data="{ confirmAnnule: false, confirmTermine: false }">
-        <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Actions</p>
-        <div class="flex flex-wrap gap-3">
-            <a href="{{ route('dashboard.rdv.edit', $rdv) }}" class="btn-outline">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                </svg>
-                Modifier
-            </a>
+    @php
+        $peutEncaisser = $rdv->prestations->count() > 0;
+        // Action principale contextuelle : ce qu'on fait naturellement ensuite.
+        $primaire = $rdv->statut === 'en_attente'
+            ? 'confirmer'
+            : ($peutEncaisser ? 'encaisser' : 'terminer');
 
-            @if($rdv->statut === 'en_attente')
+        $btnSecondaire = 'inline-flex items-center justify-center gap-2 h-10 px-3 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-[13px] font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors';
+
+        // Relance WhatsApp (utile quand le client n'a pas d'e-mail)
+        $tel = preg_replace('/\D+/', '', (string) $rdv->client_telephone);
+        if ($tel && str_starts_with($tel, '0') && strlen($tel) === 10) { $tel = '225' . $tel; }
+        elseif ($tel && strlen($tel) === 8) { $tel = '225' . $tel; }
+        $waMsg = $tel ? rawurlencode(
+            "Bonjour {$rdv->client_nom},\n\n"
+            . "Votre rendez-vous du " . $rdv->debut_le->format('d/m/Y') . " à " . $rdv->debut_le->format('H\\hi')
+            . " est bien confirmé.\n"
+            . ($rdv->label_prestations && $rdv->label_prestations !== '—' ? 'Prestation : ' . $rdv->label_prestations . "\n" : '')
+            . "\nÀ bientôt !"
+        ) : null;
+    @endphp
+
+    <div class="card overflow-hidden" x-data="{ confirmAnnule: false, confirmTermine: false }">
+        <div class="px-5 pt-4 pb-2">
+            <p class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Actions</p>
+        </div>
+
+        <div class="px-5 pb-5 space-y-4">
+
+            {{-- 1. Action principale --}}
+            @if($primaire === 'confirmer')
             <form method="POST" action="{{ route('dashboard.rdv.confirmer', $rdv) }}">
                 @csrf
-                <button type="submit" class="btn-primary bg-emerald-600 border-emerald-600 hover:bg-emerald-700">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button type="submit"
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl text-sm font-bold text-white shadow-lg hover:shadow-xl active:scale-[0.98] transition-all bg-emerald-600 hover:bg-emerald-700">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
-                    Confirmer le RDV
+                    Confirmer le rendez-vous
                 </button>
             </form>
-            @endif
-
-            {{-- Relance WhatsApp (utile quand le client n'a pas d'e-mail) --}}
-            @php
-                $tel = preg_replace('/\D+/', '', (string) $rdv->client_telephone);
-                if ($tel && str_starts_with($tel, '0') && strlen($tel) === 10) { $tel = '225' . $tel; }
-                elseif ($tel && strlen($tel) === 8) { $tel = '225' . $tel; }
-                $waMsg = $tel ? rawurlencode(
-                    "Bonjour {$rdv->client_nom},\n\n"
-                    . "Votre rendez-vous du " . $rdv->debut_le->format('d/m/Y') . " à " . $rdv->debut_le->format('H\\hi')
-                    . " est bien confirmé.\n"
-                    . ($rdv->label_prestations && $rdv->label_prestations !== '—' ? 'Prestation : ' . $rdv->label_prestations . "\n" : '')
-                    . "\nÀ bientôt !"
-                ) : null;
-            @endphp
-            @if($waMsg)
-            <a href="https://wa.me/{{ $tel }}?text={{ $waMsg }}" target="_blank"
-               class="btn-outline text-emerald-700 border-emerald-200 hover:bg-emerald-50">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                </svg>
-                Prévenir par WhatsApp
-            </a>
-            @endif
-
-            @if($rdv->statut !== 'termine')
-            <button type="button" x-on:click="confirmTermine = true" class="btn-primary">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                Marquer terminé
-            </button>
-            @endif
-
-            @if($rdv->prestations->count() > 0)
+            @elseif($primaire === 'encaisser')
             <a href="{{ route('dashboard.caisse', ['client' => $rdv->client_id, 'rdv' => $rdv->id]) }}"
-               class="btn-primary bg-emerald-600 border-emerald-600 hover:bg-emerald-700">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl text-sm font-bold text-white shadow-lg hover:shadow-xl active:scale-[0.98] transition-all"
+               style="background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
                 </svg>
-                Encaisser ce RDV
+                Encaisser ce rendez-vous
             </a>
+            @else
+            <button type="button" x-on:click="confirmTermine = true"
+                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl text-sm font-bold text-white shadow-lg hover:shadow-xl active:scale-[0.98] transition-all"
+                    style="background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Marquer comme terminé
+            </button>
             @endif
 
-            <button type="button" x-on:click="confirmAnnule = true"
-                    class="btn-outline text-red-600 border-red-200 hover:bg-red-50">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-                Annuler le RDV
-            </button>
-        </div>
+            {{-- 2. Actions secondaires (grille 2 colonnes sur mobile) --}}
+            <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
+                @if($primaire !== 'encaisser' && $peutEncaisser)
+                <a href="{{ route('dashboard.caisse', ['client' => $rdv->client_id, 'rdv' => $rdv->id]) }}"
+                   class="{{ $btnSecondaire }}">
+                    <svg class="w-4 h-4 flex-shrink-0 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    Encaisser
+                </a>
+                @endif
 
-        {{-- Confirmation terminé --}}
-        <div x-show="confirmTermine" x-cloak
-             class="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-sm">
-            <p class="text-emerald-700 font-medium mb-3">Confirmer que ce rendez-vous est terminé ?</p>
-            <div class="flex gap-3">
-                <form method="POST" action="{{ route('dashboard.rdv.terminer', $rdv) }}">
-                    @csrf
-                    <button type="submit" class="btn-primary">Oui, marquer terminé</button>
-                </form>
-                <button type="button" x-on:click="confirmTermine = false" class="btn-outline">Retour</button>
+                @if($primaire !== 'terminer')
+                <button type="button" x-on:click="confirmTermine = true" class="{{ $btnSecondaire }}">
+                    <svg class="w-4 h-4 flex-shrink-0 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Terminer
+                </button>
+                @endif
+
+                <a href="{{ route('dashboard.rdv.edit', $rdv) }}" class="{{ $btnSecondaire }}">
+                    <svg class="w-4 h-4 flex-shrink-0 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                    Modifier
+                </a>
+
+                @if($waMsg)
+                <a href="https://wa.me/{{ $tel }}?text={{ $waMsg }}" target="_blank"
+                   class="{{ $btnSecondaire }} hover:border-emerald-300 hover:text-emerald-700 dark:hover:text-emerald-300">
+                    <svg class="w-4 h-4 flex-shrink-0 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    </svg>
+                    WhatsApp
+                </a>
+                @endif
             </div>
-        </div>
 
-        {{-- Confirmation annulation --}}
-        <div x-show="confirmAnnule" x-cloak
-             class="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-sm">
-            <p class="text-red-700 font-medium mb-3">Confirmer l'annulation ? Le client sera notifié par e-mail.</p>
-            <div class="flex gap-3">
-                <form method="POST" action="{{ route('dashboard.rdv.annuler', $rdv) }}">
-                    @csrf
-                    <button type="submit" class="btn-primary bg-red-600 border-red-600 hover:bg-red-700">Oui, annuler</button>
-                </form>
-                <button type="button" x-on:click="confirmAnnule = false" class="btn-outline">Retour</button>
+            {{-- 3. Action destructive, volontairement discrète et séparée --}}
+            <div class="pt-3 border-t border-gray-100 dark:border-slate-700">
+                <button type="button" x-on:click="confirmAnnule = true"
+                        class="inline-flex items-center gap-2 h-9 px-3 -ml-1 rounded-lg text-[13px] font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    Annuler le rendez-vous
+                </button>
+            </div>
+
+            {{-- Confirmation terminé --}}
+            <div x-show="confirmTermine" x-cloak
+                 class="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-xl text-sm">
+                <p class="text-emerald-800 dark:text-emerald-300 font-medium mb-3">Confirmer que ce rendez-vous est terminé ?</p>
+                <div class="flex flex-wrap gap-2">
+                    <form method="POST" action="{{ route('dashboard.rdv.terminer', $rdv) }}">
+                        @csrf
+                        <button type="submit" class="btn-primary bg-emerald-600 border-emerald-600 hover:bg-emerald-700">Oui, marquer terminé</button>
+                    </form>
+                    <button type="button" x-on:click="confirmTermine = false" class="btn-outline">Retour</button>
+                </div>
+            </div>
+
+            {{-- Confirmation annulation --}}
+            <div x-show="confirmAnnule" x-cloak
+                 class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-xl text-sm">
+                <p class="text-red-800 dark:text-red-300 font-medium mb-3">Confirmer l'annulation ? Le client sera notifié par e-mail.</p>
+                <div class="flex flex-wrap gap-2">
+                    <form method="POST" action="{{ route('dashboard.rdv.annuler', $rdv) }}">
+                        @csrf
+                        <button type="submit" class="btn-primary bg-red-600 border-red-600 hover:bg-red-700">Oui, annuler</button>
+                    </form>
+                    <button type="button" x-on:click="confirmAnnule = false" class="btn-outline">Retour</button>
+                </div>
             </div>
         </div>
     </div>

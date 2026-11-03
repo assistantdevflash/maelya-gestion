@@ -370,4 +370,42 @@ class RdvDisponibiliteTest extends TestCase
             ->assertOk()
             ->assertSee($employe->prenom . ' ' . $employe->nom_famille, false);
     }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Présentation des actions (action principale contextuelle)
+    // ─────────────────────────────────────────────────────────────────────
+
+    public function test_la_fiche_rdv_met_en_avant_l_action_principale(): void
+    {
+        // RDV en attente → l'action principale est la confirmation
+        $enAttente = $this->rdv(['statut' => 'en_attente']);
+
+        $this->get(route('dashboard.rdv.show', $enAttente))
+            ->assertOk()
+            ->assertSee('Confirmer le rendez-vous')
+            ->assertDontSee('Encaisser ce rendez-vous');
+
+        // RDV confirmé avec prestations → l'action principale est l'encaissement
+        $categorie = \App\Models\CategoriePrestation::create([
+            'institut_id' => $this->institut->id,
+            'nom'         => 'Catégorie test',
+        ]);
+
+        $prestation = \App\Models\Prestation::create([
+            'institut_id'  => $this->institut->id,
+            'categorie_id' => $categorie->id,
+            'nom'          => 'Soin test',
+            'prix'        => 5000,
+            'duree'       => 30,
+            'actif'       => true,
+        ]);
+
+        $confirme = $this->rdv(['statut' => 'confirme', 'client_nom' => 'Confirme Test']);
+        $confirme->prestations()->attach($prestation->id);
+
+        $this->get(route('dashboard.rdv.show', $confirme->fresh()))
+            ->assertOk()
+            ->assertSee('Encaisser ce rendez-vous')
+            ->assertDontSee('Confirmer le rendez-vous');
+    }
 }
