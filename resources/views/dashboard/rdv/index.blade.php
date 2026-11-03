@@ -36,10 +36,11 @@
 
     {{-- Filtres --}}
     <div class="card p-4">
-        <form method="GET" action="{{ route('dashboard.rdv.index') }}" class="flex flex-wrap items-end gap-3">
+        <form method="GET" action="{{ route('dashboard.rdv.index') }}"
+              class="flex flex-nowrap items-center gap-2 overflow-x-auto scrollbar-hide">
             {{-- La période doit survivre au changement de statut --}}
             <input type="hidden" name="filtre" value="{{ $filtre }}">
-            <div class="flex gap-1 p-1 bg-gray-100/80 rounded-xl">
+            <div class="flex gap-1 p-1 bg-gray-100/80 rounded-xl flex-shrink-0">
                 @foreach(['today' => "Aujourd'hui", 'semaine' => 'Semaine', 'mois' => 'Mois', 'tous' => 'Tous'] as $val => $label)
                 <a href="{{ route('dashboard.rdv.index', array_merge(request()->query(), ['filtre' => $val])) }}"
                    class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all {{ $filtre === $val ? 'bg-white shadow-sm text-primary-700' : 'text-gray-500 hover:text-gray-700' }}">
@@ -54,7 +55,7 @@
                 @endforeach
             </div>
             <select name="statut" onchange="this.form.submit()"
-                    class="form-input text-sm py-2 pr-8 flex-shrink-0">
+                    class="form-input text-sm py-2 pr-8 w-auto min-w-[150px] flex-shrink-0">
                 <option value="">Tous les statuts</option>
                 <option value="en_attente" {{ $statut === 'en_attente' ? 'selected' : '' }}>En attente</option>
                 <option value="confirme" {{ $statut === 'confirme' ? 'selected' : '' }}>Confirmé</option>
@@ -65,7 +66,7 @@
             {{-- Filtre par collaborateur (masqué pour un employé : il ne voit que lui) --}}
             @if($employes->isNotEmpty())
             <select name="employe" onchange="this.form.submit()"
-                    class="form-input text-sm py-2 pr-8 flex-shrink-0">
+                    class="form-input text-sm py-2 pr-8 w-auto min-w-[160px] flex-shrink-0">
                 <option value="">Tous les employés</option>
                 @foreach($employes as $e)
                 <option value="{{ $e->id }}" {{ $employe === $e->id ? 'selected' : '' }}>{{ $e->prenom }} {{ $e->nom_famille }}</option>
@@ -74,11 +75,11 @@
             @endif
 
             {{-- Recherche par nom, téléphone ou e-mail --}}
-            <div class="flex items-center gap-2 flex-1 min-w-[220px]">
+            <div class="flex items-center gap-2 flex-1 min-w-[200px]">
                 <input type="text" name="q" value="{{ $search }}"
                        placeholder="Nom, téléphone, e-mail…"
-                       class="form-input text-sm py-2 flex-1">
-                <button type="submit" class="btn-outline text-sm flex-shrink-0">Rechercher</button>
+                       class="form-input text-sm py-2 flex-1 min-w-0">
+                <button type="submit" class="btn-outline text-sm py-2 flex-shrink-0">Rechercher</button>
                 @if($search !== '' || $statut || $employe)
                 <a href="{{ route('dashboard.rdv.index', ['filtre' => $filtre]) }}"
                    class="text-xs text-gray-400 hover:text-gray-600 flex-shrink-0">Réinitialiser</a>
