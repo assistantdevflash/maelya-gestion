@@ -361,5 +361,13 @@ class RdvDisponibiliteTest extends TestCase
 
         $this->assertContains('Chez Koffi', $noms);
         $this->assertNotContains('Chez Awa', $noms);
+
+        // Garde-fou : le sélecteur doit afficher « Prénom Nom_famille ».
+        // ⚠️ SQLite tolère un nom de colonne inexistant (traité comme une
+        // chaîne), donc la requête ne casse pas en test alors qu'elle explose
+        // en MySQL. C'est le rendu qui trahit l'erreur.
+        $this->get(route('dashboard.rdv.index', ['filtre' => 'tous']))
+            ->assertOk()
+            ->assertSee($employe->prenom . ' ' . $employe->nom_famille, false);
     }
 }

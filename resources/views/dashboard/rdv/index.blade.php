@@ -68,7 +68,7 @@
                     class="form-input text-sm py-2 pr-8 flex-shrink-0">
                 <option value="">Tous les employés</option>
                 @foreach($employes as $e)
-                <option value="{{ $e->id }}" {{ $employe === $e->id ? 'selected' : '' }}>{{ $e->prenom }} {{ $e->nom }}</option>
+                <option value="{{ $e->id }}" {{ $employe === $e->id ? 'selected' : '' }}>{{ $e->prenom }} {{ $e->nom_famille }}</option>
                 @endforeach
             </select>
             @endif

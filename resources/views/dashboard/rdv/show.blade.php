@@ -66,7 +66,7 @@
             @if($rdv->employe)
             <div>
                 <dt class="text-xs text-gray-400 font-medium mb-0.5">Employé(e)</dt>
-                <dd class="font-medium text-gray-900">{{ $rdv->employe->prenom }} {{ $rdv->employe->nom }}</dd>
+                <dd class="font-medium text-gray-900">{{ $rdv->employe->prenom }} {{ $rdv->employe->nom_famille }}</dd>
             </div>
             @endif
             @if($rdv->rappel_envoye)

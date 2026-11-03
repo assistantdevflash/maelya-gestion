@@ -78,7 +78,7 @@ class RdvController extends Controller
                 ->whereIn('role', ['admin', 'employe'])
                 ->where('actif', true)
                 ->orderBy('prenom')
-                ->get(['id', 'prenom', 'nom']);
+                ->get(['id', 'prenom', 'nom_famille']);
 
         return view('dashboard.rdv.index', compact(
             'rdvs', 'pagines', 'filtre', 'statut', 'employe', 'search',
