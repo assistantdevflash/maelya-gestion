@@ -368,6 +368,12 @@ class CaisseSimplifieeTest extends TestCase
         $this->assertStringContainsString('aria-label="Calculatrice"', $html);
         $this->assertStringContainsString('Calculatrice', $html);
         $this->assertStringContainsString('calOuverte', $html);
+
+        // Le résultat doit être calculé en direct (aperçu) et non remplacé par
+        // un tiret quand l'expression contient le signe moins typographique « − ».
+        $this->assertStringContainsString('get valeur()', $html);
+        $this->assertStringContainsString('\\u2212', $html, 'Le signe moins « − » doit être normalisé en opérateur.');
+        $this->assertStringNotContainsString("this.resultat = '—'", $html, 'Aucun résultat ne doit être remplacé par un tiret.');
     }
 
     public function test_la_calculatrice_n_est_pas_ajoutee_a_la_caisse_complete(): void

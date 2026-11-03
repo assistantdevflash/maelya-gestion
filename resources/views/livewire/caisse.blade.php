@@ -1207,25 +1207,43 @@
             calOuverte: false,
             expr: '',
             resultat: '',
+
+            /** Traduit les symboles affichés (×, ÷, −) en opérateurs JS. */
+            normalise(v) {
+                return String(v)
+                    .replace(/[\u2212\u2013\u2014]/g, '-')
+                    .replace(/\u00d7/g, '*')
+                    .replace(/\u00f7/g, '/')
+                    .replace(/,/g, '.')
+                    .replace(/\s+/g, '');
+            },
+
+            /** Aperçu calculé en direct : '' tant qu'il n'y a pas d'opération. */
+            get valeur() {
+                const p = this.normalise(this.expr);
+                if (p === '' || !/[+\-*/]/.test(p) || !/^[0-9+\-*/().]+$/.test(p)) return '';
+                try {
+                    const r = Function('return (' + p + ')')();
+                    return (typeof r === 'number' && isFinite(r))
+                        ? String(Math.round(r * 100) / 100)
+                        : '';
+                } catch (e) {
+                    return '';
+                }
+            },
+
             touche(t) {
                 if (t === 'C') { this.expr = ''; this.resultat = ''; return; }
                 if (t === '⌫') { this.expr = this.expr.slice(0, -1); this.resultat = ''; return; }
-                if (t === '=') { this.calculer(); return; }
-                if (t === '.' && /(^|[+\-×÷(])\d*\.\d*$/.test(this.expr)) return;
-                this.expr += t;
-            },
-            calculer() {
-                const propre = this.expr.replace(/×/g, '*').replace(/÷/g, '/');
-                if (propre === '' || !/^[0-9+\-*/(). ]+$/.test(propre)) { this.resultat = '—'; return; }
-                try {
-                    const r = Function('return (' + propre + ')')();
-                    this.resultat = (typeof r === 'number' && isFinite(r))
-                        ? String(Math.round(r * 100) / 100)
-                        : '—';
-                    if (this.resultat !== '—') this.expr = this.resultat;
-                } catch (e) {
-                    this.resultat = '—';
+                if (t === '=') {
+                    const v = this.valeur;
+                    if (v !== '') { this.resultat = v; this.expr = v; }
+                    return;
                 }
+                // Un seul séparateur décimal par nombre
+                if (t === '.' && /(^|[+\-×÷(])\d*\.\d*$/.test(this.expr)) return;
+                this.resultat = '';
+                this.expr += t;
             }
          }"
          class="fixed bottom-24 lg:bottom-5 right-4 lg:right-5 z-40 flex flex-col items-end gap-2 print:hidden">
@@ -1245,7 +1263,7 @@
             {{-- Écran --}}
             <div class="mb-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-slate-900/60 border border-gray-100 dark:border-slate-700 text-right overflow-hidden">
                 <p class="text-[11px] text-gray-400 h-4 truncate" x-text="expr || '0'"></p>
-                <p class="text-xl font-bold text-gray-900 dark:text-white truncate" x-text="resultat || ''"></p>
+                <p class="text-xl font-bold text-gray-900 dark:text-white truncate" x-text="resultat || valeur"></p>
             </div>
 
             {{-- Touches --}}
