@@ -157,4 +157,21 @@ class RdvFiltresTest extends TestCase
             'Le filtre de période doit être conservé par le formulaire de statut.'
         );
     }
+
+    public function test_les_filtres_ne_debordent_pas_en_mobile(): void
+    {
+        $html = $this->get(route('dashboard.rdv.index'))
+            ->assertOk()
+            ->getContent();
+
+        // Plus de défilement horizontal : la barre de filtres s'empile sur mobile
+        $this->assertStringNotContainsString('overflow-x-auto scrollbar-hide', $html);
+        $this->assertStringContainsString('lg:flex-row', $html);
+
+        // Les 4 périodes restent toutes visibles, avec libellé court sur mobile
+        $this->assertStringContainsString('grid-cols-4', $html);
+        foreach (['Jour', 'Sem.', 'Mois', 'Tous'] as $court) {
+            $this->assertStringContainsString('>' . $court . '<', $html);
+        }
+    }
 }

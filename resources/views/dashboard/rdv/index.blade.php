@@ -37,52 +37,72 @@
     {{-- Filtres --}}
     <div class="card p-4">
         <form method="GET" action="{{ route('dashboard.rdv.index') }}"
-              class="flex flex-nowrap items-center gap-2 overflow-x-auto scrollbar-hide">
+              class="flex flex-col gap-2 lg:flex-row lg:flex-nowrap lg:items-center">
             {{-- La période doit survivre au changement de statut --}}
             <input type="hidden" name="filtre" value="{{ $filtre }}">
-            <div class="flex gap-1 p-1 bg-gray-100/80 rounded-xl flex-shrink-0">
-                @foreach(['today' => "Aujourd'hui", 'semaine' => 'Semaine', 'mois' => 'Mois', 'tous' => 'Tous'] as $val => $label)
+
+            {{-- Sélecteur de période : 4 colonnes pleine largeur sur mobile --}}
+            <div class="grid grid-cols-4 gap-1 p-1 bg-gray-100/80 dark:bg-slate-700/50 rounded-xl w-full lg:flex lg:w-auto lg:flex-shrink-0">
+                @foreach([
+                    'today'   => ['court' => 'Jour', 'long' => "Aujourd'hui"],
+                    'semaine' => ['court' => 'Sem.', 'long' => 'Semaine'],
+                    'mois'    => ['court' => 'Mois', 'long' => 'Mois'],
+                    'tous'    => ['court' => 'Tous', 'long' => 'Tous'],
+                ] as $val => $libelle)
                 <a href="{{ route('dashboard.rdv.index', array_merge(request()->query(), ['filtre' => $val])) }}"
-                   class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all {{ $filtre === $val ? 'bg-white shadow-sm text-primary-700' : 'text-gray-500 hover:text-gray-700' }}">
-                    {{ $label }}
+                   class="flex items-center justify-center gap-1 lg:gap-1.5 px-1 lg:px-3 py-2 rounded-lg text-[11px] lg:text-xs font-semibold whitespace-nowrap min-w-0 transition-all {{ $filtre === $val ? 'bg-white dark:bg-slate-800 shadow-sm text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200' }}">
+                    <span class="lg:hidden">{{ $libelle['court'] }}</span>
+                    <span class="hidden lg:inline">{{ $libelle['long'] }}</span>
                     @php $cpt = $counts[$val] ?? 0; @endphp
                     @if($cpt > 0)
-                    <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold {{ $filtre === $val ? 'bg-primary-100 text-primary-700' : 'bg-gray-200 text-gray-600' }}">
+                    <span class="inline-flex items-center justify-center min-w-[16px] h-4 lg:min-w-[18px] lg:h-[18px] px-1 rounded-full text-[9px] lg:text-[10px] font-bold {{ $filtre === $val ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-200' : 'bg-gray-200 dark:bg-slate-600 text-gray-600 dark:text-gray-300' }}">
                         {{ $cpt }}
                     </span>
                     @endif
                 </a>
                 @endforeach
             </div>
-            <select name="statut" onchange="this.form.submit()"
-                    class="form-input text-sm py-2 pr-8 w-auto min-w-[150px] flex-shrink-0">
-                <option value="">Tous les statuts</option>
-                <option value="en_attente" {{ $statut === 'en_attente' ? 'selected' : '' }}>En attente</option>
-                <option value="confirme" {{ $statut === 'confirme' ? 'selected' : '' }}>Confirmé</option>
-                <option value="termine" {{ $statut === 'termine' ? 'selected' : '' }}>Terminé</option>
-                <option value="annule" {{ $statut === 'annule' ? 'selected' : '' }}>Annulé</option>
-            </select>
 
-            {{-- Filtre par collaborateur (masqué pour un employé : il ne voit que lui) --}}
-            @if($employes->isNotEmpty())
-            <select name="employe" onchange="this.form.submit()"
-                    class="form-input text-sm py-2 pr-8 w-auto min-w-[160px] flex-shrink-0">
-                <option value="">Tous les employés</option>
-                @foreach($employes as $e)
-                <option value="{{ $e->id }}" {{ $employe === $e->id ? 'selected' : '' }}>{{ $e->prenom }} {{ $e->nom_famille }}</option>
-                @endforeach
-            </select>
-            @endif
+            {{-- Statut + collaborateur : côte à côte sur mobile --}}
+            <div class="grid {{ $employes->isNotEmpty() ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1' }} gap-2 w-full lg:contents">
+                <select name="statut" onchange="this.form.submit()"
+                        class="form-input text-sm py-2 pr-8 w-full lg:w-auto lg:min-w-[150px] lg:flex-shrink-0">
+                    <option value="">Tous les statuts</option>
+                    <option value="en_attente" {{ $statut === 'en_attente' ? 'selected' : '' }}>En attente</option>
+                    <option value="confirme" {{ $statut === 'confirme' ? 'selected' : '' }}>Confirmé</option>
+                    <option value="termine" {{ $statut === 'termine' ? 'selected' : '' }}>Terminé</option>
+                    <option value="annule" {{ $statut === 'annule' ? 'selected' : '' }}>Annulé</option>
+                </select>
+
+                {{-- Filtre par collaborateur (masqué pour un employé : il ne voit que lui) --}}
+                @if($employes->isNotEmpty())
+                <select name="employe" onchange="this.form.submit()"
+                        class="form-input text-sm py-2 pr-8 w-full lg:w-auto lg:min-w-[160px] lg:flex-shrink-0">
+                    <option value="">Tous les employés</option>
+                    @foreach($employes as $e)
+                    <option value="{{ $e->id }}" {{ $employe === $e->id ? 'selected' : '' }}>{{ $e->prenom }} {{ $e->nom_famille }}</option>
+                    @endforeach
+                </select>
+                @endif
+            </div>
 
             {{-- Recherche par nom, téléphone ou e-mail --}}
-            <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+            <div class="flex items-center gap-2 w-full lg:flex-1 lg:min-w-[200px]">
                 <input type="text" name="q" value="{{ $search }}"
                        placeholder="Nom, téléphone, e-mail…"
                        class="form-input text-sm py-2 flex-1 min-w-0">
-                <button type="submit" class="btn-outline text-sm py-2 flex-shrink-0">Rechercher</button>
+                <button type="submit" class="btn-outline text-sm py-2 px-3 flex-shrink-0" title="Rechercher">
+                    <svg class="w-4 h-4 lg:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="11" cy="11" r="7" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="m16.5 16.5 4 4"/>
+                    </svg>
+                    <span class="hidden lg:inline">Rechercher</span>
+                </button>
                 @if($search !== '' || $statut || $employe)
                 <a href="{{ route('dashboard.rdv.index', ['filtre' => $filtre]) }}"
-                   class="text-xs text-gray-400 hover:text-gray-600 flex-shrink-0">Réinitialiser</a>
+                   class="text-xs text-gray-400 hover:text-gray-600 flex-shrink-0" title="Réinitialiser les filtres">
+                    <span class="lg:hidden">✕</span>
+                    <span class="hidden lg:inline">Réinitialiser</span>
+                </a>
                 @endif
             </div>
         </form>
