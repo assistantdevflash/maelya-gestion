@@ -37,6 +37,8 @@
     {{-- Filtres --}}
     <div class="card p-4">
         <form method="GET" action="{{ route('dashboard.rdv.index') }}" class="flex flex-wrap items-end gap-3">
+            {{-- La période doit survivre au changement de statut --}}
+            <input type="hidden" name="filtre" value="{{ $filtre }}">
             <div class="flex gap-1 p-1 bg-gray-100/80 rounded-xl">
                 @foreach(['today' => "Aujourd'hui", 'semaine' => 'Semaine', 'mois' => 'Mois', 'tous' => 'Tous'] as $val => $label)
                 <a href="{{ route('dashboard.rdv.index', array_merge(request()->query(), ['filtre' => $val])) }}"

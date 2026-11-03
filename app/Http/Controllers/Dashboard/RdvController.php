@@ -68,10 +68,13 @@ class RdvController extends Controller
             'tous'    => (clone $baseCountQuery)->count(),
         ];
 
-        // Prochain RDV si filtre large
+        // Prochain RDV si filtre large (respecte le rôle et le statut affiché)
         $prochainQuery = RendezVous::with('prestations')->aVenir()->orderBy('debut_le');
         if ($isEmploye) {
             $prochainQuery->where('employe_id', Auth::id());
+        }
+        if ($statut) {
+            $prochainQuery->where('statut', $statut);
         }
         $prochainRdv = $prochainQuery->first();
 
