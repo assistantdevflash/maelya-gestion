@@ -606,14 +606,50 @@
 
             {{-- Total + Paiement + Encaisser --}}
             <div x-show="!panierVide" class="border-t border-gray-100 p-4 space-y-3 bg-gray-50/30 flex-shrink-0">
-                {{-- Total brut --}}
+                {{-- Total --}}
+                @if($simple)
+                {{-- En mode simplifié la ligne affiche directement le net : la
+                     zone « code promo » étant repliée, le total remisé doit
+                     rester lisible sans avoir à la déplier. --}}
+                <div class="flex justify-between items-center">
+                    <span class="font-bold text-gray-900">
+                        Total
+                        <span x-show="remise > 0" class="ml-1 text-[11px] font-semibold text-emerald-600"
+                              x-text="'−' + formatNumber(remise) + ' F'"></span>
+                    </span>
+                    <span class="text-xl font-display font-extrabold" style="background: linear-gradient(135deg, #9333ea, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;" x-text="formatNumber(total) + ' F'"></span>
+                </div>
+                @else
                 <div class="flex justify-between items-center">
                     <span class="font-bold text-gray-900" x-text="remise > 0 ? 'Sous-total' : 'Total'"></span>
                     <span class="text-xl font-display font-extrabold" style="background: linear-gradient(135deg, #9333ea, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;" x-text="formatNumber(totalBrut) + ' F'"></span>
                 </div>
+                @endif
 
                 {{-- Code promo --}}
                 @if(auth()->user()->aFonctionnalite('caisse_code_promo'))
+                @if($simple)
+                {{-- Caisse simplifiée : zone repliable, fermée par défaut --}}
+                <div x-data="{ ouvert: false }" class="rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 overflow-hidden">
+                    <button type="button" @click="ouvert = !ouvert"
+                            class="w-full flex items-center justify-between gap-2 px-3 py-2 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                        <span class="flex items-center gap-1.5 min-w-0">
+                            <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                            </svg>
+                            <span>Code promo</span>
+                            <template x-if="codePromo">
+                                <span class="px-1.5 py-0.5 rounded font-mono text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 truncate"
+                                      x-text="codePromo.code + ' · −' + formatNumber(codePromo.remise) + ' F'"></span>
+                            </template>
+                        </span>
+                        <svg class="w-3.5 h-3.5 flex-shrink-0 transition-transform duration-200" :class="ouvert ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div x-show="ouvert" x-transition.opacity.duration.150ms x-cloak>
+                        <div class="px-3 pb-3 space-y-2">
+                @endif
                 <template x-if="codePromo">
                     <div>
                         <div class="flex items-center justify-between p-2.5 rounded-xl" style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2);">
@@ -630,10 +666,12 @@
                                 </svg>
                             </button>
                         </div>
+                        @if(! $simple)
                         <div class="flex justify-between items-center pt-2">
                             <span class="font-bold text-gray-900">Total</span>
                             <span class="text-xl font-display font-extrabold" style="background: linear-gradient(135deg, #9333ea, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;" x-text="formatNumber(total) + ' F'"></span>
                         </div>
+                        @endif
                     </div>
                 </template>
 
@@ -653,10 +691,35 @@
                         <p x-show="codePromoErreur" x-text="codePromoErreur" class="text-xs text-red-500 mt-1"></p>
                     </div>
                 </template>
+                @if($simple)
+                        </div>
+                    </div>
+                </div>
+                @endif
                 @endif
 
                 {{-- Modes de paiement (5 modes) --}}
-                <div class="grid grid-cols-3 {{ $hasCredits ? 'sm:grid-cols-5' : 'sm:grid-cols-4' }} gap-2">
+                @if($simple)
+                {{-- Caisse simplifiée : zone repliable, fermée par défaut --}}
+                <div x-data="{ ouvert: false }" class="rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 overflow-hidden">
+                    <button type="button" @click="ouvert = !ouvert"
+                            class="w-full flex items-center justify-between gap-2 px-3 py-2 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                        <span class="flex items-center gap-1.5 min-w-0">
+                            <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                            </svg>
+                            <span>Moyens de paiement</span>
+                            <span class="px-1.5 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300"
+                                  x-text="modePaiement === 'cash' ? '💵 Espèces' : (modePaiement === 'carte' ? '💳 Carte' : (modePaiement === 'mobile_money' ? '📱 Mobile' : '🔀 Mixte'))"></span>
+                        </span>
+                        <svg class="w-3.5 h-3.5 flex-shrink-0 transition-transform duration-200" :class="ouvert ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div x-show="ouvert" x-transition.opacity.duration.150ms x-cloak>
+                        <div class="px-3 pb-3">
+                @endif
+                <div class="grid grid-cols-3 {{ ($hasCredits && ! $simple) ? 'sm:grid-cols-5' : 'sm:grid-cols-4' }} gap-2">
                     <button @click="modePaiement = 'cash'"
                             :class="modePaiement === 'cash' ? 'border-primary-500 bg-primary-50 text-primary-700 shadow-sm' : 'border-gray-200 text-gray-500 hover:border-gray-300'"
                             class="py-2 px-1 rounded-xl text-[11px] font-semibold border-2 transition-all duration-200 text-center">
@@ -685,6 +748,11 @@
                     </button>
                     @endif
                 </div>
+                @if($simple)
+                        </div>
+                    </div>
+                </div>
+                @endif
 
                 {{-- Référence Mobile Money --}}
                 <template x-if="modePaiement === 'mobile_money'">
@@ -1132,6 +1200,96 @@
             </div>
         </div>
     </div>
+
+    @if($simple)
+    {{-- ═══ CALCULATRICE FLOTTANTE (caisse simplifiée) ═══ --}}
+    <div x-data="{
+            calOuverte: false,
+            expr: '',
+            resultat: '',
+            touche(t) {
+                if (t === 'C') { this.expr = ''; this.resultat = ''; return; }
+                if (t === '⌫') { this.expr = this.expr.slice(0, -1); this.resultat = ''; return; }
+                if (t === '=') { this.calculer(); return; }
+                if (t === '.' && /(^|[+\-×÷(])\d*\.\d*$/.test(this.expr)) return;
+                this.expr += t;
+            },
+            calculer() {
+                const propre = this.expr.replace(/×/g, '*').replace(/÷/g, '/');
+                if (propre === '' || !/^[0-9+\-*/(). ]+$/.test(propre)) { this.resultat = '—'; return; }
+                try {
+                    const r = Function('return (' + propre + ')')();
+                    this.resultat = (typeof r === 'number' && isFinite(r))
+                        ? String(Math.round(r * 100) / 100)
+                        : '—';
+                    if (this.resultat !== '—') this.expr = this.resultat;
+                } catch (e) {
+                    this.resultat = '—';
+                }
+            }
+         }"
+         class="fixed bottom-24 lg:bottom-5 right-4 lg:right-5 z-40 flex flex-col items-end gap-2 print:hidden">
+
+        {{-- Panneau calculateur --}}
+        <div x-show="calOuverte" x-cloak x-transition.origin.bottom.right
+             class="w-60 rounded-2xl bg-white dark:bg-slate-800 shadow-2xl border border-gray-200 dark:border-slate-600 p-3">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Calculatrice</span>
+                <button type="button" @click="calOuverte = false" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            {{-- Écran --}}
+            <div class="mb-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-slate-900/60 border border-gray-100 dark:border-slate-700 text-right overflow-hidden">
+                <p class="text-[11px] text-gray-400 h-4 truncate" x-text="expr || '0'"></p>
+                <p class="text-xl font-bold text-gray-900 dark:text-white truncate" x-text="resultat || ''"></p>
+            </div>
+
+            {{-- Touches --}}
+            <div class="grid grid-cols-4 gap-1.5 text-sm font-semibold">
+                <button type="button" @click="touche('C')" class="py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition">C</button>
+                <button type="button" @click="touche('⌫')" class="py-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 transition">⌫</button>
+                <button type="button" @click="touche('÷')" class="py-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 transition">÷</button>
+                <button type="button" @click="touche('×')" class="py-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 transition">×</button>
+
+                <button type="button" @click="touche('7')" class="py-2 rounded-lg bg-white dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 hover:bg-gray-50 transition">7</button>
+                <button type="button" @click="touche('8')" class="py-2 rounded-lg bg-white dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 hover:bg-gray-50 transition">8</button>
+                <button type="button" @click="touche('9')" class="py-2 rounded-lg bg-white dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 hover:bg-gray-50 transition">9</button>
+                <button type="button" @click="touche('−')" class="py-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 transition">−</button>
+
+                <button type="button" @click="touche('4')" class="py-2 rounded-lg bg-white dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 hover:bg-gray-50 transition">4</button>
+                <button type="button" @click="touche('5')" class="py-2 rounded-lg bg-white dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 hover:bg-gray-50 transition">5</button>
+                <button type="button" @click="touche('6')" class="py-2 rounded-lg bg-white dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 hover:bg-gray-50 transition">6</button>
+                <button type="button" @click="touche('+')" class="py-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 transition">+</button>
+
+                <button type="button" @click="touche('1')" class="py-2 rounded-lg bg-white dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 hover:bg-gray-50 transition">1</button>
+                <button type="button" @click="touche('2')" class="py-2 rounded-lg bg-white dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 hover:bg-gray-50 transition">2</button>
+                <button type="button" @click="touche('3')" class="py-2 rounded-lg bg-white dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 hover:bg-gray-50 transition">3</button>
+                <button type="button" @click="touche('=')"
+                        class="py-2 rounded-lg text-white font-bold transition hover:shadow-lg"
+                        style="background: linear-gradient(135deg, #9333ea, #ec4899);">=</button>
+
+                <button type="button" @click="touche('0')" class="col-span-2 py-2 rounded-lg bg-white dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 hover:bg-gray-50 transition">0</button>
+                <button type="button" @click="touche('.')" class="py-2 rounded-lg bg-white dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 hover:bg-gray-50 transition">.</button>
+                <button type="button" @click="touche('C')" class="py-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 transition text-xs">RAZ</button>
+            </div>
+        </div>
+
+        {{-- Bouton flottant --}}
+        <button type="button" @click="calOuverte = !calOuverte"
+                class="w-12 h-12 rounded-full text-white shadow-lg hover:shadow-xl active:scale-95 transition-all flex items-center justify-center"
+                style="background: linear-gradient(135deg, #9333ea, #ec4899);"
+                :class="calOuverte ? 'ring-2 ring-white ring-offset-2 ring-offset-gray-100' : ''"
+                aria-label="Calculatrice" title="Calculatrice">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m-6 4h6m-6 4h3M7 3h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"/>
+            </svg>
+        </button>
+    </div>
+    @endif
 
     {{-- ═══ MODAL NOUVEAU CLIENT ═══ --}}
     <div x-show="newClientOpen" x-cloak class="modal-backdrop"

@@ -324,4 +324,59 @@ class CaisseSimplifieeTest extends TestCase
 
         $this->assertStringNotContainsString('lg:max-h-[calc(100vh-8.5rem)]', $html);
     }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Zones repliables + calculatrice
+    // ─────────────────────────────────────────────────────────────────────
+
+    public function test_code_promo_et_moyens_de_paiement_sont_repliables_en_simplifie(): void
+    {
+        $html = $this->actingAs($this->user)
+            ->get(route('dashboard.caisse.simplifiee'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('Code promo', $html);
+        $this->assertStringContainsString('Moyens de paiement', $html);
+
+        // Les deux zones sont fermées par défaut (état Alpine à false)
+        $this->assertGreaterThanOrEqual(
+            2,
+            substr_count($html, 'x-data="{ ouvert: false }"'),
+            'Code promo et moyens de paiement doivent être repliés par défaut.'
+        );
+    }
+
+    public function test_les_zones_ne_sont_pas_repliees_dans_la_caisse_complete(): void
+    {
+        $html = $this->actingAs($this->user)
+            ->get(route('dashboard.caisse'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('Moyens de paiement', $html);
+        $this->assertStringNotContainsString('x-data="{ ouvert: false }"', $html);
+    }
+
+    public function test_la_calculatrice_flottante_est_disponible_en_simplifie(): void
+    {
+        $html = $this->actingAs($this->user)
+            ->get(route('dashboard.caisse.simplifiee'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('aria-label="Calculatrice"', $html);
+        $this->assertStringContainsString('Calculatrice', $html);
+        $this->assertStringContainsString('calOuverte', $html);
+    }
+
+    public function test_la_calculatrice_n_est_pas_ajoutee_a_la_caisse_complete(): void
+    {
+        $html = $this->actingAs($this->user)
+            ->get(route('dashboard.caisse'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('aria-label="Calculatrice"', $html);
+    }
 }
