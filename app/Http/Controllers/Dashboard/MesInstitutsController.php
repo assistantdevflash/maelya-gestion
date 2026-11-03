@@ -104,7 +104,17 @@ class MesInstitutsController extends Controller
             'couleur_primaire'   => ['nullable', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'couleur_secondaire' => ['nullable', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'couleur_accent'     => ['nullable', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            // Horaires d'ouverture : servent à refuser les RDV hors créneaux
+            'heure_ouverture'    => ['nullable', 'date_format:H:i'],
+            'heure_fermeture'    => ['nullable', 'date_format:H:i'],
+            'jours_ouverture'    => ['nullable', 'array'],
+            'jours_ouverture.*'  => ['integer', 'between:1,7'],
         ]);
+
+        // Les jours cochés sont transmis sous forme de tableau de cases à cocher
+        $data['jours_ouverture'] = $request->filled('jours_ouverture')
+            ? array_values(array_map('intval', (array) $request->input('jours_ouverture')))
+            : null;
 
         $institut->update($data);
 

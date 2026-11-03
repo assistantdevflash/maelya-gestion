@@ -158,20 +158,24 @@ class RdvControllerTest extends TestCase
         ]);
     }
 
-    public function test_store_rejette_date_passee(): void
+    /**
+     * Les dates passées sont désormais acceptées : il faut pouvoir enregistrer
+     * un passage de ce matin ou un RDV pris par téléphone hier.
+     */
+    public function test_store_accepte_une_date_passee(): void
     {
-        Mail::fake();
         $user = $this->creerAdminAvecRdv();
+        $this->actingAs($user);
 
-        $this->actingAs($user)
-            ->post(route('dashboard.rdv.store'), [
-                'client_nom'    => 'Test',
-                'debut_date'    => now()->subDay()->format('Y-m-d'),
-                'debut_heure'   => '10:00',
-                'duree_minutes' => 30,
-                'statut'        => 'en_attente',
-            ])
-            ->assertSessionHasErrors(['debut_le']);
+        $this->post(route('dashboard.rdv.store'), [
+            'client_nom'    => 'Client Passe',
+            'debut_date'    => now()->subDays(2)->format('Y-m-d'),
+            'debut_heure'   => '14:00',
+            'duree_minutes' => 30,
+            'statut'        => 'termine',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('rendez_vous', ['client_nom' => 'Client Passe']);
     }
 
     public function test_store_rejette_champs_requis_manquants(): void

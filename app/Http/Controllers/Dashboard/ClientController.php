@@ -161,21 +161,9 @@ class ClientController extends Controller
      */
     private function findExistingClient(string $institutId, ?string $telephone, ?string $email): ?Client
     {
-        $query = Client::where('institut_id', $institutId);
-
-        if ($telephone && $email) {
-            $query->where(function ($q) use ($telephone, $email) {
-                $q->where('telephone', $telephone)->orWhere('email', $email);
-            });
-        } elseif ($telephone) {
-            $query->where('telephone', $telephone);
-        } elseif ($email) {
-            $query->where('email', $email);
-        } else {
-            return null;
-        }
-
-        return $query->first();
+        // Source unique de vérité (utilisée aussi par la création automatique
+        // de fiche client depuis un RDV vitrine).
+        return Client::trouverParTelephoneOuEmail($institutId, $telephone, $email);
     }
 
     /**

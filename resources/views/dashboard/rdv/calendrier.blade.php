@@ -140,8 +140,16 @@
                             'Accept': 'application/json',
                         },
                         body: JSON.stringify({ debut_le: info.event.start.toISOString().slice(0,19).replace('T',' ') }),
-                    }).then(r => {
-                        if (!r.ok) { info.revert(); alert('Impossible de déplacer ce RDV.'); }
+                    }).then(async (r) => {
+                        if (!r.ok) {
+                            info.revert();
+                            let message = 'Impossible de déplacer ce RDV.';
+                            try {
+                                const data = await r.json();
+                                if (data && data.message) message = data.message;
+                            } catch (e) { /* réponse non JSON */ }
+                            alert(message);
+                        }
                     }).catch(() => { info.revert(); });
                 },
                 eventClick: (info) => {

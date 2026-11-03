@@ -123,6 +123,41 @@
                 Modifier
             </a>
 
+            @if($rdv->statut === 'en_attente')
+            <form method="POST" action="{{ route('dashboard.rdv.confirmer', $rdv) }}">
+                @csrf
+                <button type="submit" class="btn-primary bg-emerald-600 border-emerald-600 hover:bg-emerald-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Confirmer le RDV
+                </button>
+            </form>
+            @endif
+
+            {{-- Relance WhatsApp (utile quand le client n'a pas d'e-mail) --}}
+            @php
+                $tel = preg_replace('/\D+/', '', (string) $rdv->client_telephone);
+                if ($tel && str_starts_with($tel, '0') && strlen($tel) === 10) { $tel = '225' . $tel; }
+                elseif ($tel && strlen($tel) === 8) { $tel = '225' . $tel; }
+                $waMsg = $tel ? rawurlencode(
+                    "Bonjour {$rdv->client_nom},\n\n"
+                    . "Votre rendez-vous du " . $rdv->debut_le->format('d/m/Y') . " à " . $rdv->debut_le->format('H\\hi')
+                    . " est bien confirmé.\n"
+                    . ($rdv->label_prestations && $rdv->label_prestations !== '—' ? 'Prestation : ' . $rdv->label_prestations . "\n" : '')
+                    . "\nÀ bientôt !"
+                ) : null;
+            @endphp
+            @if($waMsg)
+            <a href="https://wa.me/{{ $tel }}?text={{ $waMsg }}" target="_blank"
+               class="btn-outline text-emerald-700 border-emerald-200 hover:bg-emerald-50">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+                Prévenir par WhatsApp
+            </a>
+            @endif
+
             @if($rdv->statut !== 'termine')
             <button type="button" x-on:click="confirmTermine = true" class="btn-primary">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -25,6 +25,8 @@ class Institut extends Model
         'couleur_primaire', 'couleur_secondaire', 'couleur_accent',
         // Paramétrage du module crédits
         'credit_plafond_defaut', 'credit_relance_active', 'credit_message_relance',
+        // Horaires d'ouverture (contrôle des rendez-vous)
+        'heure_ouverture', 'heure_fermeture', 'jours_ouverture',
     ];
 
     protected $casts = [
@@ -41,6 +43,7 @@ class Institut extends Model
         'boutique_zones_livraison' => 'array',
         'facebook_access_token' => 'encrypted',
         'facebook_connected_at' => 'datetime',
+        'jours_ouverture' => 'array',
     ];
 
     protected static function boot(): void

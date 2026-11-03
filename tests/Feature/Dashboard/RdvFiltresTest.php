@@ -70,10 +70,14 @@ class RdvFiltresTest extends TestCase
         $this->rdv('Aujourdhui Test', now()->setTime(10, 0));
         $this->rdv('Futur Test', now()->addMonths(3));
 
-        $this->get(route('dashboard.rdv.index', ['filtre' => 'today']))
-            ->assertOk()
-            ->assertSee('Aujourdhui Test')
-            ->assertDontSee('Futur Test');
+        $reponse = $this->get(route('dashboard.rdv.index', ['filtre' => 'today']))->assertOk();
+
+        // On inspecte les données de la vue : le bandeau « prochain RDV » cite
+        // légitimement un RDV hors période.
+        $noms = collect($reponse->viewData('rdvs'))->flatten()->pluck('client_nom');
+
+        $this->assertContains('Aujourdhui Test', $noms);
+        $this->assertNotContains('Futur Test', $noms);
     }
 
     public function test_le_filtre_mois_ne_montre_que_le_mois_courant(): void

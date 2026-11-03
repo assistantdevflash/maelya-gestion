@@ -7,10 +7,13 @@ use App\Mail\RdvAnnuleClient;
 use App\Mail\RdvConfirmeClient;
 use App\Mail\RdvConfirmeEtablissement;
 use App\Models\Client;
+use App\Models\Institut;
 use App\Models\Prestation;
 use App\Models\RendezVous;
 use App\Models\User;
 use App\Services\PushNotificationService;
+use App\Services\RdvService;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -34,51 +37,98 @@ class RdvController extends Controller
 
     public function index(Request $request)
     {
-        $filtre = $request->get('filtre', 'semaine'); // today | semaine | mois | tous
-        $statut = $request->get('statut', '');
-        $isEmploye = Auth::user()->isEmploye();
+        $filtre     = $request->get('filtre', 'semaine'); // today | semaine | mois | tous
+        $statut     = $request->get('statut', '');
+        $employe    = $request->get('employe', '');
+        $search     = trim((string) $request->get('q', ''));
+        $isEmploye  = Auth::user()->isEmploye();
+        $institutId = $this->institutId();
 
         $query = RendezVous::with(['client', 'prestations', 'employe'])
-            ->orderBy('debut_le', 'asc');
+            ->orderBy('debut_le');
 
-        // Les employés ne voient que leurs RDV assignés
-        if ($isEmploye) {
-            $query->where('employe_id', Auth::id());
-        }
+        $this->appliquerFiltres($query, $filtre, $statut, $employe, $search, $isEmploye);
 
-        $query->when($filtre === 'today', fn($q) => $q->whereDate('debut_le', today()))
-              ->when($filtre === 'semaine', fn($q) => $q->whereBetween('debut_le', [now()->startOfWeek(), now()->endOfWeek()]))
-              ->when($filtre === 'mois', fn($q) => $q->whereBetween('debut_le', [now()->startOfMonth(), now()->endOfMonth()]))
-              ->when($statut, fn($q) => $q->where('statut', $statut));
+        // Pagination réelle : l'ancien `->limit(300)` tronquait la liste sans
+        // le dire (des RDV disparaissaient silencieusement).
+        $pagines = $query->paginate(60)->withQueryString();
+        $rdvs    = $pagines->getCollection()->groupBy(fn ($r) => $r->debut_le->toDateString());
 
-        $rdvs = $query->limit($filtre === 'tous' ? 300 : 500)->get()->groupBy(fn($r) => $r->debut_le->toDateString());
+        // Compteurs des onglets en UNE requête (au lieu de 4 COUNT)
+        $base = RendezVous::query();
+        $this->appliquerFiltres($base, null, $statut, $employe, $search, $isEmploye);
+        $counts = $this->compterPeriodes($base);
 
-        // Compteurs par période pour les onglets (respecte statut + rôle employé)
-        $baseCountQuery = RendezVous::query();
-        if ($isEmploye) {
-            $baseCountQuery->where('employe_id', Auth::id());
-        }
-        if ($statut) {
-            $baseCountQuery->where('statut', $statut);
-        }
-        $counts = [
-            'today'   => (clone $baseCountQuery)->whereDate('debut_le', today())->count(),
-            'semaine' => (clone $baseCountQuery)->whereBetween('debut_le', [now()->startOfWeek(), now()->endOfWeek()])->count(),
-            'mois'    => (clone $baseCountQuery)->whereBetween('debut_le', [now()->startOfMonth(), now()->endOfMonth()])->count(),
-            'tous'    => (clone $baseCountQuery)->count(),
-        ];
-
-        // Prochain RDV si filtre large (respecte le rôle et le statut affiché)
+        // Prochain RDV (respecte rôle, employé et statut affichés)
         $prochainQuery = RendezVous::with('prestations')->aVenir()->orderBy('debut_le');
         if ($isEmploye) {
             $prochainQuery->where('employe_id', Auth::id());
+        } elseif ($employe) {
+            $prochainQuery->where('employe_id', $employe);
         }
         if ($statut) {
             $prochainQuery->where('statut', $statut);
         }
         $prochainRdv = $prochainQuery->first();
 
-        return view('dashboard.rdv.index', compact('rdvs', 'filtre', 'statut', 'prochainRdv', 'counts'));
+        // Filtre « employé » (inutile pour un employé : il ne voit que lui)
+        $employes = $isEmploye
+            ? collect()
+            : User::where('institut_id', $institutId)
+                ->whereIn('role', ['admin', 'employe'])
+                ->where('actif', true)
+                ->orderBy('prenom')
+                ->get(['id', 'prenom', 'nom']);
+
+        return view('dashboard.rdv.index', compact(
+            'rdvs', 'pagines', 'filtre', 'statut', 'employe', 'search',
+            'prochainRdv', 'counts', 'employes'
+        ));
+    }
+
+    /** Applique période / statut / employé / recherche à une requête de RDV. */
+    private function appliquerFiltres($query, ?string $filtre, string $statut, string $employe, string $search, bool $isEmploye): void
+    {
+        if ($isEmploye) {
+            $query->where('employe_id', Auth::id());
+        } elseif ($employe) {
+            $query->where('employe_id', $employe);
+        }
+
+        $query->when($filtre === 'today', fn ($q) => $q->whereDate('debut_le', today()))
+            ->when($filtre === 'semaine', fn ($q) => $q->whereBetween('debut_le', [now()->startOfWeek(), now()->endOfWeek()]))
+            ->when($filtre === 'mois', fn ($q) => $q->whereBetween('debut_le', [now()->startOfMonth(), now()->endOfMonth()]))
+            ->when($statut, fn ($q) => $q->where('statut', $statut))
+            ->when($search !== '', function ($q) use ($search) {
+                $q->where(function ($q2) use ($search) {
+                    $q2->where('client_nom', 'like', "%{$search}%")
+                        ->orWhere('client_telephone', 'like', "%{$search}%")
+                        ->orWhere('client_email', 'like', "%{$search}%");
+                });
+            });
+    }
+
+    /** Compteurs Aujourd'hui / Semaine / Mois / Tous en une seule requête. */
+    private function compterPeriodes($query): array
+    {
+        $row = $query->selectRaw(
+            'COUNT(*) as total,
+             SUM(CASE WHEN debut_le >= ? AND debut_le < ? THEN 1 ELSE 0 END) as aujourdhui,
+             SUM(CASE WHEN debut_le BETWEEN ? AND ? THEN 1 ELSE 0 END) as semaine,
+             SUM(CASE WHEN debut_le BETWEEN ? AND ? THEN 1 ELSE 0 END) as mois',
+            [
+                today()->toDateString(), today()->addDay()->toDateString(),
+                now()->startOfWeek()->toDateTimeString(), now()->endOfWeek()->toDateTimeString(),
+                now()->startOfMonth()->toDateTimeString(), now()->endOfMonth()->toDateTimeString(),
+            ]
+        )->first();
+
+        return [
+            'tous'    => (int) ($row->total ?? 0),
+            'today'   => (int) ($row->aujourdhui ?? 0),
+            'semaine' => (int) ($row->semaine ?? 0),
+            'mois'    => (int) ($row->mois ?? 0),
+        ];
     }
 
     public function create(Request $request)
@@ -88,11 +138,15 @@ class RdvController extends Controller
                            ->limit(300)
                            ->get();
         $prestations = Prestation::where('actif', true)->with('categorie')->orderBy('nom')->limit(500)->get();
-        $employes    = User::where('institut_id', $this->institutId())
-                           ->whereIn('role', ['admin', 'employe'])
-                           ->where('actif', true)
-                           ->orderBy('prenom')
-                           ->get();
+        // Un employé ne peut planifier que pour lui-même : on ne lui propose
+        // pas la liste complète (le serveur ignorait de toute façon son choix).
+        $employes = Auth::user()->isEmploye()
+            ? User::whereKey(Auth::id())->get()
+            : User::where('institut_id', $this->institutId())
+                ->whereIn('role', ['admin', 'employe'])
+                ->where('actif', true)
+                ->orderBy('prenom')
+                ->get();
 
         $clientPreselectionne = $request->filled('client_id')
             ? Client::find($request->get('client_id'))
@@ -114,7 +168,9 @@ class RdvController extends Controller
             'client_telephone' => ['nullable', 'string', 'max:30'],
             'client_email'     => ['nullable', 'email', 'max:255'],
             'employe_id'       => ['nullable', 'uuid', 'exists:users,id'],
-            'debut_le'         => ['required', 'date', 'after:now'],
+            // Les dates passées sont autorisées : on doit pouvoir enregistrer
+            // un passage de ce matin ou un RDV pris par téléphone hier.
+            'debut_le'         => ['required', 'date'],
             'duree_minutes'    => ['required', 'integer', 'min:5', 'max:480'],
             'statut'           => ['required', 'in:en_attente,confirme,annule,termine'],
             'notes'            => ['nullable', 'string', 'max:1000'],
@@ -127,6 +183,11 @@ class RdvController extends Controller
         // Si l'utilisateur est un employé, il est automatiquement assigné
         if (Auth::user()->isEmploye()) {
             $data['employe_id'] = Auth::id();
+        }
+
+        // Contrôles de disponibilité (horaires + chevauchement)
+        if ($erreur = $this->verifierDisponibilite($data['debut_le'], (int) $data['duree_minutes'], $data['employe_id'] ?? null)) {
+            return back()->withErrors(['debut_le' => $erreur])->withInput();
         }
 
         $rdv = RendezVous::create(\Arr::except($data, ['prestations', 'envoyer_confirmation']));
@@ -256,6 +317,15 @@ class RdvController extends Controller
             unset($data['employe_id']);
         }
 
+        if ($erreur = $this->verifierDisponibilite(
+            $data['debut_le'],
+            (int) $data['duree_minutes'],
+            $data['employe_id'] ?? $rdv->employe_id,
+            $rdv->id
+        )) {
+            return back()->withErrors(['debut_le' => $erreur])->withInput();
+        }
+
         $rdv->update(\Arr::except($data, ['prestations']));
         $rdv->prestations()->sync($data['prestations'] ?? []);
 
@@ -337,7 +407,7 @@ class RdvController extends Controller
         if ($start) $q->where('debut_le', '>=', $start);
         if ($end)   $q->where('debut_le', '<=', $end);
 
-        return $q->limit(500)->get()->map(function ($r) {
+        return $q->orderBy('debut_le')->limit(1000)->get()->map(function ($r) {
             $color = match ($r->statut) {
                 'confirme'   => '#10b981',
                 'en_attente' => $r->source === 'vitrine' ? '#8b5cf6' : '#f59e0b',
@@ -365,7 +435,142 @@ class RdvController extends Controller
         $data = $request->validate([
             'debut_le' => ['required', 'date'],
         ]);
+
+        $service = app(RdvService::class);
+        $debut   = Carbon::parse($data['debut_le']);
+
+        if ($erreur = $service->horsHoraires(Institut::find($rdv->institut_id), $debut, (int) $rdv->duree_minutes)) {
+            return response()->json(['ok' => false, 'message' => $erreur], 422);
+        }
+
+        $conflit = $service->conflit(
+            $rdv->institut_id,
+            $rdv->employe_id,
+            $debut,
+            (int) $rdv->duree_minutes,
+            $rdv->id
+        );
+
+        if ($conflit) {
+            return response()->json(['ok' => false, 'message' => $service->messageConflit($conflit)], 409);
+        }
+
         $rdv->update(['debut_le' => $data['debut_le']]);
+
         return response()->json(['ok' => true]);
+    }
+
+    /**
+     * Confirme un rendez-vous (statut → « confirmé ») et prévient le client.
+     *
+     * Il n'existait aucun moyen de confirmer un RDV autrement qu'en ouvrant le
+     * formulaire d'édition — les demandes venues de la vitrine restaient donc
+     * « en attente » et le client n'était jamais rassuré.
+     */
+    public function confirmer(RendezVous $rdv)
+    {
+        if (Auth::user()->isEmploye() && $rdv->employe_id !== Auth::id()) {
+            abort(403, 'Vous n\'êtes pas autorisé à confirmer ce rendez-vous.');
+        }
+
+        if ($rdv->statut === 'annule') {
+            return back()->with('error', 'Un rendez-vous annulé ne peut pas être confirmé.');
+        }
+
+        $rdv->update(['statut' => 'confirme']);
+        $rdv->loadMissing('prestations');
+
+        // Demande issue de la vitrine : on crée (ou on rattache) la fiche client
+        $fiche = $this->rattacherFicheClient($rdv);
+
+        $mailEnvoye = false;
+        if ($rdv->client_email) {
+            try {
+                Mail::to($rdv->client_email)->send(new RdvConfirmeClient($rdv));
+                $mailEnvoye = true;
+            } catch (\Throwable $e) {
+                \Log::warning('[RDV Confirmation Mail] ' . $e->getMessage());
+            }
+        }
+
+        $message = 'Rendez-vous confirmé.';
+        if ($mailEnvoye) {
+            $message .= ' Le client a été prévenu par e-mail.';
+        } elseif ($rdv->client_telephone) {
+            $message .= ' Client sans e-mail : pensez à le prévenir par WhatsApp.';
+        }
+        if ($fiche) {
+            $message .= ' Fiche client : ' . $fiche->nom_complet . '.';
+        }
+
+        return back()->with('success', $message);
+    }
+
+    /**
+     * Crée la fiche client d'un RDV vitrine, ou la rattache si elle existe déjà.
+     *
+     * ⚠️ Le doublon est détecté sur le téléphone OU l'e-mail : sans ce contrôle,
+     * chaque réservation en ligne créait une nouvelle fiche et le client perdait
+     * son historique, sa fidélité et ses crédits.
+     */
+    private function rattacherFicheClient(RendezVous $rdv): ?Client
+    {
+        if ($rdv->client_id || $rdv->source !== 'vitrine') {
+            return null;
+        }
+
+        if (! $rdv->client_telephone && ! $rdv->client_email) {
+            return null;
+        }
+
+        $existant = Client::trouverParTelephoneOuEmail(
+            $rdv->institut_id,
+            $rdv->client_telephone,
+            $rdv->client_email
+        );
+
+        if ($existant) {
+            $rdv->update(['client_id' => $existant->id]);
+
+            return $existant;
+        }
+
+        $nom    = trim((string) $rdv->client_nom);
+        $parties = preg_split('/\s+/', $nom, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $prenom = count($parties) > 1 ? implode(' ', array_slice($parties, 0, -1)) : null;
+        $famille = $parties ? end($parties) : 'Client';
+
+        $client = Client::create([
+            'institut_id' => $rdv->institut_id,
+            'type_client' => 'personne_physique',
+            'prenom'      => $prenom,
+            'nom'         => $famille,
+            'telephone'   => $rdv->client_telephone ?: null,
+            'email'       => $rdv->client_email,
+        ]);
+
+        $rdv->update(['client_id' => $client->id]);
+
+        return $client;
+    }
+
+    /**
+     * Vérifie horaires d'ouverture + chevauchement.
+     * Retourne le message d'erreur, ou null si le créneau est libre.
+     */
+    private function verifierDisponibilite(string $debutLe, int $duree, ?string $employeId, ?string $excludeRdvId = null): ?string
+    {
+        $service = app(RdvService::class);
+        $debut   = Carbon::parse($debutLe);
+
+        if ($erreur = $service->horsHoraires(Institut::find($this->institutId()), $debut, $duree)) {
+            return $erreur;
+        }
+
+        $conflit = $service->conflit($this->institutId(), $employeId, $debut, $duree, $excludeRdvId);
+
+        return $conflit
+            ? $service->messageConflit($conflit) . ' Choisissez un autre créneau.'
+            : null;
     }
 }

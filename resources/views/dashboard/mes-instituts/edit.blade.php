@@ -167,6 +167,68 @@
     </div>
     </form>
 
+    {{-- Horaires d'ouverture (contrôle des rendez-vous) --}}
+    <div class="card p-5 space-y-4">
+        <div class="flex items-start gap-3">
+            <div class="w-9 h-9 rounded-xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div class="min-w-0">
+                <p class="text-sm font-bold text-gray-900 dark:text-white">Horaires d'ouverture</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    Utilisés pour refuser les rendez-vous hors créneaux (y compris les demandes venant de votre vitrine).
+                    Laissez vide pour ne pas appliquer de restriction.
+                </p>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ route('dashboard.mes-instituts.update', $institut) }}" class="space-y-4">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="nom" value="{{ $institut->nom }}">
+            <input type="hidden" name="type" value="{{ $institut->type }}">
+            <input type="hidden" name="ville" value="{{ $institut->ville }}">
+            <input type="hidden" name="adresse" value="{{ $institut->adresse }}">
+            <input type="hidden" name="telephone" value="{{ $institut->telephone }}">
+            <input type="hidden" name="email" value="{{ $institut->email }}">
+            <input type="hidden" name="couleur_primaire" value="{{ $institut->couleur_primaire }}">
+            <input type="hidden" name="couleur_secondaire" value="{{ $institut->couleur_secondaire }}">
+            <input type="hidden" name="couleur_accent" value="{{ $institut->couleur_accent }}">
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="form-label">Ouverture</label>
+                    <input type="time" name="heure_ouverture" value="{{ old('heure_ouverture', $institut->heure_ouverture ? substr($institut->heure_ouverture, 0, 5) : '') }}" class="form-input text-sm">
+                </div>
+                <div>
+                    <label class="form-label">Fermeture</label>
+                    <input type="time" name="heure_fermeture" value="{{ old('heure_fermeture', $institut->heure_fermeture ? substr($institut->heure_fermeture, 0, 5) : '') }}" class="form-input text-sm">
+                </div>
+            </div>
+
+            <div>
+                <label class="form-label">Jours d'ouverture</label>
+                <div class="flex flex-wrap gap-2 mt-1">
+                    @foreach([1 => 'Lun', 2 => 'Mar', 3 => 'Mer', 4 => 'Jeu', 5 => 'Ven', 6 => 'Sam', 7 => 'Dim'] as $num => $libelle)
+                    @php $coches = old('jours_ouverture', $institut->jours_ouverture ?: [1,2,3,4,5,6]); @endphp
+                    <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-slate-600 text-xs font-semibold cursor-pointer has-[:checked]:bg-primary-50 has-[:checked]:border-primary-300 has-[:checked]:text-primary-700">
+                        <input type="checkbox" name="jours_ouverture[]" value="{{ $num }}"
+                               {{ in_array($num, array_map('intval', (array) $coches), true) ? 'checked' : '' }}
+                               class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                        {{ $libelle }}
+                    </label>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button type="submit" class="btn-primary text-sm">Enregistrer les horaires</button>
+            </div>
+        </form>
+    </div>
+
     <form id="form-logo" method="POST" action="{{ route('dashboard.mes-instituts.logo', $institut) }}" enctype="multipart/form-data" class="hidden">
         @csrf
     </form>

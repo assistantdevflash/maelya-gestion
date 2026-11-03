@@ -89,6 +89,20 @@ class VitrineController extends Controller
 
         $dureeTotal = $prestations->sum('duree') ?: 30;
 
+        // Contrôles de disponibilité : horaires d'ouverture + créneau déjà pris.
+        $rdvService = app(\App\Services\RdvService::class);
+        $debut      = \Illuminate\Support\Carbon::parse($data['debut_le']);
+
+        if ($erreur = $rdvService->horsHoraires($institut, $debut, $dureeTotal)) {
+            return back()->withErrors(['debut_le' => $erreur])->withInput();
+        }
+
+        if ($rdvService->conflit($institut->id, null, $debut, $dureeTotal)) {
+            return back()
+                ->withErrors(['debut_le' => 'Ce créneau vient d\'être réservé. Merci d\'en choisir un autre.'])
+                ->withInput();
+        }
+
         $rdv = RendezVous::create([
             'institut_id'      => $institut->id,
             'client_nom'       => $data['client_nom'],

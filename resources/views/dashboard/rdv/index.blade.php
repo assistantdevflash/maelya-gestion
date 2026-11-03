@@ -61,11 +61,34 @@
                 <option value="termine" {{ $statut === 'termine' ? 'selected' : '' }}>Terminé</option>
                 <option value="annule" {{ $statut === 'annule' ? 'selected' : '' }}>Annulé</option>
             </select>
+
+            {{-- Filtre par collaborateur (masqué pour un employé : il ne voit que lui) --}}
+            @if($employes->isNotEmpty())
+            <select name="employe" onchange="this.form.submit()"
+                    class="form-input text-sm py-2 pr-8 flex-shrink-0">
+                <option value="">Tous les employés</option>
+                @foreach($employes as $e)
+                <option value="{{ $e->id }}" {{ $employe === $e->id ? 'selected' : '' }}>{{ $e->prenom }} {{ $e->nom }}</option>
+                @endforeach
+            </select>
+            @endif
+
+            {{-- Recherche par nom, téléphone ou e-mail --}}
+            <div class="flex items-center gap-2 flex-1 min-w-[220px]">
+                <input type="text" name="q" value="{{ $search }}"
+                       placeholder="Nom, téléphone, e-mail…"
+                       class="form-input text-sm py-2 flex-1">
+                <button type="submit" class="btn-outline text-sm flex-shrink-0">Rechercher</button>
+                @if($search !== '' || $statut || $employe)
+                <a href="{{ route('dashboard.rdv.index', ['filtre' => $filtre]) }}"
+                   class="text-xs text-gray-400 hover:text-gray-600 flex-shrink-0">Réinitialiser</a>
+                @endif
+            </div>
         </form>
     </div>
 
     {{-- Prochain RDV (bandeau) --}}
-    @if($prochainRdv && $filtre !== 'today')
+    @if($prochainRdv)
     <div class="card p-4 flex items-center gap-4 border-l-4" style="border-left-color: #9333ea;">
         <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-lg"
              style="background: linear-gradient(135deg,#9333ea,#ec4899);">📅</div>
@@ -85,7 +108,17 @@
     <div class="card py-16 text-center">
         <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl">📅</div>
         <p class="text-gray-500 font-medium">Aucun rendez-vous sur cette période.</p>
-        <a href="{{ route('dashboard.rdv.create') }}" class="btn-primary mt-4 inline-flex">Créer un RDV</a>
+        @if($filtre !== 'tous' && ($counts['tous'] ?? 0) > 0)
+        <p class="text-sm text-gray-400 mt-1">
+            {{ \App\Helpers\TexteHelper::pluriel($counts['tous'], 'rendez-vous existe', 'rendez-vous existent') }}
+            au total sur une autre période.
+        </p>
+        <a href="{{ route('dashboard.rdv.index', ['filtre' => 'tous', 'statut' => $statut, 'q' => $search]) }}"
+           class="btn-outline mt-3 inline-flex">Voir les {{ $counts['tous'] }} rendez-vous</a>
+        @endif
+        <div class="mt-4">
+            <a href="{{ route('dashboard.rdv.create') }}" class="btn-primary inline-flex">Créer un RDV</a>
+        </div>
     </div>
     @else
     <div class="space-y-6">
@@ -144,8 +177,49 @@
                         @endif
                     </div>
 
-                    {{-- Actions --}}
+                    {{-- Actions rapides (sans ouvrir le détail) --}}
                     <div class="flex items-center gap-1 flex-shrink-0" onclick="event.stopPropagation()">
+                        @if($rdv->statut === 'en_attente')
+                        <form method="POST" action="{{ route('dashboard.rdv.confirmer', $rdv) }}">
+                            @csrf
+                            <button type="submit" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="Confirmer ce RDV">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </button>
+                        </form>
+                        @endif
+
+                        @if(in_array($rdv->statut, ['en_attente', 'confirme']))
+                        <form method="POST" action="{{ route('dashboard.rdv.terminer', $rdv) }}"
+                              onsubmit="return confirm('Marquer ce rendez-vous comme terminé ?')">
+                            @csrf
+                            <button type="submit" class="btn-icon text-gray-400 hover:text-primary-600" title="Marquer terminé">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ route('dashboard.rdv.annuler', $rdv) }}"
+                              onsubmit="return confirm('Annuler ce rendez-vous ? Le client sera prévenu par e-mail.')">
+                            @csrf
+                            <button type="submit" class="btn-icon text-gray-400 hover:text-red-600" title="Annuler le RDV">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </form>
+                        @endif
+
+                        @if($rdv->client)
+                        <a href="{{ route('dashboard.clients.show', $rdv->client) }}"
+                           class="btn-icon text-gray-400 hover:text-primary-600" title="Fiche client">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                        </a>
+                        @endif
+
                         <a href="{{ route('dashboard.rdv.edit', $rdv) }}" class="btn-icon text-gray-400 hover:text-blue-600" title="Modifier">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -158,6 +232,12 @@
         </div>
         @endforeach
     </div>
+        {{-- Pagination réelle (l'ancienne limite tronquait la liste) --}}
+        @if($pagines->hasPages())
+        <div class="pt-2">
+            {{ $pagines->links() }}
+        </div>
+        @endif
     @endif
 
 </div>

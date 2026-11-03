@@ -175,4 +175,54 @@ class Client extends Model
         $retards = $credits->where('statut', 'retard')->count();
         return max(1, min(5, (int) round((($total - $retards) / max($total, 1)) * 5)));
     }
+
+    /**
+     * Retrouve un client de l'établissement par téléphone OU e-mail.
+     *
+     * Critère d'unicité utilisé partout où une fiche peut être créée
+     * automatiquement (caisse, RDV vitrine…) : sans ce contrôle, un même
+     * client se retrouve avec plusieurs fiches et perd son historique.
+     *
+     * Les numéros sont comparés sans espaces, points ni tirets : « 07 01 02 03 04 »
+     * et « 0701020304 » désignent la même personne.
+     */
+    public static function trouverParTelephoneOuEmail(
+        string $institutId,
+        ?string $telephone,
+        ?string $email
+    ): ?self {
+        $tel = static::normaliserTelephone($telephone);
+        $mail = $email ? mb_strtolower(trim($email)) : null;
+
+        if (! $tel && ! $mail) {
+            return null;
+        }
+
+        $query = static::withoutGlobalScopes()->where('institut_id', $institutId);
+
+        return $query->where(function ($q) use ($tel, $mail) {
+            if ($tel) {
+                // Comparaison insensible aux espaces / points / tirets
+                $q->whereRaw(
+                    "REPLACE(REPLACE(REPLACE(REPLACE(telephone, ' ', ''), '.', ''), '-', ''), '+', '') = ?",
+                    [$tel]
+                );
+            }
+            if ($mail) {
+                $q->orWhereRaw('LOWER(email) = ?', [$mail]);
+            }
+        })->orderBy('created_at')->first();
+    }
+
+    /** Normalise un numéro pour la comparaison (chiffres uniquement). */
+    public static function normaliserTelephone(?string $telephone): ?string
+    {
+        if (! $telephone) {
+            return null;
+        }
+
+        $tel = preg_replace('/\D+/', '', $telephone);
+
+        return $tel === '' ? null : $tel;
+    }
 }

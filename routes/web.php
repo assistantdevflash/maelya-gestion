@@ -394,6 +394,7 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
         Route::get('rdv/{rdv}', [RdvController::class, 'show'])->name('rdv.show');
         Route::get('rdv/{rdv}/edit', [RdvController::class, 'edit'])->name('rdv.edit');
         Route::patch('rdv/{rdv}', [RdvController::class, 'update'])->name('rdv.update');
+        Route::post('rdv/{rdv}/confirmer', [RdvController::class, 'confirmer'])->name('rdv.confirmer');
         Route::post('rdv/{rdv}/annuler', [RdvController::class, 'annuler'])->name('rdv.annuler');
         Route::post('rdv/{rdv}/terminer', [RdvController::class, 'terminer'])->name('rdv.terminer');
     });
