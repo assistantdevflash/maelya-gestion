@@ -122,6 +122,27 @@ class RdvFiltresTest extends TestCase
     }
 
     /**
+     * Non-régression : `$request->get()` peut renvoyer null pour un paramètre
+     * présent mais vide (?statut=&employe=). Le typage strict de
+     * appliquerFiltres() provoquait alors un TypeError → 500 en production.
+     */
+    public function test_des_parametres_vides_ne_cassent_pas_la_liste(): void
+    {
+        $this->rdv('Robuste Test', now()->setTime(10, 0));
+
+        $this->get(route('dashboard.rdv.index') . '?filtre=&statut=&employe=&q=')
+            ->assertOk()
+            ->assertSee('Robuste Test');
+
+        $this->get(route('dashboard.rdv.index') . '?filtre=tous&statut')
+            ->assertOk();
+
+        // Paramètre envoyé sous forme de tableau (?q[]=…)
+        $this->get(route('dashboard.rdv.index') . '?filtre=tous&q[]=x')
+            ->assertOk();
+    }
+
+    /**
      * Non-régression : le `<select statut>` est dans un formulaire qui ne
      * transporte pas le filtre de période → changer le statut ramenait sur
      * « semaine » et faisait disparaître les RDV affichés.

@@ -37,10 +37,14 @@ class RdvController extends Controller
 
     public function index(Request $request)
     {
-        $filtre     = $request->get('filtre', 'semaine'); // today | semaine | mois | tous
-        $statut     = $request->get('statut', '');
-        $employe    = $request->get('employe', '');
-        $search     = trim((string) $request->get('q', ''));
+        // ⚠️ `$request->get()` (Symfony, déprécié) peut renvoyer null quand le
+        // paramètre est présent mais vide (?statut=&employe=), ce qui faisait
+        // échouer le typage `string $statut` de appliquerFiltres() → 500.
+        // On normalise systématiquement en chaîne.
+        $filtre     = $this->parametre($request, 'filtre') ?: 'semaine'; // today | semaine | mois | tous
+        $statut     = $this->parametre($request, 'statut');
+        $employe    = $this->parametre($request, 'employe');
+        $search     = $this->parametre($request, 'q');
         $isEmploye  = Auth::user()->isEmploye();
         $institutId = $this->institutId();
 
@@ -86,9 +90,21 @@ class RdvController extends Controller
         ));
     }
 
-    /** Applique période / statut / employé / recherche à une requête de RDV. */
-    private function appliquerFiltres($query, ?string $filtre, string $statut, string $employe, string $search, bool $isEmploye): void
+    /** Lit un paramètre de requête et le normalise en chaîne (jamais null). */
+    private function parametre(Request $request, string $cle): string
     {
+        $valeur = $request->input($cle);
+
+        return is_scalar($valeur) ? trim((string) $valeur) : '';
+    }
+
+    /** Applique période / statut / employé / recherche à une requête de RDV. */
+    private function appliquerFiltres($query, ?string $filtre, ?string $statut, ?string $employe, ?string $search, bool $isEmploye): void
+    {
+        $statut  = (string) $statut;
+        $employe = (string) $employe;
+        $search  = (string) $search;
+
         if ($isEmploye) {
             $query->where('employe_id', Auth::id());
         } elseif ($employe) {
