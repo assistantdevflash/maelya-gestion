@@ -141,7 +141,7 @@
             <div class="space-y-2">
                 @foreach($jourdees as $rdv)
                 @php $badge = $rdv->statut_badge; @endphp
-                <div class="card p-4 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer"
+                <div class="card p-3 sm:p-4 flex flex-wrap items-center gap-3 sm:gap-4 hover:shadow-md transition-shadow cursor-pointer"
                      onclick="window.location='{{ route('dashboard.rdv.show', $rdv) }}'">
                     {{-- Heure --}}
                     <div class="flex-shrink-0 text-center w-14">
@@ -155,7 +155,7 @@
                     {{-- Infos --}}
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2">
-                            <p class="text-sm font-semibold text-gray-900 truncate">{{ $rdv->client_nom }}</p>
+                            <p class="flex-1 min-w-0 text-sm font-semibold text-gray-900 truncate">{{ $rdv->client_nom }}</p>
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold
                                 @switch($badge['color'])
                                     @case('amber') bg-amber-100 text-amber-700 @break
@@ -178,15 +178,21 @@
                         @endif
                     </div>
 
-                    {{-- Actions rapides (sans ouvrir le détail) --}}
-                    <div class="flex items-center gap-1 flex-shrink-0" onclick="event.stopPropagation()">
+                    {{-- Actions rapides : 2e rangée pleine largeur sur mobile,
+                         alignées à droite sur une seule ligne dès sm --}}
+                    @php
+                        $btnAction = 'inline-flex items-center justify-center gap-1.5 h-9 px-2 sm:px-0 sm:w-8 rounded-lg font-semibold transition-colors flex-shrink-0';
+                    @endphp
+                    <div class="flex flex-wrap items-center justify-end gap-1 w-full sm:w-auto flex-shrink-0 mt-1 pt-2 border-t border-gray-100 dark:border-slate-700 sm:mt-0 sm:pt-0 sm:border-0"
+                         onclick="event.stopPropagation()">
                         @if($rdv->statut === 'en_attente')
                         <form method="POST" action="{{ route('dashboard.rdv.confirmer', $rdv) }}">
                             @csrf
-                            <button type="submit" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="Confirmer ce RDV">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button type="submit" class="{{ $btnAction }} text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30" title="Confirmer ce RDV">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
+                                <span class="sm:hidden text-[11px]">Confirmer</span>
                             </button>
                         </form>
                         @endif
@@ -195,16 +201,17 @@
                         <form method="POST" action="{{ route('dashboard.rdv.terminer', $rdv) }}"
                               onsubmit="return confirm('Marquer ce rendez-vous comme terminé ?')">
                             @csrf
-                            <button type="submit" class="btn-icon text-gray-400 hover:text-primary-600" title="Marquer terminé">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button type="submit" class="{{ $btnAction }} text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/30" title="Marquer terminé">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                 </svg>
+                                <span class="sm:hidden text-[11px]">Terminer</span>
                             </button>
                         </form>
                         <form method="POST" action="{{ route('dashboard.rdv.annuler', $rdv) }}"
                               onsubmit="return confirm('Annuler ce rendez-vous ? Le client sera prévenu par e-mail.')">
                             @csrf
-                            <button type="submit" class="btn-icon text-gray-400 hover:text-red-600" title="Annuler le RDV">
+                            <button type="submit" class="{{ $btnAction }} text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30" title="Annuler le RDV">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
@@ -214,14 +221,14 @@
 
                         @if($rdv->client)
                         <a href="{{ route('dashboard.clients.show', $rdv->client) }}"
-                           class="btn-icon text-gray-400 hover:text-primary-600" title="Fiche client">
+                           class="{{ $btnAction }} text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/30" title="Fiche client">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                             </svg>
                         </a>
                         @endif
 
-                        <a href="{{ route('dashboard.rdv.edit', $rdv) }}" class="btn-icon text-gray-400 hover:text-blue-600" title="Modifier">
+                        <a href="{{ route('dashboard.rdv.edit', $rdv) }}" class="{{ $btnAction }} text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30" title="Modifier">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                             </svg>
