@@ -442,7 +442,7 @@
     </div>
 
     {{-- ═══ Panier droit (masqué sur mobile) ═══ --}}
-    <div class="hidden lg:flex {{ $simple ? 'lg:col-span-3' : 'lg:col-span-2' }} flex-col gap-4">
+    <div class="hidden lg:flex {{ $simple ? 'lg:col-span-3 lg:max-h-[calc(100vh-8.5rem)]' : 'lg:col-span-2' }} flex-col gap-4">
 
         {{-- Client (Livewire – seule section nécessitant le serveur) --}}
         @if(auth()->user()->aFonctionnalite('caisse_client'))
@@ -530,10 +530,11 @@
         @endif
 
         {{-- Panier + Paiement (100 % Alpine) --}}
-        <div class="card flex-1 flex flex-col overflow-hidden" wire:ignore>
-            <div class="p-4 border-b border-gray-100 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <div class="relative w-7 h-7 rounded-lg bg-primary-50 flex items-center justify-center">
+        <div class="card flex-1 min-h-0 flex flex-col overflow-hidden" wire:ignore>
+            {{-- En-tête : compteur + prix courant (affichage tête haute) --}}
+            <div class="p-3 border-b border-gray-100 flex items-center justify-between gap-3 flex-shrink-0">
+                <div class="flex items-center gap-2 min-w-0">
+                    <div class="relative w-7 h-7 rounded-lg bg-primary-50 flex items-center justify-center flex-shrink-0">
                         <svg class="w-3.5 h-3.5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                         </svg>
@@ -544,10 +545,20 @@
                     </div>
                     <span class="text-xs font-bold text-gray-600 uppercase tracking-wider">Articles</span>
                 </div>
-                <button x-show="!panierVide" @click="viderPanier" class="text-xs text-red-500 hover:text-red-700 font-medium">Vider</button>
+
+                <div class="flex items-center gap-3 flex-shrink-0">
+                    {{-- Prix du panier, toujours visible quel que soit le nombre d'articles --}}
+                    <div class="text-right leading-none" x-show="!panierVide">
+                        <p class="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Total</p>
+                        <p class="text-base font-extrabold whitespace-nowrap"
+                           style="background: linear-gradient(135deg, #9333ea, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"
+                           x-text="formatNumber(total) + ' F'"></p>
+                    </div>
+                    <button x-show="!panierVide" @click="viderPanier" class="text-xs text-red-500 hover:text-red-700 font-medium">Vider</button>
+                </div>
             </div>
 
-            <div class="flex-1 overflow-y-auto divide-y divide-gray-50 {{ $simple ? 'lg:max-h-none max-h-60' : 'max-h-52' }}">
+            <div class="flex-1 min-h-0 overflow-y-auto divide-y divide-gray-50 {{ $simple ? 'max-h-60 lg:max-h-none' : 'max-h-52' }}">
                 <template x-for="key in panierKeys" :key="key">
                     <div class="px-3 sm:px-4 py-3 hover:bg-gray-50/50 transition-colors"
                          :class="{
@@ -594,7 +605,7 @@
             </div>
 
             {{-- Total + Paiement + Encaisser --}}
-            <div x-show="!panierVide" class="border-t border-gray-100 p-4 space-y-3 bg-gray-50/30">
+            <div x-show="!panierVide" class="border-t border-gray-100 p-4 space-y-3 bg-gray-50/30 flex-shrink-0">
                 {{-- Total brut --}}
                 <div class="flex justify-between items-center">
                     <span class="font-bold text-gray-900" x-text="remise > 0 ? 'Sous-total' : 'Total'"></span>
@@ -875,7 +886,7 @@
                     <svg x-show="!loading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
-                    <span x-text="loading ? 'Traitement...' : 'Encaisser ' + formatNumber(total) + ' F'"></span>
+                    <span x-text="loading ? 'Traitement...' : libelleEncaisser"></span>
                 </button>
 
                 {{-- Mettre en attente / Liens (masqués en mode crédit) --}}

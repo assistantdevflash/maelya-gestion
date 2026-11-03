@@ -184,6 +184,12 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
             return Math.max(0, this.totalBrut - this.remise);
         },
 
+        /** Libellé du bouton d'encaissement (adapté au mode). */
+        get libelleEncaisser() {
+            const montant = this.formatNumber(this.total) + ' F';
+            return this.simple ? 'Valider le paiement · ' + montant : 'Encaisser ' + montant;
+        },
+
         get montantsSuggeres() {
             const t = this.total;
             if (t <= 0) return [];

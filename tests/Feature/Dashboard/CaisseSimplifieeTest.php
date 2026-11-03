@@ -292,4 +292,36 @@ class CaisseSimplifieeTest extends TestCase
         $this->assertStringContainsString("x-show=\"onglet === 'produits'\"", $html);
         $this->assertStringContainsString('grid-cols-2 sm:grid-cols-3 gap-3', $html);
     }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Affichage tête haute du panier (prix + bouton de validation)
+    // ─────────────────────────────────────────────────────────────────────
+
+    public function test_le_panier_simplifie_garde_le_prix_et_le_bouton_visibles(): void
+    {
+        $html = $this->actingAs($this->user)
+            ->get(route('dashboard.caisse.simplifiee'))
+            ->assertOk()
+            ->getContent();
+
+        // Panier borné à la hauteur de l'écran : la liste défile à l'intérieur,
+        // le bloc paiement reste donc toujours visible.
+        $this->assertStringContainsString('lg:max-h-[calc(100vh-8.5rem)]', $html);
+
+        // Prix courant affiché dans l'en-tête du panier (HUD)
+        $this->assertStringContainsString('x-text="formatNumber(total)', $html);
+
+        // Libellé de validation propre au mode simplifié
+        $this->assertStringContainsString('libelleEncaisser', $html);
+    }
+
+    public function test_la_caisse_complete_n_applique_pas_le_hud(): void
+    {
+        $html = $this->actingAs($this->user)
+            ->get(route('dashboard.caisse'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('lg:max-h-[calc(100vh-8.5rem)]', $html);
+    }
 }
