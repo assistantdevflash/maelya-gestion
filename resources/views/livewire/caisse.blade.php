@@ -37,6 +37,7 @@
                 </svg>
                 <input
                     type="text"
+                    data-recherche
                     x-model.debounce.150ms="search"
                     placeholder="{{ $simple ? 'Scanner ou rechercher un produit…' : 'Rechercher un service ou produit...' }}"
                     class="form-input pl-10"
@@ -1241,16 +1242,59 @@
                     return;
                 }
                 // Un seul séparateur décimal par nombre
-                if (t === '.' && /(^|[+\-×÷(])\d*\.\d*$/.test(this.expr)) return;
+                if (t === '.') {
+                    const morceau = this.expr.split(/[+\-×÷(]/).pop();
+                    if (morceau.includes('.')) return;
+                    this.resultat = '';
+                    this.expr += (morceau === '' ? '0.' : '.');
+                    return;
+                }
                 this.resultat = '';
                 this.expr += t;
+            },
+
+            /** Le focus est-il dans un champ de saisie ? (on ne détourne pas la frappe) */
+            champSaisie(el) {
+                if (!el || !el.tagName) return false;
+                const tag = el.tagName;
+                return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable === true;
+            },
+
+            /** Touches physiques du clavier, actives uniquement quand la calculatrice est ouverte. */
+            toucheClavier(e) {
+                if (!this.calOuverte) return;
+                if (e.metaKey || e.ctrlKey || e.altKey) return;
+                // Focus dans un champ (recherche, client, remise…) : on laisse la frappe au champ
+                if (this.champSaisie(e.target)) return;
+
+                const k = e.key;
+                let t = null;
+
+                if (/^[0-9]$/.test(k)) t = k;
+                else if (k === '.' || k === ',') t = '.';
+                else if (k === '+') t = '+';
+                else if (k === '-' || k === '−') t = '−';
+                else if (k === '*' || k === 'x' || k === 'X') t = '×';
+                else if (k === '/' || k === ':') t = '÷';
+                else if (k === '=' || k === 'Enter') t = '=';
+                else if (k === 'Backspace') t = '⌫';
+                else if (k === 'Delete' || k === 'c' || k === 'C') t = 'C';
+                else if (k === 'Escape') { e.preventDefault(); this.calOuverte = false; return; }
+
+                if (t === null) return;
+                e.preventDefault();
+                this.touche(t);
             }
          }"
+         x-on:keydown.window="toucheClavier($event)"
+         x-init="$watch('calOuverte', v => { if (v) { $nextTick(() => $refs.panneau && $refs.panneau.focus()); } else { const i = document.querySelector('[data-recherche]'); if (i) i.focus(); } })"
          class="fixed bottom-24 lg:bottom-5 right-4 lg:right-5 z-40 flex flex-col items-end gap-2 print:hidden">
 
         {{-- Panneau calculateur --}}
         <div x-show="calOuverte" x-cloak x-transition.origin.bottom.right
-             class="w-60 rounded-2xl bg-white dark:bg-slate-800 shadow-2xl border border-gray-200 dark:border-slate-600 p-3">
+             x-ref="panneau" tabindex="-1"
+             class="w-60 rounded-2xl bg-white dark:bg-slate-800 shadow-2xl border border-gray-200 dark:border-slate-600 p-3 focus:outline-none"
+             :class="calOuverte ? 'ring-1 ring-primary-200 dark:ring-primary-800' : ''">
             <div class="flex items-center justify-between mb-2">
                 <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Calculatrice</span>
                 <button type="button" @click="calOuverte = false" class="text-gray-400 hover:text-gray-600">
@@ -1267,7 +1311,7 @@
             </div>
 
             {{-- Touches --}}
-            <div class="grid grid-cols-4 gap-1.5 text-sm font-semibold">
+            <div class="grid grid-cols-4 gap-1.5 text-sm font-semibold" @click="$refs.panneau.focus()">
                 <button type="button" @click="touche('C')" class="py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition">C</button>
                 <button type="button" @click="touche('⌫')" class="py-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 transition">⌫</button>
                 <button type="button" @click="touche('÷')" class="py-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 transition">÷</button>
@@ -1294,6 +1338,11 @@
                 <button type="button" @click="touche('.')" class="py-2 rounded-lg bg-white dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 hover:bg-gray-50 transition">.</button>
                 <button type="button" @click="touche('C')" class="py-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 transition text-xs">RAZ</button>
             </div>
+
+            {{-- Aide clavier (desktop) --}}
+            <p class="hidden lg:block text-[10px] leading-tight text-gray-400 dark:text-gray-500 text-center mt-2">
+                Chiffres, + − × ÷, Entrée pour calculer, Échap pour fermer
+            </p>
         </div>
 
         {{-- Bouton flottant --}}

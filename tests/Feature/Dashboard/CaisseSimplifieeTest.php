@@ -385,4 +385,30 @@ class CaisseSimplifieeTest extends TestCase
 
         $this->assertStringNotContainsString('aria-label="Calculatrice"', $html);
     }
+
+    public function test_la_calculatrice_ecoute_le_clavier_physique(): void
+    {
+        $html = $this->actingAs($this->user)
+            ->get(route('dashboard.caisse.simplifiee'))
+            ->assertOk()
+            ->getContent();
+
+        // La calculatrice flottante capte les touches tant qu'elle est ouverte
+        $this->assertStringContainsString('toucheClavier($event)', $html);
+        $this->assertStringContainsString('keydown.window', $html);
+
+        // Le panneau prend le focus à l'ouverture pour recevoir la frappe
+        $this->assertStringContainsString('x-ref="panneau"', $html);
+        $this->assertStringContainsString('tabindex="-1"', $html);
+
+        // La frappe dans un champ de saisie reste prioritaire (recherche, client…)
+        $this->assertStringContainsString('champSaisie(e.target)', $html);
+        $this->assertStringContainsString('data-recherche', $html);
+
+        // La calculatrice n'existe pas en mode complet
+        $this->actingAs($this->user)
+            ->get(route('dashboard.caisse'))
+            ->assertOk()
+            ->assertDontSee('toucheClavier');
+    }
 }
