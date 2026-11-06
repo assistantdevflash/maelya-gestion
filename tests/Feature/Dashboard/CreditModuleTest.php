@@ -635,4 +635,80 @@ class CreditModuleTest extends TestCase
         $this->assertStringContainsString('Encours', $html);
         $this->assertStringContainsString('Recouvrement', $html);
     }
+
+    // ─── Recherche : les entreprises doivent être trouvables ──────────
+
+    public function test_la_recherche_trouve_un_client_entreprise_par_sa_raison_sociale(): void
+    {
+        $entreprise = Client::create([
+            'institut_id'   => $this->institut->id,
+            'type_client'   => 'entreprise',
+            'raison_sociale' => 'FABA SARL',
+            'prenom'        => 'Koffi',
+            'nom'           => 'Yao',
+            'telephone'     => '01578476596',
+        ]);
+
+        $vente = Vente::create([
+            'institut_id'   => $this->institut->id,
+            'user_id'       => $this->user->id,
+            'client_id'     => $entreprise->id,
+            'numero'        => 'V-' . uniqid(),
+            'total'         => 30000,
+            'montant_paye'  => 0,
+            'mode_paiement' => 'credit',
+            'credit_statut' => 'en_cours',
+            'statut'        => 'validee',
+        ]);
+
+        Credit::create([
+            'institut_id'    => $this->institut->id,
+            'client_id'      => $entreprise->id,
+            'vente_id'       => $vente->id,
+            'montant_total'  => 30000,
+            'apport_initial' => 0,
+            'reste_a_payer'  => 30000,
+            'nb_echeances'   => 1,
+            'frequence'      => 'mensuelle',
+            'statut'         => 'en_cours',
+            'date_debut'     => now(),
+        ]);
+
+        // Recherche sur la raison sociale, telle que saisie par l'utilisateur
+        $reponse = $this->actingAs($this->user)
+            ->get(route('dashboard.credits.index', ['q' => 'faba']))
+            ->assertOk();
+
+        $this->assertSame(1, $reponse->viewData('credits')->total());
+
+        // Plusieurs mots dans le désordre
+        $reponse = $this->actingAs($this->user)
+            ->get(route('dashboard.credits.index', ['q' => 'sarl faba']))
+            ->assertOk();
+        $this->assertSame(1, $reponse->viewData('credits')->total());
+
+        // La recherche par personne physique continue de fonctionner
+        $this->creerCredit();
+        $reponse = $this->actingAs($this->user)
+            ->get(route('dashboard.credits.index', ['q' => 'kone']))
+            ->assertOk();
+        $this->assertSame(1, $reponse->viewData('credits')->total());
+    }
+
+    public function test_le_scope_de_recherche_client_couvre_les_entreprises(): void
+    {
+        $entreprise = Client::create([
+            'institut_id'   => $this->institut->id,
+            'type_client'   => 'entreprise',
+            'raison_sociale' => 'Maelya Tech SARL',
+            'telephone'     => '05215874525',
+            'email'         => 'contact@maelya.ci',
+        ]);
+
+        $this->assertTrue(Client::recherche('maelya')->pluck('id')->contains($entreprise->id));
+        $this->assertTrue(Client::recherche('tech')->pluck('id')->contains($entreprise->id));
+        $this->assertTrue(Client::recherche('05215874525')->pluck('id')->contains($entreprise->id));
+        $this->assertTrue(Client::recherche('maelya.ci')->pluck('id')->contains($entreprise->id));
+        $this->assertStringContainsString('maelya tech sarl', $entreprise->cle_recherche);
+    }
 }

@@ -107,6 +107,56 @@ class Client extends Model
         return $this->prenom . ' ' . $this->nom;
     }
 
+    /**
+     * Chaîne utilisée par les sélecteurs de client (recherche côté navigateur).
+     * Elle doit contenir la raison sociale, sans quoi les entreprises sont
+     * introuvables.
+     */
+    public function getCleRechercheAttribute(): string
+    {
+        return mb_strtolower(trim(implode(' ', array_filter([
+            $this->raison_sociale,
+            $this->prenom,
+            $this->nom,
+            $this->telephone,
+            $this->email,
+        ]))));
+    }
+
+    /**
+     * Recherche libre sur l'identité d'un client.
+     *
+     * Couvre les personnes physiques ET les entreprises (raison sociale,
+     * registre de commerce), le téléphone et l'e-mail. Un terme composé de
+     * plusieurs mots (« sarl faba ») exige que chaque mot soit présent.
+     */
+    public function scopeRecherche($query, ?string $terme)
+    {
+        $terme = trim((string) $terme);
+        if ($terme === '') {
+            return $query;
+        }
+
+        foreach (preg_split('/\s+/', $terme) as $mot) {
+            if ($mot === '') {
+                continue;
+            }
+
+            $like = '%' . $mot . '%';
+
+            $query->where(function ($q) use ($like) {
+                $q->where('prenom', 'like', $like)
+                  ->orWhere('nom', 'like', $like)
+                  ->orWhere('raison_sociale', 'like', $like)
+                  ->orWhere('numero_registre_commerce', 'like', $like)
+                  ->orWhere('telephone', 'like', $like)
+                  ->orWhere('email', 'like', $like);
+            });
+        }
+
+        return $query;
+    }
+
     public function isAnniversaire(): bool
     {
         return $this->date_naissance !== null

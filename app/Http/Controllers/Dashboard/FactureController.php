@@ -72,7 +72,7 @@ class FactureController extends Controller
                 'email'     => $c->email,
                 'adresse'   => $c->adresse,
                 'initiale'  => strtoupper(substr($c->prenom ?: $c->nom, 0, 1)),
-                'search'    => strtolower($c->nom . ' ' . $c->prenom . ' ' . $c->telephone),
+                'search'    => $c->cle_recherche,
             ]);
 
         // Catalogue : prestations + produits existants

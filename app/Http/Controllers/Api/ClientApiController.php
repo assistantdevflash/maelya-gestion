@@ -14,11 +14,7 @@ class ClientApiController extends Controller
         $q = Client::where('institut_id', $institutId);
 
         if ($s = $request->query('q')) {
-            $q->where(function ($w) use ($s) {
-                $w->where('nom', 'like', "%$s%")
-                  ->orWhere('prenom', 'like', "%$s%")
-                  ->orWhere('telephone', 'like', "%$s%");
-            });
+            $q->recherche($s);
         }
 
         return response()->json($q->paginate(min((int) $request->query('per_page', 25), 100)));

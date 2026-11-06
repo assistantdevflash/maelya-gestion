@@ -30,11 +30,7 @@ class CreditController extends Controller
         $credits = Credit::where('institut_id', $this->institutId())
             ->with(['client', 'vente.items'])
             ->when($filtre !== 'tous', fn($q) => $q->where('statut', $filtre))
-            ->when($search, fn($q) => $q->whereHas('client', fn($q2) =>
-                $q2->where('prenom', 'like', "%{$search}%")
-                   ->orWhere('nom', 'like', "%{$search}%")
-                   ->orWhere('telephone', 'like', "%{$search}%")
-            ))
+            ->when($search, fn($q) => $q->whereHas('client', fn($q2) => $q2->recherche($search)))
             ->latest()
             ->paginate(30)
             ->withQueryString();
@@ -159,7 +155,7 @@ class CreditController extends Controller
                 'email'     => $c->email,
                 'adresse'   => $c->adresse,
                 'initiale'  => strtoupper(substr($c->nom_complet, 0, 1)),
-                'search'    => strtolower($c->nom . ' ' . $c->prenom . ' ' . $c->telephone),
+                'search'    => $c->cle_recherche,
             ]);
 
         $prestations = \App\Models\Prestation::where('institut_id', $institutId)->where('actif', true)
@@ -407,7 +403,7 @@ class CreditController extends Controller
                 'nom_affichage' => $c->nom_affichage, 'telephone' => $c->telephone,
                 'email' => $c->email, 'adresse' => $c->adresse,
                 'initiale' => strtoupper(substr($c->nom_complet, 0, 1)),
-                'search' => strtolower($c->nom . ' ' . $c->prenom . ' ' . $c->telephone),
+                'search' => $c->cle_recherche,
             ]);
 
         $prestations = \App\Models\Prestation::where('institut_id', $institutId)->where('actif', true)
