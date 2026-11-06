@@ -334,20 +334,23 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('devisForm', (clientsInit, catalogueInit, duplicateData) => ({
         // ── Lignes ──
         lignes: duplicateData?.lignes?.length
-            ? duplicateData.lignes.map(l => ({...l, prix_display: new Intl.NumberFormat('fr-FR').format(l.prix_unitaire || 0), pickerOpen: false, pickerSearch: ''}))
-            : [{designation:'', quantite:1, prix_unitaire:0, prix_display:'0', remise_type:'', remise_valeur:0, tva_taux:null, pickerOpen: false, pickerSearch: ''}],
+            ? duplicateData.lignes.map(l => ({...l, prix_display: new Intl.NumberFormat('fr-FR').format(l.prix_unitaire || 0), pickerOpen: false, pickerSearch: '', produit_id: null, prestation_id: null}))
+            : [{designation:'', quantite:1, prix_unitaire:0, prix_display:'0', remise_type:'', remise_valeur:0, tva_taux:null, pickerOpen: false, pickerSearch: '', produit_id: null, prestation_id: null}],
         tva: duplicateData?.tva_applicable ? (duplicateData.tva_taux || 18) : 0,
         tvaApplicable: duplicateData?.tva_applicable ? true : false,
         remiseGlobaleType: duplicateData?.remise_globale_type || '',
         remiseGlobaleValeur: duplicateData?.remise_globale_valeur || 0,
         catalogue: catalogueInit,
-        ajouterLigne() { this.lignes.push({designation:'', quantite:1, prix_unitaire:0, prix_display:'0', remise_type:'', remise_valeur:0, tva_taux:null, pickerOpen: false, pickerSearch: ''}); },
+        ajouterLigne() { this.lignes.push({designation:'', quantite:1, prix_unitaire:0, prix_display:'0', remise_type:'', remise_valeur:0, tva_taux:null, pickerOpen: false, pickerSearch: '', produit_id: null, prestation_id: null}); },
         catalogueFiltered(ligne) {
             const q = (ligne.pickerSearch || '').toLowerCase();
             if (q.length < 1) return this.catalogue.slice(0, 10);
             return this.catalogue.filter(c => c.search.includes(q)).slice(0, 10);
         },
         choisirCatalogue(ligne, item) {
+            const m = String(item.id || '').match(/^(prod|p)_(.+)$/);
+            ligne.produit_id    = m && m[1] === 'prod' ? m[2] : null;
+            ligne.prestation_id = m && m[1] === 'p'    ? m[2] : null;
             ligne.designation = item.designation;
             ligne.prix_unitaire = item.prix;
             ligne.prix_display = this.formatPrixInput(item.prix);

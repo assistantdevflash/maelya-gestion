@@ -5,7 +5,7 @@
         <div><h1 class="text-2xl font-bold text-gray-900 dark:text-white">Modifier {{ $devis->numero }}</h1></div>
     </div>
 
-    <form method="POST" action="{{ route('dashboard.devis.update', ['devis' => $devis->id]) }}" x-data="lignesManager(@js($devis->items->map(fn($i) => ['designation'=>$i->designation,'quantite'=>$i->quantite,'prix_unitaire'=>$i->prix_unitaire,'remise_type'=>$i->remise_type,'remise_valeur'=>$i->remise_valeur,'tva_taux'=>$i->tva_taux, 'pickerOpen'=>false, 'pickerSearch'=>''])->toArray()), @js($catalogue->toArray()))">
+    <form method="POST" action="{{ route('dashboard.devis.update', ['devis' => $devis->id]) }}" x-data="lignesManager(@js($devis->items->map(fn($i) => ['designation'=>$i->designation,'quantite'=>$i->quantite,'prix_unitaire'=>$i->prix_unitaire,'remise_type'=>$i->remise_type,'remise_valeur'=>$i->remise_valeur,'tva_taux'=>$i->tva_taux, 'produit_id'=>$i->produit_id, 'prestation_id'=>$i->prestation_id, 'pickerOpen'=>false, 'pickerSearch'=>''])->toArray()), @js($catalogue->toArray()))">
         @csrf @method('PUT')
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2 space-y-5">
@@ -118,19 +118,22 @@
 <script>
 document.addEventListener('alpine:init', () => {
     Alpine.data('lignesManager', (initial, catalogueInit) => ({
-        lignes: initial.length ? initial : [{designation:'', quantite:1, prix_unitaire:0, remise_type:'', remise_valeur:0, tva_taux:null, pickerOpen: false, pickerSearch: ''}],
+        lignes: initial.length ? initial : [{designation:'', quantite:1, prix_unitaire:0, remise_type:'', remise_valeur:0, tva_taux:null, pickerOpen: false, pickerSearch: '', produit_id: null, prestation_id: null}],
         tva: {{ $devis->tva_taux ?? 0 }},
         tvaApplicable: {{ $devis->tva_applicable ? 'true' : 'false' }},
         remiseGlobaleType: '{{ $devis->remise_globale_type }}',
         remiseGlobaleValeur: {{ $devis->remise_globale_valeur ?? 0 }},
         catalogue: catalogueInit,
-        ajouter() { this.lignes.push({designation:'', quantite:1, prix_unitaire:0, remise_type:'', remise_valeur:0, tva_taux:null, pickerOpen: false, pickerSearch: ''}); },
+        ajouter() { this.lignes.push({designation:'', quantite:1, prix_unitaire:0, remise_type:'', remise_valeur:0, tva_taux:null, pickerOpen: false, pickerSearch: '', produit_id: null, prestation_id: null}); },
         catalogueFiltered(ligne) {
             const q = (ligne.pickerSearch || '').toLowerCase();
             if (q.length < 1) return this.catalogue.slice(0, 10);
             return this.catalogue.filter(c => c.search.includes(q)).slice(0, 10);
         },
         choisirCatalogue(ligne, item) {
+            const m = String(item.id || '').match(/^(prod|p)_(.+)$/);
+            ligne.produit_id    = m && m[1] === 'prod' ? m[2] : null;
+            ligne.prestation_id = m && m[1] === 'p'    ? m[2] : null;
             ligne.designation = item.designation;
             ligne.prix_unitaire = item.prix;
             ligne.pickerOpen = false;

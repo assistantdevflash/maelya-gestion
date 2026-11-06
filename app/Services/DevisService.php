@@ -11,14 +11,35 @@ class DevisService
     public static function genererNumero(string $institutId): string
     {
         return DB::transaction(function () use ($institutId) {
-            $date = now()->format('Ymd');
+            $date   = now()->format('Ymd');
+            $prefix = "DEV-{$date}-";
+
+            // Le numéro est complété à 6 chiffres : l'ordre alphabétique suit
+            // l'ordre numérique, ce qui évite les fonctions SQL propres à MySQL.
             $last = Devis::where('institut_id', $institutId)
-                ->where('numero', 'like', "DEV-{$date}-%")
-                ->orderByRaw('CAST(SUBSTRING_INDEX(numero, \'-\', -1) AS UNSIGNED) DESC')
-                ->lockForUpdate()->first();
-            $next = $last ? ((int)substr($last->numero, -6)) + 1 : 1;
+                ->where('numero', 'like', $prefix . '%')
+                ->orderByDesc('numero')
+                ->lockForUpdate()
+                ->first();
+
+            $next = $last ? ((int) substr($last->numero, -6)) + 1 : 1;
+
             return sprintf('DEV-%s-%06d', $date, $next);
         });
+    }
+
+    /**
+     * Récupère les identifiants catalogue (produit / prestation) d'une ligne.
+     * Ils sont indispensables pour décrémenter le stock et ventiler les ventes.
+     */
+    public static function idsCatalogue(array $ligne): array
+    {
+        $uuid = fn ($valeur) => is_string($valeur) && Str::isUuid($valeur) ? $valeur : null;
+
+        return [
+            'produit_id'    => $uuid($ligne['produit_id'] ?? null),
+            'prestation_id' => $uuid($ligne['prestation_id'] ?? null),
+        ];
     }
 
     public static function calculerTotaux(array $lignes, array $data): array

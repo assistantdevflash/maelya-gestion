@@ -134,9 +134,17 @@ class DevisController extends Controller
             'notes' => $data['notes'] ?? null, 'conditions' => $data['conditions'] ?? null, 'titre' => $data['titre'] ?? null,
         ]);
         foreach ($lignes as $i => $ligne) {
-            DevisItem::create(['devis_id' => $devis->id, 'designation' => $ligne['designation'], 'quantite' => $ligne['quantite'], 'prix_unitaire' => $ligne['prix_unitaire'], 'remise_type' => $ligne['remise_type'] ?? null, 'remise_valeur' => $ligne['remise_valeur'] ?? 0, 'tva_taux' => $ligne['tva_taux'] ?? null, 'total_ligne' => $ligne['total_ligne'], 'ordre' => $i]);
+            DevisItem::create(array_merge(DevisService::idsCatalogue($ligne), ['devis_id' => $devis->id, 'designation' => $ligne['designation'], 'quantite' => $ligne['quantite'], 'prix_unitaire' => $ligne['prix_unitaire'], 'remise_type' => $ligne['remise_type'] ?? null, 'remise_valeur' => $ligne['remise_valeur'] ?? 0, 'tva_taux' => $ligne['tva_taux'] ?? null, 'total_ligne' => $ligne['total_ligne'], 'ordre' => $i]));
         }
+        $this->oublierStats($devis->institut_id);
+
         return redirect()->route('dashboard.devis.show', ['devis' => $devis->id])->with('success', 'Devis créé avec succès.');
+    }
+
+    /** Invalide le cache des KPI de la liste des devis. */
+    private function oublierStats(string $institutId): void
+    {
+        Cache::forget("devis_stats:{$institutId}");
     }
 
     public function show(Devis $devis) { $devis->load(['items','client','createur','facture']); return view('dashboard.devis-factures.devis.show', compact('devis')); }
@@ -169,19 +177,38 @@ class DevisController extends Controller
         if ($totalTTC <= 0) return back()->withInput()->withErrors(['lignes' => 'Le montant total doit être supérieur à 0 F.']);
         $devis->items()->delete();
         foreach ($lignes as $i => $ligne) {
-            DevisItem::create(['devis_id' => $devis->id, 'designation' => $ligne['designation'], 'quantite' => $ligne['quantite'], 'prix_unitaire' => $ligne['prix_unitaire'], 'remise_type' => $ligne['remise_type'] ?? null, 'remise_valeur' => $ligne['remise_valeur'] ?? 0, 'tva_taux' => $ligne['tva_taux'] ?? null, 'total_ligne' => $ligne['total_ligne'], 'ordre' => $i]);
+            DevisItem::create(array_merge(DevisService::idsCatalogue($ligne), ['devis_id' => $devis->id, 'designation' => $ligne['designation'], 'quantite' => $ligne['quantite'], 'prix_unitaire' => $ligne['prix_unitaire'], 'remise_type' => $ligne['remise_type'] ?? null, 'remise_valeur' => $ligne['remise_valeur'] ?? 0, 'tva_taux' => $ligne['tva_taux'] ?? null, 'total_ligne' => $ligne['total_ligne'], 'ordre' => $i]));
         }
         $devis->update(array_merge($data, ['sous_total' => $sousTotal, 'remise_globale_type' => $data['remise_globale_type'] ?? null, 'remise_globale_valeur' => $data['remise_globale_valeur'] ?? 0, 'total_ht' => $totalHT, 'total_ttc' => $totalTTC, 'tva_applicable' => $data['tva_applicable'] ?? false, 'tva_taux' => $data['tva_taux'] ?? 0]));
+        $this->oublierStats($devis->institut_id);
+
         return redirect()->route('dashboard.devis.show', ['devis' => $devis->id])->with('success','Devis mis à jour.');
     }
 
-    public function destroy(Devis $devis) { $devis->delete(); return redirect()->route('dashboard.devis.index')->with('success','Devis supprimé.'); }
+    public function destroy(Devis $devis) {
+        $institutId = $devis->institut_id;
+        $devis->items()->delete();
+        $devis->delete();
+        $this->oublierStats($institutId);
 
-    public function envoyer(Devis $devis) { $devis->update(['statut' => 'envoye', 'token' => Str::random(32)]); return back()->with('success','Devis marqué comme envoyé.'); }
+        return redirect()->route('dashboard.devis.index')->with('success','Devis supprimé.');
+    }
+
+    public function envoyer(Devis $devis) {
+        if ($devis->statut === 'brouillon') {
+            $devis->update(['statut' => 'envoye', 'token' => Str::random(32)]);
+        }
+        $this->oublierStats($devis->institut_id);
+
+        return back()->with('success','Devis marqué comme envoyé.');
+    }
 
     public function transformerEnFacture(Devis $devis) {
         if ($devis->facture_id) return back()->with('error','Ce devis a déjà été transformé.');
         $facture = DevisService::transformerEnFacture($devis);
+        $this->oublierStats($devis->institut_id);
+        Cache::forget("facture_stats:{$devis->institut_id}");
+
         return redirect()->route('dashboard.factures.show', ['facture' => $facture->id])->with('success','Facture créée à partir du devis.');
     }
 
@@ -197,6 +224,11 @@ class DevisController extends Controller
     public function pdfPublic(string $id)
     {
         $devis = Devis::where('id', $id)->firstOrFail();
+
+        // Un brouillon n'est pas un document contractuel : il ne doit jamais
+        // être téléchargeable sans authentification.
+        abort_if($devis->statut === 'brouillon', 404);
+
         $devis->load(['items', 'client']);
         $pdf = Pdf::loadView('pdf.devis', ['devis' => $devis, 'institut' => $devis->institut]);
         return $pdf->download("Devis-{$devis->numero}.pdf");
@@ -230,6 +262,8 @@ class DevisController extends Controller
                 'remise_type' => $i->remise_type,
                 'remise_valeur' => $i->remise_valeur,
                 'tva_taux' => $i->tva_taux,
+                'produit_id' => $i->produit_id,
+                'prestation_id' => $i->prestation_id,
             ])->toArray(),
         ]);
 

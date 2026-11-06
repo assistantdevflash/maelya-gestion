@@ -211,7 +211,7 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
         Route::post('devis/{devis}/envoyer-email', [\App\Http\Controllers\Dashboard\DevisController::class, 'envoyerEmail'])->name('devis.envoyer-email');
 
         Route::resource('factures', \App\Http\Controllers\Dashboard\FactureController::class)
-            ->except(['index'])
+            ->except(['index', 'edit', 'update'])
             ->parameters(['factures' => 'facture']);
         Route::get('factures', [\App\Http\Controllers\Dashboard\FactureController::class, 'index'])->name('factures.index');
         Route::get('factures/{facture}/pdf', [\App\Http\Controllers\Dashboard\FactureController::class, 'pdf'])->name('factures.pdf');

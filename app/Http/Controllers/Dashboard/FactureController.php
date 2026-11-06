@@ -28,7 +28,12 @@ class FactureController extends Controller
         $factures = $query->paginate(20);
         $stats = Cache::remember("facture_stats:{$institutId}", now()->addMinutes(5), function () use ($institutId) {
             $row = Facture::where('institut_id', $institutId)
-                ->selectRaw("COALESCE(SUM(total_ttc),0) as total_ttc, COALESCE(SUM(montant_paye),0) as total_paye, SUM(CASE WHEN statut!='payee' AND date_echeance<NOW() THEN 1 ELSE 0 END) as en_retard")
+                ->selectRaw(
+                    "COALESCE(SUM(CASE WHEN statut <> 'annulee' THEN total_ttc ELSE 0 END),0) as total_ttc,"
+                    . " COALESCE(SUM(CASE WHEN statut <> 'annulee' THEN montant_paye ELSE 0 END),0) as total_paye,"
+                    . " SUM(CASE WHEN statut NOT IN ('payee','annulee') AND date_echeance < ? THEN 1 ELSE 0 END) as en_retard",
+                    [now()->toDateTimeString()]
+                )
                 ->first();
             return ['total_ttc' => (int) $row->total_ttc, 'total_paye' => (int) $row->total_paye, 'en_retard' => (int) $row->en_retard];
         });
@@ -70,8 +75,7 @@ class FactureController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $data = $request->validate([
+    {        $data = $request->validate([
             'client_id' => 'nullable|uuid|exists:clients,id',
             'client_prenom' => 'required_without:client_id|string|max:100',
             'client_nom' => 'required_without:client_id|string|max:100',
@@ -135,11 +139,10 @@ class FactureController extends Controller
             'pied_page_texte' => $data['pied_page_texte'] ?? null,
         ]);
         foreach ($lignes as $i => $ligne) {
-            FactureItem::create(['facture_id' => $facture->id, 'designation' => $ligne['designation'], 'quantite' => $ligne['quantite'], 'prix_unitaire' => $ligne['prix_unitaire'], 'remise_type' => $ligne['remise_type'] ?? null, 'remise_valeur' => $ligne['remise_valeur'] ?? 0, 'tva_taux' => $ligne['tva_taux'] ?? null, 'total_ligne' => $ligne['total_ligne'], 'ordre' => $i]);
+            FactureItem::create(array_merge(DevisService::idsCatalogue($ligne), ['facture_id' => $facture->id, 'designation' => $ligne['designation'], 'quantite' => $ligne['quantite'], 'prix_unitaire' => $ligne['prix_unitaire'], 'remise_type' => $ligne['remise_type'] ?? null, 'remise_valeur' => $ligne['remise_valeur'] ?? 0, 'tva_taux' => $ligne['tva_taux'] ?? null, 'total_ligne' => $ligne['total_ligne'], 'ordre' => $i]));
         }
         return redirect()->route('dashboard.factures.show', ['facture' => $facture->id])->with('success','Facture créée.');
     }
-
     public function show(Facture $facture) { $facture->load(['items','client','devis','paiements.encaisseur','vente']); return view('dashboard.devis-factures.factures.show', compact('facture')); }
 
     public function pdf(Facture $facture) {
@@ -161,6 +164,13 @@ class FactureController extends Controller
 
     public function ajouterPaiement(Request $request, Facture $facture)
     {
+        if ($facture->statut === 'annulee') {
+            return back()->with('error', 'Cette facture est annulée : aucun paiement ne peut y être ajouté.');
+        }
+        if ($facture->resteAPayer <= 0) {
+            return back()->with('error', 'Cette facture est déjà entièrement payée.');
+        }
+
         $data = $request->validate([
             'montant' => 'required|integer|min:1|max:'.$facture->resteAPayer,
             'mode_paiement' => 'required|in:especes,mobile_money,carte,virement,cheque',
@@ -200,41 +210,69 @@ class FactureController extends Controller
         if ($facture->fresh()->estPayee) $facture->update(['statut' => 'payee', 'vente_id' => $vente->id]);
         elseif ($facture->montant_paye > 0 && !$facture->fresh()->estPayee) $facture->update(['statut' => 'partiellement_payee']);
 
-        // Invalider le cache du dashboard pour refléter le CA immédiatement
-        \Illuminate\Support\Facades\Cache::forget("dashboard_full:{$facture->institut_id}:" . now()->toDateString());
-        \Illuminate\Support\Facades\Cache::forget("dashboard_basic:{$facture->institut_id}:" . now()->toDateString());
+        // Invalider les caches (dashboard + KPI de la liste)
+        $this->oublierCaches($facture->institut_id);
 
         return back()->with('success','Paiement enregistré.');
     }
 
     public function marquerPayee(Facture $facture) {
+        if ($facture->statut === 'annulee') return back()->with('error','Cette facture est annulée.');
         if ($facture->estPayee) return back()->with('error','Cette facture est déjà payée.');
         FactureService::marquerPayee($facture);
+        $this->oublierCaches($facture->institut_id);
         return back()->with('success','Facture marquée payée. Vente créée.');
+    }
+
+    /** Invalide les caches de chiffres d'affaires et des KPI du module. */
+    private function oublierCaches(string $institutId): void
+    {
+        Cache::forget("facture_stats:{$institutId}");
+        Cache::forget("dashboard_full:{$institutId}:" . now()->toDateString());
+        Cache::forget("dashboard_basic:{$institutId}:" . now()->toDateString());
     }
 
     public function annuler(Facture $facture)
     {
+        if ($facture->statut === 'annulee') {
+            return back()->with('error', 'Cette facture est déjà annulée.');
+        }
+
         $montantPaye = $facture->montant_paye;
 
         DB::beginTransaction();
         try {
-            // Supprimer les ventes générées par les paiements
-            foreach ($facture->paiements as $paiement) {
-                if ($paiement->vente_id) {
-                    \App\Models\Vente::where('id', $paiement->vente_id)->delete();
+            // Toutes les ventes rattachées à la facture : celles des paiements
+            // partiels ET celle créée par « marquer payée » (sans paiement).
+            $venteIds = $facture->paiements->pluck('vente_id')
+                ->push($facture->vente_id)
+                ->filter()
+                ->unique()
+                ->values();
+
+            foreach ($venteIds as $venteId) {
+                $vente = \App\Models\Vente::with('items')->find($venteId);
+                if (! $vente) continue;
+
+                // Remettre en stock les produits vendus par cette facture
+                foreach ($vente->items as $item) {
+                    if ($item->type === 'produit' && $item->item_id) {
+                        \App\Models\Produit::where('id', $item->item_id)
+                            ->increment('stock', (int) $item->quantite);
+                    }
                 }
+
+                $vente->items()->delete();
+                $vente->delete();
             }
 
             // Supprimer les paiements
             $facture->paiements()->delete();
 
             // Marquer la facture comme annulée
-            $facture->update(['statut' => 'annulee', 'montant_paye' => 0]);
+            $facture->update(['statut' => 'annulee', 'montant_paye' => 0, 'vente_id' => null]);
 
-            // Invalider le cache dashboard
-            Cache::forget("dashboard_full:{$facture->institut_id}:" . now()->toDateString());
-            Cache::forget("dashboard_basic:{$facture->institut_id}:" . now()->toDateString());
+            $this->oublierCaches($facture->institut_id);
 
             DB::commit();
 
@@ -248,7 +286,15 @@ class FactureController extends Controller
             return back()->with('error', 'Erreur lors de l\'annulation : ' . $e->getMessage());
         }
     }
-    public function destroy(Facture $facture) { $facture->delete(); return redirect()->route('dashboard.factures.index')->with('success','Facture supprimée.'); }
+    public function destroy(Facture $facture) {
+        if ($facture->montant_paye > 0) {
+            return back()->with('error', 'Cette facture a reçu des paiements : annulez-la plutôt que de la supprimer.');
+        }
+        $facture->items()->delete();
+        $facture->delete();
+        $this->oublierCaches($facture->institut_id);
+        return redirect()->route('dashboard.factures.index')->with('success','Facture supprimée.');
+    }
 
     /** Envoyer la facture par email au client */
     public function envoyerEmail(Facture $facture)
