@@ -11,7 +11,7 @@
         onglet: '{{ request('onglet', request()->hasAny(['statut_avis']) ? 'avis' : 'clients') }}',
         createOpen: {{ ($errors->any() && old('_form') === 'create') ? 'true' : 'false' }},
         editOpen:   {{ ($editErrorClient ? 'true' : 'false') }},
-        viewMode: 'grid',
+        viewMode: 'table',
         edit: {
             id:                       @js(old('_client_id', $editErrorClient?->id ?? '')),
             action:                   @js($editErrorClient ? route('dashboard.clients.update', $editErrorClient) : ''),
@@ -249,7 +249,7 @@
                 <thead class="bg-gray-50 dark:bg-slate-800 border-b border-gray-100 dark:border-slate-700">
                     <tr>
                         <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Client</th>
-                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300 hidden sm:table-cell">Téléphone</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300 hidden sm:table-cell">Contact</th>
                         <th class="px-4 py-3 text-right font-semibold text-gray-600 dark:text-gray-300 hidden md:table-cell">Visites</th>
                         <th class="px-4 py-3 text-right font-semibold text-gray-600 dark:text-gray-300 hidden lg:table-cell">Total dépensé</th>
                         <th class="px-4 py-3 text-right font-semibold text-gray-600 dark:text-gray-300">Actions</th>
@@ -257,22 +257,39 @@
                 </thead>
                 <tbody class="divide-y divide-gray-50 dark:divide-slate-700">
                     @foreach($clients as $client)
+                    @php $derniereVisite = $client->derniere_visite; @endphp
                     <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors group">
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-3">
                                 @if($client->isEntreprise())<div class="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">🏢</div>
                                 @else<div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">{{ strtoupper(substr($client->prenom ?? '', 0, 1)) }}{{ strtoupper(substr($client->nom ?? '', 0, 1)) }}</div>@endif
-                                <div>
+                                <div class="min-w-0">
                                     <div class="flex items-center gap-2">
                                         <a href="{{ route('dashboard.clients.show', $client) }}" class="font-semibold text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors">{{ $client->nom_affichage }}@if($client->date_naissance === now()->format('m-d')) 🎂@endif</a>
                                         @if($client->est_patient)<span class="px-1.5 py-0.5 text-[9px] font-bold uppercase bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 rounded">Patient</span>@endif
                                     </div>
-                                    @if($client->isEntreprise() && $client->prenom)<p class="text-xs text-gray-500 dark:text-gray-400">Contact : {{ $client->prenom }}</p>@endif
-                                    @if($client->email)<p class="text-xs text-gray-400 dark:text-gray-500">{{ $client->email }}</p>@endif
+                                    @if($client->isEntreprise() && $client->prenom)<p class="text-xs text-gray-500 dark:text-gray-400">Interlocuteur : {{ $client->prenom }}</p>@endif
+                                    <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5"
+                                       @if($derniereVisite) title="{{ $derniereVisite->diffForHumans(['parts' => 1]) }}" @endif>
+                                        @if($derniereVisite)
+                                            Dernière visite : {{ $derniereVisite->translatedFormat('d M Y') }}
+                                        @else
+                                            Aucune visite
+                                        @endif
+                                    </p>
+                                    {{-- Sur mobile la colonne Contact est masquée : on garde l'info ici --}}
+                                    <p class="sm:hidden text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 truncate max-w-[190px]">
+                                        {{ collect([$client->telephone, $client->email])->filter()->implode(' · ') ?: '—' }}
+                                    </p>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400 hidden sm:table-cell">{{ $client->telephone ?? '—' }}</td>
+                        <td class="px-4 py-3 hidden sm:table-cell">
+                            <p class="text-gray-700 dark:text-gray-300">{{ $client->telephone ?: '—' }}</p>
+                            @if($client->email)
+                            <p class="text-xs text-gray-400 dark:text-gray-500 break-all max-w-[220px]" title="{{ $client->email }}">{{ $client->email }}</p>
+                            @endif
+                        </td>
                         <td class="px-4 py-3 text-right hidden md:table-cell"><span class="badge badge-secondary">{{ $client->ventes_count ?? 0 }}</span></td>
                         <td class="px-4 py-3 text-right hidden lg:table-cell font-semibold text-gray-900 dark:text-white">{{ number_format($client->total_depense ?? 0, 0, ',', ' ') }} FCFA</td>
                         <td class="px-4 py-3">

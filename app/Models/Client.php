@@ -135,6 +135,13 @@ class Client extends Model
 
     public function getDerniereVisiteAttribute()
     {
+        // Valeur pré-calculée par withMax() sur la liste : évite une requête par client
+        if (array_key_exists('derniere_vente_le', $this->attributes)) {
+            return $this->attributes['derniere_vente_le']
+                ? \Illuminate\Support\Carbon::parse($this->attributes['derniere_vente_le'])
+                : null;
+        }
+
         return $this->ventes()->where('statut', 'validee')->latest()->value('created_at');
     }
 

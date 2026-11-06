@@ -27,6 +27,7 @@ class ClientController extends Controller
 
         $clients = Client::query()
             ->withCount('ventes')
+            ->withMax(['ventes as derniere_vente_le' => fn ($q) => $q->where('statut', 'validee')], 'created_at')
             ->when($search, function ($q) use ($search) {
                 $q->where(function ($q2) use ($search) {
                     $q2->where('prenom', 'like', "%{$search}%")
