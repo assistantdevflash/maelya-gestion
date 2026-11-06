@@ -82,4 +82,54 @@ class CommandesIndexTest extends TestCase
 
         $this->assertStringContainsString('class="space-y-8"', $html);
     }
+
+    public function test_la_barre_d_actions_groupees_est_masquee_et_collee(): void
+    {
+        $html = $this->pageAvecUneCommande();
+
+        // Masquée au chargement : elle n'apparaît qu'à la sélection
+        $this->assertMatchesRegularExpression(
+            '/<form id="form-actions-groupees"[^>]*class="[^"]*hidden[^"]*"/',
+            $html,
+            'La barre d\'actions groupées devrait être masquée par défaut.'
+        );
+
+        // Collée sous l'en-tête pendant le défilement
+        $this->assertMatchesRegularExpression(
+            '/<form id="form-actions-groupees"[^>]*class="[^"]*sticky[^"]*"/',
+            $html,
+            'La barre d\'actions groupées devrait être sticky.'
+        );
+    }
+
+    public function test_seules_les_commandes_en_attente_ont_une_case_a_cocher(): void
+    {
+        $admin = $this->creerAdmin();
+
+        foreach (['nouvelle', 'acceptee', 'livree'] as $statut) {
+            Commande::create([
+                'institut_id'      => $admin->institut_id,
+                'numero'           => 'CMD-SEL-' . $statut,
+                'client_prenom'    => 'Test', 'client_nom' => ucfirst($statut),
+                'client_telephone' => '0701020304', 'client_adresse' => 'X',
+                'sous_total'       => 1000, 'frais_livraison' => 0, 'total' => 1000,
+                'statut'           => $statut, 'mode_paiement' => 'cash', 'payee' => false,
+            ]);
+        }
+
+        $html = $this->actingAs($admin)
+            ->get(route('dashboard.boutique.commandes.index'))
+            ->assertOk()
+            ->getContent();
+
+        // Une seule case : la commande « nouvelle » (les autres n'en ont pas)
+        $this->assertSame(
+            1,
+            substr_count($html, 'type="checkbox" form="form-actions-groupees"'),
+            'Seules les commandes en attente devraient proposer une case à cocher.'
+        );
+
+        // Aucune case désactivée ne subsiste
+        $this->assertStringNotContainsString('disabled>', $html);
+    }
 }

@@ -150,7 +150,8 @@
     </form>
 
     {{-- Barre d'actions groupées (les cases à cocher lui sont rattachées par l'attribut form) --}}
-    <form id="form-actions-groupees" method="POST" action="{{ route('dashboard.boutique.commandes.actions-groupees') }}" class="card">
+    <form id="form-actions-groupees" method="POST" action="{{ route('dashboard.boutique.commandes.actions-groupees') }}"
+          class="card hidden sticky top-14 lg:top-16 z-20 shadow-lg">
         @csrf
         <div class="card-body flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-3">
@@ -228,10 +229,13 @@
                         @foreach($commandes as $commande)
                             <tr class="hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
                                 <td class="pl-6 pr-2 py-4">
+                                    @if($commande->statut === 'nouvelle')
+                                    {{-- Seules les commandes en attente sont traitables --}}
                                     <input type="checkbox" form="form-actions-groupees" name="ids[]"
                                            value="{{ $commande->id }}" data-selection
-                                           {{ $commande->statut === 'nouvelle' ? '' : 'disabled' }}
-                                           class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-40">
+                                           aria-label="Sélectionner la commande {{ $commande->numero }}"
+                                           class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="font-semibold text-gray-900 dark:text-white font-mono text-sm">{{ $commande->numero }}</span>
@@ -292,4 +296,76 @@
         @endif
     </div>
 </div>
+@push('scripts')
+<script>
+// ── Sélection multiple : la barre d'actions n'apparaît qu'à la sélection ──
+(function () {
+    const barre   = document.getElementById('form-actions-groupees');
+    const tout    = document.getElementById('cocher-tout');
+    const compter = document.getElementById('compteur-selection');
+    const cases   = () => Array.from(document.querySelectorAll('[data-selection]'));
+
+    if (! barre) return;
+
+    function rafraichir() {
+        const toutes  = cases();
+        const cochees = toutes.filter(c => c.checked).length;
+
+        // Révélée seulement quand au moins une commande est cochée
+        barre.classList.toggle('hidden', cochees === 0);
+
+        if (compter) {
+            compter.textContent = cochees + ' sélectionnée(s)';
+            compter.classList.toggle('hidden', cochees === 0);
+        }
+
+        if (tout) {
+            tout.checked = toutes.length > 0 && cochees === toutes.length;
+            tout.indeterminate = cochees > 0 && cochees < toutes.length;
+        }
+    }
+
+    tout?.addEventListener('change', () => {
+        cases().forEach(c => { c.checked = tout.checked; });
+        rafraichir();
+    });
+
+    document.addEventListener('change', (e) => {
+        if (e.target.matches('[data-selection]')) rafraichir();
+    });
+
+    barre.addEventListener('submit', (e) => {
+        if (cases().filter(c => c.checked).length === 0) {
+            e.preventDefault();
+        }
+    });
+
+    rafraichir();
+})();
+
+// ── Nouvelle commande en attente : rafraîchissement du compteur ──────
+(function () {
+    const badge = document.getElementById('badge-nouvelles');
+    if (! badge) return;
+
+    const url = @json(route('dashboard.boutique.commandes.count-nouvelles'));
+    let dernier = {{ (int) ($stats['nouvelles'] ?? 0) }};
+
+    setInterval(async () => {
+        try {
+            const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            if (! res.ok) return;
+            const data = await res.json();
+
+            if (data.count > dernier) {
+                badge.textContent = data.count;
+                badge.classList.remove('hidden');
+                badge.classList.add('animate-pulse');
+            }
+            dernier = data.count;
+        } catch (e) { /* hors ligne : on réessaiera */ }
+    }, 30000);
+})();
+</script>
+@endpush
 </x-dashboard-layout>
