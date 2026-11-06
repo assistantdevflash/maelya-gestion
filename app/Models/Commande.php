@@ -27,6 +27,13 @@ class Commande extends Model
         'frais_livraison',
         'total',
         'statut',
+        'token',
+        'date_livraison_prevue',
+        'creneau_livraison',
+        'stock_decremente_at',
+        'relance_envoyee_at',
+        'annulee_par',
+        'motif_annulation',
         'acceptee_at',
         'en_preparation_at',
         'en_livraison_at',
@@ -50,6 +57,9 @@ class Commande extends Model
         'livree_at' => 'datetime',
         'annulee_at' => 'datetime',
         'payee_at' => 'datetime',
+        'stock_decremente_at' => 'datetime',
+        'relance_envoyee_at' => 'datetime',
+        'date_livraison_prevue' => 'date',
     ];
 
     /**
@@ -62,6 +72,9 @@ class Commande extends Model
         static::creating(function ($commande) {
             if (empty($commande->numero)) {
                 $commande->numero = self::genererNumero($commande->institut_id);
+            }
+            if (empty($commande->token)) {
+                $commande->token = \Illuminate\Support\Str::random(48);
             }
         });
     }
@@ -156,6 +169,58 @@ class Commande extends Model
     public function peutEtreMarqueePayee(): bool
     {
         return $this->statut === 'livree' && !$this->payee;
+    }
+
+    /** Le stock de cette commande est-il déjà sorti du magasin ? */
+    public function stockReserve(): bool
+    {
+        return $this->stock_decremente_at !== null;
+    }
+
+    /** Le client peut-il encore annuler sa propre commande ? */
+    public function peutEtreAnnuleeParClient(): bool
+    {
+        return ! $this->payee && in_array($this->statut, ['nouvelle', 'acceptee'], true);
+    }
+
+    /** Prochain statut logique (pour l'action contextuelle de la fiche). */
+    public function prochainStatut(): ?string
+    {
+        return match ($this->statut) {
+            'nouvelle'       => 'acceptee',
+            'acceptee'       => 'en_preparation',
+            'en_preparation' => 'en_livraison',
+            'en_livraison'   => 'livree',
+            default          => null,
+        };
+    }
+
+    public function libelleProchainStatut(): ?string
+    {
+        return match ($this->prochainStatut()) {
+            'acceptee'       => 'Accepter la commande',
+            'en_preparation' => 'Passer en préparation',
+            'en_livraison'   => 'Marquer expédiée',
+            'livree'         => 'Marquer livrée',
+            default          => null,
+        };
+    }
+
+    /** Jours restants avant la livraison promise (négatif si dépassée). */
+    public function getJoursLivraisonAttribute(): ?int
+    {
+        if (! $this->date_livraison_prevue) {
+            return null;
+        }
+
+        return (int) now()->startOfDay()->diffInDays($this->date_livraison_prevue->startOfDay(), false);
+    }
+
+    public function getLivraisonEnRetardAttribute(): bool
+    {
+        $jours = $this->jours_livraison;
+
+        return $jours !== null && $jours < 0 && ! in_array($this->statut, ['livree', 'annulee', 'refusee'], true);
     }
 
     public function changerStatut(string $nouveauStatut): void

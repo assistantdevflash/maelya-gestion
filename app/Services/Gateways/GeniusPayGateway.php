@@ -34,8 +34,8 @@ class GeniusPayGateway implements PaymentGatewayInterface
             'currency'    => $transaction->currency,
             'description' => $this->buildDescription($transaction),
             'customer'    => $this->buildCustomer($transaction),
-            'success_url' => route('payment.success', ['ref' => $transaction->reference]),
-            'error_url'   => route('payment.error',   ['ref' => $transaction->reference]),
+            'success_url' => $transaction->metadata['success_url'] ?? route('payment.success', ['ref' => $transaction->reference]),
+            'error_url'   => $transaction->metadata['error_url'] ?? route('payment.error', ['ref' => $transaction->reference]),
             'metadata'    => [
                 'maelya_ref'   => $transaction->reference,
                 'user_id'      => $transaction->user_id,
@@ -337,6 +337,47 @@ class GeniusPayGateway implements PaymentGatewayInterface
             $this->activateAbonnement($transaction);
         } elseif (in_array($transaction->type, ['boutique_activation', 'boutique_renouvellement'])) {
             $this->activateBoutique($transaction);
+        } elseif ($transaction->type === 'commande') {
+            $this->activateCommande($transaction);
+        }
+    }
+
+    /**
+     * Commande boutique payée en ligne : on réserve le stock puis on encaisse.
+     */
+    private function activateCommande(PaymentTransaction $transaction): void
+    {
+        $commandeId = $transaction->metadata['commande_id'] ?? null;
+        if (! $commandeId) {
+            Log::error('[GeniusPay] commande_id manquant dans les métadonnées', ['tx' => $transaction->reference]);
+            return;
+        }
+
+        $commande = \App\Models\Commande::withoutGlobalScopes()->find($commandeId);
+        if (! $commande) {
+            Log::error('[GeniusPay] commande introuvable', ['id' => $commandeId]);
+            return;
+        }
+
+        if ($commande->payee) {
+            return;
+        }
+
+        $service = app(\App\Services\CommandeService::class);
+
+        try {
+            $service->reserverStock($commande);
+            $service->encaisser($commande, 'mobile_money');
+            $commande->update(['mode_paiement' => 'en_ligne']);
+
+            \Illuminate\Support\Facades\Cache::forget("cmd_stats:{$commande->institut_id}");
+
+            Log::info('[GeniusPay] commande encaissée', ['commande' => $commande->numero]);
+        } catch (\Throwable $e) {
+            Log::error('[GeniusPay] encaissement commande impossible', [
+                'commande' => $commande->numero,
+                'erreur'   => $e->getMessage(),
+            ]);
         }
     }
 

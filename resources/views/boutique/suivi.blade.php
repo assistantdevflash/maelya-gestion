@@ -140,7 +140,29 @@
             <div class="border-t dark:border-gray-700 pt-6 mt-6">
                 <h3 class="font-semibold mb-2">Adresse de livraison</h3>
                 <p class="text-gray-600 dark:text-gray-400">{{ $commande->client_adresse }}</p>
+
+                @if($commande->date_livraison_prevue)
+                <p class="text-sm mt-2 {{ $commande->livraison_en_retard ? 'text-red-600 font-semibold' : 'text-gray-500' }}">
+                    Livraison prévue le {{ $commande->date_livraison_prevue->format('d/m/Y') }}
+                    @if($commande->creneau_livraison) ({{ $commande->creneau_livraison }})@endif
+                </p>
+                @endif
             </div>
+
+            {{-- Annulation par le client --}}
+            @if($commande->peutEtreAnnuleeParClient())
+            <div class="border-t dark:border-gray-700 pt-6 mt-6">
+                <form method="POST"
+                      action="{{ \Illuminate\Support\Facades\URL::signedRoute('shop.annuler', ['slug' => $institut->slug, 'numero' => $commande->numero]) }}"
+                      onsubmit="return confirm('Annuler définitivement cette commande ?')">
+                    @csrf
+                    <button type="submit" class="text-sm font-semibold text-red-600 hover:text-red-700 underline">
+                        Annuler ma commande
+                    </button>
+                    <p class="text-xs text-gray-400 mt-1">Possible tant que la commande n'est pas en cours de livraison.</p>
+                </form>
+            </div>
+            @endif
 
             <div class="mt-8 text-center">
                 <a href="{{ route('shop.index', $institut->slug) }}" class="boutique-accent font-medium">

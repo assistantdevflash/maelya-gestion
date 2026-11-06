@@ -12,20 +12,7 @@
             <p class="text-gray-500 dark:text-slate-400 ml-14">Créée le {{ $commande->created_at->format('d/m/Y à H:i') }}</p>
         </div>
 
-        @php
-            $colors = [
-                'nouvelle' => 'bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-300',
-                'acceptee' => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
-                'en_preparation' => 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
-                'en_livraison' => 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-300',
-                'livree' => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
-                'annulee' => 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
-                'refusee' => 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
-            ];
-        @endphp
-        <span class="px-4 py-2 text-sm font-bold rounded-xl shadow-sm {{ $colors[$commande->statut] ?? 'bg-gray-100 text-gray-800' }}">
-            {{ ucfirst(str_replace('_', ' ', $commande->statut)) }}
-        </span>
+        @include('dashboard.boutique.commandes.partials.statut-badge', ['statut' => $commande->statut])
     </div>
 
     @if(session('success'))
@@ -63,6 +50,20 @@
                     <div>
                         <p class="text-sm font-medium text-gray-500 dark:text-slate-400">Adresse de livraison</p>
                         <p class="text-base font-semibold text-gray-900 dark:text-white mt-1">{{ $commande->client_adresse }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-slate-400">Livraison promise</p>
+                        @if($commande->date_livraison_prevue)
+                        <p class="text-base font-semibold mt-1 {{ $commande->livraison_en_retard ? 'text-red-500' : 'text-gray-900 dark:text-white' }}">
+                            {{ $commande->date_livraison_prevue->format('d/m/Y') }}
+                            @if($commande->creneau_livraison) <span class="text-sm font-normal">· {{ $commande->creneau_livraison }}</span>@endif
+                        </p>
+                        @if($commande->livraison_en_retard)
+                        <p class="text-[11px] font-bold text-red-500 mt-0.5">Date dépassée</p>
+                        @endif
+                        @else
+                        <p class="text-base font-semibold text-gray-400 mt-1">Non définie</p>
+                        @endif
                     </div>
                     {{-- Zone de livraison --}}
                     @php
@@ -343,14 +344,39 @@
                 </div>
             </div>
 
-            {{-- Facture --}}
+            {{-- Documents --}}
             <div class="card">
                 <div class="card-body space-y-3">
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white">Télécharger la facture</p>
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white">Documents</p>
                     <a href="{{ route('dashboard.boutique.commandes.facture', $commande) }}" target="_blank" class="btn-outline w-full">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                         Facture PDF
                     </a>
+                    <a href="{{ route('dashboard.boutique.commandes.bon-livraison', $commande) }}" target="_blank" class="btn-outline w-full">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4v11m9-1h5l3-5h-8"/></svg>
+                        Bon de livraison
+                    </a>
+
+                    @php
+                        $tel = preg_replace('/[^0-9]/', '', (string) $commande->client_telephone);
+                        if ($tel && str_starts_with($tel, '0')) $tel = '225' . $tel;
+                        $waMessage = rawurlencode(
+                            "Bonjour " . $commande->client_prenom . ",
+
+"
+                            . "Votre commande " . $commande->numero . " est " . strtolower(str_replace('_', ' ', $commande->statut)) . ".\n"
+                            . "Montant : " . number_format($commande->total, 0, ',', ' ') . " F CFA\n"
+                            . ($commande->date_livraison_prevue ? "Livraison prévue le " . $commande->date_livraison_prevue->format('d/m/Y') . "\n" : '')
+                            . "\nSuivi : " . \Illuminate\Support\Facades\URL::signedRoute('shop.suivi', ['slug' => $commande->institut->slug, 'numero' => $commande->numero])
+                        );
+                    @endphp
+                    @if($tel)
+                    <a href="https://wa.me/{{ $tel }}?text={{ $waMessage }}" target="_blank" rel="noopener"
+                       class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#25D366]/10 text-[#25D366] border border-[#25D366]/20 hover:bg-[#25D366]/20 transition">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        Notifier par WhatsApp
+                    </a>
+                    @endif
                 </div>
             </div>
 
@@ -358,10 +384,11 @@
             @can('delete', $commande)
             <div class="card">
                 <div class="card-body">
-                    <form method="POST" action="{{ route('dashboard.boutique.commandes.destroy', $commande) }}" onsubmit="return confirm('Supprimer définitivement cette commande ?')">
+                    <form id="form-supprimer-commande" method="POST" action="{{ route('dashboard.boutique.commandes.destroy', $commande) }}">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn-danger w-full">
+                        <button type="button" class="btn-danger w-full"
+                                onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-supprimer-commande',title:'Supprimer cette commande',message:'La commande {{ $commande->numero }} sera définitivement supprimée. Cette action est irréversible.',confirmLabel:'Supprimer',danger:true}}))">
                             Supprimer
                         </button>
                     </form>
@@ -376,6 +403,49 @@
                     <p class="text-base font-bold text-gray-900 dark:text-white">{{ $commande->mode_paiement == 'livraison' ? '📦 À la livraison' : '💳 ' . ucfirst($commande->mode_paiement) }}</p>
                 </div>
             </div>
+        </div>
+    </div>
+
+    {{-- ═══ HISTORIQUE ═══ --}}
+    @php
+        $etapes = [];
+        $etapes[] = ['date' => $commande->created_at, 'titre' => 'Commande reçue', 'texte' => 'Commande passée sur la boutique', 'couleur' => 'bg-gray-400'];
+        foreach ([
+            'acceptee_at'       => ['Acceptée', 'Prise en charge par l\'établissement', 'bg-emerald-500'],
+            'en_preparation_at' => ['En préparation', 'Les articles sont préparés', 'bg-amber-500'],
+            'en_livraison_at'   => ['Expédiée', 'Confiée au livreur', 'bg-cyan-500'],
+            'livree_at'         => ['Livrée', 'Remise au client', 'bg-emerald-600'],
+        ] as $champ => $info) {
+            if ($commande->{$champ}) {
+                $etapes[] = ['date' => $commande->{$champ}, 'titre' => $info[0], 'texte' => $info[1], 'couleur' => $info[2]];
+            }
+        }
+        if ($commande->payee_at) {
+            $etapes[] = ['date' => $commande->payee_at, 'titre' => 'Encaissée', 'texte' => number_format($commande->total, 0, ',', ' ') . ' F — ' . ($commande->mode_paiement ?? ''), 'couleur' => 'bg-emerald-700'];
+        }
+        if ($commande->annulee_at) {
+            $etapes[] = [
+                'date'   => $commande->annulee_at,
+                'titre'  => $commande->statut === 'refusee' ? 'Refusée' : 'Annulée',
+                'texte'  => $commande->motif_annulation ?: ($commande->annulee_par === 'client' ? 'Annulée par le client' : 'Annulée par l\'établissement'),
+                'couleur'=> 'bg-red-500',
+            ];
+        }
+        $etapes = collect($etapes)->sortBy('date')->values();
+    @endphp
+    <div class="card">
+        <div class="card-header"><h2 class="text-lg font-semibold text-gray-900 dark:text-white">Historique</h2></div>
+        <div class="card-body">
+            <ol class="relative border-l border-gray-200 dark:border-slate-700 ml-2 space-y-4">
+                @foreach($etapes as $etape)
+                <li class="ml-4">
+                    <span class="absolute -left-[5px] w-2.5 h-2.5 rounded-full {{ $etape['couleur'] }}"></span>
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ $etape['titre'] }}</p>
+                    <p class="text-xs text-gray-500 dark:text-slate-400">{{ $etape['texte'] }}</p>
+                    <p class="text-[11px] text-gray-400 mt-0.5">{{ \Illuminate\Support\Carbon::parse($etape['date'])->translatedFormat('d M Y à H:i') }}</p>
+                </li>
+                @endforeach
+            </ol>
         </div>
     </div>
 </div>

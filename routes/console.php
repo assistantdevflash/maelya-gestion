@@ -35,6 +35,9 @@ Schedule::command('factures:relances')->dailyAt('08:45');
 // Passage en « expiré » des devis dont la date de validité est dépassée
 Schedule::command('devis:expirer')->dailyAt('01:15');
 
+// Relance des commandes boutique non confirmées depuis 24 h
+Schedule::command('commandes:relances')->dailyAt('10:00');
+
 // Purge hebdomadaire du journal d'activité (conserve 90 jours)
 Schedule::command('audit:purge --days=90')->weeklyOn(0, '02:00');
 

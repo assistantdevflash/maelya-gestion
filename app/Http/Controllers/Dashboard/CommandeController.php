@@ -7,6 +7,8 @@ use App\Mail\CommandeStatutUpdatedClient;
 use App\Models\Commande;
 use App\Models\Vente;
 use App\Models\VenteItem;
+use App\Services\CommandeService;
+use App\Services\StockInsuffisantException;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
@@ -18,12 +20,16 @@ use Illuminate\Support\Facades\Mail;
 class CommandeController extends Controller
 {
     use AuthorizesRequests;
+
+    public function __construct(private CommandeService $service) {}
     /**
      * Liste des commandes
      */
     public function index(Request $request)
     {
         $institutId = session('current_institut_id', auth()->user()->institut_id);
+        $institut = \App\Models\Institut::find($institutId);
+        $zones = is_array($institut?->boutique_zones_livraison) ? $institut->boutique_zones_livraison : [];
 
         $query = Commande::where('institut_id', $institutId)
             ->with(['client', 'items.produit'])
@@ -44,11 +50,30 @@ class CommandeController extends Controller
                 $q->where('numero', 'like', "%{$search}%")
                     ->orWhere('client_nom', 'like', "%{$search}%")
                     ->orWhere('client_prenom', 'like', "%{$search}%")
-                    ->orWhere('client_telephone', 'like', "%{$search}%");
+                    ->orWhere('client_telephone', 'like', "%{$search}%")
+                    ->orWhere('client_email', 'like', "%{$search}%");
             });
         }
 
-        $commandes = $query->paginate(20);
+        // Période : date exacte ou plage
+        if ($request->filled('du')) {
+            $query->whereDate('created_at', '>=', $request->du);
+        }
+        if ($request->filled('au')) {
+            $query->whereDate('created_at', '<=', $request->au);
+        }
+
+        // Zone de livraison : le libellé est retrouvé par SearchController via
+        // les frais, on filtre donc sur le montant de livraison.
+        if ($request->filled('zone')) {
+            $zones = is_array($institut?->boutique_zones_livraison) ? $institut->boutique_zones_livraison : [];
+            $index = (int) $request->zone;
+            if (isset($zones[$index]['frais'])) {
+                $query->where('frais_livraison', (int) $zones[$index]['frais']);
+            }
+        }
+
+        $commandes = $query->paginate(20)->withQueryString();
 
         // Statistiques (1 seule requête au lieu de 4)
         $stats = Cache::remember("cmd_stats:{$institutId}", now()->addMinutes(3), function () use ($institutId) {
@@ -58,7 +83,7 @@ class CommandeController extends Controller
             return ['nouvelles' => (int) $row->nouvelles, 'en_cours' => (int) $row->en_cours, 'livrees' => (int) $row->livrees, 'total_ca' => (int) $row->total_ca];
         });
 
-        return view('dashboard.boutique.commandes.index', compact('commandes', 'stats'));
+        return view('dashboard.boutique.commandes.index', compact('commandes', 'stats', 'zones'));
     }
 
     /**
@@ -119,7 +144,20 @@ class CommandeController extends Controller
             return back()->with('error', 'Cette transition de statut n\'est pas autorisée.');
         }
 
-        $commande->changerStatut($nouveauStatut);
+        try {
+            if ($nouveauStatut === 'acceptee') {
+                // Le stock est réservé dès l'acceptation : plus de survente
+                // entre l'acceptation et la livraison.
+                $this->service->reserverStock($commande);
+                $commande->changerStatut($nouveauStatut);
+            } elseif (in_array($nouveauStatut, ['annulee', 'refusee'], true)) {
+                $this->service->annuler($commande, $nouveauStatut, null, 'admin');
+            } else {
+                $commande->changerStatut($nouveauStatut);
+            }
+        } catch (StockInsuffisantException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         // Envoyer un email au client
         try {
@@ -147,58 +185,18 @@ class CommandeController extends Controller
             return back()->with('error', 'Cette commande ne peut pas être marquée comme payée.');
         }
 
-        try {
-            DB::beginTransaction();
-
-            // La vente doit refléter le mode de paiement réellement choisi :
-            // sinon les encaissements sont tous comptabilisés en espèces.
-            $modeVente = match ($commande->mode_paiement) {
-                'mobile_money' => 'mobile_money',
-                'mixte'        => 'mixte',
-                default        => 'cash',
-            };
-
-            // Créer la vente
-            $vente = Vente::create([
-                'institut_id' => $commande->institut_id,
-                'client_id' => $commande->client_id,
-                'user_id' => Auth::id(),
-                'total' => $commande->total,
-                'montant_paye' => $commande->total,
-                'mode_paiement' => $modeVente,
-                'montant_cash' => $modeVente === 'mobile_money' ? 0 : $commande->total,
-                'montant_mobile' => $modeVente === 'mobile_money' ? $commande->total : 0,
-                'statut' => 'validee',
-                'remise' => 0,
-                'pourboire' => 0,
-            ]);
-
-            // Créer les items de la vente
+        if (! $commande->stockReserve()) {
+            // Commande acceptée avant la réservation du stock : on vérifie la
+            // disponibilité avant de facturer.
             foreach ($commande->items as $item) {
-                VenteItem::create([
-                    'vente_id' => $vente->id,
-                    'type' => 'produit',
-                    'item_id' => $item->produit_id,
-                    'nom_snapshot' => $item->nom_snapshot,
-                    'prix_snapshot' => $item->prix_snapshot,
-                    'quantite' => $item->quantite,
-                    'sous_total' => $item->sous_total,
-                ]);
-
-                // Déduire le stock
-                if ($item->produit) {
-                    $item->produit->decrement('stock', $item->quantite);
+                if ($item->produit && $item->produit->stock < $item->quantite) {
+                    return back()->with('error', "Stock insuffisant pour {$item->produit->nom} : la commande ne peut pas être encaissée.");
                 }
             }
+        }
 
-            // Mettre à jour la commande
-            $commande->update([
-                'payee' => true,
-                'payee_at' => now(),
-                'vente_id' => $vente->id,
-            ]);
-
-            DB::commit();
+        try {
+            $this->service->encaisser($commande);
 
             $this->oublierCaches($commande->institut_id);
 
@@ -207,8 +205,7 @@ class CommandeController extends Controller
 
             return back()->with('success', 'Commande marquée comme payée et vente créée avec succès.');
 
-        } catch (\Exception $e) {
-            DB::rollBack();
+        } catch (\Throwable $e) {
             return back()->with('error', 'Erreur lors de la création de la vente : ' . $e->getMessage());
         }
     }
@@ -247,6 +244,8 @@ class CommandeController extends Controller
             'items.*.id' => 'required|string',
             'items.*.quantite' => 'required|integer|min:0|max:999',
             'items.*.supprimer' => 'nullable',
+            'date_livraison_prevue' => 'nullable|date',
+            'creneau_livraison' => 'nullable|string|max:40',
         ]);
 
         try {
@@ -294,6 +293,8 @@ class CommandeController extends Controller
                 'sous_total' => $sousTotal,
                 'frais_livraison' => $fraisLivraison,
                 'total' => $total,
+                'date_livraison_prevue' => $data['date_livraison_prevue'] ?? $commande->date_livraison_prevue,
+                'creneau_livraison' => $data['creneau_livraison'] ?? $commande->creneau_livraison,
             ]);
 
             DB::commit();
@@ -327,6 +328,73 @@ class CommandeController extends Controller
 
         return redirect()->route('dashboard.boutique.commandes.index')
             ->with('success', "Commande {$numero} supprimée avec succès.");
+    }
+
+    /**
+     * Actions groupées depuis la liste : accepter ou refuser plusieurs
+     * commandes en une fois (le cas d'usage du matin).
+     */
+    public function actionsGroupees(Request $request)
+    {
+        $data = $request->validate([
+            'ids'    => 'required|array|min:1',
+            'ids.*'  => 'string',
+            'action' => 'required|in:accepter,refuser',
+        ]);
+
+        $institutId = session('current_institut_id', auth()->user()->institut_id);
+
+        $commandes = Commande::where('institut_id', $institutId)
+            ->whereIn('id', $data['ids'])
+            ->get();
+
+        $traitees = 0;
+        $erreurs  = [];
+
+        foreach ($commandes as $commande) {
+            $this->authorize('update', $commande);
+
+            if ($commande->statut !== 'nouvelle') {
+                continue;
+            }
+
+            try {
+                if ($data['action'] === 'accepter') {
+                    $this->service->reserverStock($commande);
+                    $commande->changerStatut('acceptee');
+                } else {
+                    $this->service->annuler($commande, 'refusee', null, 'admin');
+                }
+
+                $traitees++;
+            } catch (StockInsuffisantException $e) {
+                $erreurs[] = $commande->numero . ' : ' . $e->getMessage();
+            }
+        }
+
+        $this->oublierCaches($institutId);
+
+        if ($erreurs !== []) {
+            return back()->with('error', $traitees . ' commande(s) traitée(s). '
+                . \App\Helpers\TexteHelper::pluriel(count($erreurs), 'échec', 'échecs')
+                . ' : ' . implode(' · ', $erreurs));
+        }
+
+        return back()->with('success', $traitees . ' '
+            . \App\Helpers\TexteHelper::pluriel($traitees, 'commande traitée', 'commandes traitées') . '.');
+    }
+
+    /** Bon de livraison imprimable. */
+    public function bonLivraison(Commande $commande)
+    {
+        $this->authorize('view', $commande);
+
+        $commande->load(['items', 'client', 'institut']);
+
+        $pdf = Pdf::loadView('pdf.bon-livraison', compact('commande'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->stream("bon-livraison-{$commande->numero}.pdf");
     }
 
     /**

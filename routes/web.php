@@ -74,6 +74,16 @@ Route::prefix('shop')->name('shop.')->group(function () {
     Route::get('/{slug}/commande/{numero}', [BoutiqueController::class, 'suivreCommande'])
         ->middleware('signed')
         ->name('suivi');
+
+    // Le client peut annuler sa commande tant qu'elle n'est pas acceptée/livrée.
+    Route::post('/{slug}/commande/{numero}/annuler', [BoutiqueController::class, 'annulerParClient'])
+        ->middleware('signed')
+        ->name('annuler');
+
+    // Retour du prestataire de paiement (lien signé, etat = succes|echec)
+    Route::get('/{slug}/commande/{numero}/paiement/{etat}', [BoutiqueController::class, 'retourPaiement'])
+        ->middleware('signed')
+        ->name('paiement.retour');
 });
 
 // ─── Logging événements Facebook (navigateur → serveur) ──────────────────────
@@ -192,6 +202,7 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
         Route::get('commandes/count-nouvelles', [CommandeController::class, 'countNouvelles'])->name('commandes.count-nouvelles');
         Route::get('commandes/{commande}', [CommandeController::class, 'show'])->name('commandes.show');
         Route::get('commandes/{commande}/facture', [CommandeController::class, 'facturePdf'])->name('commandes.facture');
+        Route::get('commandes/{commande}/bon-livraison', [CommandeController::class, 'bonLivraison'])->name('commandes.bon-livraison');
 
         Route::middleware('role:admin,gerant')->group(function () {
             Route::post('commandes/{commande}/statut', [CommandeController::class, 'updateStatut'])->name('commandes.statut');
@@ -199,6 +210,7 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
             Route::post('commandes/{commande}/notes', [CommandeController::class, 'updateNotes'])->name('commandes.notes');
             Route::post('commandes/{commande}/modifier', [CommandeController::class, 'update'])->name('commandes.update');
             Route::delete('commandes/{commande}', [CommandeController::class, 'destroy'])->name('commandes.destroy');
+            Route::post('commandes/actions-groupees', [CommandeController::class, 'actionsGroupees'])->name('commandes.actions-groupees');
         });
     });
 

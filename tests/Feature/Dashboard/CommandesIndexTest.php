@@ -64,13 +64,20 @@ class CommandesIndexTest extends TestCase
         $finFormulaire = strpos($html, '</form>', $debutFormulaire);
         $this->assertNotFalse($finFormulaire, 'Formulaire de filtres non fermé.');
 
-        // Aucun conteneur intermédiaire : la carte doit être une soeur du
-        // formulaire, dans le `.space-y-8` commun.
-        $apres = substr($html, $finFormulaire, 200);
+        // Les blocs restent des frères dans le `.space-y-8` commun : le
+        // formulaire de filtres, la barre d'actions groupées, puis la liste.
+        $apres = substr($html, $finFormulaire, 600);
         $this->assertMatchesRegularExpression(
-            '/<\/form>\s*<div class="card">/',
+            '/<\/form>\s*<form id="form-actions-groupees"/',
             $apres,
-            'La carte des commandes n\'est pas directement après le formulaire (imbrication).'
+            'La barre d\'actions groupées n\'est pas une soeur du formulaire de filtres.'
+        );
+
+        // Les formulaires sont équilibrés (aucune imbrication possible sinon)
+        $this->assertSame(
+            substr_count($html, '<form'),
+            substr_count($html, '</form>'),
+            'Nombre de <form> et de </form> différent.'
         );
 
         $this->assertStringContainsString('class="space-y-8"', $html);

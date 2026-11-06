@@ -199,6 +199,9 @@ class BoutiqueController extends Controller
             'panier.*.produit_id' => 'required|uuid|exists:produits,id',
             'panier.*.quantite' => 'required|integer|min:1|max:999',
             'zone_index' => 'nullable|integer|min:0',
+            'date_livraison_prevue' => 'nullable|date|after_or_equal:today',
+            'creneau_livraison' => 'nullable|string|max:40',
+            'paiement_en_ligne' => 'nullable|boolean',
         ]);
 
         try {
@@ -292,6 +295,8 @@ class BoutiqueController extends Controller
                     ? $data['mode_paiement']
                     : 'cash',
                 'notes_client' => $data['notes'] ?? null,
+                'date_livraison_prevue' => $data['date_livraison_prevue'] ?? null,
+                'creneau_livraison' => $data['creneau_livraison'] ?? null,
             ]);
 
             // Créer les items de la commande
@@ -306,6 +311,59 @@ class BoutiqueController extends Controller
 
             // Envoyer l'événement Purchase au Pixel Facebook
             \App\Jobs\SendFacebookPurchaseEvent::dispatch($commande);
+
+            // Paiement en ligne : le client règle maintenant, la commande est
+            // encaissée dès la confirmation du prestataire.
+            $paiementEnLigne = (bool) ($data['paiement_en_ligne'] ?? false)
+                && config('services.geniuspay.api_key');
+
+            if ($paiementEnLigne) {
+                $methode = \App\Models\PaymentMethod::where('code', 'geniuspay')
+                    ->where('is_active', true)
+                    ->first();
+
+                if ($methode) {
+                    $retourSucces = \Illuminate\Support\Facades\URL::signedRoute('shop.paiement.retour', [
+                        'slug'   => $slug,
+                        'numero' => $commande->numero,
+                        'etat'   => 'succes',
+                    ]);
+
+                    $transaction = \App\Models\PaymentTransaction::create([
+                        'id'                  => (string) \Illuminate\Support\Str::uuid(),
+                        'reference'           => \App\Models\PaymentTransaction::generateReference(),
+                        'user_id'             => $institut->proprietaire_id ?? $institut->users()->value('id'),
+                        'institut_id'         => $institut->id,
+                        'type'                => 'commande',
+                        'amount'              => (int) $commande->total,
+                        'net_amount'          => (int) $commande->total,
+                        'currency'            => 'XOF',
+                        'payment_method_id'   => $methode->id,
+                        'payment_method_code' => 'geniuspay',
+                        'status'              => 'pending',
+                        'metadata'            => [
+                            'commande_id' => $commande->id,
+                            'numero'      => $commande->numero,
+                            'success_url' => $retourSucces,
+                            'error_url'   => \Illuminate\Support\Facades\URL::signedRoute('shop.paiement.retour', [
+                                'slug'   => $slug,
+                                'numero' => $commande->numero,
+                                'etat'   => 'echec',
+                            ]),
+                        ],
+                    ]);
+
+                    try {
+                        $result = app(\App\Services\PaymentGatewayManager::class)->initiate($transaction, $methode);
+
+                        return redirect()->away($result['checkout_url']);
+                    } catch (\Throwable $e) {
+                        $transaction->update(['status' => 'failed']);
+                        \Illuminate\Support\Facades\Log::error('[Boutique] paiement en ligne indisponible : ' . $e->getMessage());
+                        // La commande reste valable en paiement à la livraison
+                    }
+                }
+            }
 
             // Envoyer les emails
             try {
@@ -362,6 +420,77 @@ class BoutiqueController extends Controller
             DB::rollBack();
             return back()->with('error', $e->getMessage())->withInput();
         }
+    }
+
+    /**
+     * Retour du prestataire de paiement (lien signé).
+     */
+    public function retourPaiement(Request $request, string $slug, string $numero, string $etat)
+    {
+        $institut = Institut::where('slug', $slug)->firstOrFail();
+
+        $commande = Commande::withoutGlobalScope(InstitutScope::class)
+            ->where('commandes.numero', $numero)
+            ->where('commandes.institut_id', $institut->id)
+            ->firstOrFail();
+
+        if ($etat === 'succes') {
+            // Le webhook peut arriver après le retour : on vérifie directement.
+            $transaction = \App\Models\PaymentTransaction::where('type', 'commande')
+                ->where('metadata->commande_id', $commande->id)
+                ->latest()
+                ->first();
+
+            if ($transaction && $transaction->isPending()) {
+                try {
+                    app(\App\Services\PaymentGatewayManager::class)->verify($transaction);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('[Boutique] vérification paiement : ' . $e->getMessage());
+                }
+            }
+
+            $commande->refresh();
+
+            return redirect(\Illuminate\Support\Facades\URL::signedRoute('shop.suivi', [
+                'slug'   => $slug,
+                'numero' => $commande->numero,
+            ]))->with(
+                $commande->payee ? 'success' : 'error',
+                $commande->payee
+                    ? 'Paiement reçu, merci ! Votre commande est confirmée.'
+                    : 'Paiement en cours de vérification : votre commande reste enregistrée.'
+            );
+        }
+
+        return redirect(\Illuminate\Support\Facades\URL::signedRoute('shop.suivi', [
+            'slug'   => $slug,
+            'numero' => $commande->numero,
+        ]))->with('error', 'Le paiement n\'a pas abouti. Votre commande est conservée : vous pouvez régler à la livraison.');
+    }
+
+    /**
+     * Annulation par le client depuis son lien de suivi signé.
+     * Le stock réservé est immédiatement remis en rayon.
+     */
+    public function annulerParClient(string $slug, string $numero)
+    {
+        $institut = Institut::where('slug', $slug)->firstOrFail();
+
+        $commande = Commande::withoutGlobalScope(InstitutScope::class)
+            ->where('commandes.numero', $numero)
+            ->where('commandes.institut_id', $institut->id)
+            ->firstOrFail();
+
+        if (! $commande->peutEtreAnnuleeParClient()) {
+            return back()->with('error', 'Cette commande ne peut plus être annulée. Contactez l\'établissement.');
+        }
+
+        app(\App\Services\CommandeService::class)
+            ->annuler($commande, 'annulee', 'Annulée par le client', 'client');
+
+        \Illuminate\Support\Facades\Cache::forget("cmd_stats:{$institut->id}");
+
+        return back()->with('success', 'Votre commande a bien été annulée.');
     }
 
     /**

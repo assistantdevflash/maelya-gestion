@@ -75,14 +75,48 @@
                 <div><label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">Téléphone *</label><input type="tel" name="telephone" required placeholder="07 XX XX XX XX" class="form-input"></div>
                 <div><label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">Email (optionnel)</label><input type="email" name="email" class="form-input"></div>
                 <div><label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">Adresse de livraison *</label><textarea name="adresse" rows="3" required placeholder="Quartier, commune, ville..." class="form-textarea"></textarea></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">Date de livraison souhaitée</label>
+                        <input type="date" name="date_livraison_prevue" min="{{ now()->toDateString() }}" class="form-input">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">Créneau</label>
+                        <select name="creneau_livraison" class="form-input">
+                            <option value="">Peu importe</option>
+                            <option value="Matin (8h-12h)">Matin (8h-12h)</option>
+                            <option value="Après-midi (12h-16h)">Après-midi (12h-16h)</option>
+                            <option value="Soir (16h-19h)">Soir (16h-19h)</option>
+                        </select>
+                    </div>
+                </div>
                 <div><label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">Notes (optionnel)</label><textarea name="notes" rows="2" placeholder="Instructions..." class="form-textarea"></textarea></div>
             </div>
 
-            <div class="flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl">
-                <svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                <div><p class="text-sm font-semibold text-emerald-900 dark:text-emerald-300">Paiement à la livraison</p><p class="text-xs text-emerald-700 dark:text-emerald-400">Cash à la réception</p></div>
+            @php $paiementEnLigneDisponible = (bool) config('services.geniuspay.api_key'); @endphp
+            <div x-data="{ enLigne: false }" class="space-y-3">
+                <label class="flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition"
+                       :class="enLigne ? 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800' : 'border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30'">
+                    <input type="radio" name="paiement_en_ligne" value="0" x-model="enLigne" :value="false" class="text-primary-600 focus:ring-primary-500">
+                    <span>
+                        <span class="block text-sm font-semibold text-emerald-900 dark:text-emerald-300">Paiement à la livraison</span>
+                        <span class="block text-xs text-emerald-700 dark:text-emerald-400">Vous réglez à la réception de la commande</span>
+                    </span>
+                </label>
+
+                @if($paiementEnLigneDisponible)
+                <label class="flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition"
+                       :class="enLigne ? 'border-primary-300 dark:border-primary-700 bg-primary-50 dark:bg-primary-950/30' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800'">
+                    <input type="radio" name="paiement_en_ligne" value="1" x-model="enLigne" :value="true" class="text-primary-600 focus:ring-primary-500">
+                    <span>
+                        <span class="block text-sm font-semibold text-gray-900 dark:text-white">Payer maintenant en ligne</span>
+                        <span class="block text-xs text-gray-500 dark:text-slate-400">Mobile Money via GeniusPay — commande confirmée immédiatement</span>
+                    </span>
+                </label>
+                @endif
+
+                <input type="hidden" name="mode_paiement" :value="enLigne ? 'mobile_money' : 'cash'">
             </div>
-            <input type="hidden" name="mode_paiement" value="cash">
             <input type="hidden" name="zone_index" :value="zoneIndex">
 
             <template x-for="(item, index) in panier" :key="index">
