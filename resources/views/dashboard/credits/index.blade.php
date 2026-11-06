@@ -45,6 +45,49 @@
             </div>
         </div>
 
+        {{-- ═══ ANALYSE DES CRÉANCES — repliée par défaut pour gagner de la place ═══ --}}
+        <div x-data="{ analyse: false }">
+            <button type="button" @click="analyse = !analyse"
+                    :aria-expanded="analyse.toString()"
+                    aria-controls="panneau-analyse-creances"
+                    class="card w-full flex items-center gap-3 px-4 py-3 text-left hover:shadow-md transition-shadow">
+                <span class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-100 to-secondary-100 dark:from-primary-900/30 dark:to-secondary-900/30 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-[18px] h-[18px] text-primary-600 dark:text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </span>
+
+                <span class="min-w-0 flex-1">
+                    <span class="block text-sm font-semibold text-gray-900 dark:text-white">Analyse des créances</span>
+                    <span class="block text-[11px] text-gray-400 dark:text-slate-500 truncate">
+                        Balance âgée, taux de recouvrement et clients les plus endettés
+                    </span>
+                </span>
+
+                {{-- Résumé visible même replié : l'essentiel reste lisible --}}
+                <span class="hidden sm:flex items-center gap-5 mr-1 text-[11px]">
+                    <span class="text-right">
+                        <span class="block text-gray-400 dark:text-slate-500">Encours</span>
+                        <span class="block font-bold text-gray-900 dark:text-white whitespace-nowrap">{{ number_format($balance['total'], 0, ',', ' ') }} F</span>
+                    </span>
+                    <span class="text-right">
+                        <span class="block text-gray-400 dark:text-slate-500">Recouvrement</span>
+                        <span class="block font-bold text-emerald-600 whitespace-nowrap">{{ $taux !== null ? $taux . ' %' : '—' }}</span>
+                    </span>
+                    <span class="text-right">
+                        <span class="block text-gray-400 dark:text-slate-500">Délai moyen</span>
+                        <span class="block font-bold text-gray-900 dark:text-white whitespace-nowrap">{{ $delaiMoyen !== null ? $delaiMoyen . ' j' : '—' }}</span>
+                    </span>
+                </span>
+
+                <span class="sm:hidden text-xs font-bold text-gray-900 dark:text-white whitespace-nowrap">{{ number_format($balance['total'], 0, ',', ' ') }} F</span>
+
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200" :class="analyse ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+
+            <div id="panneau-analyse-creances" x-show="analyse" x-cloak class="mt-3 space-y-4">
         {{-- Balance âgée + indicateurs de recouvrement --}}
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div class="card p-4 lg:col-span-2">
@@ -134,6 +177,8 @@
             <p class="text-[10px] text-gray-400 dark:text-slate-500 mt-2 sm:hidden">Glissez vers la gauche pour voir les autres.</p>
         </div>
         @endif
+            </div>{{-- /panneau analyse --}}
+        </div>{{-- /analyse des créances --}}
 
         {{-- Filtres --}}
         <div class="card p-4" id="liste-credits">

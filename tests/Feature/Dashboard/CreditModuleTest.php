@@ -613,4 +613,26 @@ class CreditModuleTest extends TestCase
             ->assertOk()
             ->assertDontSee('Relancer par WhatsApp');
     }
+
+    public function test_l_analyse_des_creances_est_repliee_par_defaut(): void
+    {
+        $admin = $this->creerAdmin();
+
+        $html = $this->actingAs($admin)
+            ->get(route('dashboard.credits.index'))
+            ->assertOk()
+            ->getContent();
+
+        // Le bloc d'analyse existe avec un titre explicite…
+        $this->assertStringContainsString('Analyse des créances', $html);
+        $this->assertStringContainsString('Balance âgée, taux de recouvrement', $html);
+
+        // …et il est fermé au chargement (état Alpine à false + panneau masqué)
+        $this->assertStringContainsString("analyse: false", $html);
+        $this->assertStringContainsString('id="panneau-analyse-creances"', $html);
+
+        // Le résumé reste lisible sans déplier
+        $this->assertStringContainsString('Encours', $html);
+        $this->assertStringContainsString('Recouvrement', $html);
+    }
 }
