@@ -179,7 +179,9 @@ function checkout(zonesData, fraisDefaut) {
             this.submitting = true;
             if(typeof fbq !== 'undefined') fbq('track','InitiateCheckout',{value:this.total,currency:'XOF',content_ids:this.panier.map(p=>p.id),content_type:'product',num_items:this.panier.reduce((s,p)=>s+p.quantite,0)});
             fetch('{{ route('fb.event.log', $institut->slug) }}',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},body:JSON.stringify({event:'InitiateCheckout',data:{value:this.total,content_ids:this.panier.map(p=>p.id),num_items:this.panier.reduce((s,p)=>s+p.quantite,0)}})}).catch(()=>{});
-            localStorage.removeItem('panier_{{ $institut->id }}');
+            // Le panier n'est PAS vidé ici : en cas d'erreur de validation, la
+            // page revient avec un panier vide et le client perd sa sélection.
+            // Il est vidé sur la page de suivi, une fois la commande créée.
         }
     };
 }

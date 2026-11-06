@@ -3,6 +3,13 @@
 @section('title', 'Suivi commande ' . $commande->numero)
 
 @section('content')
+@if(session('success'))
+{{-- Commande créée : le panier local n'a plus lieu d'être --}}
+<script>
+    try { localStorage.removeItem('panier_{{ $institut->id }}'); } catch (e) {}
+</script>
+@endif
+
 <div class="min-h-screen bg-purple-50 dark:bg-gray-900 py-12">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">

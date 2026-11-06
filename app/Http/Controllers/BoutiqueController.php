@@ -101,7 +101,10 @@ class BoutiqueController extends Controller
             return [
                 'id' => $p->id,
                 'nom' => $p->nom,
-                'prix' => $p->prix_vente,
+                // Prix effectivement facturé : le serveur applique déjà
+                // `prix_promo ?: prix_vente` au moment de la commande.
+                'prix' => $p->prix_promo ?: $p->prix_vente,
+                'prix_vente' => $p->prix_vente,
                 'prix_promo' => $p->prix_promo,
                 'stock' => $p->stock,
                 'photo' => $p->imagePrincipale?->chemin ?? $p->photo,
