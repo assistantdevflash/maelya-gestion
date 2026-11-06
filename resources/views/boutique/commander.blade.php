@@ -129,6 +129,14 @@
                 </div>
             </template>
 
+            {{-- Panier désynchronisé : articles retirés ou prix mis à jour --}}
+            <template x-if="alertePanier !== ''">
+                <div class="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 rounded-xl text-sm text-amber-800 dark:text-amber-300">
+                    <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    <p x-text="alertePanier"></p>
+                </div>
+            </template>
+
             @if(session('error') || $errors->any())
             <div class="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/40 rounded-xl text-sm text-red-700 dark:text-red-300">
                 <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
@@ -156,10 +164,65 @@ function checkout(zonesData, fraisDefaut) {
         zones: zonesData || [],
         zoneIndex: '',
         fraisLivraison: fraisDefaut || 0,
+        alertePanier: '',
 
         init() {
             const raw = localStorage.getItem('panier_{{ $institut->id }}');
             if (raw) { try { this.panier = JSON.parse(raw); } catch(e) {} }
+
+            this.reconcilierPanier();
+        },
+
+        /**
+         * Aligne le panier local sur le catalogue réel.
+         *
+         * Un panier peut survivre plusieurs jours dans le navigateur : un
+         * produit supprimé ou en rupture ne doit pas bloquer la commande, et
+         * un prix modifié doit être appliqué avant l'envoi côté serveur.
+         */
+        reconcilierPanier() {
+            const catalogue = @json($catalogue ?? []);
+            const conserve = [];
+            const retires = [];
+            const prixChanges = [];
+
+            this.panier.forEach(item => {
+                const fiche = catalogue[item.id];
+
+                // Produit retiré de la boutique (ou plus visible)
+                if (!fiche) { retires.push(item.nom || 'un article'); return; }
+
+                // Rupture de stock
+                if (fiche.stock !== null && fiche.stock <= 0) {
+                    retires.push(fiche.nom);
+                    return;
+                }
+
+                // Prix modifié depuis l'ajout au panier
+                if (item.prix !== fiche.prix) {
+                    prixChanges.push(fiche.nom);
+                    item.prix = fiche.prix;
+                }
+
+                // Quantité plafonnée au stock disponible
+                if (fiche.stock !== null && item.quantite > fiche.stock) {
+                    item.quantite = fiche.stock;
+                }
+
+                item.nom = fiche.nom;
+                conserve.push(item);
+            });
+
+            this.panier = conserve;
+            localStorage.setItem('panier_{{ $institut->id }}', JSON.stringify(conserve));
+
+            if (retires.length > 0) {
+                this.alertePanier = retires.length === 1
+                    ? retires[0] + ' n\'est plus disponible et a été retiré de votre panier.'
+                    : retires.length + ' articles ne sont plus disponibles et ont été retirés de votre panier.';
+            } else if (prixChanges.length > 0) {
+                this.alertePanier = 'Le prix de certains articles a été mis à jour.';
+            }
         },
 
         get sousTotal() { return this.panier.reduce((sum, item) => sum + (item.prix * item.quantite), 0); },

@@ -150,25 +150,30 @@ class BoutiqueStabiliteTest extends TestCase
     }
 
     // ─────────────────────────────────────────────────────────────────────
-    // 4. Boutique désactivée → 404
+    // 4. Boutique désactivée → page « boutique fermée » (plus de 404 sec)
     // ─────────────────────────────────────────────────────────────────────
-    public function test_boutique_desactivee_renvoie_404(): void
+    public function test_boutique_desactivee_affiche_la_page_de_fermeture(): void
     {
         [$institut] = $this->creerBoutique(['boutique_active' => false]);
 
-        $this->get(route('shop.index', $institut->slug))->assertNotFound();
+        $this->get(route('shop.index', $institut->slug))
+            ->assertOk()
+            ->assertSee('momentanément fermée')
+            ->assertSee('noindex', false);
     }
 
     // ─────────────────────────────────────────────────────────────────────
-    // 5. Option boutique expirée (hors sursis) → 404
+    // 5. Option boutique expirée (hors sursis) → page « boutique fermée »
     // ─────────────────────────────────────────────────────────────────────
-    public function test_option_boutique_expiree_renvoie_404(): void
+    public function test_option_boutique_expiree_affiche_la_page_de_fermeture(): void
     {
         [$institut] = $this->creerBoutique([
             'boutique_option_expire_le' => now()->subDays(10)->toDateString(),
         ]);
 
-        $this->get(route('shop.index', $institut->slug))->assertNotFound();
+        $this->get(route('shop.index', $institut->slug))
+            ->assertOk()
+            ->assertSee('momentanément fermée');
     }
 
     // ─────────────────────────────────────────────────────────────────────

@@ -9,6 +9,7 @@ use App\Models\PlanAbonnement;
 use App\Models\ProduitImage;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
@@ -88,6 +89,49 @@ class BoutiqueVitrineTest extends TestCase
         $this->assertSame(8000, $json['prix_vente']);
     }
 
+    public function test_la_fiche_produit_expose_les_donnees_structurees(): void
+    {
+        [$institut] = $this->boutique(1);
+        $produit = Produit::first();
+
+        $this->get(route('shop.produit', [$institut->slug, $produit->id]))
+            ->assertOk()
+            ->assertSee('application/ld+json', false)
+            ->assertSee('"@type": "Product"', false)
+            ->assertSee('"priceCurrency": "XOF"', false)
+            // La balise canonical évite les doublons d'URL
+            ->assertSee('rel="canonical"', false);
+    }
+
+    public function test_la_recherche_et_le_tri_ne_sont_pas_indexes(): void
+    {
+        [$institut] = $this->boutique(2);
+
+        $this->get(route('shop.index', ['slug' => $institut->slug]))
+            ->assertOk()
+            ->assertSee('name="robots" content="index, follow"', false);
+
+        $this->get(route('shop.index', ['slug' => $institut->slug, 'q' => 'Produit', 'tri' => 'prix_asc']))
+            ->assertOk()
+            ->assertSee('name="robots" content="noindex, follow"', false)
+            // La recherche doit renvoyer un résultat
+            ->assertSee('Produit 1');
+    }
+
+    public function test_le_checkout_recoit_le_catalogue_pour_resynchroniser_le_panier(): void
+    {
+        [$institut] = $this->boutique(2);
+        $produit = Produit::first();
+
+        $html = $this->get(route('shop.commander.form', $institut->slug))
+            ->assertOk()
+            ->getContent();
+
+        // Le prix réel du catalogue est transmis au navigateur
+        $this->assertStringContainsString('reconcilierPanier', $html);
+        $this->assertStringContainsString($produit->id, $html);
+    }
+
     public function test_le_panier_n_est_pas_vide_avant_la_confirmation_du_serveur(): void
     {
         [$institut] = $this->boutique(1);
@@ -118,15 +162,29 @@ class BoutiqueVitrineTest extends TestCase
 
     public function test_la_liste_ne_provoque_pas_de_requetes_en_cascade(): void
     {
-        [$institut] = $this->boutique(12);
+        $mesurer = function (int $nbProduits): int {
+            [$institut] = $this->boutique($nbProduits);
+            Cache::flush();
 
-        DB::enableQueryLog();
-        $this->get(route('shop.index', $institut->slug))->assertOk();
-        $requetes = count(DB::getQueryLog());
-        DB::disableQueryLog();
+            DB::flushQueryLog();
+            DB::enableQueryLog();
+            $this->get(route('shop.index', $institut->slug))->assertOk();
+            $requetes = count(DB::getQueryLog());
+            DB::disableQueryLog();
 
-        // 12 produits avec catégorie + image : le nombre de requêtes ne doit
-        // pas dépendre du nombre de produits.
-        $this->assertLessThanOrEqual(10, $requetes, "{$requetes} requêtes pour la vitrine.");
+            return $requetes;
+        };
+
+        // Le coût en requêtes doit être constant : 3 ou 23 produits chargent
+        // les mêmes relations (catégorie + image principale) en une fois.
+        $petite = $mesurer(3);
+        $grande = $mesurer(23);
+
+        $this->assertSame(
+            $petite,
+            $grande,
+            "Le nombre de requêtes dépend du nombre de produits : {$petite} puis {$grande}."
+        );
+        $this->assertLessThanOrEqual(14, $petite, "{$petite} requêtes pour la vitrine.");
     }
 }

@@ -12,6 +12,7 @@ use App\Models\Produit;
 use App\Scopes\InstitutScope;
 use App\Services\NotificationService;
 use App\Services\PushNotificationService;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -42,11 +43,25 @@ class BoutiqueController extends Controller
         return $proprietaire->hasBoutiqueAccess($institut);
     }
 
+    /**
+     * Coupe l'accès à une boutique non ouverte.
+     *
+     * On ne renvoie plus un 404 sec : un client qui a gardé le lien (ou un
+     * client qui arrive depuis une conversation WhatsApp) tombait sur une page
+     * d'erreur sans explication. La page « boutique fermée » indique la marche
+     * à suivre et propose le téléphone / WhatsApp de l'établissement.
+     */
     private function verifierAcces(Institut $institut): void
     {
-        if (!$this->boutiqueAccessible($institut)) {
-            abort(404, 'Cette boutique n\'est pas disponible.');
+        if ($this->boutiqueAccessible($institut)) {
+            return;
         }
+
+        throw new HttpResponseException(
+            response()->view('boutique.fermee', [
+                'institut' => $institut,
+            ], 200)
+        );
     }
 
     /**
@@ -80,49 +95,96 @@ class BoutiqueController extends Controller
     /**
      * Page principale de la boutique d'un établissement
      */
-    public function index(string $slug)
+    public function index(Request $request, string $slug)
     {
         $institut = Institut::where('slug', $slug)->firstOrFail();
 
         $this->verifierAcces($institut);
 
-        // Récupérer les produits directement (pas de cache — source de bugs)
-        $produits = $this->produitsBoutique($institut)
-            ->with(['categorie', 'imagePrincipale'])
-            ->orderByDesc('featured')
+        $recherche = trim((string) $request->input('q', ''));
+        $categorie = $request->input('categorie');
+        $tri       = (string) $request->input('tri', 'reco');
+
+        $base = $this->produitsBoutique($institut);
+
+        // Catégories réellement disponibles, avec leur nombre de produits
+        $compteurs = (clone $base)
+            ->selectRaw('categorie_id, COUNT(*) as total')
+            ->groupBy('categorie_id')
+            ->pluck('total', 'categorie_id');
+
+        $categories = \App\Models\CategorieProduit::whereIn('id', $compteurs->keys())
             ->orderBy('nom')
             ->get();
 
-        // Récupérer les catégories avec au moins un produit
-        $categories = $produits->pluck('categorie')->unique()->filter();
+        $query = (clone $base)
+            ->with(['categorie', 'imagePrincipale'])
+            ->when($recherche !== '', function ($q) use ($recherche) {
+                // Recherche serveur : le lien reste partageable et indexable
+                $q->where(function ($w) use ($recherche) {
+                    $like = '%' . $recherche . '%';
+                    $w->where('produits.nom', 'like', $like)
+                      ->orWhere('produits.description_courte', 'like', $like)
+                      ->orWhere('produits.description', 'like', $like);
+                });
+            })
+            ->when($categorie, fn ($q) => $q->where('produits.categorie_id', $categorie));
 
-        // Préparer les données produits pour JavaScript
-        $produitsJson = $produits->map(function($p) {
-            return [
-                'id' => $p->id,
-                'nom' => $p->nom,
-                // Prix effectivement facturé : le serveur applique déjà
-                // `prix_promo ?: prix_vente` au moment de la commande.
-                'prix' => $p->prix_promo ?: $p->prix_vente,
-                'prix_vente' => $p->prix_vente,
-                'prix_promo' => $p->prix_promo,
-                'stock' => $p->stock,
-                'photo' => $p->imagePrincipale?->chemin ?? $p->photo,
-                'categorie' => $p->categorie?->nom,
-                'categorie_id' => $p->categorie_id,
-                'description_courte' => $p->description_courte,
-                'featured' => (bool) $p->featured,
-            ];
-        });
+        // Prix réellement facturé (promo prioritaire) pour les tris par prix
+        $prixEffectif = 'COALESCE(NULLIF(produits.prix_promo, 0), produits.prix_vente)';
+
+        $query = match ($tri) {
+            'prix_asc'  => $query->orderByRaw($prixEffectif . ' ASC'),
+            'prix_desc' => $query->orderByRaw($prixEffectif . ' DESC'),
+            'nom'       => $query->orderBy('produits.nom'),
+            default     => $query->orderByDesc('produits.featured')->orderBy('produits.nom'),
+        };
+
+        // Cache court : la version change dès qu'un produit est modifié
+        $version = (clone $base)->max('produits.updated_at');
+        $cle = 'boutique:' . md5(implode('|', [
+            $institut->id, $version, $recherche, (string) $categorie, $tri, (string) $request->input('page', 1),
+        ]));
+
+        $produits = Cache::remember($cle, now()->addSeconds(60), fn () => $query->paginate(24)->withQueryString());
+
+        // Données du panier : uniquement la page affichée
+        $produitsJson = $produits->getCollection()->map(fn ($p) => [
+            'id'                 => $p->id,
+            'nom'                => $p->nom,
+            'prix'               => $p->prix_promo ?: $p->prix_vente,
+            'prix_vente'         => $p->prix_vente,
+            'prix_promo'         => $p->prix_promo,
+            'stock'              => $p->stock,
+            'photo'              => $p->imagePrincipale?->chemin ?? $p->photo,
+            'categorie'          => $p->categorie?->nom,
+            'categorie_id'       => $p->categorie_id,
+            'description_courte' => $p->description_courte,
+            'featured'           => (bool) $p->featured,
+        ]);
 
         return view('boutique.index', [
-            'institut' => $institut,
-            'produits' => $produits,
-            'produitsJson' => $produitsJson,
-            'categories' => $categories,
-            'ogTitle' => $institut->nom . ' - Boutique en ligne',
+            'institut'      => $institut,
+            'produits'      => $produits,
+            'produitsJson'  => $produitsJson,
+            'categories'    => $categories,
+            'compteurs'     => $compteurs,
+            'recherche'     => $recherche,
+            'categorieActive' => $categorie,
+            'tri'           => $tri,
+            'ogTitle'       => $institut->nom . ' - Boutique en ligne',
             'ogDescription' => 'Découvrez nos produits et passez commande en ligne avec livraison à domicile',
-            'ogImage' => $institut->logo ? asset('storage/' . $institut->logo) : null,
+            'ogImage'       => $institut->logo ? asset('storage/' . $institut->logo) : null,
+            // La catégorie et la page restent indexables, pas la recherche ni
+            // le tri (contenu dupliqué).
+            'canonical'     => route('shop.index', array_filter([
+                'slug'      => $institut->slug,
+                'categorie' => $categorie,
+                'page'      => $request->input('page'),
+            ])),
+            'robots'        => $recherche !== '' || $tri !== 'reco'
+                ? 'noindex, follow'
+                : 'index, follow',
         ]);
     }
 
@@ -151,6 +213,9 @@ class BoutiqueController extends Controller
         $produitsSimilaires = $this->produitsBoutique($institut)
             ->where('produits.categorie_id', $produit->categorie_id)
             ->where('produits.id', '!=', $produit->id)
+            ->with('imagePrincipale')
+            ->orderByDesc('produits.featured')
+            ->orderBy('produits.nom')
             ->limit(4)
             ->get();
 
@@ -190,7 +255,21 @@ class BoutiqueController extends Controller
 
         $paiementEnLigneDisponible = $this->moyenPaiementEnLigne() !== null;
 
-        return view('boutique.commander', compact('institut', 'zones', 'paiementEnLigneDisponible'));
+        // Catalogue réduit (id → prix/stock/nom) : le panier stocké dans le
+        // navigateur peut contenir des articles supprimés, remis en stock ou
+        // dont le prix a changé depuis la dernière visite.
+        $catalogue = $this->produitsBoutique($institut, false)
+            ->select(['produits.id', 'produits.nom', 'produits.prix_vente', 'produits.prix_promo', 'produits.stock'])
+            ->get()
+            ->mapWithKeys(fn ($p) => [$p->id => [
+                'nom'   => $p->nom,
+                'prix'  => (int) ($p->prix_promo ?: $p->prix_vente),
+                'stock' => $p->stock === null ? null : (int) $p->stock,
+            ]]);
+
+        return view('boutique.commander', compact(
+            'institut', 'zones', 'paiementEnLigneDisponible', 'catalogue'
+        ));
     }
 
     /**

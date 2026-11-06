@@ -19,6 +19,11 @@
     <meta property="og:locale" content="fr_FR">
     <meta name="twitter:card" content="summary_large_image">
 
+    {{-- SEO : URL de référence (catégorie/pagination conservées, recherche et
+         tri neutralisés) et indexation conditionnelle. --}}
+    <link rel="canonical" href="{{ $canonical ?? $ogUrl }}">
+    <meta name="robots" content="{{ $robots ?? 'index, follow' }}">
+
     {{-- Alpine est bundlé LOCALEMENT (plus de dépendance à unpkg/CDN) --}}
     @vite(['resources/css/app.css', 'resources/js/public.js'])
 
@@ -89,44 +94,64 @@
     {{-- Contenu principal --}}
     <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 
-        {{-- Section filtres + tri --}}
+        {{-- Section filtres + tri (tout est traité côté serveur : le lien
+             reste partageable et la page est indexable) --}}
         <div class="mb-8 space-y-4">
-            <div class="flex flex-col sm:flex-row gap-3">
-                {{-- Barre de recherche --}}
+            <form method="GET" action="{{ route('shop.index', $institut->slug) }}" class="flex flex-col sm:flex-row gap-3">
                 <div class="relative flex-1">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     </div>
-                    <input type="text" x-model="searchQuery" @input.debounce.150ms="majCompteur()" placeholder="Rechercher un produit..."
-                        class="boutique-ring w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:border-transparent transition-shadow shadow-sm">
+                    <input type="search" name="q" value="{{ $recherche }}"
+                           placeholder="Rechercher un produit…"
+                           class="boutique-ring w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:border-transparent transition-shadow shadow-sm">
                 </div>
-                {{-- Tri --}}
-                <select x-model="sortBy" @change="trier()" class="boutique-ring py-3 px-4 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-700 dark:text-white focus:ring-2 shadow-sm">
-                    <option value="default">Tri : Défaut</option>
-                    <option value="nom_asc">Nom : A → Z</option>
-                    <option value="prix_asc">Prix : croissant</option>
-                    <option value="prix_desc">Prix : décroissant</option>
-                    <option value="featured">Vedettes en premier</option>
-                </select>
-            </div>
 
-            {{-- Filtres catégories --}}
+                @if($categorieActive)
+                <input type="hidden" name="categorie" value="{{ $categorieActive }}">
+                @endif
+
+                <select name="tri" onchange="this.form.submit()"
+                        class="boutique-ring py-3 px-4 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-700 dark:text-white focus:ring-2 shadow-sm">
+                    <option value="reco" {{ $tri === 'reco' ? 'selected' : '' }}>Tri : Recommandés</option>
+                    <option value="nom" {{ $tri === 'nom' ? 'selected' : '' }}>Nom : A → Z</option>
+                    <option value="prix_asc" {{ $tri === 'prix_asc' ? 'selected' : '' }}>Prix : croissant</option>
+                    <option value="prix_desc" {{ $tri === 'prix_desc' ? 'selected' : '' }}>Prix : décroissant</option>
+                </select>
+
+                <button type="submit" class="boutique-btn px-5 py-3 rounded-xl font-semibold shadow-sm">Rechercher</button>
+            </form>
+
             @if($categories->isNotEmpty())
             <div class="flex flex-wrap gap-2">
-                <button @click="setCategorie(null)"
-                    :class="selectedCategorie === null ? 'boutique-btn' : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-100'"
-                    class="px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-slate-600 transition-all">Tous</button>
+                <a href="{{ route('shop.index', array_filter(['slug' => $institut->slug, 'q' => $recherche ?: null, 'tri' => $tri])) }}"
+                   class="px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-slate-600 transition-all {{ ! $categorieActive ? 'boutique-btn' : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-100' }}">
+                    Tous
+                </a>
                 @foreach($categories as $cat)
-                <button @click="setCategorie('{{ $cat->id }}')"
-                    :class="selectedCategorie === '{{ $cat->id }}' ? 'boutique-btn' : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-100'"
-                    class="px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-slate-600 transition-all">{{ $cat->nom }}</button>
+                <a href="{{ route('shop.index', array_filter(['slug' => $institut->slug, 'categorie' => $cat->id, 'q' => $recherche ?: null, 'tri' => $tri])) }}"
+                   class="px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-slate-600 transition-all {{ (string) $categorieActive === (string) $cat->id ? 'boutique-btn' : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-100' }}">
+                    {{ $cat->nom }}
+                    <span class="text-xs opacity-70">({{ $compteurs[$cat->id] ?? 0 }})</span>
+                </a>
                 @endforeach
             </div>
             @endif
 
-            <p class="text-sm text-gray-500 dark:text-slate-400">
-                <span x-text="visibleCount">{{ $produits->count() }}</span> produit<span x-show="visibleCount > 1">s</span>
-            </p>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <p class="text-sm text-gray-500 dark:text-slate-400">
+                    {{ \App\Helpers\TexteHelper::pluriel($produits->total(), 'produit', 'produits') }}
+                    @if($recherche !== '')
+                        pour « <span class="font-semibold text-gray-700 dark:text-slate-200">{{ $recherche }}</span> »
+                    @endif
+                </p>
+
+                @if($recherche !== '' || $categorieActive)
+                <a href="{{ route('shop.index', $institut->slug) }}" class="text-sm font-semibold text-gray-500 hover:text-gray-700 underline">
+                    Réinitialiser les filtres
+                </a>
+                @endif
+            </div>
         </div>
 
         {{-- Grille produits — RENDUE CÔTÉ SERVEUR.
@@ -143,16 +168,16 @@
                 <div data-produit
                      data-index="{{ $loop->index }}"
                      data-nom="{{ $p->nom }}"
-                     data-prix="{{ (int) $prix }}"
-                     data-categorie="{{ $p->categorie_id }}"
-                     data-featured="{{ $p->featured ? 1 : 0 }}"
-                     x-show="matchFiltre($el)"
                      class="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col">
 
                     {{-- Image produit --}}
                     <a href="{{ $lien }}" class="relative block aspect-square bg-gray-100 dark:bg-slate-900 overflow-hidden">
                         @if($photo)
-                            <img src="{{ asset('storage/' . $photo) }}" alt="{{ $p->nom }}" class="w-full h-full object-cover" loading="lazy">
+                            <img src="{{ \App\Services\ImageVariants::url($photo, 'thumb') }}"
+                                 srcset="{{ \App\Services\ImageVariants::srcset($photo) }}"
+                                 sizes="(max-width: 640px) 50vw, 25vw"
+                                 width="400" height="400"
+                                 alt="{{ $p->nom }}" class="w-full h-full object-cover" loading="lazy" decoding="async">
                         @else
                             <div class="w-full h-full flex items-center justify-center">
                                 <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -205,22 +230,31 @@
             @empty
                 <div class="col-span-full text-center py-16">
                     <div class="w-20 h-20 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                        @if($recherche !== '' || $categorieActive)
+                        <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        @else
                         <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+                        @endif
                     </div>
-                    <p class="text-gray-500 text-lg">Boutique en cours de mise en ligne</p>
-                    <p class="text-sm text-gray-400 mt-1">Les produits seront bientôt disponibles.</p>
+
+                    @if($recherche !== '' || $categorieActive)
+                        <p class="text-gray-600 dark:text-slate-300 text-lg font-medium">Aucun produit ne correspond à votre recherche</p>
+                        <p class="text-sm text-gray-400 mt-1">
+                            @if($recherche !== '')Essayez avec un autre mot-clé.@else Cette catégorie est momentanément vide.@endif
+                        </p>
+                        <a href="{{ route('shop.index', $institut->slug) }}" class="inline-block mt-4 boutique-accent font-semibold underline">Voir tous les produits</a>
+                    @else
+                        <p class="text-gray-500 text-lg">Boutique en cours de mise en ligne</p>
+                        <p class="text-sm text-gray-400 mt-1">Les produits seront bientôt disponibles.</p>
+                    @endif
                 </div>
             @endforelse
         </div>
 
-        {{-- Message aucun produit (filtre actif sans résultat) --}}
-        @if($produits->isNotEmpty())
-        <div x-show="visibleCount === 0" x-cloak class="text-center py-16">
-            <div class="w-20 h-20 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            </div>
-            <p class="text-gray-500 text-lg">Aucun produit trouvé</p>
-            <button @click="resetFiltres()" class="mt-4 boutique-accent font-medium">Réinitialiser</button>
+        {{-- Pagination --}}
+        @if($produits->hasPages())
+        <div class="mt-8">
+            {{ $produits->links() }}
         </div>
         @endif
 
@@ -330,13 +364,38 @@
         </div>
     </div>
 
+    {{-- Données structurées : identité de l'établissement pour Google --}}
+    <script type="application/ld+json">
+    {!! json_encode(array_filter([
+        '@context'   => 'https://schema.org',
+        '@type'      => 'Store',
+        'name'       => $institut->nom,
+        'url'        => route('shop.index', $institut->slug),
+        'image'      => $institut->logo ? asset('storage/' . $institut->logo) : null,
+        'telephone'  => $institut->telephone ?: null,
+        'priceRange' => 'XOF',
+        'address'    => array_filter([
+            '@type'           => 'PostalAddress',
+            'streetAddress'   => $institut->adresse ?: null,
+            'addressLocality' => $institut->ville ?: null,
+            'addressCountry'  => 'CI',
+        ]),
+    ]), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+    </script>
+
     {{-- Bouton Commander — redirige vers la page checkout --}}
-    <div x-show="panier.length > 0" class="fixed bottom-24 right-6 z-40">
+    <div x-show="panier.length > 0 && !panierOpen" x-cloak
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 translate-y-3"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         class="fixed right-4 sm:right-6 z-40"
+         style="bottom: calc(1rem + env(safe-area-inset-bottom));">
         <a href="{{ route('shop.commander.form', $institut->slug) }}"
-           class="boutique-btn flex items-center gap-3 px-6 py-4 rounded-2xl font-bold shadow-xl hover:shadow-2xl transition-all">
+           class="boutique-btn flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 rounded-2xl font-bold shadow-xl hover:shadow-2xl transition-all">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
-            <span>Commander</span>
-            <span class="bg-white/20 px-2.5 py-1 rounded-full text-sm" x-text="new Intl.NumberFormat('fr-FR').format(sousTotal) + ' F'"></span>
+            <span class="hidden sm:inline">Commander</span>
+            <span class="bg-white/20 px-2.5 py-1 rounded-full text-sm whitespace-nowrap"
+                  x-text="new Intl.NumberFormat('fr-FR').format(sousTotal) + ' F'"></span>
         </a>
     </div>
 
@@ -344,94 +403,24 @@
     <script>
         function boutique() {
             return {
-                searchQuery: '',
-                selectedCategorie: null,
-                sortBy: 'default',
                 panierOpen: false,
                 panier: JSON.parse(localStorage.getItem('panier_{{ $institut->id }}') || '[]'),
                 fraisLivraison: {{ $institut->boutique_frais_livraison ?? 0 }},
                 toast: { show: false, message: '' },
+                // Seule la page affichée est transmise : le panier n'a besoin
+                // que des articles visibles.
                 produits: @json($produitsJson),
-                visibleCount: {{ $produits->count() }},
 
                 init() {
                     this.panier = this.panier.filter(item => item.prix && item.prix > 0);
                     this.sauvegarderPanier();
-                    // Lire catégorie depuis l'URL (?categorie=xxx)
+
+                    // Retour depuis une fiche produit : on ouvre le panier
                     const params = new URLSearchParams(location.search);
-                    if (params.get('categorie')) this.selectedCategorie = params.get('categorie');
-                    // Ouvrir panier si redirigé depuis fiche produit
                     if (params.get('panier') === '1') {
                         this.panierOpen = true;
                         history.replaceState(null, '', location.pathname);
                     }
-                    this.$nextTick(() => this.majCompteur());
-                },
-
-                // Filtre appliqué à CHAQUE carte rendue par le serveur
-                matchFiltre(el) {
-                    const nom = (el.dataset.nom || '').toLowerCase();
-                    const cat = el.dataset.categorie || '';
-                    const okCat = this.selectedCategorie === null
-                        || String(cat) === String(this.selectedCategorie);
-                    const okSearch = this.searchQuery === ''
-                        || nom.includes(this.searchQuery.toLowerCase());
-                    return okCat && okSearch;
-                },
-
-                // Watcher catégorie → mettre à jour l'URL
-                setCategorie(catId) {
-                    this.selectedCategorie = catId;
-                    const url = new URL(location);
-                    if (catId) url.searchParams.set('categorie', catId);
-                    else url.searchParams.delete('categorie');
-                    history.pushState(null, '', url);
-                    this.$nextTick(() => this.majCompteur());
-                },
-
-                resetFiltres() {
-                    this.searchQuery = '';
-                    this.selectedCategorie = null;
-                    this.sortBy = 'default';
-                    this.trier();
-                    this.$nextTick(() => this.majCompteur());
-                },
-
-                // Compte les cartes réellement visibles (après x-show)
-                majCompteur() {
-                    this.$nextTick(() => {
-                        const grille = this.$refs.grille;
-                        if (!grille) return;
-                        let n = 0;
-                        grille.querySelectorAll('[data-produit]').forEach(c => {
-                            if (c.style.display !== 'none') n++;
-                        });
-                        this.visibleCount = n;
-                    });
-                },
-
-                // Tri en réordonnant le DOM (les cartes sont rendues par le serveur)
-                trier() {
-                    const grille = this.$refs.grille;
-                    if (!grille) return;
-
-                    const cartes = Array.from(grille.querySelectorAll('[data-produit]'));
-                    const num  = el => parseInt(el.dataset.prix || '0', 10);
-                    const nom  = el => (el.dataset.nom || '').toLowerCase();
-                    const feat = el => parseInt(el.dataset.featured || '0', 10);
-                    const idx  = el => parseInt(el.dataset.index || '0', 10);
-
-                    cartes.sort((a, b) => {
-                        switch (this.sortBy) {
-                            case 'nom_asc':   return nom(a).localeCompare(nom(b));
-                            case 'prix_asc':  return num(a) - num(b);
-                            case 'prix_desc': return num(b) - num(a);
-                            case 'featured':  return feat(b) - feat(a) || idx(a) - idx(b);
-                            default:          return idx(a) - idx(b);
-                        }
-                    });
-
-                    cartes.forEach(c => grille.appendChild(c));
                 },
 
                 get totalArticles() {

@@ -8,6 +8,11 @@
     {{-- Meta tags de base --}}
     <meta name="description" content="{{ $description ?? 'Boutique en ligne - ' . $institut->nom }}">
 
+    {{-- SEO : URL de référence et indexation. Les pages de recherche et de tri
+         sont en noindex pour éviter le contenu dupliqué. --}}
+    <link rel="canonical" href="{{ $canonical ?? url()->current() }}">
+    <meta name="robots" content="{{ $robots ?? 'index, follow' }}">
+
     {{-- Open Graph / Facebook --}}
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url()->current() }}">
