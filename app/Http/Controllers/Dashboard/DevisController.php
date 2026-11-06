@@ -245,10 +245,14 @@ class DevisController extends Controller
         return redirect()->route('dashboard.factures.show', ['facture' => $facture->id])->with('success','Facture créée à partir du devis.');
     }
 
-    public function pdf(Devis $devis) {
+    public function pdf(Request $request, Devis $devis) {
         $devis->load(['items','client']);
         $pdf = Pdf::loadView('pdf.devis', ['devis' => $devis, 'institut' => $devis->institut]);
-        return $pdf->download("Devis-{$devis->numero}.pdf");
+
+        // ?inline=1 : le PDF s'affiche dans l'aperçu intégré à la fiche
+        return $request->boolean('inline')
+            ? $pdf->stream("Devis-{$devis->numero}.pdf")
+            : $pdf->download("Devis-{$devis->numero}.pdf");
     }
 
     /**

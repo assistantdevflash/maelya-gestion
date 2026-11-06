@@ -196,6 +196,7 @@
             <input type="hidden" name="couleur_primaire" value="{{ $institut->couleur_primaire }}">
             <input type="hidden" name="couleur_secondaire" value="{{ $institut->couleur_secondaire }}">
             <input type="hidden" name="couleur_accent" value="{{ $institut->couleur_accent }}">
+            <input type="hidden" name="_facturation" value="1">
 
             <div class="grid grid-cols-2 gap-3">
                 <div>
@@ -223,8 +224,40 @@
                 </div>
             </div>
 
+            {{-- ─── Facturation ─── --}}
+            <div class="pt-4 mt-2 border-t border-gray-100 dark:border-slate-700 space-y-3">
+                <p class="text-xs font-bold uppercase tracking-wider text-gray-400">Facturation</p>
+
+                <div>
+                    <label class="form-label">Numérotation des factures</label>
+                    <select name="facturation_sequence" class="form-input text-sm">
+                        <option value="journaliere" {{ old('facturation_sequence', $institut->facturation_sequence ?? 'journaliere') === 'journaliere' ? 'selected' : '' }}>
+                            Journalière — FAC-{{ now()->format('Ymd') }}-000001
+                        </option>
+                        <option value="annuelle" {{ old('facturation_sequence', $institut->facturation_sequence ?? 'journaliere') === 'annuelle' ? 'selected' : '' }}>
+                            Annuelle — FAC-{{ now()->format('Y') }}-000001
+                        </option>
+                    </select>
+                    <p class="text-[11px] text-gray-400 mt-1">La numérotation annuelle est celle attendue par la plupart des administrations fiscales.</p>
+                </div>
+
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                    <input type="checkbox" name="facture_relance_active" value="1"
+                           {{ old('facture_relance_active', $institut->facture_relance_active) ? 'checked' : '' }}
+                           class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                    <span class="text-sm text-gray-700 dark:text-gray-300">Relancer automatiquement les factures impayées</span>
+                </label>
+                <p class="text-[11px] text-gray-400 -mt-2">Relances envoyées à J-3, puis J+1, J+7, J+15 et J+30 après l'échéance (une seule fois par palier).</p>
+
+                <div>
+                    <label class="form-label">Message de relance (facultatif)</label>
+                    <textarea name="facture_relance_message" rows="3" class="form-textarea text-sm"
+                              placeholder="Laissez vide pour utiliser le texte standard.">{{ old('facture_relance_message', $institut->facture_relance_message) }}</textarea>
+                </div>
+            </div>
+
             <div class="flex justify-end">
-                <button type="submit" class="btn-primary text-sm">Enregistrer les horaires</button>
+                <button type="submit" class="btn-primary text-sm">Enregistrer</button>
             </div>
         </form>
     </div>

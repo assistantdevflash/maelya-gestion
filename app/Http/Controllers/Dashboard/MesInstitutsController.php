@@ -109,12 +109,25 @@ class MesInstitutsController extends Controller
             'heure_fermeture'    => ['nullable', 'date_format:H:i'],
             'jours_ouverture'    => ['nullable', 'array'],
             'jours_ouverture.*'  => ['integer', 'between:1,7'],
+            // Facturation : séquence des numéros et relances clients
+            'facturation_sequence'   => ['nullable', 'in:journaliere,annuelle'],
+            'facture_relance_active' => ['nullable', 'boolean'],
+            'facture_relance_message'=> ['nullable', 'string', 'max:2000'],
         ]);
 
         // Les jours cochés sont transmis sous forme de tableau de cases à cocher
         $data['jours_ouverture'] = $request->filled('jours_ouverture')
             ? array_values(array_map('intval', (array) $request->input('jours_ouverture')))
             : null;
+
+        // Les réglages de facturation ne sont modifiés que depuis le formulaire
+        // qui les affiche : le formulaire principal ne doit pas les réinitialiser.
+        if ($request->boolean('_facturation')) {
+            $data['facture_relance_active'] = $request->boolean('facture_relance_active');
+            $data['facturation_sequence']   = $data['facturation_sequence'] ?? 'journaliere';
+        } else {
+            unset($data['facturation_sequence'], $data['facture_relance_active'], $data['facture_relance_message']);
+        }
 
         $institut->update($data);
 

@@ -102,7 +102,7 @@
 
         {{-- Liste --}}
         <div class="card overflow-hidden">
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto hidden md:block">
             <table class="w-full text-sm">
                 <thead class="bg-gray-50 dark:bg-slate-800"><tr>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">N°</th>
@@ -148,6 +148,27 @@
                 </tbody>
             </table>
             </div>
+            {{-- Version mobile : cartes --}}
+            <div class="md:hidden divide-y divide-gray-100 dark:divide-slate-700">
+                @foreach($devis as $d)
+                <a href="{{ route('dashboard.devis.show', ['devis' => $d->id]) }}" class="block p-4 active:bg-gray-50 dark:active:bg-slate-800">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="font-mono text-[11px] font-semibold text-primary-600">{{ $d->numero }}</p>
+                            <p class="font-semibold text-gray-900 dark:text-white truncate">{{ $d->client_nom_complet ?: ($d->client->nom_complet ?? '—') }}</p>
+                            <p class="text-[11px] {{ $d->date_expiration->isPast() && in_array($d->statut, ['brouillon','envoye']) ? 'text-red-500' : 'text-gray-400 dark:text-slate-500' }}">
+                                Valide jusqu'au {{ $d->date_expiration->format('d/m/Y') }}
+                            </p>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <p class="font-bold text-gray-900 dark:text-white">{{ number_format($d->total_ttc, 0, ',', ' ') }} F</p>
+                            <div class="mt-1">@include('dashboard.devis-factures.partials.statut-badge', ['statut' => $d->statut, 'type' => 'devis'])</div>
+                        </div>
+                    </div>
+                </a>
+                @endforeach
+            </div>
+
             @if($devis->hasPages())<div class="px-4 py-3 border-t">{{ $devis->links() }}</div>@endif
         </div>
 
@@ -168,7 +189,7 @@
 
         {{-- Liste --}}
         <div class="card overflow-hidden">
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto hidden md:block">
             <table class="w-full text-sm">
                 <thead class="bg-gray-50 dark:bg-slate-800"><tr>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">N°</th>
@@ -230,6 +251,30 @@
                 </tbody>
             </table>
             </div>
+            {{-- Version mobile : cartes --}}
+            <div class="md:hidden divide-y divide-gray-100 dark:divide-slate-700">
+                @foreach($factures as $f)
+                <a href="{{ route('dashboard.factures.show', ['facture' => $f->id]) }}" class="block p-4 active:bg-gray-50 dark:active:bg-slate-800">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="font-mono text-[11px] font-semibold text-primary-600">{{ $f->numero }}</p>
+                            <p class="font-semibold text-gray-900 dark:text-white truncate">{{ $f->client_nom_complet ?: ($f->client->nom_complet ?? '—') }}</p>
+                            <p class="text-[11px] {{ $f->estEnRetard ? 'text-red-500 font-semibold' : 'text-gray-400 dark:text-slate-500' }}">
+                                Échéance {{ $f->date_echeance->format('d/m/Y') }}@if($f->estEnRetard) · {{ \App\Helpers\TexteHelper::pluriel($f->jours_retard, 'jour', 'jours') }} de retard @endif
+                            </p>
+                            @if($f->statut !== 'annulee')
+                            <p class="text-[11px] text-amber-600 mt-0.5">Reste {{ number_format($f->resteAPayer, 0, ',', ' ') }} F</p>
+                            @endif
+                        </div>
+                        <div class="text-right shrink-0">
+                            <p class="font-bold text-gray-900 dark:text-white">{{ number_format($f->total_ttc, 0, ',', ' ') }} F</p>
+                            <div class="mt-1">@include('dashboard.devis-factures.partials.statut-badge', ['statut' => $f->statut, 'type' => 'facture'])</div>
+                        </div>
+                    </div>
+                </a>
+                @endforeach
+            </div>
+
             @if($factures->hasPages())<div class="px-4 py-3 border-t">{{ $factures->links() }}</div>@endif
         </div>
     @endif

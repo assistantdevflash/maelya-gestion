@@ -11,6 +11,7 @@ use App\Models\Produit;
 use App\Models\User;
 use App\Models\Vente;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 /**
@@ -452,5 +453,174 @@ class DevisFactureModuleTest extends TestCase
 
         $this->assertSame(1, $reponse->viewData('factures')->total());
         $this->assertSame($b->id, $reponse->viewData('factures')->first()->id);
+    }
+
+    // ─── Avoirs, relances, duplication ─────────────────────────────
+
+    public function test_annuler_une_facture_reglee_emet_un_avoir(): void
+    {
+        $facture = $this->creerFacture();
+        $this->actingAs($this->admin)->post(route('dashboard.factures.marquer-payee', $facture));
+
+        $this->actingAs($this->admin)->post(route('dashboard.factures.annuler', $facture));
+
+        $avoir = \App\Models\Avoir::where('facture_id', $facture->id)->firstOrFail();
+
+        $this->assertSame('AV-' . now()->format('Y') . '-000001', $avoir->numero);
+        $this->assertSame(10000, $avoir->montant);
+        $this->assertSame('emis', $avoir->statut);
+        $this->assertSame($this->admin->institut_id, $avoir->institut_id);
+    }
+
+    public function test_annuler_une_facture_impayee_n_emet_pas_d_avoir(): void
+    {
+        $facture = $this->creerFacture();
+
+        $this->actingAs($this->admin)->post(route('dashboard.factures.annuler', $facture));
+
+        $this->assertSame(0, \App\Models\Avoir::count());
+    }
+
+    public function test_la_relance_automatique_respecte_les_paliers_et_l_anti_doublon(): void
+    {
+        Mail::fake();
+
+        $this->admin->institut->update(['facture_relance_active' => true]);
+
+        $facture = $this->creerFacture(['payload' => [
+            'client_email'  => 'client@example.com',
+            'date_emission' => now()->subDays(30)->toDateString(),
+            'date_echeance' => now()->subDays(7)->toDateString(),
+        ]]);
+
+        $this->artisan('factures:relances')->assertSuccessful();
+
+        Mail::assertSent(\App\Mail\FactureARelancer::class, 1);
+        $this->assertSame(1, \App\Models\FactureRelance::where('facture_id', $facture->id)->count());
+
+        // Deuxième exécution le même jour : aucune nouvelle relance
+        $this->artisan('factures:relances')->assertSuccessful();
+        Mail::assertSent(\App\Mail\FactureARelancer::class, 1);
+    }
+
+    public function test_les_relances_sont_inactives_par_defaut(): void
+    {
+        Mail::fake();
+
+        $this->creerFacture(['payload' => [
+            'client_email'  => 'client@example.com',
+            'date_emission' => now()->subDays(30)->toDateString(),
+            'date_echeance' => now()->subDays(7)->toDateString(),
+        ]]);
+
+        $this->artisan('factures:relances')->assertSuccessful();
+
+        Mail::assertNothingSent();
+    }
+
+    public function test_dupliquer_une_facture_prepare_le_formulaire(): void
+    {
+        $facture = $this->creerFacture();
+
+        $this->actingAs($this->admin)
+            ->get(route('dashboard.factures.dupliquer', $facture))
+            ->assertRedirect(route('dashboard.factures.create'))
+            ->assertSessionHas('duplicate_facture');
+
+        $donnees = session('duplicate_facture');
+        $this->assertCount(1, $donnees['lignes']);
+        $this->assertSame(5000, $donnees['lignes'][0]['prix_unitaire']);
+    }
+
+    public function test_creer_une_facture_depuis_une_vente(): void
+    {
+        $produit = $this->produit();
+        $vente = Vente::create([
+            'institut_id'   => $this->admin->institut_id,
+            'user_id'       => $this->admin->id,
+            'total'         => 9000,
+            'montant_paye'  => 9000,
+            'mode_paiement' => 'cash',
+            'statut'        => 'validee',
+        ]);
+        \App\Models\VenteItem::create([
+            'vente_id'      => $vente->id,
+            'type'          => 'produit',
+            'item_id'       => $produit->id,
+            'nom_snapshot'  => $produit->nom,
+            'prix_snapshot' => 3000,
+            'quantite'      => 3,
+            'sous_total'    => 9000,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('dashboard.factures.depuis-vente', $vente))
+            ->assertRedirect(route('dashboard.factures.create'));
+
+        $donnees = session('duplicate_facture');
+        $this->assertSame($produit->nom, $donnees['lignes'][0]['designation']);
+        $this->assertSame(3, $donnees['lignes'][0]['quantite']);
+        $this->assertSame($produit->id, $donnees['lignes'][0]['produit_id']);
+    }
+
+    public function test_la_numerotation_annuelle_est_configurable(): void
+    {
+        $this->admin->institut->update(['facturation_sequence' => 'annuelle']);
+
+        $facture = $this->creerFacture();
+
+        $this->assertSame('FAC-' . now()->format('Y') . '-000001', $facture->numero);
+    }
+
+    public function test_la_tva_est_calculee_par_ligne_quand_elle_est_renseignee(): void
+    {
+        $devis = $this->creerDevis(['lignes' => [
+            ['designation' => 'Prestation taxée', 'quantite' => 1, 'prix_unitaire' => 10000, 'tva_taux' => 18],
+            ['designation' => 'Produit exonéré', 'quantite' => 1, 'prix_unitaire' => 5000, 'tva_taux' => 0],
+        ]]);
+
+        $this->assertSame(15000, $devis->total_ht);
+        $this->assertSame(1800, $devis->total_tva);
+        $this->assertSame(16800, $devis->total_ttc);
+    }
+
+    public function test_l_apercu_pdf_est_diffuse_en_ligne(): void
+    {
+        $facture = $this->creerFacture();
+
+        $this->actingAs($this->admin)
+            ->get(route('dashboard.factures.pdf', ['facture' => $facture, 'inline' => 1]))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+
+        $this->actingAs($this->admin)
+            ->get(route('dashboard.factures.pdf', ['facture' => $facture]))
+            ->assertOk()
+            ->assertHeader('content-disposition', 'attachment; filename=Facture-' . $facture->numero . '.pdf');
+    }
+
+    // ─── Rendu des écrans ────────────────────────────────────────────
+
+    public function test_les_ecrans_du_module_s_affichent(): void
+    {
+        $devis   = $this->creerDevis();
+        $facture = $this->creerFacture();
+
+        $this->actingAs($this->admin)->get(route('dashboard.devis.index'))->assertOk()->assertSee('Devis & Factures');
+        $this->actingAs($this->admin)->get(route('dashboard.factures.index'))->assertOk()->assertSee('Total facturé');
+
+        // Filtres actifs : la liste reste fonctionnelle
+        $this->actingAs($this->admin)->get(route('dashboard.factures.index', ['statut' => 'payee']))->assertOk();
+        $this->actingAs($this->admin)->get(route('dashboard.factures.index', ['retard' => 1]))->assertOk();
+
+        $this->actingAs($this->admin)->get(route('dashboard.devis.show', $devis))->assertOk()->assertSee($devis->numero);
+        $this->actingAs($this->admin)->get(route('dashboard.devis.create'))->assertOk()->assertSee('documentForm');
+        $this->actingAs($this->admin)->get(route('dashboard.devis.edit', $devis))->assertOk();
+
+        $this->actingAs($this->admin)->get(route('dashboard.factures.show', $facture))->assertOk()->assertSee($facture->numero);
+        $this->actingAs($this->admin)->get(route('dashboard.factures.create'))->assertOk()->assertSee('documentForm');
+
+        $this->actingAs($this->admin)->get(route('dashboard.mes-instituts.edit', $this->admin->institut))
+            ->assertOk()->assertSee('facturation_sequence', false);
     }
 }

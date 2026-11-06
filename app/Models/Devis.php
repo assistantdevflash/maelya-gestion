@@ -68,7 +68,8 @@ class Devis extends Model
 
     public function getTotalTvaAttribute(): int
     {
-        if (!$this->tva_applicable || $this->tva_taux <= 0) return 0;
-        return (int) round($this->total_ht * (float) $this->tva_taux / 100);
+        // La TVA réelle est l'écart entre le TTC et le HT : ce calcul reste juste
+        // même lorsque la TVA est ventilée ligne par ligne.
+        return max(0, (int) $this->total_ttc - (int) $this->total_ht);
     }
 }

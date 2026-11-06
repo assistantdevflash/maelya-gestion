@@ -53,7 +53,7 @@
 
             {{-- Email : envoi réel avec PDF joint --}}
             @if($clientEmail)
-            <form method="POST" action="{{ route('dashboard.factures.envoyer-email', ['facture' => $factureId]) }}" class="inline">
+            <form method="POST" action="{{ route('dashboard.factures.envoyer-email', ['facture' => $factureId]) }}" class="inline" data-envoi>
                 @csrf
                 <button class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700/30 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
@@ -84,7 +84,7 @@
                     Dupliquer
                 </a>
                 @if(! $facture->estPayee && $facture->statut !== 'annulee' && $clientEmail)
-                <form method="POST" action="{{ route('dashboard.factures.relancer', ['facture' => $factureId]) }}">
+                <form method="POST" action="{{ route('dashboard.factures.relancer', ['facture' => $factureId]) }}"" data-envoi>
                     @csrf
                     <button class="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition">
                         <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
@@ -248,6 +248,22 @@
         </div>
     </div>
 
+    {{-- Aperçu du document --}}
+    <div class="card overflow-hidden" x-data="{ apercu: false }">
+        <div class="card-header flex items-center justify-between">
+            <h2 class="font-semibold">Aperçu du document</h2>
+            <button type="button" @click="apercu = !apercu" class="btn-secondary text-sm">
+                <span x-text="apercu ? 'Masquer' : 'Afficher l\'aperçu'"></span>
+            </button>
+        </div>
+        <div x-show="apercu" x-cloak class="p-3 border-t border-gray-100 dark:border-slate-700">
+            <iframe
+                x-bind:src="apercu ? '{{ route('dashboard.factures.pdf', ['facture' => $factureId, 'inline' => 1]) }}' : 'about:blank'"
+                class="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white"
+                style="height: 720px" title="Aperçu de la facture"></iframe>
+        </div>
+    </div>
+
     {{-- Avoirs émis --}}
     @if($facture->avoirs->isNotEmpty())
     <div class="card overflow-hidden">
@@ -348,7 +364,7 @@
             <h3 class="text-lg font-bold">Nouveau paiement</h3>
             <button onclick="document.getElementById('modal-paiement').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">✕</button>
         </div>
-        <form method="POST" action="{{ route('dashboard.factures.payer', ['facture' => $factureId]) }}">
+        <form method="POST" action="{{ route('dashboard.factures.payer', ['facture' => $factureId]) }}"" data-envoi>
             @csrf
             <div class="space-y-3">
                 <div><label class="form-label">Date</label><input type="date" name="date_paiement" value="{{ now()->toDateString() }}" class="form-input" required></div>
@@ -385,6 +401,15 @@
     action="{{ route('dashboard.factures.marquer-payee', ['facture' => $factureId]) }}" method="POST" confirm="Confirmer" />
 
 @push('scripts')
+<script>
+// Anti double-clic : on neutralise les boutons pendant l'envoi
+document.querySelectorAll('form[data-envoi]').forEach(function (f) {
+    f.addEventListener('submit', function () {
+        f.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
+        f.classList.add('opacity-60', 'pointer-events-none');
+    });
+});
+</script>
 <script>function openModal(id){document.getElementById(id).classList.remove('hidden');}</script>
 @endpush
 </x-dashboard-layout>

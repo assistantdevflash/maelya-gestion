@@ -164,10 +164,14 @@ class FactureController extends Controller
     }
     public function show(Facture $facture) { $facture->load(['items','client','devis','paiements.encaisseur','vente','relances','avoirs']); return view('dashboard.devis-factures.factures.show', compact('facture')); }
 
-    public function pdf(Facture $facture) {
+    public function pdf(Request $request, Facture $facture) {
         $facture->load(['items','client']);
         $pdf = Pdf::loadView('pdf.facture-module', ['facture' => $facture, 'institut' => $facture->institut]);
-        return $pdf->download("Facture-{$facture->numero}.pdf");
+
+        // ?inline=1 : le PDF s'affiche dans l'aperçu intégré à la fiche
+        return $request->boolean('inline')
+            ? $pdf->stream("Facture-{$facture->numero}.pdf")
+            : $pdf->download("Facture-{$facture->numero}.pdf");
     }
 
     /**

@@ -43,7 +43,7 @@
         <div class="flex flex-wrap items-center gap-2 justify-end">
             {{-- Décision du client : accepté / refusé --}}
             @if(!$devis->facture_id && in_array($devis->statut, ['brouillon', 'envoye', 'expire']))
-            <form method="POST" action="{{ route('dashboard.devis.statut', ['devis' => $devisId]) }}" class="inline">
+            <form method="POST" action="{{ route('dashboard.devis.statut', ['devis' => $devisId]) }}" class="inline" data-envoi>
                 @csrf
                 <input type="hidden" name="statut" value="accepte">
                 <button class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition">
@@ -51,7 +51,7 @@
                     <span class="hidden sm:inline">Marquer accepté</span><span class="sm:hidden">Accepté</span>
                 </button>
             </form>
-            <form method="POST" action="{{ route('dashboard.devis.statut', ['devis' => $devisId]) }}" class="inline">
+            <form method="POST" action="{{ route('dashboard.devis.statut', ['devis' => $devisId]) }}" class="inline" data-envoi>
                 @csrf
                 <input type="hidden" name="statut" value="refuse">
                 <button class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/40 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
@@ -72,7 +72,7 @@
 
             {{-- Email : envoi réel avec PDF joint --}}
             @if($clientEmail)
-            <form method="POST" action="{{ route('dashboard.devis.envoyer-email', ['devis' => $devisId]) }}" class="inline">
+            <form method="POST" action="{{ route('dashboard.devis.envoyer-email', ['devis' => $devisId]) }}" class="inline" data-envoi>
                 @csrf
                 <button class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700/30 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
@@ -285,6 +285,22 @@
     </div>
     @endif
 
+    {{-- ═══ APERÇU DU DOCUMENT ═══ --}}
+    <div class="card overflow-hidden" x-data="{ apercu: false }">
+        <div class="card-header flex items-center justify-between">
+            <h2 class="font-semibold">Aperçu du document</h2>
+            <button type="button" @click="apercu = !apercu" class="btn-secondary text-sm">
+                <span x-text="apercu ? 'Masquer' : 'Afficher l\'aperçu'"></span>
+            </button>
+        </div>
+        <div x-show="apercu" x-cloak class="p-3 border-t border-gray-100 dark:border-slate-700">
+            <iframe
+                x-bind:src="apercu ? '{{ route('dashboard.devis.pdf', ['devis' => $devisId, 'inline' => 1]) }}' : 'about:blank'"
+                class="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white"
+                style="height: 720px" title="Aperçu du devis"></iframe>
+        </div>
+    </div>
+
     {{-- ═══ MODALS ═══ --}}
     <x-modal-confirm id="modal-transformer" title="Transformer en facture ?"
         message="Le devis &laquo;&nbsp;{{ $devis->numero }}&nbsp;&raquo; sera converti en facture de <strong>{{ number_format($devis->total_ttc, 0, ',', ' ') }} F</strong>."
@@ -300,6 +316,15 @@
 </div>
 
 @push('scripts')
+<script>
+// Anti double-clic : on neutralise les boutons pendant l'envoi
+document.querySelectorAll('form[data-envoi]').forEach(function (f) {
+    f.addEventListener('submit', function () {
+        f.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
+        f.classList.add('opacity-60', 'pointer-events-none');
+    });
+});
+</script>
 <script>function openModal(id){document.getElementById(id).classList.remove('hidden');}</script>
 @endpush
 </x-dashboard-layout>
