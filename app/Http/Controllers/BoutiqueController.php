@@ -162,8 +162,21 @@ class BoutiqueController extends Controller
     }
 
     /**
-     * Page checkout (commander)
+     * Moyen de paiement utilisable au checkout de la boutique.
+     * Piloté par le super admin (payment_methods.boutique_checkout_enabled),
+     * et subordonné à la présence des identifiants du prestataire.
      */
+    private function moyenPaiementEnLigne(): ?\App\Models\PaymentMethod
+    {
+        if (! config('services.geniuspay.api_key')) {
+            return null;
+        }
+
+        return \App\Models\PaymentMethod::pourCheckoutBoutique()
+            ->where('code', 'geniuspay')
+            ->first();
+    }
+
     public function commanderForm(string $slug)
     {
         $institut = Institut::where('slug', $slug)->firstOrFail();
@@ -172,7 +185,9 @@ class BoutiqueController extends Controller
 
         $zones = is_array($institut->boutique_zones_livraison) ? $institut->boutique_zones_livraison : [];
 
-        return view('boutique.commander', compact('institut', 'zones'));
+        $paiementEnLigneDisponible = $this->moyenPaiementEnLigne() !== null;
+
+        return view('boutique.commander', compact('institut', 'zones', 'paiementEnLigneDisponible'));
     }
 
     /**
@@ -315,16 +330,11 @@ class BoutiqueController extends Controller
 
             // Paiement en ligne : le client règle maintenant, la commande est
             // encaissée dès la confirmation du prestataire.
-            $paiementEnLigne = (bool) ($data['paiement_en_ligne'] ?? false)
-                && config('services.geniuspay.boutique_enabled')
-                && config('services.geniuspay.api_key');
+            $methode = $this->moyenPaiementEnLigne();
+            $paiementEnLigne = (bool) ($data['paiement_en_ligne'] ?? false) && $methode;
 
             if ($paiementEnLigne) {
-                $methode = \App\Models\PaymentMethod::where('code', 'geniuspay')
-                    ->where('is_active', true)
-                    ->first();
-
-                if ($methode) {
+                {
                     $retourSucces = \Illuminate\Support\Facades\URL::signedRoute('shop.paiement.retour', [
                         'slug'   => $slug,
                         'numero' => $commande->numero,

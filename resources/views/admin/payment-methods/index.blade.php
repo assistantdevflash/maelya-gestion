@@ -69,20 +69,50 @@
                     </div>
                     <p class="text-sm text-gray-500 dark:text-slate-400 mt-0.5">{{ $method->description }}</p>
                 </div>
-                <div class="flex items-center gap-3 flex-shrink-0">
-                    <form action="{{ route('admin.payment-methods.toggle', $method) }}" method="POST">
-                        @csrf @method('PATCH')
-                        <button type="submit"
-                            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none
-                                {{ $method->is_active ? 'bg-primary-600' : 'bg-gray-200 dark:bg-slate-600' }}"
-                            title="{{ $method->is_active ? 'Désactiver' : 'Activer' }}">
-                            <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform
-                                {{ $method->is_active ? 'translate-x-6' : 'translate-x-1' }}"></span>
-                        </button>
-                    </form>
-                    <span class="text-sm font-medium {{ $method->is_active ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 dark:text-slate-500' }}">
-                        {{ $method->is_active ? 'Actif' : 'Inactif' }}
-                    </span>
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5 flex-shrink-0">
+                    {{-- Disponibilité générale (abonnements, options) --}}
+                    <div class="flex items-center gap-3">
+                        <div class="text-right">
+                            <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">Établissements</p>
+                            <p class="text-xs text-gray-500 dark:text-slate-400">Abonnements &amp; options</p>
+                        </div>
+                        <form action="{{ route('admin.payment-methods.toggle', $method) }}" method="POST">
+                            @csrf @method('PATCH')
+                            <button type="submit"
+                                class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none
+                                    {{ $method->is_active ? 'bg-primary-600' : 'bg-gray-200 dark:bg-slate-600' }}"
+                                title="{{ $method->is_active ? 'Désactiver' : 'Activer' }}">
+                                <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform
+                                    {{ $method->is_active ? 'translate-x-6' : 'translate-x-1' }}"></span>
+                            </button>
+                        </form>
+                        <span class="text-sm font-medium w-14 {{ $method->is_active ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 dark:text-slate-500' }}">
+                            {{ $method->is_active ? 'Actif' : 'Inactif' }}
+                        </span>
+                    </div>
+
+                    {{-- Paiement des commandes boutique --}}
+                    @if($method->isGateway())
+                    <div class="flex items-center gap-3 sm:border-l sm:border-gray-100 sm:dark:border-slate-700 sm:pl-5">
+                        <div class="text-right">
+                            <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">Checkout boutique</p>
+                            <p class="text-xs text-gray-500 dark:text-slate-400">Paiement en ligne des commandes</p>
+                        </div>
+                        <form action="{{ route('admin.payment-methods.toggle-boutique', $method) }}" method="POST">
+                            @csrf @method('PATCH')
+                            <button type="submit"
+                                class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none
+                                    {{ $method->boutique_checkout_enabled ? 'bg-emerald-500' : 'bg-gray-200 dark:bg-slate-600' }}"
+                                title="{{ $method->boutique_checkout_enabled ? 'Retirer du checkout' : 'Proposer au checkout' }}">
+                                <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform
+                                    {{ $method->boutique_checkout_enabled ? 'translate-x-6' : 'translate-x-1' }}"></span>
+                            </button>
+                        </form>
+                        <span class="text-sm font-medium w-14 {{ $method->boutique_checkout_enabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 dark:text-slate-500' }}">
+                            {{ $method->boutique_checkout_enabled ? 'Actif' : 'Inactif' }}
+                        </span>
+                    </div>
+                    @endif
                 </div>
             </div>
             @endforeach

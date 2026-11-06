@@ -545,6 +545,7 @@ Route::prefix('payment')->name('payment.')->group(function () {
 Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('payment-methods', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'index'])->name('payment-methods.index');
     Route::patch('payment-methods/{paymentMethod}/toggle', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'toggle'])->name('payment-methods.toggle');
+    Route::patch('payment-methods/{paymentMethod}/toggle-boutique', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'toggleBoutique'])->name('payment-methods.toggle-boutique');
     Route::put('payment-methods/{paymentMethod}', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'update'])->name('payment-methods.update');
     Route::get('payment-transactions', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'transactions'])->name('payment-transactions.index');
     Route::get('payment-transactions/{paymentTransaction}', [\App\Http\Controllers\Admin\AdminPaymentMethodController::class, 'transactionShow'])->name('payment-transactions.show');

@@ -66,9 +66,76 @@ class BoutiquePaiementCaisseTest extends TestCase
         return [$institut, $owner];
     }
 
+    private function methodeGeniusPay(array $attributs = []): \App\Models\PaymentMethod
+    {
+        return \App\Models\PaymentMethod::create(array_merge([
+            'code'                      => 'geniuspay',
+            'name'                      => 'Genius Pay',
+            'type'                      => 'gateway',
+            'provider'                  => 'geniuspay',
+            'description'               => 'Wave, Orange Money, MTN MoMo',
+            'is_active'                 => true,
+            'boutique_checkout_enabled' => false,
+            'auto_validate'             => true,
+            'position'                  => 1,
+        ], $attributs));
+    }
+
     public function test_le_paiement_en_ligne_est_desactive_par_defaut(): void
     {
-        $this->assertFalse((bool) config('services.geniuspay.boutique_enabled'));
+        $methode = $this->methodeGeniusPay();
+
+        $this->assertFalse($methode->boutique_checkout_enabled);
+    }
+
+    public function test_le_super_admin_peut_activer_le_paiement_en_ligne_du_checkout(): void
+    {
+        $methode = $this->methodeGeniusPay();
+
+        $superAdmin = User::factory()->create([
+            'prenom' => 'Super', 'nom_famille' => 'Admin',
+            'role' => 'super_admin', 'actif' => true,
+        ]);
+
+        $this->actingAs($superAdmin)
+            ->patch(route('admin.payment-methods.toggle-boutique', $methode))
+            ->assertRedirect();
+
+        $this->assertTrue($methode->fresh()->boutique_checkout_enabled);
+        // Le réglage « établissements » n'est pas touché
+        $this->assertTrue($methode->fresh()->is_active);
+
+        // Second appui : retour en arrière
+        $this->actingAs($superAdmin)
+            ->patch(route('admin.payment-methods.toggle-boutique', $methode));
+
+        $this->assertFalse($methode->fresh()->boutique_checkout_enabled);
+    }
+
+    public function test_l_option_apparait_quand_le_super_admin_l_a_activee(): void
+    {
+        [$institut] = $this->boutique();
+        $this->methodeGeniusPay(['boutique_checkout_enabled' => true]);
+        config(['services.geniuspay.api_key' => 'cle-de-test']);
+
+        $html = $this->get(route('shop.commander.form', $institut->slug))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('Payer maintenant en ligne', $html);
+    }
+
+    public function test_l_option_reste_masquee_sans_identifiants_du_prestataire(): void
+    {
+        [$institut] = $this->boutique();
+        $this->methodeGeniusPay(['boutique_checkout_enabled' => true]);
+        config(['services.geniuspay.api_key' => null]);
+
+        $html = $this->get(route('shop.commander.form', $institut->slug))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('Payer maintenant en ligne', $html);
     }
 
     public function test_le_checkout_ne_propose_que_le_paiement_a_la_livraison(): void
@@ -87,6 +154,9 @@ class BoutiquePaiementCaisseTest extends TestCase
     public function test_une_commande_ne_declenche_aucun_paiement_en_ligne_quand_l_option_est_desactivee(): void
     {
         [$institut] = $this->boutique();
+        $this->methodeGeniusPay(['boutique_checkout_enabled' => false]);
+        config(['services.geniuspay.api_key' => 'cle-de-test']);
+
         $produit = Produit::first();
 
         $this->post(route('shop.commander', $institut->slug), [

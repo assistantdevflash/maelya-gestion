@@ -9,12 +9,13 @@ class PaymentMethod extends Model
 {
     protected $fillable = [
         'code', 'name', 'type', 'provider', 'logo_url', 'description',
-        'is_active', 'auto_validate', 'position', 'config',
+        'is_active', 'boutique_checkout_enabled', 'auto_validate', 'position', 'config',
         'supported_currencies', 'supported_countries',
     ];
 
     protected $casts = [
         'is_active'            => 'boolean',
+        'boutique_checkout_enabled' => 'boolean',
         'auto_validate'        => 'boolean',
         'config'               => 'array',
         'supported_currencies' => 'array',
@@ -24,6 +25,14 @@ class PaymentMethod extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true)->orderBy('position');
+    }
+
+    /** Moyens de paiement proposés au moment de la commande boutique. */
+    public function scopePourCheckoutBoutique($query)
+    {
+        return $query->where('is_active', true)
+            ->where('boutique_checkout_enabled', true)
+            ->orderBy('position');
     }
 
     public function isGateway(): bool

@@ -39,6 +39,24 @@ class AdminPaymentMethodController extends Controller
         );
     }
 
+    /**
+     * Active/désactive un moyen de paiement pour le checkout de la boutique,
+     * indépendamment de son usage côté établissement.
+     */
+    public function toggleBoutique(PaymentMethod $paymentMethod)
+    {
+        $paymentMethod->update([
+            'boutique_checkout_enabled' => ! $paymentMethod->boutique_checkout_enabled,
+        ]);
+
+        return back()->with(
+            'success',
+            "« {$paymentMethod->name} » "
+            . ($paymentMethod->boutique_checkout_enabled ? 'proposé' : 'retiré')
+            . ' au paiement des commandes boutique.'
+        );
+    }
+
     public function update(Request $request, PaymentMethod $paymentMethod)
     {
         $validated = $request->validate([
