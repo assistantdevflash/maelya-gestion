@@ -94,7 +94,7 @@
 
             {{-- Bouton suivi --}}
             <div style="text-align:center;margin:32px 0 8px;">
-                <a href="{{ route('shop.suivi', ['slug' => $commande->institut->slug, 'numero' => $commande->numero]) }}"
+                <a href="{{ \Illuminate\Support\Facades\URL::signedRoute('shop.suivi', ['slug' => $commande->institut->slug, 'numero' => $commande->numero]) }}"
                    style="display:inline-block;padding:14px 40px;background:{{ $gradient }};color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;">
                     📦 Voir ma commande
                 </a>

@@ -92,6 +92,7 @@
                     <option value="en_livraison" {{ request('statut') == 'en_livraison' ? 'selected' : '' }}>En livraison</option>
                     <option value="livree" {{ request('statut') == 'livree' ? 'selected' : '' }}>Livrées</option>
                     <option value="annulee" {{ request('statut') == 'annulee' ? 'selected' : '' }}>Annulées</option>
+                    <option value="refusee" {{ request('statut') == 'refusee' ? 'selected' : '' }}>Refusées</option>
                 </select>
             </div>
             <div>
@@ -191,7 +192,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        @if($commande->statut === 'nouvelle' && auth()->user()->isAdmin())
+                                        @if($commande->statut === 'nouvelle' && (auth()->user()->isAdmin() || auth()->user()->isGerant()))
                                         <form method="POST" action="{{ route('dashboard.boutique.commandes.statut', $commande) }}">
                                             @csrf
                                             <input type="hidden" name="statut" value="acceptee">

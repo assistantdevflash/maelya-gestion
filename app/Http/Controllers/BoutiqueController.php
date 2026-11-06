@@ -288,7 +288,9 @@ class BoutiqueController extends Controller
                 'frais_livraison' => $fraisLivraison,
                 'total' => $total,
                 'statut' => 'nouvelle',
-                'mode_paiement' => 'cash',
+                'mode_paiement' => in_array($data['mode_paiement'] ?? null, ['cash', 'mobile_money'], true)
+                    ? $data['mode_paiement']
+                    : 'cash',
                 'notes_client' => $data['notes'] ?? null,
             ]);
 
@@ -344,10 +346,13 @@ class BoutiqueController extends Controller
                 \Log::error('Erreur envoi notifications commande: ' . $e->getMessage());
             }
 
-            return redirect()->route('shop.suivi', [
+            // Compteurs de la liste rafraîchis immédiatement
+            \Illuminate\Support\Facades\Cache::forget("cmd_stats:{$institut->id}");
+
+            return redirect(\Illuminate\Support\Facades\URL::signedRoute('shop.suivi', [
                 'slug' => $slug,
-                'numero' => $commande->numero
-            ])->with('success', 'Votre commande a été passée avec succès !');
+                'numero' => $commande->numero,
+            ]))->with('success', 'Votre commande a été passée avec succès !');
 
         } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
             // Numéro de commande en doublon (race condition entre 2 instituts) — retry

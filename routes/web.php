@@ -69,7 +69,11 @@ Route::prefix('shop')->name('shop.')->group(function () {
     Route::post('/{slug}/commander', [BoutiqueController::class, 'commander'])
         ->middleware('throttle:10,1')
         ->name('commander');
-    Route::get('/{slug}/commande/{numero}', [BoutiqueController::class, 'suivreCommande'])->name('suivi');
+    // Lien signé : le numéro de commande est séquentiel, donc devinable.
+    // Sans signature, n'importe qui pouvait énumérer les commandes des clients.
+    Route::get('/{slug}/commande/{numero}', [BoutiqueController::class, 'suivreCommande'])
+        ->middleware('signed')
+        ->name('suivi');
 });
 
 // ─── Logging événements Facebook (navigateur → serveur) ──────────────────────

@@ -62,6 +62,23 @@ class CommandeController extends Controller
     }
 
     /**
+     * Invalide les compteurs mis en cache (liste + tableau de bord).
+     * Sans cela, les indicateurs restaient faux pendant plusieurs minutes.
+     */
+    private function oublierCaches(?string $institutId = null): void
+    {
+        $institutId = $institutId ?: session('current_institut_id', auth()->user()?->institut_id);
+
+        if (! $institutId) {
+            return;
+        }
+
+        Cache::forget("cmd_stats:{$institutId}");
+        Cache::forget("dashboard_full:{$institutId}:" . now()->toDateString());
+        Cache::forget("dashboard_basic:{$institutId}:" . now()->toDateString());
+    }
+
+    /**
      * Afficher les détails d'une commande
      */
     public function show(Commande $commande)
@@ -114,6 +131,8 @@ class CommandeController extends Controller
             \Log::error('Erreur envoi email statut commande: ' . $e->getMessage());
         }
 
+        $this->oublierCaches($commande->institut_id);
+
         return back()->with('success', 'Statut de la commande mis à jour avec succès.');
     }
 
@@ -131,6 +150,14 @@ class CommandeController extends Controller
         try {
             DB::beginTransaction();
 
+            // La vente doit refléter le mode de paiement réellement choisi :
+            // sinon les encaissements sont tous comptabilisés en espèces.
+            $modeVente = match ($commande->mode_paiement) {
+                'mobile_money' => 'mobile_money',
+                'mixte'        => 'mixte',
+                default        => 'cash',
+            };
+
             // Créer la vente
             $vente = Vente::create([
                 'institut_id' => $commande->institut_id,
@@ -138,7 +165,9 @@ class CommandeController extends Controller
                 'user_id' => Auth::id(),
                 'total' => $commande->total,
                 'montant_paye' => $commande->total,
-                'mode_paiement' => 'cash',
+                'mode_paiement' => $modeVente,
+                'montant_cash' => $modeVente === 'mobile_money' ? 0 : $commande->total,
+                'montant_mobile' => $modeVente === 'mobile_money' ? $commande->total : 0,
                 'statut' => 'validee',
                 'remise' => 0,
                 'pourboire' => 0,
@@ -170,6 +199,8 @@ class CommandeController extends Controller
             ]);
 
             DB::commit();
+
+            $this->oublierCaches($commande->institut_id);
 
             // Envoyer l'événement Purchase au Pixel Facebook
             \App\Jobs\SendFacebookPurchaseEvent::dispatch($commande);
@@ -233,13 +264,16 @@ class CommandeController extends Controller
                 }
 
                 $qte = (int) $itemData['quantite'];
-                $subTotal = $cmdItem->prix_snapshot * $qte;
                 $cmdItem->update([
                     'quantite' => $qte,
-                    'sous_total' => $subTotal,
+                    'sous_total' => $cmdItem->prix_snapshot * $qte,
                 ]);
-                $sousTotal += $subTotal;
             }
+
+            // Le sous-total est recalculé sur *toutes* les lignes restantes :
+            // une ligne absente du formulaire (page périmée) ne doit pas
+            // disparaître du montant.
+            $sousTotal = (int) $commande->items()->sum('sous_total');
 
             // Calculer les frais selon la zone
             $zones = is_array($commande->institut->boutique_zones_livraison) ? $commande->institut->boutique_zones_livraison : [];
@@ -264,6 +298,8 @@ class CommandeController extends Controller
 
             DB::commit();
 
+            $this->oublierCaches($commande->institut_id);
+
             return back()->with('success', 'Commande mise à jour avec succès.');
 
         } catch (\Exception $e) {
@@ -284,7 +320,10 @@ class CommandeController extends Controller
         }
 
         $numero = $commande->numero;
+        $institutId = $commande->institut_id;
         $commande->delete();
+
+        $this->oublierCaches($institutId);
 
         return redirect()->route('dashboard.boutique.commandes.index')
             ->with('success', "Commande {$numero} supprimée avec succès.");
@@ -316,6 +355,15 @@ class CommandeController extends Controller
         }
         if ($request->filled('payee')) {
             $query->where('payee', $request->payee === '1');
+        }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('numero', 'like', "%{$search}%")
+                    ->orWhere('client_nom', 'like', "%{$search}%")
+                    ->orWhere('client_prenom', 'like', "%{$search}%")
+                    ->orWhere('client_telephone', 'like', "%{$search}%");
+            });
         }
 
         $commandes = $query->get();

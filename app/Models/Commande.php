@@ -72,17 +72,25 @@ class Commande extends Model
      */
     public static function genererNumero(string $institutId): string
     {
-        return DB::transaction(function () use ($institutId) {
-            $prefix = 'CMD';
-            $date = now()->format('Ymd');
+        return DB::transaction(function () {
+            $date   = now()->format('Ymd');
+            $prefix = "CMD-{$date}-";
 
-            $lastCommande = self::where('numero', 'like', "$prefix-$date-%")
+            // La contrainte d'unicité du numéro est globale : la séquence est
+            // partagée par tous les établissements, on ignore donc le scope.
+            // Le suffixe est complété à 4 chiffres, l'ordre alphabétique suit
+            // donc l'ordre numérique (aucune fonction SQL propre à MySQL).
+            $lastCommande = self::withoutGlobalScopes()
+                ->where('numero', 'like', $prefix . '%')
+                ->orderByDesc('numero')
                 ->lockForUpdate()
-                ->orderByRaw('CAST(SUBSTRING_INDEX(numero, \'-\', -1) AS UNSIGNED) DESC')
                 ->first();
 
-            $lastNumber = $lastCommande ? ((int) substr($lastCommande->numero, -4)) + 1 : 1;
-            return sprintf('%s-%s-%04d', $prefix, $date, $lastNumber);
+            $lastNumber = $lastCommande
+                ? ((int) substr($lastCommande->numero, strrpos($lastCommande->numero, '-') + 1)) + 1
+                : 1;
+
+            return sprintf('CMD-%s-%04d', $date, $lastNumber);
         });
     }
 
