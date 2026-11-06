@@ -91,8 +91,11 @@
                         </span>
                     </div>
 
-                    {{-- Paiement des commandes boutique --}}
-                    @if($method->isGateway())
+                    {{-- Paiement des commandes boutique.
+                         Le test Route::has() évite qu'un cache de routes
+                         obsolète (déploiement partiel) ne fasse échouer
+                         toute la page : l'interrupteur est simplement absent. --}}
+                    @if($method->isGateway() && Route::has('admin.payment-methods.toggle-boutique'))
                     <div class="flex items-center gap-3 sm:border-l sm:border-gray-100 sm:dark:border-slate-700 sm:pl-5">
                         <div class="text-right">
                             <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">Checkout boutique</p>
