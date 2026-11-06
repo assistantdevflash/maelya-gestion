@@ -291,9 +291,10 @@ class BoutiqueController extends Controller
                 'frais_livraison' => $fraisLivraison,
                 'total' => $total,
                 'statut' => 'nouvelle',
-                'mode_paiement' => in_array($data['mode_paiement'] ?? null, ['cash', 'mobile_money'], true)
-                    ? $data['mode_paiement']
-                    : 'cash',
+                // Le mode de paiement n'est jamais dicté par le formulaire :
+                // une commande est réglée à la livraison. Le paiement en ligne,
+                // s'il est activé, bascule ce champ une fois le règlement reçu.
+                'mode_paiement' => 'cash',
                 'notes_client' => $data['notes'] ?? null,
                 'date_livraison_prevue' => $data['date_livraison_prevue'] ?? null,
                 'creneau_livraison' => $data['creneau_livraison'] ?? null,
@@ -315,6 +316,7 @@ class BoutiqueController extends Controller
             // Paiement en ligne : le client règle maintenant, la commande est
             // encaissée dès la confirmation du prestataire.
             $paiementEnLigne = (bool) ($data['paiement_en_ligne'] ?? false)
+                && config('services.geniuspay.boutique_enabled')
                 && config('services.geniuspay.api_key');
 
             if ($paiementEnLigne) {

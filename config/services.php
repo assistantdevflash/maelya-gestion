@@ -41,6 +41,9 @@ return [
         'api_secret'     => env('GENIUSPAY_API_SECRET'),
         'webhook_secret' => env('GENIUSPAY_WEBHOOK_SECRET'),
         'base_url'       => 'https://geniuspay.ci/api/v1/merchant',
+        // Paiement en ligne des commandes boutique : désactivé tant que
+        // l'intégration n'est pas validée. Activer via GENIUSPAY_BOUTIQUE_ENABLED=true.
+        'boutique_enabled' => env('GENIUSPAY_BOUTIQUE_ENABLED', false),
     ],
 
 ];

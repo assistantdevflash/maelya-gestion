@@ -93,7 +93,12 @@
                 <div><label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">Notes (optionnel)</label><textarea name="notes" rows="2" placeholder="Instructions..." class="form-textarea"></textarea></div>
             </div>
 
-            @php $paiementEnLigneDisponible = (bool) config('services.geniuspay.api_key'); @endphp
+            @php
+                // Paiement en ligne désactivé pour l'instant : seul le règlement
+                // à la livraison est proposé.
+                $paiementEnLigneDisponible = (bool) config('services.geniuspay.boutique_enabled')
+                    && (bool) config('services.geniuspay.api_key');
+            @endphp
             <div x-data="{ enLigne: false }" class="space-y-3">
                 <label class="flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition"
                        :class="enLigne ? 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800' : 'border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30'">
