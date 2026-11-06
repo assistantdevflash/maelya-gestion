@@ -2,6 +2,21 @@
     $cp = $institut->couleur_primaire ?? '#059669';
     $cs = $institut->couleur_secondaire ?? '#8B5CF6';
     $ca = $institut->couleur_accent ?? '#f59e0b';
+
+    $badge = match (true) {
+        $facture->statut === 'annulee'   => 'ANNULÉE',
+        $facture->estPayee               => 'PAYÉE',
+        $facture->montant_paye > 0       => 'PARTIELLEMENT PAYÉE',
+        $facture->estEnRetard            => 'EN RETARD',
+        default                          => 'FACTURE',
+    };
+    $badgeCouleur = match (true) {
+        $facture->statut === 'annulee'   => '#dc2626',
+        $facture->estPayee               => '#059669',
+        $facture->montant_paye > 0       => '#d97706',
+        $facture->estEnRetard            => '#dc2626',
+        default                          => $cs,
+    };
 @endphp
 <!DOCTYPE html>
 <html lang="fr">
@@ -16,7 +31,8 @@
     .header-right { text-align: right; }
     .institut-nom { font-size: 18px; font-weight: bold; color: {{ $cp }}; margin-bottom: 4px; }
     .institut-meta { font-size: 10px; color: #6b7280; line-height: 1.5; }
-    .badge { display: inline-block; background: {{ $facture->estPayee ? $cp : $cs }}; color: #fff; padding: 6px 14px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .badge { display: inline-block; background: {{ $badgeCouleur }}; color: #fff; padding: 6px 14px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .filigrane { position: fixed; top: 40%; left: 0; right: 0; text-align: center; font-size: 90px; font-weight: bold; color: rgba(220, 38, 38, 0.12); transform: rotate(-30deg); letter-spacing: 12px; }
     .numero { font-size: 14px; font-weight: bold; color: #111827; }
     .date-info { font-size: 10px; color: #6b7280; margin-top: 4px; }
     .parties { display: table; width: 100%; margin-top: 16px; }
@@ -44,6 +60,9 @@
 </style>
 </head>
 <body>
+@if($facture->statut === 'annulee')
+<div class="filigrane">ANNULÉE</div>
+@endif
 <div class="header">
     <div class="header-left">
         @if($institut->logo ?? null)
@@ -61,7 +80,7 @@
         </div>
     </div>
     <div class="header-right">
-        <div class="badge">{{ $facture->estPayee ? 'PAYÉE' : 'FACTURE' }}</div>
+        <div class="badge">{{ $badge }}</div>
         <div class="numero">N° {{ $facture->numero }}</div>
         <div class="date-info">Émise le {{ $facture->date_emission->format('d/m/Y') }} · Échéance {{ $facture->date_echeance->format('d/m/Y') }}</div>
     </div>

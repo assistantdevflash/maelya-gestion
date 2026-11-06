@@ -206,11 +206,54 @@ class DevisFactureModuleTest extends TestCase
     {
         $devis = $this->creerDevis();
 
-        $this->get(route('devis.public', ['id' => $devis->id]))->assertNotFound();
+        $this->get(route('devis.public', ['id' => $devis->id, 'token' => $devis->token]))->assertNotFound();
 
         $this->actingAs($this->admin)->post(route('dashboard.devis.envoyer', $devis));
 
-        $this->get(route('devis.public', ['id' => $devis->id]))->assertOk();
+        $devis->refresh();
+        $this->get(route('devis.public', ['id' => $devis->id, 'token' => $devis->token]))->assertOk();
+    }
+
+    public function test_le_pdf_public_exige_le_bon_token(): void
+    {
+        $devis = $this->creerDevis();
+        $devis->update(['statut' => 'envoye']);
+
+        // Sans token (ou avec un token erroné), le document n'est pas exposé.
+        $this->get(route('devis.public', ['id' => $devis->id]))->assertNotFound();
+        $this->get(route('devis.public', ['id' => $devis->id, 'token' => 'faux']))->assertNotFound();
+        $this->get(route('devis.public', ['id' => $devis->id, 'token' => $devis->token]))->assertOk();
+    }
+
+    public function test_un_devis_se_marque_accepte_ou_refuse(): void
+    {
+        $devis = $this->creerDevis();
+
+        $this->actingAs($this->admin)
+            ->post(route('dashboard.devis.statut', $devis), ['statut' => 'accepte'])
+            ->assertRedirect();
+
+        $devis->refresh();
+        $this->assertSame('accepte', $devis->statut);
+        $this->assertNotNull($devis->date_acceptation);
+
+        $this->actingAs($this->admin)
+            ->post(route('dashboard.devis.statut', $devis), ['statut' => 'refuse'])
+            ->assertRedirect();
+
+        $this->assertSame('refuse', $devis->fresh()->statut);
+    }
+
+    public function test_la_commande_expire_les_devis_depasses(): void
+    {
+        $devis = $this->creerDevis(['payload' => [
+            'date_creation'   => now()->subDays(40)->toDateString(),
+            'date_expiration' => now()->subDays(10)->toDateString(),
+        ]]);
+
+        $this->artisan('devis:expirer')->assertSuccessful();
+
+        $this->assertSame('expire', $devis->fresh()->statut);
     }
 
     public function test_supprimer_un_devis_supprime_ses_lignes(): void

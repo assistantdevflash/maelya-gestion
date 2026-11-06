@@ -1,5 +1,11 @@
 <x-dashboard-layout>
-<div class="max-w-6xl mx-auto space-y-6" x-data="devisForm(@js($allClients->toArray()), @js($catalogue->toArray()))">
+<div class="max-w-6xl mx-auto space-y-6" x-data="documentForm({
+        clients: @js($allClients->toArray()),
+        catalogue: @js($catalogue->toArray()),
+        initial: @js(old('lignes') ? ['lignes' => json_decode(old('lignes'), true)] : $duplicateData),
+        prixDisplay: true,
+        cle: 'facture-create'
+    })">
     <div class="flex items-center gap-4">
         <a href="{{ route('dashboard.factures.index') }}" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition">←</a>
         <div><h1 class="text-2xl font-bold text-gray-900 dark:text-white">Nouvelle facture</h1></div>
@@ -311,107 +317,5 @@
     </div>
 </div>
 
-@push('scripts')
-<script>
-document.addEventListener('alpine:init', () => {
-    Alpine.data('devisForm', (clientsInit, catalogueInit) => ({
-        lignes: [{designation:'', quantite:1, prix_unitaire:0, prix_display:'0', remise_type:'', remise_valeur:0, tva_taux:null, pickerOpen: false, pickerSearch: '', produit_id: null, prestation_id: null}],
-        tva: 0,
-        tvaApplicable: false,
-        remiseGlobaleType: '',
-        remiseGlobaleValeur: 0,
-        catalogue: catalogueInit,
-        ajouterLigne() { this.lignes.push({designation:'', quantite:1, prix_unitaire:0, prix_display:'0', remise_type:'', remise_valeur:0, tva_taux:null, pickerOpen: false, pickerSearch: '', produit_id: null, prestation_id: null}); },
-        catalogueFiltered(ligne) {
-            const q = (ligne.pickerSearch || '').toLowerCase();
-            if (q.length < 1) return this.catalogue.slice(0, 10);
-            return this.catalogue.filter(c => c.search.includes(q)).slice(0, 10);
-        },
-        choisirCatalogue(ligne, item) {
-            const m = String(item.id || '').match(/^(prod|p)_(.+)$/);
-            ligne.produit_id    = m && m[1] === 'prod' ? m[2] : null;
-            ligne.prestation_id = m && m[1] === 'p'    ? m[2] : null;
-            ligne.designation = item.designation;
-            ligne.prix_unitaire = item.prix;
-            ligne.prix_display = this.formatPrixInput(item.prix);
-            ligne.pickerOpen = false;
-            ligne.pickerSearch = '';
-        },
-        updatePrix(ligne, value) {
-            const cleanValue = value.replace(/\s/g, '');
-            const numValue = parseFloat(cleanValue) || 0;
-            ligne.prix_unitaire = numValue;
-            ligne.prix_display = this.formatPrixInput(numValue);
-        },
-        formatPrixInput(value) {
-            return new Intl.NumberFormat('fr-FR').format(value || 0);
-        },
-        get sousTotal() { return this.lignes.reduce((s, l) => s + ((l.prix_unitaire||0) * (l.quantite||1)), 0); },
-        get remiseGlobale() {
-            if (!this.remiseGlobaleType || !this.remiseGlobaleValeur) return 0;
-            if (this.remiseGlobaleType === 'pourcentage') return Math.round(this.sousTotal * this.remiseGlobaleValeur / 100);
-            return this.remiseGlobaleValeur;
-        },
-        get totalHT() { return Math.max(0, this.sousTotal - this.remiseGlobale); },
-        get totalTTC() { return Math.round(this.totalHT * (1 + (this.tva || 0) / 100)); },
-        formatPrix(v) { return new Intl.NumberFormat('fr-FR').format(v); },
-        get canSubmit() {
-            if (!this.clientChoisi) return false;
-            const hasValidLine = this.lignes.some(l => 
-                l.designation.trim() && 
-                (l.quantite > 0) && 
-                (l.prix_unitaire > 0)
-            );
-            return hasValidLine;
-        },
-        clientsList: clientsInit,
-        clientChoisi: null,
-        newClientOpen: false,
-        newClientSaving: false,
-        newClientError: '',
-        newClient: { type_client: 'personne_physique', prenom: '', nom: '', raison_sociale: '', telephone: '', email: '', date_naissance_mois: '', date_naissance_jour: '', notes: '', adresse: '', piece_identite: '' },
-        selectClient(client) { this.clientChoisi = client; },
-        retirerClient() { this.clientChoisi = null; },
-        async creerClient() {
-            this.newClientError = '';
-            const nc = this.newClient;
-            if (nc.type_client === 'personne_physique') {
-                if (!nc.prenom.trim() || !nc.nom.trim()) { this.newClientError = 'Prénom et nom sont requis.'; return; }
-            } else {
-                if (!nc.raison_sociale.trim()) { this.newClientError = 'La raison sociale est requise.'; return; }
-            }
-            if (!nc.telephone.trim()) { this.newClientError = 'Le téléphone est requis.'; return; }
-            this.newClientSaving = true;
-            try {
-                const payload = {
-                    type_client: nc.type_client,
-                    prenom: nc.prenom || null,
-                    nom: nc.nom || null,
-                    raison_sociale: nc.raison_sociale || null,
-                    telephone: nc.telephone,
-                    email: nc.email || null,
-                    date_naissance: nc.date_naissance_mois && nc.date_naissance_jour ? nc.date_naissance_mois + '-' + nc.date_naissance_jour : null,
-                    notes: nc.notes || null,
-                    adresse: nc.adresse || null,
-                    piece_identite: nc.piece_identite || null,
-                };
-                const res = await fetch('{{ route('dashboard.clients.quick-store') }}', {
-                    method: 'POST',
-                    headers: {'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').getAttribute('content'),'Accept':'application/json'},
-                    body: JSON.stringify(payload),
-                });
-                if (!res.ok) { const err = await res.json(); this.newClientError = err.message || 'Erreur lors de la création.'; return; }
-                const client = await res.json();
-                this.clientsList.unshift(client);
-                this.clientChoisi = client;
-                this.newClient = { type_client:'personne_physique', prenom:'',nom:'',raison_sociale:'',telephone:'',email:'',date_naissance_mois:'',date_naissance_jour:'',notes:'',adresse:'',piece_identite:'' };
-                this.newClientOpen = false;
-                document.body.classList.remove('overflow-hidden');
-            } catch (e) { this.newClientError = 'Erreur réseau. Réessayez.'; }
-            finally { this.newClientSaving = false; }
-        },
-    }));
-});
-</script>
-@endpush
+@include('dashboard.devis-factures.partials.form-script')
 </x-dashboard-layout>

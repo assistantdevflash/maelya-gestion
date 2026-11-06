@@ -16,22 +16,32 @@ class DevisController extends Controller
     public function index(Request $request)
     {
         $institutId = session('current_institut_id', Auth::user()->institut_id);
+        $statut = $request->input('statut', '');
+        $search = trim((string) $request->input('search', ''));
+
         $query = Devis::where('institut_id', $institutId)->with(['client','createur'])->latest('date_creation');
-        if ($request->filled('statut')) $query->where('statut', $request->statut);
-        if ($request->filled('search')) {
-            $s = $request->search;
-            $query->where(function($q) use ($s) {
-                $q->where('numero','like',"%{$s}%")->orWhere('client_nom','like',"%{$s}%")->orWhere('client_prenom','like',"%{$s}%");
+        if ($statut !== '') $query->where('statut', $statut);
+        if ($search !== '') {
+            $query->where(function($q) use ($search) {
+                $q->where('numero','like',"%{$search}%")
+                  ->orWhere('client_nom','like',"%{$search}%")
+                  ->orWhere('client_prenom','like',"%{$search}%")
+                  ->orWhere('client_telephone','like',"%{$search}%");
             });
         }
-        $devis = $query->paginate(20);
+        $devis = $query->paginate(20)->withQueryString();
         $stats = Cache::remember("devis_stats:{$institutId}", now()->addMinutes(5), function () use ($institutId) {
             $row = Devis::where('institut_id', $institutId)
-                ->selectRaw("SUM(CASE WHEN statut IN('brouillon','envoye') THEN 1 ELSE 0 END) as en_cours, COALESCE(SUM(CASE WHEN statut IN('brouillon','envoye') THEN total_ttc ELSE 0 END),0) as total_ttc, SUM(CASE WHEN statut='accepte' THEN 1 ELSE 0 END) as acceptes")
+                ->selectRaw("SUM(CASE WHEN statut IN('brouillon','envoye') THEN 1 ELSE 0 END) as en_cours, COALESCE(SUM(CASE WHEN statut IN('brouillon','envoye') THEN total_ttc ELSE 0 END),0) as total_ttc, SUM(CASE WHEN statut='accepte' THEN 1 ELSE 0 END) as acceptes, SUM(CASE WHEN statut='expire' THEN 1 ELSE 0 END) as expires")
                 ->first();
-            return ['en_cours' => (int) $row->en_cours, 'total_ttc' => (int) $row->total_ttc, 'acceptes' => (int) $row->acceptes];
+            return [
+                'en_cours'  => (int) $row->en_cours,
+                'total_ttc' => (int) $row->total_ttc,
+                'acceptes'  => (int) $row->acceptes,
+                'expires'   => (int) $row->expires,
+            ];
         });
-        return view('dashboard.devis-factures.index', compact('devis','stats'))->with('tab','devis');
+        return view('dashboard.devis-factures.index', compact('devis','stats','statut','search'))->with('tab','devis');
     }
 
     public function create()
@@ -125,7 +135,7 @@ class DevisController extends Controller
         $devis = Devis::create([
             'institut_id' => session('current_institut_id', Auth::user()->institut_id),
             'client_id' => $clientId, 'user_id' => Auth::id(),
-            'numero' => DevisService::genererNumero(session('current_institut_id', Auth::user()->institut_id)), 'statut' => 'brouillon',
+            'numero' => DevisService::genererNumero(session('current_institut_id', Auth::user()->institut_id)), 'statut' => 'brouillon', 'token' => Str::random(32),
             'date_creation' => $data['date_creation'], 'date_expiration' => $data['date_expiration'],
             'client_prenom' => $data['client_prenom'] ?? null, 'client_nom' => $data['client_nom'] ?? null,
             'client_email' => $data['client_email'] ?? null, 'client_telephone' => $data['client_telephone'] ?? null, 'client_adresse' => $data['client_adresse'] ?? null,
@@ -185,6 +195,29 @@ class DevisController extends Controller
         return redirect()->route('dashboard.devis.show', ['devis' => $devis->id])->with('success','Devis mis à jour.');
     }
 
+    /** Marque un devis comme accepté ou refusé par le client. */
+    public function marquerStatut(Request $request, Devis $devis)
+    {
+        $data = $request->validate([
+            'statut' => 'required|in:accepte,refuse',
+        ]);
+
+        if ($devis->facture_id) {
+            return back()->with('error', 'Ce devis a déjà été transformé en facture.');
+        }
+
+        $devis->update([
+            'statut'            => $data['statut'],
+            'date_acceptation'  => $data['statut'] === 'accepte' ? now() : null,
+        ]);
+
+        $this->oublierStats($devis->institut_id);
+
+        return back()->with('success', $data['statut'] === 'accepte'
+            ? 'Devis marqué comme accepté.'
+            : 'Devis marqué comme refusé.');
+    }
+
     public function destroy(Devis $devis) {
         $institutId = $devis->institut_id;
         $devis->items()->delete();
@@ -221,13 +254,18 @@ class DevisController extends Controller
     /**
      * PDF public (pas d'auth requise) — accès sécurisé par UUID du devis.
      */
-    public function pdfPublic(string $id)
+    public function pdfPublic(string $id, ?string $token = null)
     {
         $devis = Devis::where('id', $id)->firstOrFail();
 
         // Un brouillon n'est pas un document contractuel : il ne doit jamais
         // être téléchargeable sans authentification.
         abort_if($devis->statut === 'brouillon', 404);
+
+        // Le token est la clé de partage : dès qu'il existe, il est exigé.
+        if ($devis->token) {
+            abort_unless(hash_equals($devis->token, (string) $token), 404);
+        }
 
         $devis->load(['items', 'client']);
         $pdf = Pdf::loadView('pdf.devis', ['devis' => $devis, 'institut' => $devis->institut]);

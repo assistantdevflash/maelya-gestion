@@ -78,6 +78,20 @@
                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                     Télécharger PDF
                 </a>
+                <a href="{{ route('dashboard.factures.dupliquer', ['facture' => $factureId]) }}"
+                   class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    Dupliquer
+                </a>
+                @if(! $facture->estPayee && $facture->statut !== 'annulee' && $clientEmail)
+                <form method="POST" action="{{ route('dashboard.factures.relancer', ['facture' => $factureId]) }}">
+                    @csrf
+                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition">
+                        <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                        Relancer le client
+                    </button>
+                </form>
+                @endif
                 @if($facture->statut !== 'annulee')
                 <button onclick="openModal('modal-annuler')"
                    class="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
@@ -231,6 +245,70 @@
                 </tbody>
             </table>
             @endif
+        </div>
+    </div>
+
+    {{-- Avoirs émis --}}
+    @if($facture->avoirs->isNotEmpty())
+    <div class="card overflow-hidden">
+        <div class="card-header"><h2 class="font-semibold">Avoirs émis</h2></div>
+        <div class="card-body">
+            <table class="w-full text-sm">
+                <thead><tr>
+                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">N°</th>
+                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">Motif</th>
+                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500">Montant</th>
+                </tr></thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
+                    @foreach($facture->avoirs as $avoir)
+                    <tr>
+                        <td class="px-3 py-2 font-mono text-xs font-semibold text-primary-600">{{ $avoir->numero }}</td>
+                        <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ $avoir->motif ?? '—' }}</td>
+                        <td class="px-3 py-2 text-right font-bold text-red-500">−{{ number_format($avoir->montant, 0, ',', ' ') }} F</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endif
+
+    {{-- ═══ HISTORIQUE ═══ --}}
+    @php
+        $etapes = [];
+        $etapes[] = ['date' => $facture->created_at, 'titre' => 'Facture créée', 'texte' => 'N° ' . $facture->numero, 'couleur' => 'bg-gray-400'];
+        foreach ($facture->paiements->sortBy('date_paiement') as $paiement) {
+            $etapes[] = [
+                'date' => $paiement->date_paiement,
+                'titre' => 'Paiement reçu',
+                'texte' => number_format($paiement->montant, 0, ',', ' ') . ' F — ' . ($paiement->mode_paiement_label ?? $paiement->mode_paiement),
+                'couleur' => 'bg-emerald-500',
+            ];
+        }
+        if ($facture->statut === 'payee') {
+            $etapes[] = ['date' => $facture->updated_at, 'titre' => 'Facture soldée', 'texte' => 'Montant total réglé', 'couleur' => 'bg-emerald-600'];
+        }
+        if ($facture->statut === 'annulee') {
+            $etapes[] = ['date' => $facture->updated_at, 'titre' => 'Facture annulée', 'texte' => 'Écritures de vente retirées', 'couleur' => 'bg-red-500'];
+        }
+        foreach ($facture->relances as $relance) {
+            $etapes[] = ['date' => $relance->envoye_le, 'titre' => 'Relance envoyée', 'texte' => ucfirst($relance->canal) . ' · ' . $relance->palier, 'couleur' => 'bg-amber-500'];
+        }
+        $etapes = collect($etapes)->sortBy('date')->values();
+    @endphp
+    <div class="card">
+        <div class="card-header"><h2 class="font-semibold">Historique</h2></div>
+        <div class="card-body">
+            <ol class="relative border-l border-gray-200 dark:border-slate-700 ml-2 space-y-4">
+                @foreach($etapes as $etape)
+                <li class="ml-4">
+                    <span class="absolute -left-[5px] w-2.5 h-2.5 rounded-full {{ $etape['couleur'] }}"></span>
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ $etape['titre'] }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ $etape['texte'] }}</p>
+                    <p class="text-[11px] text-gray-400 mt-0.5">{{ \Illuminate\Support\Carbon::parse($etape['date'])->translatedFormat('d M Y à H:i') }}</p>
+                </li>
+                @endforeach
+            </ol>
         </div>
     </div>
 

@@ -105,12 +105,12 @@ Route::get('/suivi-credit/{id}', [\App\Http\Controllers\CreditPublicController::
     ->name('credit.suivi.public');
 
 // ─── Devis PDF public (lien partageable, accès par UUID) ─────────────────────
-Route::get('/devis/{id}', [\App\Http\Controllers\Dashboard\DevisController::class, 'pdfPublic'])
+Route::get('/devis/{id}/{token?}', [\App\Http\Controllers\Dashboard\DevisController::class, 'pdfPublic'])
     ->middleware('throttle:30,1')
     ->name('devis.public');
 
 // ─── Facture PDF publique (lien partageable, accès par UUID) ─────────────────
-Route::get('/facture/{id}', [\App\Http\Controllers\Dashboard\FactureController::class, 'pdfPublic'])
+Route::get('/facture/{id}/{token?}', [\App\Http\Controllers\Dashboard\FactureController::class, 'pdfPublic'])
     ->middleware('throttle:30,1')
     ->name('facture.public');
 
@@ -209,6 +209,7 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
         Route::get('devis/{devis}/pdf', [\App\Http\Controllers\Dashboard\DevisController::class, 'pdf'])->name('devis.pdf');
         Route::get('devis/{devis}/dupliquer', [\App\Http\Controllers\Dashboard\DevisController::class, 'dupliquer'])->name('devis.dupliquer');
         Route::post('devis/{devis}/envoyer-email', [\App\Http\Controllers\Dashboard\DevisController::class, 'envoyerEmail'])->name('devis.envoyer-email');
+        Route::post('devis/{devis}/statut', [\App\Http\Controllers\Dashboard\DevisController::class, 'marquerStatut'])->name('devis.statut');
 
         Route::resource('factures', \App\Http\Controllers\Dashboard\FactureController::class)
             ->except(['index', 'edit', 'update'])
@@ -220,6 +221,9 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
         Route::post('factures/{facture}/annuler', [\App\Http\Controllers\Dashboard\FactureController::class, 'annuler'])->name('factures.annuler');
         Route::post('factures/{facture}/envoyer-email', [\App\Http\Controllers\Dashboard\FactureController::class, 'envoyerEmail'])->name('factures.envoyer-email');
         Route::patch('factures/{facture}/pied-page', [\App\Http\Controllers\Dashboard\FactureController::class, 'updatePiedPage'])->name('factures.pied-page');
+        Route::get('factures/{facture}/dupliquer', [\App\Http\Controllers\Dashboard\FactureController::class, 'dupliquer'])->name('factures.dupliquer');
+        Route::post('factures/{facture}/relancer', [\App\Http\Controllers\Dashboard\FactureController::class, 'relancer'])->name('factures.relancer');
+        Route::get('factures/depuis-vente/{vente}', [\App\Http\Controllers\Dashboard\FactureController::class, 'creerDepuisVente'])->name('factures.depuis-vente');
     });
 
     // Crédits clients & échéanciers (essai 14j + Premium+ uniquement)

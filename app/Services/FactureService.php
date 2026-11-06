@@ -1,6 +1,8 @@
 <?php
 namespace App\Services;
+use App\Models\Avoir;
 use App\Models\Facture;
+use App\Models\Institut;
 use App\Models\Paiement;
 use App\Models\Vente;
 use App\Models\VenteItem;
@@ -10,8 +12,13 @@ class FactureService
 {
     public static function genererNumero(string $institutId): string
     {
-        return DB::transaction(function () use ($institutId) {
-            $date = now()->format('Ymd');
+        // Séquence « journalière » (FAC-20261106-000001) ou « annuelle »
+        // (FAC-2026-000001), réglable par établissement.
+        $sequence = Institut::withoutGlobalScopes()->whereKey($institutId)->value('facturation_sequence')
+            ?: 'journaliere';
+        $date = $sequence === 'annuelle' ? now()->format('Y') : now()->format('Ymd');
+
+        return DB::transaction(function () use ($institutId, $date) {
             $prefix = "FAC-{$date}-";
 
             // Le numéro est complété à 6 chiffres : l'ordre alphabétique suit
@@ -25,6 +32,24 @@ class FactureService
             $next = $last ? ((int) substr($last->numero, -6)) + 1 : 1;
 
             return sprintf('FAC-%s-%06d', $date, $next);
+        });
+    }
+
+    public static function genererNumeroAvoir(string $institutId): string
+    {
+        return DB::transaction(function () use ($institutId) {
+            $prefix = 'AV-' . now()->format('Y') . '-';
+
+            $last = Avoir::withoutGlobalScopes()
+                ->where('institut_id', $institutId)
+                ->where('numero', 'like', $prefix . '%')
+                ->orderByDesc('numero')
+                ->lockForUpdate()
+                ->first();
+
+            $next = $last ? ((int) substr($last->numero, -6)) + 1 : 1;
+
+            return sprintf('AV-%s-%06d', now()->format('Y'), $next);
         });
     }
 

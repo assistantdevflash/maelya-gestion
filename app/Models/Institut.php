@@ -25,6 +25,8 @@ class Institut extends Model
         'couleur_primaire', 'couleur_secondaire', 'couleur_accent',
         // Paramétrage du module crédits
         'credit_plafond_defaut', 'credit_relance_active', 'credit_message_relance',
+        // Paramètres de facturation (séquence des numéros, relances clients)
+        'facturation_sequence', 'facture_relance_active', 'facture_relance_message',
         // Horaires d'ouverture (contrôle des rendez-vous)
         'heure_ouverture', 'heure_fermeture', 'jours_ouverture',
     ];
@@ -44,6 +46,7 @@ class Institut extends Model
         'facebook_access_token' => 'encrypted',
         'facebook_connected_at' => 'datetime',
         'jours_ouverture' => 'array',
+        'facture_relance_active' => 'boolean',
     ];
 
     protected static function boot(): void

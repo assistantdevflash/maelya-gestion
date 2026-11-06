@@ -35,12 +35,32 @@
                 . "Voici votre devis " . $devis->numero . "\n"
                 . "Montant : " . number_format($devis->total_ttc, 0, ',', ' ') . " F CFA\n"
                 . "Valable jusqu'au " . $devis->date_expiration->format('d/m/Y') . "\n\n"
-                . "Télécharger le PDF : " . route('devis.public', ['id' => $devisId]) . "\n\n"
+                . "Télécharger le PDF : " . ($devis->token ? route('devis.public', ['id' => $devisId, 'token' => $devis->token]) : route('devis.public', ['id' => $devisId])) . "\n\n"
                 . "Merci de votre confiance !");
         @endphp
 
         {{-- ═══ BARRE D'ACTIONS ═══ --}}
         <div class="flex flex-wrap items-center gap-2 justify-end">
+            {{-- Décision du client : accepté / refusé --}}
+            @if(!$devis->facture_id && in_array($devis->statut, ['brouillon', 'envoye', 'expire']))
+            <form method="POST" action="{{ route('dashboard.devis.statut', ['devis' => $devisId]) }}" class="inline">
+                @csrf
+                <input type="hidden" name="statut" value="accepte">
+                <button class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span class="hidden sm:inline">Marquer accepté</span><span class="sm:hidden">Accepté</span>
+                </button>
+            </form>
+            <form method="POST" action="{{ route('dashboard.devis.statut', ['devis' => $devisId]) }}" class="inline">
+                @csrf
+                <input type="hidden" name="statut" value="refuse">
+                <button class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/40 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <span class="hidden sm:inline">Refusé</span>
+                </button>
+            </form>
+            @endif
+
             {{-- Actions principales (toujours visibles) --}}
             @if($estModifiable)
             <button onclick="openModal('modal-transformer')"

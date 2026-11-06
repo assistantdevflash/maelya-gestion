@@ -1,6 +1,20 @@
 @php
     $cp = $institut->couleur_primaire ?? '#8B5CF6';
     $cs = $institut->couleur_secondaire ?? '#ec4899';
+
+    $badge = match ($devis->statut) {
+        'accepte' => 'DEVIS ACCEPTÉ',
+        'refuse'  => 'DEVIS REFUSÉ',
+        'expire'  => 'DEVIS EXPIRÉ',
+        default   => 'DEVIS',
+    };
+    $badgeCouleur = match ($devis->statut) {
+        'accepte' => '#059669',
+        'refuse'  => '#dc2626',
+        'expire'  => '#6b7280',
+        default   => $cp,
+    };
+    $expireVisuel = in_array($devis->statut, ['refuse', 'expire']);
 @endphp
 <!DOCTYPE html>
 <html lang="fr">
@@ -15,7 +29,8 @@
     .header-right { text-align: right; }
     .institut-nom { font-size: 18px; font-weight: bold; color: {{ $cp }}; margin-bottom: 4px; }
     .institut-meta { font-size: 10px; color: #6b7280; line-height: 1.5; }
-    .badge { display: inline-block; background: {{ $cp }}; color: #fff; padding: 6px 14px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .badge { display: inline-block; background: {{ $badgeCouleur }}; color: #fff; padding: 6px 14px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .filigrane { position: fixed; top: 40%; left: 0; right: 0; text-align: center; font-size: 90px; font-weight: bold; color: rgba(107, 114, 128, 0.14); transform: rotate(-30deg); letter-spacing: 12px; }
     .numero { font-size: 14px; font-weight: bold; color: #111827; }
     .date-info { font-size: 10px; color: #6b7280; margin-top: 4px; }
     .parties { display: table; width: 100%; margin-top: 16px; }
@@ -43,6 +58,9 @@
 </style>
 </head>
 <body>
+@if($expireVisuel)
+<div class="filigrane">{{ $devis->statut === 'refuse' ? 'REFUSÉ' : 'EXPIRÉ' }}</div>
+@endif
 <div class="header">
     <div class="header-left">
         @if($institut->logo ?? null)
@@ -58,7 +76,7 @@
         </div>
     </div>
     <div class="header-right">
-        <div class="badge">Devis</div>
+        <div class="badge">{{ $badge }}</div>
         <div class="numero">N° {{ $devis->numero }}</div>
         <div class="date-info">Créé le {{ $devis->date_creation->format('d/m/Y') }} · Valable jusqu'au {{ $devis->date_expiration->format('d/m/Y') }}</div>
     </div>

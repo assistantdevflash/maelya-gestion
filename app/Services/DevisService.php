@@ -64,8 +64,26 @@ class DevisService
             $remiseGlobale = (int)($data['remise_globale_valeur'] ?? 0);
         }
         $totalHT = max(0, $sousTotal - $remiseGlobale);
-        $tvaTaux = !empty($data['tva_applicable']) ? (float)($data['tva_taux'] ?? 0) : 0;
-        $montantTVA = $tvaTaux > 0 ? (int)round($totalHT * $tvaTaux / 100) : 0;
+
+        // TVA : si au moins une ligne porte son propre taux, on ventile ligne par
+        // ligne (la remise globale est répartie au prorata). Sinon on applique le
+        // taux global du document.
+        $lignesTaxees = array_filter($lignes, fn ($l) => (float) ($l['tva_taux'] ?? 0) > 0);
+
+        if (! empty($lignesTaxees)) {
+            $prorata    = $sousTotal > 0 ? $totalHT / $sousTotal : 0;
+            $montantTVA = 0;
+            foreach ($lignes as $ligne) {
+                $taux = (float) ($ligne['tva_taux'] ?? 0);
+                if ($taux > 0) {
+                    $montantTVA += (int) round($ligne['total_ligne'] * $prorata * $taux / 100);
+                }
+            }
+        } else {
+            $tvaTaux    = !empty($data['tva_applicable']) ? (float)($data['tva_taux'] ?? 0) : 0;
+            $montantTVA = $tvaTaux > 0 ? (int)round($totalHT * $tvaTaux / 100) : 0;
+        }
+
         $totalTTC = $totalHT + $montantTVA;
 
         return [$sousTotal, $remiseGlobale, $totalHT, $montantTVA, $totalTTC, $lignes];

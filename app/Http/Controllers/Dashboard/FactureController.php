@@ -4,7 +4,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\Facture;
 use App\Models\FactureItem;
+use App\Models\FactureRelance;
 use App\Models\Paiement;
+use App\Mail\FactureARelancer;
 use App\Services\DevisService;
 use App\Services\FactureService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -12,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class FactureController extends Controller
@@ -19,13 +22,27 @@ class FactureController extends Controller
     public function index(Request $request)
     {
         $institutId = session('current_institut_id', Auth::user()->institut_id);
+        $statut     = $request->input('statut', '');
+        $search     = trim((string) $request->input('search', ''));
+        $retard     = $request->boolean('retard');
+
         $query = Facture::where('institut_id', $institutId)->with(['client','devis'])->latest('date_emission');
-        if ($request->filled('statut')) $query->where('statut', $request->statut);
-        if ($request->filled('search')) {
-            $s = $request->search;
-            $query->where(function($q) use ($s) { $q->where('numero','like',"%{$s}%")->orWhere('client_nom','like',"%{$s}%")->orWhere('client_prenom','like',"%{$s}%"); });
+
+        if ($statut !== '') $query->where('statut', $statut);
+        if ($retard) {
+            $query->whereNotIn('statut', ['payee', 'annulee'])
+                  ->whereDate('date_echeance', '<', now()->toDateString());
         }
-        $factures = $query->paginate(20);
+        if ($search !== '') {
+            $query->where(function($q) use ($search) {
+                $q->where('numero','like',"%{$search}%")
+                  ->orWhere('client_nom','like',"%{$search}%")
+                  ->orWhere('client_prenom','like',"%{$search}%")
+                  ->orWhere('client_telephone','like',"%{$search}%");
+            });
+        }
+
+        $factures = $query->paginate(20)->withQueryString();
         $stats = Cache::remember("facture_stats:{$institutId}", now()->addMinutes(5), function () use ($institutId) {
             $row = Facture::where('institut_id', $institutId)
                 ->selectRaw(
@@ -37,7 +54,7 @@ class FactureController extends Controller
                 ->first();
             return ['total_ttc' => (int) $row->total_ttc, 'total_paye' => (int) $row->total_paye, 'en_retard' => (int) $row->en_retard];
         });
-        return view('dashboard.devis-factures.index', compact('factures','stats'))->with('tab','factures');
+        return view('dashboard.devis-factures.index', compact('factures','stats','statut','search','retard'))->with('tab','factures');
     }
 
     public function create(Request $request)
@@ -71,7 +88,9 @@ class FactureController extends Controller
         if ($request->filled('devis_id')) {
             $devis = \App\Models\Devis::with('items')->find($request->devis_id);
         }
-        return view('dashboard.devis-factures.factures.create', compact('allClients','devis','catalogue'));
+
+        return view('dashboard.devis-factures.factures.create', compact('allClients','devis','catalogue'))
+            ->with('duplicateData', session('duplicate_facture'));
     }
 
     public function store(Request $request)
@@ -143,7 +162,7 @@ class FactureController extends Controller
         }
         return redirect()->route('dashboard.factures.show', ['facture' => $facture->id])->with('success','Facture créée.');
     }
-    public function show(Facture $facture) { $facture->load(['items','client','devis','paiements.encaisseur','vente']); return view('dashboard.devis-factures.factures.show', compact('facture')); }
+    public function show(Facture $facture) { $facture->load(['items','client','devis','paiements.encaisseur','vente','relances','avoirs']); return view('dashboard.devis-factures.factures.show', compact('facture')); }
 
     public function pdf(Facture $facture) {
         $facture->load(['items','client']);
@@ -154,9 +173,16 @@ class FactureController extends Controller
     /**
      * PDF public (pas d'auth requise) — accès sécurisé par UUID de la facture.
      */
-    public function pdfPublic(string $id)
+    public function pdfPublic(string $id, ?string $token = null)
     {
         $facture = Facture::where('id', $id)->firstOrFail();
+
+        // Le token est la clé de partage : dès qu'il existe, il est exigé.
+        // Les documents créés avant son instauration restent accessibles par UUID.
+        if ($facture->token) {
+            abort_unless(hash_equals($facture->token, (string) $token), 404);
+        }
+
         $facture->load(['items', 'client']);
         $pdf = Pdf::loadView('pdf.facture-module', ['facture' => $facture, 'institut' => $facture->institut]);
         return $pdf->download("Facture-{$facture->numero}.pdf");
@@ -269,6 +295,22 @@ class FactureController extends Controller
             // Supprimer les paiements
             $facture->paiements()->delete();
 
+            // Un avoir trace la contre-passation des sommes déjà encaissées :
+            // on ne se contente pas de supprimer les écritures.
+            $avoir = null;
+            if ($montantPaye > 0) {
+                $avoir = \App\Models\Avoir::create([
+                    'institut_id' => $facture->institut_id,
+                    'facture_id'  => $facture->id,
+                    'client_id'   => $facture->client_id,
+                    'user_id'     => Auth::id(),
+                    'numero'      => FactureService::genererNumeroAvoir($facture->institut_id),
+                    'montant'     => $montantPaye,
+                    'motif'       => 'Annulation de la facture ' . $facture->numero,
+                    'statut'      => 'emis',
+                ]);
+            }
+
             // Marquer la facture comme annulée
             $facture->update(['statut' => 'annulee', 'montant_paye' => 0, 'vente_id' => null]);
 
@@ -277,7 +319,8 @@ class FactureController extends Controller
             DB::commit();
 
             $msg = $montantPaye > 0
-                ? 'Facture annulée. ' . number_format($montantPaye, 0, ',', ' ') . ' F de paiements ont été annulés et retirés du chiffre d\'affaires.'
+                ? 'Facture annulée. Avoir ' . $avoir->numero . ' émis pour '
+                  . number_format($montantPaye, 0, ',', ' ') . ' F : les ventes liées ont été retirées du chiffre d\'affaires.'
                 : 'Facture annulée.';
 
             return back()->with('success', $msg);
@@ -313,6 +356,104 @@ class FactureController extends Controller
         });
 
         return back()->with('success', 'Facture envoyée par email à ' . ($facture->client_nom_complet ?: 'votre client') . '.');
+    }
+
+    /** Duplique une facture : pré-remplit le formulaire de création. */
+    public function dupliquer(Facture $facture)
+    {
+        $facture->load('items');
+
+        session()->flash('duplicate_facture', [
+            'client_id' => $facture->client_id,
+            'client'    => $facture->client ? [
+                'id'            => $facture->client->id,
+                'prenom'        => $facture->client->prenom,
+                'nom'           => $facture->client->nom,
+                'nom_affichage' => $facture->client->nom_affichage,
+                'telephone'     => $facture->client->telephone,
+                'email'         => $facture->client->email,
+                'adresse'       => $facture->client->adresse,
+                'initiale'      => strtoupper(substr($facture->client->prenom ?: $facture->client->nom, 0, 1)),
+            ] : null,
+            'titre'                => $facture->titre,
+            'notes'                => $facture->notes,
+            'conditions'           => $facture->conditions,
+            'tva_applicable'       => $facture->tva_applicable,
+            'tva_taux'             => (float) $facture->tva_taux,
+            'remise_globale_type'  => $facture->remise_globale_type,
+            'remise_globale_valeur'=> $facture->remise_globale_valeur,
+            'lignes'               => $facture->items->map(fn ($i) => [
+                'designation'   => $i->designation,
+                'quantite'      => $i->quantite,
+                'prix_unitaire' => $i->prix_unitaire,
+                'remise_type'   => $i->remise_type,
+                'remise_valeur' => $i->remise_valeur,
+                'tva_taux'      => $i->tva_taux,
+                'produit_id'    => $i->produit_id,
+                'prestation_id' => $i->prestation_id,
+            ])->toArray(),
+        ]);
+
+        return redirect()->route('dashboard.factures.create')
+            ->with('success', 'Facture ' . $facture->numero . ' dupliquée : vérifiez les dates puis enregistrez.');
+    }
+
+    /** Crée une facture à partir d'une vente existante. */
+    public function creerDepuisVente(\App\Models\Vente $vente)
+    {
+        $vente->load('items', 'client');
+
+        session()->flash('duplicate_facture', [
+            'client_id' => $vente->client_id,
+            'client'    => $vente->client ? [
+                'id'            => $vente->client->id,
+                'prenom'        => $vente->client->prenom,
+                'nom'           => $vente->client->nom,
+                'nom_affichage' => $vente->client->nom_affichage,
+                'telephone'     => $vente->client->telephone,
+                'email'         => $vente->client->email,
+                'adresse'       => $vente->client->adresse,
+                'initiale'      => strtoupper(substr($vente->client->prenom ?: $vente->client->nom, 0, 1)),
+            ] : null,
+            'notes'  => 'Facture établie à partir de la vente ' . $vente->numero,
+            'lignes' => $vente->items->map(fn ($i) => [
+                'designation'   => $i->nom_snapshot ?: 'Article',
+                'quantite'      => $i->quantite,
+                'prix_unitaire' => $i->prix_snapshot,
+                'produit_id'    => $i->type === 'produit' ? $i->item_id : null,
+                'prestation_id' => $i->type !== 'produit' ? $i->item_id : null,
+            ])->toArray(),
+        ]);
+
+        return redirect()->route('dashboard.factures.create')
+            ->with('success', 'Facture pré-remplie depuis la vente ' . $vente->numero . '.');
+    }
+
+    /** Envoie une relance manuelle au client pour une facture impayée. */
+    public function relancer(Facture $facture)
+    {
+        if ($facture->estPayee) {
+            return back()->with('error', 'Cette facture est déjà réglée.');
+        }
+        if ($facture->statut === 'annulee') {
+            return back()->with('error', 'Cette facture est annulée.');
+        }
+
+        $email = $facture->client_email ?: ($facture->client->email ?? null);
+        if (! $email) {
+            return back()->with('error', 'Aucune adresse email pour ce client.');
+        }
+
+        $facture->load('items', 'client', 'institut');
+
+        Mail::to($email)->send(new FactureARelancer($facture));
+
+        FactureRelance::firstOrCreate(
+            ['facture_id' => $facture->id, 'palier' => 'manuel', 'canal' => 'email'],
+            ['institut_id' => $facture->institut_id, 'envoye_le' => now()]
+        );
+
+        return back()->with('success', 'Relance envoyée à ' . $email . '.');
     }
 
     public function updatePiedPage(Request $request, Facture $facture)

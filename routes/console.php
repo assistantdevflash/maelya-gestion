@@ -29,6 +29,12 @@ Schedule::command('credits:rappels-echeances')->dailyAt('08:00');
 // Cascade de relances : J-3, J+1, J+7, J+15, J+30
 Schedule::command('credits:relances')->dailyAt('08:30');
 
+// Relances des factures impayées : J-3, J+1, J+7, J+15, J+30
+Schedule::command('factures:relances')->dailyAt('08:45');
+
+// Passage en « expiré » des devis dont la date de validité est dépassée
+Schedule::command('devis:expirer')->dailyAt('01:15');
+
 // Purge hebdomadaire du journal d'activité (conserve 90 jours)
 Schedule::command('audit:purge --days=90')->weeklyOn(0, '02:00');
 

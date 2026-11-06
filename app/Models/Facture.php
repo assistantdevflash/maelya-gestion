@@ -24,7 +24,6 @@ class Facture extends Model
         'notes', 'conditions',
         'pied_page_afficher', 'pied_page_texte',
     ];
-
     protected $casts = [
         'date_emission' => 'date',
         'date_echeance' => 'date',
@@ -44,6 +43,24 @@ class Facture extends Model
     public function createur(): BelongsTo { return $this->belongsTo(User::class, 'user_id'); }
     public function items(): HasMany { return $this->hasMany(FactureItem::class)->orderBy('ordre'); }
     public function paiements(): HasMany { return $this->hasMany(Paiement::class); }
+
+    public function relances(): HasMany { return $this->hasMany(FactureRelance::class); }
+
+    public function avoirs(): HasMany { return $this->hasMany(Avoir::class); }
+
+    /** Jours de retard (0 si l'échéance n'est pas dépassée ou si la facture est réglée). */
+    public function getJoursRetardAttribute(): int
+    {
+        if ($this->estPayee || $this->statut === 'annulee' || ! $this->date_echeance) {
+            return 0;
+        }
+
+        return $this->date_echeance->isPast()
+            ? (int) $this->date_echeance->startOfDay()->diffInDays(now()->startOfDay())
+            : 0;
+    }
+
+    public function getEstEnRetardAttribute(): bool { return $this->jours_retard > 0; }
 
     public function getResteAPayerAttribute(): int { return max(0, $this->total_ttc - $this->montant_paye); }
     public function getEstPayeeAttribute(): bool { return $this->montant_paye >= $this->total_ttc; }

@@ -5,7 +5,12 @@
         <div><h1 class="text-2xl font-bold text-gray-900 dark:text-white">Modifier {{ $devis->numero }}</h1></div>
     </div>
 
-    <form method="POST" action="{{ route('dashboard.devis.update', ['devis' => $devis->id]) }}" x-data="lignesManager(@js($devis->items->map(fn($i) => ['designation'=>$i->designation,'quantite'=>$i->quantite,'prix_unitaire'=>$i->prix_unitaire,'remise_type'=>$i->remise_type,'remise_valeur'=>$i->remise_valeur,'tva_taux'=>$i->tva_taux, 'produit_id'=>$i->produit_id, 'prestation_id'=>$i->prestation_id, 'pickerOpen'=>false, 'pickerSearch'=>''])->toArray()), @js($catalogue->toArray()))">
+    <form method="POST" action="{{ route('dashboard.devis.update', ['devis' => $devis->id]) }}" x-data="documentForm({
+        catalogue: @js($catalogue->toArray()),
+        initial: { lignes: @js($devis->items->map(fn($i) => ['designation'=>$i->designation,'quantite'=>$i->quantite,'prix_unitaire'=>$i->prix_unitaire,'remise_type'=>$i->remise_type,'remise_valeur'=>$i->remise_valeur,'tva_taux'=>$i->tva_taux,'produit_id'=>$i->produit_id,'prestation_id'=>$i->prestation_id])->toArray()) },
+        prixDisplay: false,
+        cle: 'devis-edit-{{ $devis->id }}'
+    })">
         @csrf @method('PUT')
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2 space-y-5">
@@ -114,42 +119,5 @@
     </form>
 </div>
 
-@push('scripts')
-<script>
-document.addEventListener('alpine:init', () => {
-    Alpine.data('lignesManager', (initial, catalogueInit) => ({
-        lignes: initial.length ? initial : [{designation:'', quantite:1, prix_unitaire:0, remise_type:'', remise_valeur:0, tva_taux:null, pickerOpen: false, pickerSearch: '', produit_id: null, prestation_id: null}],
-        tva: {{ $devis->tva_taux ?? 0 }},
-        tvaApplicable: {{ $devis->tva_applicable ? 'true' : 'false' }},
-        remiseGlobaleType: '{{ $devis->remise_globale_type }}',
-        remiseGlobaleValeur: {{ $devis->remise_globale_valeur ?? 0 }},
-        catalogue: catalogueInit,
-        ajouter() { this.lignes.push({designation:'', quantite:1, prix_unitaire:0, remise_type:'', remise_valeur:0, tva_taux:null, pickerOpen: false, pickerSearch: '', produit_id: null, prestation_id: null}); },
-        catalogueFiltered(ligne) {
-            const q = (ligne.pickerSearch || '').toLowerCase();
-            if (q.length < 1) return this.catalogue.slice(0, 10);
-            return this.catalogue.filter(c => c.search.includes(q)).slice(0, 10);
-        },
-        choisirCatalogue(ligne, item) {
-            const m = String(item.id || '').match(/^(prod|p)_(.+)$/);
-            ligne.produit_id    = m && m[1] === 'prod' ? m[2] : null;
-            ligne.prestation_id = m && m[1] === 'p'    ? m[2] : null;
-            ligne.designation = item.designation;
-            ligne.prix_unitaire = item.prix;
-            ligne.pickerOpen = false;
-            ligne.pickerSearch = '';
-        },
-        get sousTotal() { return this.lignes.reduce((s, l) => s + ((l.prix_unitaire||0) * (l.quantite||1)), 0); },
-        get remiseGlobale() {
-            if (!this.remiseGlobaleType || !this.remiseGlobaleValeur) return 0;
-            if (this.remiseGlobaleType === 'pourcentage') return Math.round(this.sousTotal * this.remiseGlobaleValeur / 100);
-            return this.remiseGlobaleValeur;
-        },
-        get totalHT() { return Math.max(0, this.sousTotal - this.remiseGlobale); },
-        get totalTTC() { return Math.round(this.totalHT * (1 + (this.tva || 0) / 100)); },
-        format(v) { return new Intl.NumberFormat('fr-FR').format(v); }
-    }));
-});
-</script>
-@endpush
+@include('dashboard.devis-factures.partials.form-script')
 </x-dashboard-layout>

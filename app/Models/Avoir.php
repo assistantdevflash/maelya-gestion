@@ -13,7 +13,7 @@ class Avoir extends Model
     protected $table = 'avoirs';
 
     protected $fillable = [
-        'institut_id', 'vente_id', 'client_id', 'user_id',
+        'institut_id', 'vente_id', 'facture_id', 'client_id', 'user_id',
         'code_reduction_id', 'numero', 'montant', 'motif', 'statut',
     ];
 
@@ -29,6 +29,11 @@ class Avoir extends Model
     public function vente()
     {
         return $this->belongsTo(Vente::class, 'vente_id');
+    }
+
+    public function facture()
+    {
+        return $this->belongsTo(Facture::class, 'facture_id');
     }
 
     public function client()
