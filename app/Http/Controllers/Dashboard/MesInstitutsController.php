@@ -109,6 +109,9 @@ class MesInstitutsController extends Controller
             'heure_fermeture'    => ['nullable', 'date_format:H:i'],
             'jours_ouverture'    => ['nullable', 'array'],
             'jours_ouverture.*'  => ['integer', 'between:1,7'],
+            // Mentions légales obligatoires sur les documents commerciaux
+            'rccm'          => ['nullable', 'string', 'max:50'],
+            'numero_fiscal' => ['nullable', 'string', 'max:50'],
             // Facturation : séquence des numéros et relances clients
             'facturation_sequence'   => ['nullable', 'in:journaliere,annuelle'],
             'facture_relance_active' => ['nullable', 'boolean'],

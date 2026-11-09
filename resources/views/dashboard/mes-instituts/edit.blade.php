@@ -224,6 +224,32 @@
                 </div>
             </div>
 
+            {{-- ─── Mentions légales ─── --}}
+            <div class="pt-4 mt-2 border-t border-gray-100 dark:border-slate-700 space-y-3">
+                <p class="text-xs font-bold uppercase tracking-wider text-gray-400">Mentions légales</p>
+                <p class="text-[11px] text-gray-400 -mt-1">
+                    Imprimées sur vos devis et factures. Obligatoires pour un document commercial
+                    présenté à une administration ou à une entreprise.
+                </p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label for="rccm" class="form-label">RCCM</label>
+                        <input type="text" name="rccm" id="rccm"
+                               value="{{ old('rccm', $institut->rccm) }}"
+                               placeholder="CI-ABJ-2020-B-12345"
+                               class="form-input text-sm">
+                    </div>
+                    <div>
+                        <label for="numero_fiscal" class="form-label">NCC (compte contribuable)</label>
+                        <input type="text" name="numero_fiscal" id="numero_fiscal"
+                               value="{{ old('numero_fiscal', $institut->numero_fiscal) }}"
+                               placeholder="2012345678 A"
+                               class="form-input text-sm">
+                    </div>
+                </div>
+            </div>
+
             {{-- ─── Facturation ─── --}}
             <div class="pt-4 mt-2 border-t border-gray-100 dark:border-slate-700 space-y-3">
                 <p class="text-xs font-bold uppercase tracking-wider text-gray-400">Facturation</p>

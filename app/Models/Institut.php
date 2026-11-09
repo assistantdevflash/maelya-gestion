@@ -25,6 +25,8 @@ class Institut extends Model
         'couleur_primaire', 'couleur_secondaire', 'couleur_accent',
         // Paramétrage du module crédits
         'credit_plafond_defaut', 'credit_relance_active', 'credit_message_relance',
+        // Mentions légales imprimées sur les factures et devis
+        'rccm', 'numero_fiscal',
         // Paramètres de facturation (séquence des numéros, relances clients)
         'facturation_sequence', 'facture_relance_active', 'facture_relance_message',
         // Horaires d'ouverture (contrôle des rendez-vous)

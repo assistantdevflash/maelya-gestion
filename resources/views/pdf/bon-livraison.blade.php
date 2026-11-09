@@ -54,6 +54,8 @@
             @if($institut->ville ?? null){{ $institut->ville }}<br>@endif
             @if($institut->telephone ?? null)Tél : {{ $institut->telephone }}<br>@endif
             @if($institut->email ?? null){{ $institut->email }}@endif
+            @if($institut->rccm ?? null)<br>RCCM : {{ $institut->rccm }}@endif
+            @if($institut->numero_fiscal ?? null)<br>NCC : {{ $institut->numero_fiscal }}@endif
         </div>
     </div>
     <div class="header-right">

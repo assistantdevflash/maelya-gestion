@@ -91,6 +91,12 @@
         @if($institut->telephone ?? null)
             <div class="institut-meta">Tél : {{ $institut->telephone }}</div>
         @endif
+        @if($institut->rccm ?? null)
+            <div class="institut-meta">RCCM : {{ $institut->rccm }}</div>
+        @endif
+        @if($institut->numero_fiscal ?? null)
+            <div class="institut-meta">NCC : {{ $institut->numero_fiscal }}</div>
+        @endif
     </div>
     <div class="header-right">
         <div class="facture-badge">Facture</div>
