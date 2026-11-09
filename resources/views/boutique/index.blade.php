@@ -289,7 +289,12 @@
     <footer class="mt-8 py-6 border-t border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800">
         <div class="container mx-auto px-4 text-center">
             <p class="text-sm text-gray-500 dark:text-slate-400">{{ $institut->nom }} &mdash; Boutique en ligne</p>
-            <p class="text-xs text-gray-400 dark:text-slate-500 mt-1">Propulsé par Maëlya Gestion</p>
+            <p class="text-xs text-gray-400 dark:text-slate-500 mt-2">
+                <a href="{{ route('shop.commandes.form', $institut->slug) }}"
+                   class="underline hover:text-gray-600 dark:hover:text-slate-300">Retrouver mes commandes</a>
+                <span class="mx-2">·</span>
+                Propulsé par Maëlya Gestion
+            </p>
         </div>
     </footer>
 

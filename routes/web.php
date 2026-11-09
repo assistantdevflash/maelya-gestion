@@ -75,6 +75,14 @@ Route::prefix('shop')->name('shop.')->group(function () {
         ->middleware('signed')
         ->name('suivi');
 
+    // Retrouver ses liens de suivi (client sans compte) : rien n'est affiché
+    // à l'écran, les liens partent sur l'email enregistré.
+    Route::get('/{slug}/mes-commandes', [BoutiqueController::class, 'formulaireCommandes'])
+        ->name('commandes.form');
+    Route::post('/{slug}/mes-commandes', [BoutiqueController::class, 'envoyerLiensCommandes'])
+        ->middleware('throttle:5,1')
+        ->name('commandes.envoyer');
+
     // Le client peut annuler sa commande tant qu'elle n'est pas acceptée/livrée.
     Route::post('/{slug}/commande/{numero}/annuler', [BoutiqueController::class, 'annulerParClient'])
         ->middleware('signed')

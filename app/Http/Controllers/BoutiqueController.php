@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\LiensCommandesClient;
 use App\Mail\NouvelleCommandeClient;
 use App\Mail\NouvelleCommandeEtablissement;
 use App\Models\Client;
@@ -16,6 +17,7 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
 
 class BoutiqueController extends Controller
@@ -590,6 +592,95 @@ class BoutiqueController extends Controller
     /**
      * Suivi de commande
      */
+    /**
+     * Formulaire de récupération des liens de suivi.
+     */
+    public function formulaireCommandes(string $slug)
+    {
+        $institut = Institut::where('slug', $slug)->firstOrFail();
+
+        $this->verifierAcces($institut);
+
+        return view('boutique.retrouver-commandes', ['institut' => $institut]);
+    }
+
+    /**
+     * Renvoie par email les liens de suivi des commandes d'un client.
+     *
+     * Le client n'a pas de compte : on ne peut pas l'authentifier. La parade
+     * est de ne RIEN afficher à l'écran (aucune énumération possible) et de
+     * n'envoyer les liens que sur l'email déjà enregistré sur la commande.
+     */
+    public function envoyerLiensCommandes(Request $request, string $slug)
+    {
+        $institut = Institut::where('slug', $slug)->firstOrFail();
+
+        $this->verifierAcces($institut);
+
+        $data = $request->validate([
+            'contact' => 'required|string|min:3|max:255',
+        ]);
+
+        // Message strictement identique qu'il y ait des commandes ou non :
+        // il ne doit pas permettre de deviner quels numéros sont clients.
+        $message = 'Si des commandes correspondent à ces informations, un email vient de vous être envoyé.';
+
+        try {
+            $commandes = $this->commandesPourContact($institut, trim($data['contact']));
+
+            $commandes
+                ->filter(fn (Commande $c) => filter_var((string) $c->client_email, FILTER_VALIDATE_EMAIL))
+                ->groupBy(fn (Commande $c) => mb_strtolower((string) $c->client_email))
+                ->each(function (Collection $groupe, string $email) use ($institut) {
+                    Mail::to($email)->send(new LiensCommandesClient($institut, $groupe));
+                });
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error(
+                '[Boutique] renvoi des liens de commande : ' . $e->getMessage()
+            );
+        }
+
+        return redirect()
+            ->route('shop.commandes.form', $institut->slug)
+            ->with('success', $message);
+    }
+
+    /**
+     * Commandes d'un établissement correspondant à un email ou un téléphone.
+     *
+     * Le téléphone est comparé sur les 8 derniers chiffres : cela tolère les
+     * formats « 07 01 02 03 04 », « +2250701020304 » ou « 0701020304 ».
+     *
+     * @return Collection<int, Commande>
+     */
+    private function commandesPourContact(Institut $institut, string $contact): Collection
+    {
+        $query = Commande::withoutGlobalScope(InstitutScope::class)
+            ->where('commandes.institut_id', $institut->id)
+            ->orderByDesc('commandes.created_at')
+            ->limit(20);
+
+        if (str_contains($contact, '@')) {
+            return $query
+                ->whereRaw('LOWER(commandes.client_email) = ?', [mb_strtolower($contact)])
+                ->get();
+        }
+
+        $chiffres = preg_replace('/\D+/', '', $contact);
+
+        // Moins de 8 chiffres : la recherche serait trop large pour être fiable
+        if (strlen((string) $chiffres) < 8) {
+            return collect();
+        }
+
+        $fin = substr($chiffres, -8);
+
+        return $query->whereRaw(
+            "REPLACE(REPLACE(REPLACE(REPLACE(commandes.client_telephone,' ',''),'-',''),'.',''),'+','') LIKE ?",
+            ['%' . $fin . '%']
+        )->get();
+    }
+
     public function suivreCommande(string $slug, string $numero)
     {
         $institut = Institut::where('slug', $slug)->firstOrFail();

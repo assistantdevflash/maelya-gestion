@@ -171,9 +171,13 @@
             </div>
             @endif
 
-            <div class="mt-8 text-center">
-                <a href="{{ route('shop.index', $institut->slug) }}" class="boutique-accent font-medium">
+            <div class="mt-8 text-center space-y-2">
+                <a href="{{ route('shop.index', $institut->slug) }}" class="block boutique-accent font-medium">
                     ← Retour à la boutique
+                </a>
+                <a href="{{ route('shop.commandes.form', $institut->slug) }}"
+                   class="block text-xs text-gray-400 hover:text-gray-600 underline">
+                    Retrouver mes autres commandes
                 </a>
             </div>
         </div>
