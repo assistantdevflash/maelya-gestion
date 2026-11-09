@@ -112,6 +112,8 @@ class MesInstitutsController extends Controller
             // Mentions légales obligatoires sur les documents commerciaux
             'rccm'          => ['nullable', 'string', 'max:50'],
             'numero_fiscal' => ['nullable', 'string', 'max:50'],
+            // Gestion de stock
+            'stock_negatif_autorise' => ['nullable', 'boolean'],
             // Facturation : séquence des numéros et relances clients
             'facturation_sequence'   => ['nullable', 'in:journaliere,annuelle'],
             'facture_relance_active' => ['nullable', 'boolean'],
@@ -128,8 +130,9 @@ class MesInstitutsController extends Controller
         if ($request->boolean('_facturation')) {
             $data['facture_relance_active'] = $request->boolean('facture_relance_active');
             $data['facturation_sequence']   = $data['facturation_sequence'] ?? 'journaliere';
+            $data['stock_negatif_autorise'] = $request->boolean('stock_negatif_autorise');
         } else {
-            unset($data['facturation_sequence'], $data['facture_relance_active'], $data['facture_relance_message']);
+            unset($data['facturation_sequence'], $data['facture_relance_active'], $data['facture_relance_message'], $data['stock_negatif_autorise']);
         }
 
         $institut->update($data);

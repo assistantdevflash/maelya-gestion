@@ -8,6 +8,7 @@ use App\Models\BonCommandeLigne;
 use App\Models\Fournisseur;
 use App\Models\MouvementStock;
 use App\Models\Produit;
+use App\Services\StockService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -117,19 +118,9 @@ class BonCommandeController extends Controller
                 if ($ligne->produit_id) {
                     $produit = Produit::find($ligne->produit_id);
                     if ($produit) {
-                        $produit->recalculerCmp($delta, $ligne->prix_unitaire);
-                        $stockAvant = $produit->stock;
-                        $produit->increment('stock', $delta);
-
-                        MouvementStock::create([
-                            'institut_id'   => $bonsCommande->institut_id,
-                            'produit_id'    => $produit->id,
-                            'user_id'       => Auth::id(),
-                            'type'          => 'entree',
-                            'quantite'      => $delta,
+                        app(StockService::class)->entrer($produit, $delta, [
+                            'type'          => StockService::ENTREE,
                             'prix_unitaire' => $ligne->prix_unitaire,
-                            'stock_avant'   => $stockAvant,
-                            'stock_apres'   => $stockAvant + $delta,
                             'note'          => "Réception {$bonsCommande->numero}",
                         ]);
                     }

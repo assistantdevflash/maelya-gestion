@@ -7,6 +7,7 @@ use App\Models\Inventaire;
 use App\Models\InventaireLigne;
 use App\Models\MouvementStock;
 use App\Models\Produit;
+use App\Services\StockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -99,18 +100,8 @@ class InventaireController extends Controller
                 $produit = Produit::find($ligne->produit_id);
                 if (!$produit) continue;
 
-                $stockAvant = $produit->stock;
-                $produit->update(['stock' => $ligne->stock_compte]);
-
-                MouvementStock::create([
-                    'institut_id' => $inventaire->institut_id,
-                    'produit_id'  => $produit->id,
-                    'user_id'     => Auth::id(),
-                    'type'        => 'correction',
-                    'quantite'    => abs($ligne->ecart),
-                    'stock_avant' => $stockAvant,
-                    'stock_apres' => $ligne->stock_compte,
-                    'note'        => 'Inventaire ' . $inventaire->date_inventaire->format('d/m/Y'),
+                app(StockService::class)->ajuster($produit, (int) $ligne->stock_compte, [
+                    'note' => 'Inventaire ' . $inventaire->date_inventaire->format('d/m/Y'),
                 ]);
             }
             $inventaire->update(['statut' => 'valide']);

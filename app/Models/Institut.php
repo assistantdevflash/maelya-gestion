@@ -27,6 +27,8 @@ class Institut extends Model
         'credit_plafond_defaut', 'credit_relance_active', 'credit_message_relance',
         // Mentions légales imprimées sur les factures et devis
         'rccm', 'numero_fiscal',
+        // Gestion de stock
+        'stock_negatif_autorise',
         // Paramètres de facturation (séquence des numéros, relances clients)
         'facturation_sequence', 'facture_relance_active', 'facture_relance_message',
         // Horaires d'ouverture (contrôle des rendez-vous)

@@ -284,11 +284,18 @@ class FactureController extends Controller
                 $vente = \App\Models\Vente::with('items')->find($venteId);
                 if (! $vente) continue;
 
-                // Remettre en stock les produits vendus par cette facture
+                // Remettre en stock les produits vendus par cette facture.
+                // Passage par StockService : l'annulation laissait jusque-là
+                // le stock remonter sans aucune trace.
                 foreach ($vente->items as $item) {
                     if ($item->type === 'produit' && $item->item_id) {
-                        \App\Models\Produit::where('id', $item->item_id)
-                            ->increment('stock', (int) $item->quantite);
+                        $produit = \App\Models\Produit::withoutGlobalScopes()->find($item->item_id);
+                        if ($produit) {
+                            app(\App\Services\StockService::class)->entrer($produit, (int) $item->quantite, [
+                                'type' => \App\Services\StockService::ANNULATION_VENTE,
+                                'note' => 'Annulation de facture',
+                            ]);
+                        }
                     }
                 }
 

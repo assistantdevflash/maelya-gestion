@@ -376,6 +376,19 @@
                 </label>
                 <p class="text-[11px] text-gray-400 -mt-2">Relances envoyées à J-3, puis J+1, J+7, J+15 et J+30 après l'échéance (une seule fois par palier).</p>
 
+                <div class="pt-3 mt-1 border-t border-gray-100 dark:border-slate-700 space-y-2">
+                    <p class="text-xs font-bold uppercase tracking-wider text-gray-400">Gestion de stock</p>
+                    <label class="flex items-start gap-2 cursor-pointer select-none">
+                        <input type="checkbox" name="stock_negatif_autorise" value="1"
+                               {{ old('stock_negatif_autorise', $institut->stock_negatif_autorise) ? 'checked' : '' }}
+                               class="mt-0.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                        <span>
+                            <span class="block text-sm text-gray-700 dark:text-gray-300">Autoriser la vente sans stock disponible</span>
+                            <span class="block text-[11px] text-gray-400">Décoché (recommandé) : une vente est refusée si le stock est insuffisant. Coché : la vente passe et le stock devient négatif, à régulariser.</span>
+                        </span>
+                    </label>
+                </div>
+
                 <div>
                     <label class="form-label">Message de relance (facultatif)</label>
                     <textarea name="facture_relance_message" rows="3" class="form-textarea text-sm"

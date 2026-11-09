@@ -32,23 +32,19 @@ class CommandeService
         DB::transaction(function () use ($commande) {
             $commande->loadMissing('items.produit');
 
+            // StockService contrôle la disponibilité (lève
+            // StockInsuffisantException) et trace chaque mouvement : sans cela
+            // une commande boutique modifiait le stock sans laisser de trace.
             foreach ($commande->items as $item) {
                 if (! $item->produit) {
                     continue;
                 }
 
-                if ($item->produit->stock < $item->quantite) {
-                    throw new StockInsuffisantException(
-                        "Stock insuffisant pour {$item->produit->nom} "
-                        . "(disponible : {$item->produit->stock}, demandé : {$item->quantite})."
-                    );
-                }
-            }
-
-            foreach ($commande->items as $item) {
-                if ($item->produit) {
-                    $item->produit->decrement('stock', $item->quantite);
-                }
+                app(StockService::class)->sortir($item->produit, (int) $item->quantite, [
+                    'type'  => StockService::SORTIE_VENTE,
+                    'motif' => StockService::MOTIF_RESERVATION,
+                    'note'  => 'Réservation commande ' . $commande->numero,
+                ]);
             }
 
             $commande->update(['stock_decremente_at' => now()]);
@@ -66,9 +62,17 @@ class CommandeService
             $commande->loadMissing('items');
 
             foreach ($commande->items as $item) {
-                if ($item->produit_id) {
-                    Produit::where('id', $item->produit_id)
-                        ->increment('stock', $item->quantite);
+                if (! $item->produit_id) {
+                    continue;
+                }
+
+                $produit = Produit::withoutGlobalScopes()->find($item->produit_id);
+                if ($produit) {
+                    app(StockService::class)->entrer($produit, (int) $item->quantite, [
+                        'type'  => StockService::ENTREE,
+                        'motif' => StockService::MOTIF_LIBERATION,
+                        'note'  => 'Libération commande ' . $commande->numero,
+                    ]);
                 }
             }
 
@@ -124,7 +128,10 @@ class CommandeService
                 // Commandes antérieures à la réservation : le stock n'est pas
                 // encore sorti, on le décrémente maintenant.
                 if (! $stockDejaSorti && $item->produit) {
-                    $item->produit->decrement('stock', $item->quantite);
+                    app(StockService::class)->sortir($item->produit, (int) $item->quantite, [
+                        'type'  => StockService::SORTIE_VENTE,
+                        'motif' => StockService::MOTIF_RESERVATION,
+                    ]);
                 }
             }
 

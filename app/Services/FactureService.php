@@ -85,7 +85,10 @@ class FactureService
                     'sous_total'    => $item->total_ligne,
                 ]);
                 if ($item->produit_id && $item->produit) {
-                    $item->produit->decrement('stock', $item->quantite);
+                    app(StockService::class)->sortir($item->produit, (int) $item->quantite, [
+                        'type' => StockService::SORTIE_VENTE,
+                        'note' => 'Facture ' . $facture->numero,
+                    ]);
                 }
             }
 

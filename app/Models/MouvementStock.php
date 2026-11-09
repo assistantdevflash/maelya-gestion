@@ -14,7 +14,7 @@ class MouvementStock extends Model
 
     protected $fillable = [
         'institut_id', 'produit_id', 'user_id', 'vente_id',
-        'type', 'quantite', 'prix_unitaire', 'stock_avant', 'stock_apres', 'note',
+        'type', 'motif', 'quantite', 'prix_unitaire', 'stock_avant', 'stock_apres', 'note',
     ];
 
     protected $casts = [

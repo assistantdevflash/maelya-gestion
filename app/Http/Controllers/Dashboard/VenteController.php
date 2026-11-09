@@ -14,6 +14,7 @@ use App\Models\Prestation;
 use App\Models\Produit;
 use App\Models\Vente;
 use App\Services\FactureNumeroService;
+use App\Services\StockService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -208,22 +209,14 @@ class VenteController extends Controller
                 $item['id'] = (string) Str::uuid();
                 $vente->items()->create($item);
 
-                // Décrémenter le stock pour les produits
+                // Sortie de stock centralisée : contrôle de disponibilité et
+                // traçabilité garantis par StockService.
                 if ($item['type'] === 'produit') {
                     $produit = Produit::find($item['item_id']);
                     if ($produit) {
-                        $stockAvant = $produit->stock;
-                        $produit->decrement('stock', $item['quantite']);
-
-                        MouvementStock::create([
-                            'institut_id' => $this->institutId(),
-                            'produit_id' => $produit->id,
-                            'user_id' => Auth::id(),
+                        app(StockService::class)->sortir($produit, (int) $item['quantite'], [
+                            'type'     => StockService::SORTIE_VENTE,
                             'vente_id' => $vente->id,
-                            'type' => 'sortie_vente',
-                            'quantite' => $item['quantite'],
-                            'stock_avant' => $stockAvant,
-                            'stock_apres' => max(0, $stockAvant - $item['quantite']),
                         ]);
                     }
                 }
@@ -345,18 +338,10 @@ class VenteController extends Controller
                 if ($item->type === 'produit' && $item->item_id) {
                     $produit = Produit::withoutGlobalScopes()->find($item->item_id);
                     if ($produit) {
-                        $stockAvant = $produit->stock;
-                        $produit->increment('stock', $item->quantite);
-
-                        MouvementStock::create([
-                            'institut_id' => $this->institutId(),
-                            'produit_id' => $produit->id,
-                            'user_id'    => Auth::id(),
-                            'vente_id'   => $vente->id,
-                            'type'       => 'annulation_vente',
-                            'quantite'   => $item->quantite,
-                            'stock_avant' => $stockAvant,
-                            'stock_apres' => $stockAvant + $item->quantite,
+                        app(StockService::class)->entrer($produit, (int) $item->quantite, [
+                            'type'     => StockService::ANNULATION_VENTE,
+                            'vente_id' => $vente->id,
+                            'note'     => 'Annulation de vente',
                         ]);
                     }
                 }

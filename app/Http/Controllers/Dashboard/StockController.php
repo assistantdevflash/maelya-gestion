@@ -3,18 +3,12 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Models\MouvementStock;
 use App\Models\Produit;
+use App\Services\StockService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class StockController extends Controller
 {
-    private function institutId(): string
-    {
-        return session('current_institut_id', Auth::user()->institut_id);
-    }
     public function index(Request $request)
     {
         $search = $request->input('q');
@@ -35,7 +29,7 @@ class StockController extends Controller
         return view('dashboard.stock.index', compact('produits', 'nbAlertes', 'search', 'alerte', 'tousLesProduits'));
     }
 
-    public function entree(Request $request, Produit $produit)
+    public function entree(Request $request, Produit $produit, StockService $stock)
     {
         $data = $request->validate([
             'quantite' => ['required', 'integer', 'min:1'],
@@ -43,57 +37,38 @@ class StockController extends Controller
             'note' => ['nullable', 'string', 'max:200'],
         ]);
 
-        DB::transaction(function () use ($produit, $data) {
-            $stockAvant = $produit->stock;
-            $prixUnit = (int) ($data['prix_unitaire'] ?? $produit->prix_achat ?? 0);
+        $prixUnit = isset($data['prix_unitaire']) ? (int) $data['prix_unitaire'] : null;
 
-            // Recalcule le CMP AVANT incrément (utilise le stock courant)
-            if ($prixUnit > 0) {
-                $produit->recalculerCmp($data['quantite'], $prixUnit);
-            }
+        $mouvement = $stock->entrer($produit, (int) $data['quantite'], [
+            'prix_unitaire' => $prixUnit ?: null,
+            'note'          => $data['note'] ?? 'Réapprovisionnement',
+        ]);
 
-            $produit->increment('stock', $data['quantite']);
+        if (! $mouvement) {
+            return back()->with('error', 'Aucune quantité à ajouter.');
+        }
 
-            MouvementStock::create([
-                'institut_id' => $this->institutId(),
-                'produit_id' => $produit->id,
-                'user_id' => Auth::id(),
-                'type' => 'entree',
-                'quantite' => $data['quantite'],
-                'prix_unitaire' => $prixUnit ?: null,
-                'stock_avant' => $stockAvant,
-                'stock_apres' => $stockAvant + $data['quantite'],
-                'note' => $data['note'] ?? 'Réapprovisionnement',
-            ]);
-        });
-
-        return back()->with('success', "Stock mis à jour : +{$data['quantite']} {$produit->unite} (CMP recalculé).");
+        return back()->with(
+            'success',
+            "Stock mis à jour : +{$data['quantite']} {$produit->unite} (nouveau stock : {$mouvement->stock_apres})."
+        );
     }
 
-    public function correction(Request $request, Produit $produit)
+    public function correction(Request $request, Produit $produit, StockService $stock)
     {
         $data = $request->validate([
             'stock_corrige' => ['required', 'integer', 'min:0'],
             'note' => ['nullable', 'string', 'max:200'],
         ]);
 
-        DB::transaction(function () use ($produit, $data) {
-            $stockAvant = $produit->stock;
-            $diff = $data['stock_corrige'] - $stockAvant;
-            $produit->update(['stock' => $data['stock_corrige']]);
+        $mouvement = $stock->ajuster($produit, (int) $data['stock_corrige'], [
+            'note' => $data['note'] ?? 'Correction manuelle',
+        ]);
 
-            MouvementStock::create([
-                'institut_id' => $this->institutId(),
-                'produit_id' => $produit->id,
-                'user_id' => Auth::id(),
-                'type' => 'correction',
-                'quantite' => abs($diff),
-                'stock_avant' => $stockAvant,
-                'stock_apres' => $data['stock_corrige'],
-                'note' => $data['note'] ?? 'Correction d\'inventaire',
-            ]);
-        });
+        if (! $mouvement) {
+            return back()->with('info', 'Le stock était déjà à cette valeur.');
+        }
 
-        return back()->with('success', 'Stock corrigé avec succès.');
+        return back()->with('success', 'Stock corrigé : ' . $mouvement->stock_apres . ' ' . $produit->unite . '.');
     }
 }
