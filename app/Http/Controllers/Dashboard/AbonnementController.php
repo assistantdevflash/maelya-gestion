@@ -613,9 +613,12 @@ class AbonnementController extends Controller
             $methodCode = 'bank_transfer';
         }
 
-        // ── Flux GeniusPay ──────────────────────────────────────────────────
+        // ── Flux GeniusPay ────────────────────────────────────────────────
         if ($methodCode === 'geniuspay' && $method) {
-            return $this->souscrireViaGeniusPay($request, $plan, $method);
+            // L'analyse des limites est calculée plus haut : elle doit être
+            // transmise, sinon la métadonnée « limites » de l'abonnement
+            // explose (Undefined variable $analyseLimites → 500).
+            return $this->souscrireViaGeniusPay($request, $plan, $method, $analyseLimites);
         }
 
         // ── Flux transfert bancaire (existant inchangé) ─────────────────────
@@ -826,7 +829,7 @@ class AbonnementController extends Controller
     // Méthodes privées GeniusPay
     // ─────────────────────────────────────────────────────────────────────────
 
-    private function souscrireViaGeniusPay(Request $request, PlanAbonnement $plan, PaymentMethod $method)
+    private function souscrireViaGeniusPay(Request $request, PlanAbonnement $plan, PaymentMethod $method, array $analyseLimites)
     {
         $user    = Auth::user();
         $periode = $request->input('periode', 'mensuel');
