@@ -103,6 +103,61 @@ class BoutiqueVitrineTest extends TestCase
             ->assertSee('rel="canonical"', false);
     }
 
+    /**
+     * `x-if` et `x-for` n'acceptent qu'un seul élément racine. Avec deux
+     * frères, Alpine ne rend que le premier : c'est ce qui faisait disparaître
+     * la flèche « image suivante » de la galerie.
+     */
+    public function test_les_templates_alpine_n_ont_qu_une_seule_racine(): void
+    {
+        [$institut] = $this->boutique(1);
+        $produit = Produit::first();
+
+        $pages = [
+            'vitrine' => route('shop.index', $institut->slug),
+            'fiche'   => route('shop.produit', [$institut->slug, $produit->id]),
+        ];
+
+        foreach ($pages as $nom => $url) {
+            $html = $this->get($url)->assertOk()->getContent();
+
+            $dom = new \DOMDocument();
+            libxml_use_internal_errors(true);
+            $dom->loadHTML($html);
+            libxml_clear_errors();
+
+            $templates = (new \DOMXPath($dom))->query('//template[@x-if or @x-for]');
+
+            $this->assertGreaterThan(0, $templates->count(), "Aucun template Alpine sur {$nom}.");
+
+            foreach ($templates as $template) {
+                $racines = 0;
+                foreach ($template->childNodes as $enfant) {
+                    if ($enfant->nodeType === XML_ELEMENT_NODE) {
+                        $racines++;
+                    }
+                }
+
+                $this->assertLessThanOrEqual(
+                    1,
+                    $racines,
+                    "Un template Alpine de {$nom} a {$racines} racines : seul le premier sera rendu."
+                );
+            }
+        }
+    }
+
+    public function test_la_galerie_expose_les_deux_fleches_de_navigation(): void
+    {
+        [$institut] = $this->boutique(1);
+        $produit = Produit::first();
+
+        $this->get(route('shop.produit', [$institut->slug, $produit->id]))
+            ->assertOk()
+            ->assertSee('aria-label="Image précédente"', false)
+            ->assertSee('aria-label="Image suivante"', false);
+    }
+
     public function test_la_recherche_et_le_tri_ne_sont_pas_indexes(): void
     {
         [$institut] = $this->boutique(2);

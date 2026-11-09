@@ -68,33 +68,37 @@
          @keydown.escape.window="closeLightbox()">
         <div class="relative w-full max-w-3xl">
             {{-- Fermer --}}
-            <button @click="closeLightbox()"
-                    class="absolute -top-12 right-0 z-10 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
+            <button type="button" @click="closeLightbox()"
+                    aria-label="Fermer la galerie"
+                    class="absolute -top-12 right-0 z-10 w-11 h-11 rounded-full bg-black/60 hover:bg-black/80 text-white ring-1 ring-white/25 flex items-center justify-center transition-colors">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
 
-            {{-- Image --}}
-            <div class="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden">
+            {{-- Image + navigation --}}
+            <div class="relative bg-white dark:bg-slate-800 rounded-2xl overflow-hidden">
                 <template x-if="lightboxImage">
                     <img :src="'/storage/' + lightboxImage" :alt="'{{ $produit->nom }}'" class="w-full max-h-[70vh] object-contain">
                 </template>
-            </div>
 
-            {{-- Navigation --}}
-            <template x-if="gallery.length > 1">
-                <div class="absolute inset-y-0 left-0 flex items-center">
-                    <button @click="prevImage()"
-                            class="-ml-4 w-12 h-12 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-colors shadow-lg">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                    </button>
-                </div>
-                <div class="absolute inset-y-0 right-0 flex items-center">
-                    <button @click="nextImage()"
-                            class="-mr-4 w-12 h-12 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-colors shadow-lg">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    </button>
-                </div>
-            </template>
+                {{-- ⚠️ `x-if` n'accepte qu'UN SEUL élément racine : avec deux
+                     <div> frères, Alpine ne rendait que la flèche de gauche.
+                     Les deux boutons sont donc regroupés dans un conteneur. --}}
+                <template x-if="gallery.length > 1">
+                    <div class="pointer-events-none">
+                        <button type="button" @click.stop="prevImage()"
+                                aria-label="Image précédente"
+                                class="pointer-events-auto absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white text-gray-900 shadow-2xl ring-1 ring-black/10 hover:bg-gray-100 hover:scale-105 active:scale-95 flex items-center justify-center transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                        </button>
+
+                        <button type="button" @click.stop="nextImage()"
+                                aria-label="Image suivante"
+                                class="pointer-events-auto absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white text-gray-900 shadow-2xl ring-1 ring-black/10 hover:bg-gray-100 hover:scale-105 active:scale-95 flex items-center justify-center transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                </template>
+            </div>
 
             {{-- Miniatures + compteur --}}
             <div class="mt-4">
