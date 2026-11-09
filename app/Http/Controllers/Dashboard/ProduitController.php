@@ -436,35 +436,47 @@ class ProduitController extends Controller
     /**
      * Basculer la visibilité boutique d'un produit
      */
-    public function toggleVisible(Produit $produit)
+    public function toggleVisible(Request $request, Produit $produit)
     {
         $newValue = ! $produit->visible_boutique;
 
         if ($newValue && ! $produit->aUneImage()) {
-            return back()->with(
-                'error',
-                "« {$produit->nom} » n'a pas d'image : ajoutez-en une pour l'afficher dans la boutique."
-            );
+            $message = "« {$produit->nom} » n'a pas d'image : ajoutez-en une pour l'afficher dans la boutique.";
+
+            return $request->wantsJson()
+                ? response()->json(['ok' => false, 'message' => $message], 422)
+                : back()->with('error', $message);
         }
 
         $produit->update(['visible_boutique' => $newValue]);
         Cache::forget('boutique_' . $produit->institut_id . '_produits');
         Cache::forget('caisse_catalog_' . $produit->institut_id);
-        return back()->with('success', $newValue
-            ? "« {$produit->nom} » visible dans la boutique."
-            : "« {$produit->nom} » masqué dans la boutique.");
+
+        $message = $newValue
+            ? "« {$produit->nom} » visible dans la boutique."
+            : "« {$produit->nom} » masqué dans la boutique.";
+
+        // La liste met à jour la ligne sans recharger la page.
+        return $request->wantsJson()
+            ? response()->json(['ok' => true, 'visible_boutique' => $newValue, 'message' => $message])
+            : back()->with('success', $message);
     }
 
     /**
      * Basculer le statut "en vedette" d'un produit
      */
-    public function toggleFeatured(Produit $produit)
+    public function toggleFeatured(Request $request, Produit $produit)
     {
-        $newValue = !$produit->featured;
+        $newValue = ! $produit->featured;
         $produit->update(['featured' => $newValue]);
         Cache::forget('boutique_' . $produit->institut_id . '_produits');
-        return back()->with('success', $newValue
-            ? "« {$produit->nom} » mis en vedette."
-            : "« {$produit->nom} » retiré des vedettes.");
+
+        $message = $newValue
+            ? "« {$produit->nom} » mis en vedette."
+            : "« {$produit->nom} » retiré des vedettes.";
+
+        return $request->wantsJson()
+            ? response()->json(['ok' => true, 'featured' => $newValue, 'message' => $message])
+            : back()->with('success', $message);
     }
 }

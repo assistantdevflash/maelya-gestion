@@ -1,6 +1,19 @@
 <x-dashboard-layout>
     <div class="space-y-5"
-         x-data="{ selection: [], actionGroupee: '', ids: @js($produits->pluck('id')->values()), get tous() { return this.ids.length > 0 && this.selection.length === this.ids.length; } }">
+         x-data="{
+            selection: [],
+            actionGroupee: '',
+            ids: @js($produits->pluck('id')->values()),
+            toast: { show: false, type: 'success', message: '' },
+            _toastTimer: null,
+            get tous() { return this.ids.length > 0 && this.selection.length === this.ids.length; },
+            afficherToast(e) {
+                this.toast = { show: true, type: e.detail.type || 'success', message: e.detail.message };
+                clearTimeout(this._toastTimer);
+                this._toastTimer = setTimeout(() => this.toast.show = false, 3500);
+            }
+         }"
+         @toast.window="afficherToast($event)">
         @if(session('import_erreurs') && count(session('import_erreurs')))
         <div class="alert-error">
             <p class="font-semibold mb-1">Lignes ignorées :</p>
@@ -138,7 +151,13 @@
                     </thead>
                     <tbody class="divide-y divide-gray-50">
                         @foreach($produits as $produit)
-                        <tr class="hover:bg-gray-50 group transition-colors">
+                        <tr class="hover:bg-gray-50 group transition-colors"
+                            x-data="ligneProduit(
+                                @js(route('dashboard.produits.toggle-visible', $produit)),
+                                @js(route('dashboard.produits.toggle-featured', $produit)),
+                                {{ $produit->visible_boutique ? 'true' : 'false' }},
+                                {{ $produit->featured ? 'true' : 'false' }}
+                            )">
                             <td class="px-4 py-3">
                                 <input type="checkbox" x-model="selection" value="{{ $produit->id }}"
                                        class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
@@ -163,22 +182,17 @@
                                         @endif
                                         {{-- Indicateurs boutique --}}
                                         <div class="flex items-center gap-1 mt-1 flex-wrap">
-                                            @if($produit->visible_boutique)
-                                                <span class="inline-flex items-center gap-0.5 text-[10px] font-medium text-primary-700 bg-primary-50 dark:bg-primary-900/30 dark:text-primary-300 px-1.5 py-0.5 rounded-full">
+                                            <span x-show="visible" x-cloak class="inline-flex items-center gap-0.5 text-[10px] font-medium text-primary-700 bg-primary-50 dark:bg-primary-900/30 dark:text-primary-300 px-1.5 py-0.5 rounded-full">
                                                     <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                                     Boutique
-                                                </span>
-                                            @else
-                                                <span class="inline-flex items-center gap-0.5 text-[10px] font-medium text-gray-400 bg-gray-100 dark:bg-slate-700 px-1.5 py-0.5 rounded-full">
+                                            </span>
+                                            <span x-show="!visible" class="inline-flex items-center gap-0.5 text-[10px] font-medium text-gray-400 bg-gray-100 dark:bg-slate-700 px-1.5 py-0.5 rounded-full">
                                                     <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
                                                     Masqué
-                                                </span>
-                                            @endif
-                                            @if($produit->featured)
-                                                <span class="inline-flex items-center gap-0.5 text-[10px] font-medium text-amber-700 bg-amber-50 dark:bg-amber-900/30 dark:text-amber-300 px-1.5 py-0.5 rounded-full">
-                                                    ⭐ Vedette
-                                                </span>
-                                            @endif
+                                            </span>
+                                            <span x-show="vedette" x-cloak class="inline-flex items-center gap-0.5 text-[10px] font-medium text-amber-700 bg-amber-50 dark:bg-amber-900/30 dark:text-amber-300 px-1.5 py-0.5 rounded-full">
+                                                ⭐ Vedette
+                                            </span>
                                             @if(! $produit->aUneImage())
                                                 <span class="inline-flex items-center gap-0.5 text-[10px] font-medium text-rose-700 bg-rose-50 dark:bg-rose-900/30 dark:text-rose-300 px-1.5 py-0.5 rounded-full"
                                                       title="Un produit sans image ne peut pas être publié en boutique">
@@ -203,22 +217,20 @@
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-end gap-1.5">
-                                    {{-- Toggle visible boutique --}}
-                                    <form method="POST" action="{{ route('dashboard.produits.toggle-visible', $produit) }}">
-                                        @csrf
-                                        <button type="submit" title="{{ $produit->visible_boutique ? 'Visible boutique (cliquer pour masquer)' : 'Masqué boutique (cliquer pour afficher)' }}"
-                                                class="btn-icon {{ $produit->visible_boutique ? 'text-primary-500 hover:text-primary-700' : 'text-gray-300 hover:text-primary-400' }}">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                                        </button>
-                                    </form>
-                                    {{-- Toggle vedette --}}
-                                    <form method="POST" action="{{ route('dashboard.produits.toggle-featured', $produit) }}">
-                                        @csrf
-                                        <button type="submit" title="{{ $produit->featured ? 'En vedette (cliquer pour retirer)' : 'Pas en vedette (cliquer pour mettre en avant)' }}"
-                                                class="btn-icon {{ $produit->featured ? 'text-amber-500 hover:text-amber-700' : 'text-gray-300 hover:text-amber-400' }}">
-                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                                        </button>
-                                    </form>
+                                    {{-- Bascule boutique (sans rechargement) --}}
+                                    <button type="button" @click="basculerBoutique()" :disabled="enCours"
+                                            :title="visible ? 'Visible boutique (cliquer pour masquer)' : 'Masqué boutique (cliquer pour afficher)'"
+                                            :class="visible ? 'text-primary-500 hover:text-primary-700' : 'text-gray-300 hover:text-primary-400'"
+                                            class="btn-icon disabled:opacity-40">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                    </button>
+                                    {{-- Bascule vedette (sans rechargement) --}}
+                                    <button type="button" @click="basculerVedette()" :disabled="enCours"
+                                            :title="vedette ? 'En vedette (cliquer pour retirer)' : 'Pas en vedette (cliquer pour mettre en avant)'"
+                                            :class="vedette ? 'text-amber-500 hover:text-amber-700' : 'text-gray-300 hover:text-amber-400'"
+                                            class="btn-icon disabled:opacity-40">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                    </button>
                                     <a href="{{ route('dashboard.produits.edit', $produit) }}"
                                        class="btn-icon text-gray-400 hover:text-primary-600" title="Voir / Modifier">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -671,4 +683,97 @@
         });
     }
     </script>
+
+    {{-- Notification flottante : les bascules ne rechargent plus la page --}}
+    <div x-show="toast.show" x-cloak x-transition
+         class="fixed bottom-6 right-6 z-[80] max-w-sm">
+        <div class="flex items-start gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium"
+             :class="toast.type === 'error'
+                ? 'bg-rose-600 text-white'
+                : 'bg-emerald-600 text-white'">
+            <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path x-show="toast.type !== 'error'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                <path x-show="toast.type === 'error'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <span class="flex-1" x-text="toast.message"></span>
+            <button type="button" @click="toast.show = false" class="opacity-70 hover:opacity-100" aria-label="Fermer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+    </div>
 </x-dashboard-layout>
+
+@push('scripts')
+<script>
+/**
+ * Bascules « boutique » et « vedette » d'une ligne produit, sans rechargement.
+ *
+ * Les deux actions étaient des formulaires POST classiques : chacun rechargeait
+ * toute la liste. On appelle maintenant la même route en JSON et on met à jour
+ * la ligne, avec retour arrière si le serveur refuse (produit sans image).
+ */
+function ligneProduit(urlBoutique, urlVedette, visible, vedette) {
+    return {
+        urlBoutique,
+        urlVedette,
+        visible,
+        vedette,
+        enCours: false,
+
+        /**
+         * Appelle la route en JSON. Retourne les données en cas de succès,
+         * null si le serveur refuse (produit sans image) ou si le réseau
+         * échoue — dans les deux cas un message est affiché.
+         */
+        async appeler(url) {
+            if (this.enCours) return null;
+
+            this.enCours = true;
+
+            try {
+                const reponse = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+
+                const data = await reponse.json().catch(() => ({}));
+
+                if (! reponse.ok || data.ok === false) {
+                    window.dispatchEvent(new CustomEvent('toast', {
+                        detail: { type: 'error', message: data.message || 'Action impossible.' },
+                    }));
+                    return null;
+                }
+
+                window.dispatchEvent(new CustomEvent('toast', {
+                    detail: { type: 'success', message: data.message },
+                }));
+
+                return data;
+            } catch (e) {
+                window.dispatchEvent(new CustomEvent('toast', {
+                    detail: { type: 'error', message: 'Connexion perdue, réessayez.' },
+                }));
+                return null;
+            } finally {
+                this.enCours = false;
+            }
+        },
+
+        async basculerBoutique() {
+            const data = await this.appeler(this.urlBoutique);
+            if (data) this.visible = data.visible_boutique;
+        },
+
+        async basculerVedette() {
+            const data = await this.appeler(this.urlVedette);
+            if (data) this.vedette = data.featured;
+        },
+    };
+}
+</script>
+@endpush
