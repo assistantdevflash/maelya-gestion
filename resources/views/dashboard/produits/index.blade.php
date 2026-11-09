@@ -179,6 +179,13 @@
                                                     ⭐ Vedette
                                                 </span>
                                             @endif
+                                            @if(! $produit->aUneImage())
+                                                <span class="inline-flex items-center gap-0.5 text-[10px] font-medium text-rose-700 bg-rose-50 dark:bg-rose-900/30 dark:text-rose-300 px-1.5 py-0.5 rounded-full"
+                                                      title="Un produit sans image ne peut pas être publié en boutique">
+                                                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                                    Sans image
+                                                </span>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>

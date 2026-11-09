@@ -104,6 +104,26 @@ class Produit extends Model
         return null;
     }
 
+    /**
+     * Un produit peut-il être présenté en boutique ?
+     *
+     * Une fiche sans visuel s'affiche avec un pictogramme gris : cela décrédibilise
+     * la vitrine et n'apporte rien au client. La publication est donc conditionnée
+     * à la présence d'une image (colonne historique `photo` ou galerie).
+     */
+    public function aUneImage(): bool
+    {
+        if (filled($this->photo)) {
+            return true;
+        }
+
+        if (array_key_exists('images_count', $this->attributes)) {
+            return (int) $this->attributes['images_count'] > 0;
+        }
+
+        return $this->images()->exists();
+    }
+
     public function fournisseur()
     {
         return $this->belongsTo(\App\Models\Fournisseur::class, 'fournisseur_id');

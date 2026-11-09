@@ -17,7 +17,7 @@ class ProduitController extends Controller
         $stock     = (string) $request->input('stock');
         $tri       = (string) $request->input('tri', 'nom');
 
-        $produits = Produit::with(['categorie', 'fournisseur'])
+        $produits = Produit::with(['categorie', 'fournisseur'])->withCount('images')
             ->when($recherche !== '', fn ($q) => $q->where(function ($q) use ($recherche) {
                 $like = "%{$recherche}%";
                 $q->where('nom', 'like', $like)
@@ -185,15 +185,36 @@ class ProduitController extends Controller
         $produits = Produit::whereIn('id', $data['ids']);
         $nb = (clone $produits)->count();
 
+        $avertissement = null;
+
         match ($data['action']) {
             'categorie'    => $produits->update(['categorie_id' => $data['categorie_id'] ?? null]),
-            'boutique_on'  => $produits->update(['visible_boutique' => true]),
+            'boutique_on'  => (function () use ($produits, &$nb, &$avertissement) {
+                // Seuls les produits avec un visuel peuvent être publiés
+                $publies = (clone $produits)
+                    ->where(fn ($q) => $q->whereNotNull('photo')->orWhereHas('images'))
+                    ->update(['visible_boutique' => true]);
+
+                $ignores = $nb - $publies;
+                $nb = $publies;
+
+                if ($ignores > 0) {
+                    $avertissement = \App\Helpers\TexteHelper::pluriel($ignores, 'produit sans image ignoré', 'produits sans image ignorés')
+                        . ' : ajoutez un visuel pour les publier.';
+                }
+            })(),
             'boutique_off' => $produits->update(['visible_boutique' => false]),
             'activer'      => $produits->update(['actif' => true]),
             'desactiver'   => $produits->update(['actif' => false]),
         };
 
-        return back()->with('success', \App\Helpers\TexteHelper::pluriel($nb, 'produit modifié', 'produits modifiés') . '.');
+        $redirection = back()->with('success', \App\Helpers\TexteHelper::pluriel($nb, 'produit modifié', 'produits modifiés') . '.');
+
+        if ($avertissement) {
+            $redirection->with('warning', $avertissement);
+        }
+
+        return $redirection;
     }
 
     /**
@@ -268,7 +289,6 @@ class ProduitController extends Controller
         }
 
         $data['prix_achat'] = $data['prix_achat'] ?? 0;
-        $data['visible_boutique'] = $request->boolean('visible_boutique', true);
         $data['featured'] = $request->boolean('featured', false);
 
         // Upload photo optionnelle
@@ -276,14 +296,26 @@ class ProduitController extends Controller
             $data['photo'] = $request->file('photo')->store('produits', 'public');
         }
 
+        // Un produit sans visuel ne s'affiche pas en boutique : la vitrine
+        // montrerait un pictogramme gris à la place de la photo.
+        $demandeBoutique = $request->boolean('visible_boutique', true);
+        $data['visible_boutique'] = $demandeBoutique && filled($data['photo'] ?? null);
+        $sansImage = $demandeBoutique && ! $data['visible_boutique'];
+
         $produit = Produit::create($data);
 
         // Vider le cache de la caisse ET de la boutique
         Cache::forget('caisse_catalog_' . $produit->institut_id);
         Cache::forget('boutique_' . $produit->institut_id . '_produits');
 
-        return redirect()->route('dashboard.produits.index')
+        $redirection = redirect()->route('dashboard.produits.index')
             ->with('success', 'Produit ajouté.');
+
+        if ($sansImage) {
+            $redirection->with('warning', 'Ajoutez une image au produit pour l\'afficher dans la boutique.');
+        }
+
+        return $redirection;
     }
 
     public function edit(Produit $produit)
@@ -321,7 +353,6 @@ class ProduitController extends Controller
         }
 
         $data['prix_achat'] = $data['prix_achat'] ?? 0;
-        $data['visible_boutique'] = $request->boolean('visible_boutique', true);
         $data['featured'] = $request->boolean('featured', false);
 
         // Upload photo optionnelle (remplace l'ancienne si existante)
@@ -337,14 +368,27 @@ class ProduitController extends Controller
             $data['photo'] = null;
         }
 
+        // Publication possible seulement si le produit a un visuel :
+        // photo envoyée, photo conservée, ou galerie existante.
+        $auraUneImage = filled($data['photo'] ?? null) || $produit->aUneImage();
+        $demandeBoutique = $request->boolean('visible_boutique', true);
+        $data['visible_boutique'] = $demandeBoutique && $auraUneImage;
+        $sansImage = $demandeBoutique && ! $data['visible_boutique'];
+
         $produit->update($data);
 
         // Vider le cache de la caisse ET de la boutique
         Cache::forget('caisse_catalog_' . $produit->institut_id);
         Cache::forget('boutique_' . $produit->institut_id . '_produits');
 
-        return redirect()->route('dashboard.produits.index')
+        $redirection = redirect()->route('dashboard.produits.index')
             ->with('success', 'Produit mis à jour.');
+
+        if (! empty($sansImage)) {
+            $redirection->with('warning', 'Ajoutez une image au produit pour l\'afficher dans la boutique.');
+        }
+
+        return $redirection;
     }
 
     public function destroy(Produit $produit)
@@ -394,7 +438,15 @@ class ProduitController extends Controller
      */
     public function toggleVisible(Produit $produit)
     {
-        $newValue = !$produit->visible_boutique;
+        $newValue = ! $produit->visible_boutique;
+
+        if ($newValue && ! $produit->aUneImage()) {
+            return back()->with(
+                'error',
+                "« {$produit->nom} » n'a pas d'image : ajoutez-en une pour l'afficher dans la boutique."
+            );
+        }
+
         $produit->update(['visible_boutique' => $newValue]);
         Cache::forget('boutique_' . $produit->institut_id . '_produits');
         Cache::forget('caisse_catalog_' . $produit->institut_id);
