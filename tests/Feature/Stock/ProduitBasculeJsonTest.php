@@ -103,6 +103,11 @@ class ProduitBasculeJsonTest extends TestCase
         $this->assertStringContainsString('basculerBoutique', $html);
         $this->assertStringContainsString('basculerVedette', $html);
 
+        // Retour visuel de l'action, sur la ligne et en notification
+        $this->assertStringContainsString('signaler', $html);
+        $this->assertStringContainsString('Visible en boutique', $html);
+        $this->assertStringContainsString('Mis en vedette', $html);
+
         // Le script doit être présent AVANT le chargement d'Alpine
         $positionScript = strpos($html, 'function ligneProduit');
         $positionAlpine = strpos($html, 'alpine-app');

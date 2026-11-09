@@ -201,6 +201,12 @@
                                                 </span>
                                             @endif
                                         </div>
+                                        {{-- Retour immédiat de l'action, sans rechargement --}}
+                                        <span x-show="feedback" x-cloak x-transition.opacity
+                                              x-text="feedback"
+                                              :class="feedbackErreur ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'"
+                                              class="mt-1 block max-w-[240px] leading-snug text-[10px] font-semibold"
+                                              aria-live="polite"></span>
                                     </div>
                                 </div>
                             </td>
@@ -718,6 +724,17 @@ function ligneProduit(urlBoutique, urlVedette, visible, vedette) {
         visible,
         vedette,
         enCours: false,
+        feedback: '',
+        feedbackErreur: false,
+        _feedbackTimer: null,
+
+        /** Affiche un message court à côté de la ligne, auto-effacé. */
+        signaler(texte, erreur = false) {
+            this.feedback = texte;
+            this.feedbackErreur = erreur;
+            clearTimeout(this._feedbackTimer);
+            this._feedbackTimer = setTimeout(() => this.feedback = '', 2600);
+        },
 
         /**
          * Appelle la route en JSON. Retourne les données en cas de succès,
@@ -742,9 +759,12 @@ function ligneProduit(urlBoutique, urlVedette, visible, vedette) {
                 const data = await reponse.json().catch(() => ({}));
 
                 if (! reponse.ok || data.ok === false) {
+                    this.signaler(data.message || 'Action impossible.', true);
+
                     window.dispatchEvent(new CustomEvent('toast', {
                         detail: { type: 'error', message: data.message || 'Action impossible.' },
                     }));
+
                     return null;
                 }
 
@@ -765,12 +785,20 @@ function ligneProduit(urlBoutique, urlVedette, visible, vedette) {
 
         async basculerBoutique() {
             const data = await this.appeler(this.urlBoutique);
-            if (data) this.visible = data.visible_boutique;
+
+            if (data) {
+                this.visible = data.visible_boutique;
+                this.signaler(data.visible_boutique ? 'Visible en boutique' : 'Masqué de la boutique');
+            }
         },
 
         async basculerVedette() {
             const data = await this.appeler(this.urlVedette);
-            if (data) this.vedette = data.featured;
+
+            if (data) {
+                this.vedette = data.featured;
+                this.signaler(data.featured ? 'Mis en vedette' : 'Retiré des vedettes');
+            }
         },
     };
 }
