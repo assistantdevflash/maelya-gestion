@@ -13,16 +13,26 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('produits', 'fournisseur_id')) {
+            return;
+        }
+
         Schema::table('produits', function (Blueprint $table) {
-            $table->foreignUuid('fournisseur_id')->nullable()->after('categorie_id')
-                ->constrained('fournisseurs')->nullOnDelete();
+            // Simple index, comme les autres tables du module (bons_commande,
+            // inventaires) : aucune contrainte FK dans ce schéma, ce qui évite
+            // les échecs d'ALTER sur les hébergements mutualisés.
+            $table->uuid('fournisseur_id')->nullable()->after('categorie_id')->index();
         });
     }
 
     public function down(): void
     {
+        if (! Schema::hasColumn('produits', 'fournisseur_id')) {
+            return;
+        }
+
         Schema::table('produits', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('fournisseur_id');
+            $table->dropColumn('fournisseur_id');
         });
     }
 };
