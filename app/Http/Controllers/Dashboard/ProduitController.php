@@ -25,6 +25,42 @@ class ProduitController extends Controller
         return view('dashboard.produits.index', compact('produits', 'categories'));
     }
 
+    /**
+     * Fiche produit : la ressource excluait `show`, donc un produit n'avait
+     * aucune page de détail — impossible de consulter son historique.
+     */
+    public function show(Produit $produit)
+    {
+        $produit->load(['categorie', 'images']);
+
+        $mouvements = $produit->mouvements()
+            ->with('user:id,prenom,nom_famille')
+            ->latest()
+            ->limit(30)
+            ->get();
+
+        // Dernières ventes de ce produit (caisse + factures)
+        $ventes = \App\Models\VenteItem::query()
+            ->where('type', 'produit')
+            ->where('item_id', $produit->id)
+            ->with('vente:id,numero_facture,created_at,total')
+            ->latest()
+            ->limit(10)
+            ->get();
+
+        $totalSorti = (int) $produit->mouvements()
+            ->whereIn('type', ['sortie_vente'])
+            ->sum('quantite');
+
+        return view('dashboard.produits.show', [
+            'produit'     => $produit,
+            'mouvements'  => $mouvements,
+            'ventes'      => $ventes,
+            'totalSorti'  => $totalSorti,
+            'valeurStock' => (int) $produit->stock * (int) ($produit->cout_moyen_pondere ?: $produit->prix_achat),
+        ]);
+    }
+
     public function create()
     {
         $categories = CategorieProduit::orderBy('nom')->get();

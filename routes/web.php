@@ -191,6 +191,7 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
 
     // Stock consultation (tous les rôles)
     Route::get('stock', [StockController::class, 'index'])->name('stock.index');
+    Route::get('stock/mouvements', [StockController::class, 'mouvements'])->name('stock.mouvements');
 
     // Boutique en ligne (admin uniquement pour la config, tous pour la consultation)
     Route::prefix('boutique')->name('boutique.')->group(function () {
@@ -323,7 +324,7 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
 
         // Produits + Stock (feature: produits / stock)
         Route::middleware('feature:produits')->group(function () {
-            Route::resource('produits', ProduitController::class)->except(['show']);
+            Route::resource('produits', ProduitController::class);
             Route::post('produits/{produit}/toggle-visible', [ProduitController::class, 'toggleVisible'])->name('produits.toggle-visible');
             Route::post('produits/{produit}/toggle-featured', [ProduitController::class, 'toggleFeatured'])->name('produits.toggle-featured');
             // Images produit

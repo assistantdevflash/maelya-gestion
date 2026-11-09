@@ -573,14 +573,21 @@
                         </a>
                         @endif
                         <a href="{{ route('dashboard.stock.index') }}"
-                           class="sidebar-link text-sm {{ request()->routeIs('dashboard.stock.*') ? 'active' : '' }}">
+                           class="sidebar-link text-sm {{ request()->routeIs('dashboard.stock.index') ? 'active' : '' }}">
                             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                                 <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2M8 7V5a2 2 0 0 0-4 0v2"/>
                             </svg>
-                            <span class="flex-1">Mouvements</span>
+                            <span class="flex-1">Stock</span>
                             @if($alertesStock > 0)
                                 <span class="flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold">{{ $alertesStock }}</span>
                             @endif
+                        </a>
+                        <a href="{{ route('dashboard.stock.mouvements') }}"
+                           class="sidebar-link text-sm {{ request()->routeIs('dashboard.stock.mouvements') ? 'active' : '' }}">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                            </svg>
+                            <span class="flex-1">Mouvements</span>
                         </a>
                         @if(auth()->user()->isAdmin())
                         <a href="{{ route('dashboard.fournisseurs.index') }}"

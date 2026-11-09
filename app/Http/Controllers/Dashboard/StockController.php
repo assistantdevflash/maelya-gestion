@@ -3,12 +3,21 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\MouvementStock;
 use App\Models\Produit;
 use App\Services\StockService;
 use Illuminate\Http\Request;
 
 class StockController extends Controller
 {
+    /** Libellés lisibles des types de mouvement (enum de la table). */
+    public const TYPES = [
+        'entree'           => 'Entrée',
+        'sortie_vente'     => 'Sortie',
+        'correction'       => 'Correction',
+        'annulation_vente' => 'Annulation',
+    ];
+
     public function index(Request $request)
     {
         $search = $request->input('q');
@@ -70,5 +79,59 @@ class StockController extends Controller
         }
 
         return back()->with('success', 'Stock corrigé : ' . $mouvement->stock_apres . ' ' . $produit->unite . '.');
+    }
+
+    /**
+     * Historique des mouvements de stock.
+     *
+     * Les mouvements étaient enregistrés depuis le début mais aucun écran ne
+     * les affichait : impossible d'expliquer un écart ou de retrouver qui a
+     * modifié quoi.
+     */
+    public function mouvements(Request $request)
+    {
+        $q     = trim((string) $request->input('q'));
+        $type  = (string) $request->input('type');
+        $du    = $request->input('du');
+        $au    = $request->input('au');
+
+        $base = MouvementStock::query()
+            ->when($q !== '', function ($query) use ($q) {
+                $query->whereHas('produit', function ($p) use ($q) {
+                    $like = '%' . $q . '%';
+                    $p->withoutGlobalScopes()
+                      ->where(fn ($w) => $w->where('nom', 'like', $like)
+                                           ->orWhere('reference', 'like', $like)
+                                           ->orWhere('code_barre', 'like', $like));
+                });
+            })
+            ->when(array_key_exists($type, self::TYPES), fn ($query) => $query->where('type', $type))
+            ->when($du, fn ($query) => $query->whereDate('created_at', '>=', $du))
+            ->when($au, fn ($query) => $query->whereDate('created_at', '<=', $au));
+
+        // Totaux de la sélection (avant pagination)
+        $totaux = (clone $base)
+            ->selectRaw("SUM(CASE WHEN type IN ('entree','annulation_vente') THEN quantite ELSE 0 END) as entrees")
+            ->selectRaw("SUM(CASE WHEN type IN ('sortie_vente','correction') THEN quantite ELSE 0 END) as sorties")
+            ->first();
+
+        $mouvements = $base
+            ->with(['produit:id,nom,unite,reference', 'user:id,prenom,nom_famille'])
+            ->latest()
+            ->paginate(40)
+            ->withQueryString();
+
+        $produits = Produit::orderBy('nom')->limit(500)->get(['id', 'nom']);
+
+        return view('dashboard.stock.mouvements', [
+            'mouvements' => $mouvements,
+            'produits'   => $produits,
+            'recherche'  => $q,
+            'type'       => $type,
+            'du'         => $du,
+            'au'         => $au,
+            'entrees'    => (int) ($totaux->entrees ?? 0),
+            'sorties'    => (int) ($totaux->sorties ?? 0),
+        ]);
     }
 }
