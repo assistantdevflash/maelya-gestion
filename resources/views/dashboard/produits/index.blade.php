@@ -627,6 +627,24 @@
                 </div>
             </div>
         </div>
+    {{-- Notification flottante : les bascules ne rechargent plus la page --}}
+    <div x-show="toast.show" x-cloak x-transition
+         class="fixed bottom-6 right-6 z-[80] max-w-sm">
+        <div class="flex items-start gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium"
+             :class="toast.type === 'error'
+                ? 'bg-rose-600 text-white'
+                : 'bg-emerald-600 text-white'">
+            <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path x-show="toast.type !== 'error'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                <path x-show="toast.type === 'error'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <span class="flex-1" x-text="toast.message"></span>
+            <button type="button" @click="toast.show = false" class="opacity-70 hover:opacity-100" aria-label="Fermer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+    </div>
+
     </div>
 
     @if(request('action') === 'categories')
@@ -683,25 +701,6 @@
         });
     }
     </script>
-
-    {{-- Notification flottante : les bascules ne rechargent plus la page --}}
-    <div x-show="toast.show" x-cloak x-transition
-         class="fixed bottom-6 right-6 z-[80] max-w-sm">
-        <div class="flex items-start gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium"
-             :class="toast.type === 'error'
-                ? 'bg-rose-600 text-white'
-                : 'bg-emerald-600 text-white'">
-            <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path x-show="toast.type !== 'error'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                <path x-show="toast.type === 'error'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-            </svg>
-            <span class="flex-1" x-text="toast.message"></span>
-            <button type="button" @click="toast.show = false" class="opacity-70 hover:opacity-100" aria-label="Fermer">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-        </div>
-    </div>
-</x-dashboard-layout>
 
 @push('scripts')
 <script>
@@ -777,3 +776,5 @@ function ligneProduit(urlBoutique, urlVedette, visible, vedette) {
 }
 </script>
 @endpush
+</x-dashboard-layout>
+

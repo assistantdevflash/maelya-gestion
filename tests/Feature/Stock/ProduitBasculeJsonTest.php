@@ -85,6 +85,36 @@ class ProduitBasculeJsonTest extends TestCase
         $this->assertFalse((bool) $sansImage->fresh()->visible_boutique);
     }
 
+    /**
+     * Le `@push('scripts')` de la vue était placé APRÈS `</x-dashboard-layout>` :
+     * il s'exécutait donc une fois le layout rendu, et le script n'était jamais
+     * inclus. Alpine échouait avec « basculerBoutique is not defined ».
+     */
+    public function test_la_page_inclut_le_script_des_bascules(): void
+    {
+        [$admin] = $this->contexte();
+
+        $html = $this->actingAs($admin)
+            ->get(route('dashboard.produits.index'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('function ligneProduit', $html);
+        $this->assertStringContainsString('basculerBoutique', $html);
+        $this->assertStringContainsString('basculerVedette', $html);
+
+        // Le script doit être présent AVANT le chargement d'Alpine
+        $positionScript = strpos($html, 'function ligneProduit');
+        $positionAlpine = strpos($html, 'alpine-app');
+
+        $this->assertNotFalse($positionAlpine);
+        $this->assertLessThan(
+            $positionAlpine,
+            $positionScript,
+            "Le script des bascules doit être inclus avant Alpine."
+        );
+    }
+
     public function test_un_appel_classique_redirige_toujours(): void
     {
         [$admin, , $produit] = $this->contexte();
