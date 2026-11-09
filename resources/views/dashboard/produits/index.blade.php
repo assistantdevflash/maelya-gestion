@@ -1,11 +1,27 @@
 <x-dashboard-layout>
-    <div class="space-y-5">
+    <div class="space-y-5"
+         x-data="{ selection: [], actionGroupee: '', ids: @js($produits->pluck('id')->values()), get tous() { return this.ids.length > 0 && this.selection.length === this.ids.length; } }">
+        @if(session('import_erreurs') && count(session('import_erreurs')))
+        <div class="alert-error">
+            <p class="font-semibold mb-1">Lignes ignorées :</p>
+            <ul class="list-disc list-inside text-xs space-y-0.5">
+                @foreach(session('import_erreurs') as $err)
+                <li>{{ $err }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-display font-bold text-gray-900 tracking-tight">Produits</h1>
                 <p class="text-sm text-gray-500 mt-1">{{ \App\Helpers\TexteHelper::pluriel($produits->total(), 'produit', 'produits') }} dans votre catalogue</p>
             </div>
             <div class="flex gap-2">
+                <a href="{{ route('dashboard.produits.import') }}" class="btn-outline whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                    Importer
+                </a>
                 <button x-data @click="$dispatch('open-categories')" class="btn-outline">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
@@ -42,11 +58,62 @@
                         <option value="{{ $cat->id }}" {{ request('categorie') === $cat->id ? 'selected' : '' }}>{{ $cat->nom }}</option>
                     @endforeach
                 </select>
+                <select name="stock" class="form-select w-auto">
+                    <option value="">Tout le stock</option>
+                    <option value="bas" {{ ($stock ?? '') === 'bas' ? 'selected' : '' }}>Sous le seuil</option>
+                    <option value="rupture" {{ ($stock ?? '') === 'rupture' ? 'selected' : '' }}>En rupture</option>
+                </select>
+                <select name="tri" class="form-select w-auto">
+                    <option value="nom" {{ ($tri ?? '') === 'nom' ? 'selected' : '' }}>Nom A→Z</option>
+                    <option value="stock" {{ ($tri ?? '') === 'stock' ? 'selected' : '' }}>Stock croissant</option>
+                    <option value="prix" {{ ($tri ?? '') === 'prix' ? 'selected' : '' }}>Prix décroissant</option>
+                    <option value="recent" {{ ($tri ?? '') === 'recent' ? 'selected' : '' }}>Plus récents</option>
+                </select>
                 <button type="submit" class="btn-outline">Filtrer</button>
-                @if(request()->hasAny(['q', 'categorie']))
+                @if(request()->hasAny(['q', 'categorie', 'stock', 'tri']))
                     <a href="{{ route('dashboard.produits.index') }}" class="btn btn-ghost">Réinitialiser</a>
                 @endif
             </form>
+        </div>
+
+        {{-- Barre d'actions groupées --}}
+        <div x-show="selection.length > 0" x-cloak x-transition
+             class="card p-3 flex flex-wrap items-center gap-3 border-primary-200 dark:border-primary-800 bg-primary-50/50 dark:bg-primary-950/20">
+            <span class="text-sm font-semibold text-gray-800 dark:text-slate-200">
+                <span x-text="selection.length"></span> produit(s) sélectionné(s)
+            </span>
+
+            <form method="POST" action="{{ route('dashboard.produits.actions-groupees') }}" class="flex flex-wrap items-center gap-2">
+                @csrf
+                <template x-for="id in selection" :key="id">
+                    <input type="hidden" name="ids[]" :value="id">
+                </template>
+
+                <select name="action" x-model="actionGroupee" class="form-select w-auto text-sm">
+                    <option value="">Choisir une action…</option>
+                    <option value="boutique_on">Afficher en boutique</option>
+                    <option value="boutique_off">Masquer de la boutique</option>
+                    <option value="activer">Activer</option>
+                    <option value="desactiver">Désactiver</option>
+                    <option value="categorie">Changer de catégorie</option>
+                </select>
+
+                <select name="categorie_id" x-show="actionGroupee === 'categorie'" x-cloak class="form-select w-auto text-sm">
+                    <option value="">Sans catégorie</option>
+                    @foreach($categories as $cat)
+                    <option value="{{ $cat->id }}">{{ $cat->nom }}</option>
+                    @endforeach
+                </select>
+
+                <button type="submit" class="btn-primary text-sm" :disabled="actionGroupee === ''"
+                        :class="actionGroupee === '' ? 'opacity-40 cursor-not-allowed' : ''">
+                    Appliquer
+                </button>
+            </form>
+
+            <button type="button" @click="selection = []" class="text-xs font-semibold text-gray-500 underline">
+                Tout désélectionner
+            </button>
         </div>
 
         {{-- Table --}}
@@ -56,6 +123,12 @@
                 <table class="w-full text-sm">
                     <thead class="bg-gray-50 border-b border-gray-100">
                         <tr>
+                            <th class="px-4 py-3 w-10">
+                                <input type="checkbox" :checked="tous"
+                                       @change="selection = $event.target.checked ? [...ids] : []"
+                                       class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                       aria-label="Tout sélectionner">
+                            </th>
                             <th class="px-4 py-3 text-left font-semibold text-gray-600">Produit</th>
                             <th class="px-4 py-3 text-left font-semibold text-gray-600 hidden md:table-cell">Catégorie</th>
                             <th class="px-4 py-3 text-right font-semibold text-gray-600">Stock</th>
@@ -66,6 +139,11 @@
                     <tbody class="divide-y divide-gray-50">
                         @foreach($produits as $produit)
                         <tr class="hover:bg-gray-50 group transition-colors">
+                            <td class="px-4 py-3">
+                                <input type="checkbox" x-model="selection" value="{{ $produit->id }}"
+                                       class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                       aria-label="Sélectionner {{ $produit->nom }}">
+                            </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
                                     @if($produit->photo)

@@ -37,7 +37,32 @@ class StockController extends Controller
 
         $tousLesProduits = Produit::where('actif', true)->orderBy('nom')->limit(500)->get(['id', 'nom']);
 
-        return view('dashboard.stock.index', compact('produits', 'nbAlertes', 'search', 'alerte', 'tousLesProduits'));
+        // ── Indicateurs de pilotage ────────────────────────────────────────
+        $valeurStock = (int) Produit::where('actif', true)
+            ->selectRaw('COALESCE(SUM(stock * COALESCE(NULLIF(cout_moyen_pondere, 0), prix_achat, 0)), 0) as total')
+            ->value('total');
+
+        $enRupture = Produit::where('actif', true)->where('stock', '<=', 0)->count();
+
+        // Produits immobilisés : du stock, mais aucune sortie depuis 60 jours
+        $dormants = Produit::where('actif', true)
+            ->where('stock', '>', 0)
+            ->whereDoesntHave('mouvements', function ($q) {
+                $q->whereIn('type', ['sortie_vente'])
+                  ->where('created_at', '>=', now()->subDays(60));
+            })
+            ->orderByDesc('stock')
+            ->limit(5)
+            ->get(['id', 'nom', 'stock', 'unite', 'cout_moyen_pondere', 'prix_achat']);
+
+        $valeurDormante = (int) $dormants->sum(
+            fn ($p) => (int) $p->stock * (int) ($p->cout_moyen_pondere ?: $p->prix_achat)
+        );
+
+        return view('dashboard.stock.index', compact(
+            'produits', 'nbAlertes', 'search', 'alerte', 'tousLesProduits',
+            'valeurStock', 'enRupture', 'dormants', 'valeurDormante'
+        ));
     }
 
     public function entree(Request $request, Produit $produit, StockService $stock)

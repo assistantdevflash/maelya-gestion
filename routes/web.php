@@ -326,6 +326,13 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
 
         // Produits + Stock (feature: produits / stock)
         Route::middleware('feature:produits')->group(function () {
+            // ⚠️ Routes STATIQUES avant le resource : `produits/{produit}`
+            // capturerait `produits/import` sinon (404 systématique).
+            Route::get('produits/import', [ProduitController::class, 'importForm'])->name('produits.import');
+            Route::get('produits/import/modele', [ProduitController::class, 'importModele'])->name('produits.import.modele');
+            Route::post('produits/import', [ProduitController::class, 'import'])->name('produits.import.store');
+            Route::post('produits/actions-groupees', [ProduitController::class, 'actionsGroupees'])->name('produits.actions-groupees');
+
             Route::resource('produits', ProduitController::class);
             Route::post('produits/{produit}/toggle-visible', [ProduitController::class, 'toggleVisible'])->name('produits.toggle-visible');
             Route::post('produits/{produit}/toggle-featured', [ProduitController::class, 'toggleFeatured'])->name('produits.toggle-featured');

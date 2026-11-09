@@ -6,23 +6,194 @@ use App\Http\Controllers\Controller;
 use App\Models\CategorieProduit;
 use App\Models\Produit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
 class ProduitController extends Controller
 {
     public function index(Request $request)
     {
-        $produits = Produit::with('categorie')
-            ->when($request->input('q'), fn($q, $search) => $q->where(function ($q) use ($search) {
-                $q->where('nom', 'like', "%{$search}%")
-                  ->orWhere('reference', 'like', "%{$search}%");
+        $recherche = trim((string) $request->input('q'));
+        $stock     = (string) $request->input('stock');
+        $tri       = (string) $request->input('tri', 'nom');
+
+        $produits = Produit::with(['categorie', 'fournisseur'])
+            ->when($recherche !== '', fn ($q) => $q->where(function ($q) use ($recherche) {
+                $like = "%{$recherche}%";
+                $q->where('nom', 'like', $like)
+                  ->orWhere('reference', 'like', $like)
+                  ->orWhere('code_barre', 'like', $like);
             }))
-            ->when($request->input('categorie'), fn($q, $catId) => $q->where('categorie_id', $catId))
-            ->orderBy('nom')
+            ->when($request->input('categorie'), fn ($q, $catId) => $q->where('categorie_id', $catId))
+            ->when($stock === 'rupture', fn ($q) => $q->where('stock', '<=', 0))
+            ->when($stock === 'bas', fn ($q) => $q->whereColumn('stock', '<=', 'seuil_alerte'))
+            ->when($request->boolean('masques'), fn ($q) => $q->where('visible_boutique', false))
+            ->when(true, function ($q) use ($tri) {
+                match ($tri) {
+                    'stock'     => $q->orderBy('stock'),
+                    'prix'      => $q->orderByDesc('prix_vente'),
+                    'recent'    => $q->latest(),
+                    default     => $q->orderBy('nom'),
+                };
+            })
             ->paginate(25)
             ->withQueryString();
+
         $categories = CategorieProduit::orderBy('nom')->get();
-        return view('dashboard.produits.index', compact('produits', 'categories'));
+
+        return view('dashboard.produits.index', compact('produits', 'categories', 'recherche', 'stock', 'tri'));
+    }
+
+    // ─── Import CSV ──────────────────────────────────────────────────────
+
+    private const COLONNES_IMPORT = ['nom', 'reference', 'prix_achat', 'prix_vente', 'stock', 'seuil_alerte', 'unite'];
+
+    public function importForm()
+    {
+        return view('dashboard.produits.import');
+    }
+
+    /** Gabarit CSV prêt à remplir (avec la bonne en-tête). */
+    public function importModele()
+    {
+        $contenu = "nom;reference;prix_achat;prix_vente;stock;seuil_alerte;unite\n"
+            . "Huile de ricin;HUIL-001;2500;4500;10;3;flacon\n";
+
+        return response($contenu, 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="modele-produits.csv"',
+        ]);
+    }
+
+    /**
+     * Import de produits depuis un fichier CSV.
+     *
+     * La référence sert de clé : une ligne dont la référence existe déjà met
+     * le produit à jour, sinon il est créé. Une ligne invalide n'interrompt
+     * pas l'import, elle est signalée dans le rapport.
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'fichier' => ['required', 'file', 'mimes:csv,txt', 'max:4096'],
+        ]);
+
+        $handle = fopen($request->file('fichier')->getRealPath(), 'r');
+        if (! $handle) {
+            return back()->with('error', 'Fichier illisible.');
+        }
+
+        // Détection du séparateur sur la première ligne
+        $premiere = fgets($handle);
+        rewind($handle);
+        $separateur = substr_count((string) $premiere, ';') >= substr_count((string) $premiere, ',') ? ';' : ',';
+
+        $entetes = array_map(
+            fn ($h) => strtolower(trim(str_replace('\xEF\xBB\xBF', '', $h))),
+            (array) fgetcsv($handle, 0, $separateur)
+        );
+
+        $manquantes = array_diff(['nom', 'prix_vente'], $entetes);
+        if ($manquantes !== []) {
+            fclose($handle);
+
+            return back()->with('error', 'Colonnes manquantes : ' . implode(', ', $manquantes) . '.');
+        }
+
+        $crees = $maj = 0;
+        $erreurs = [];
+        $ligne = 1;
+
+        while (($valeurs = fgetcsv($handle, 0, $separateur)) !== false) {
+            $ligne++;
+
+            if (count(array_filter($valeurs, fn ($v) => trim((string) $v) !== '')) === 0) {
+                continue;
+            }
+
+            $donnees = [];
+            foreach ($entetes as $i => $colonne) {
+                $donnees[$colonne] = isset($valeurs[$i]) ? trim((string) $valeurs[$i]) : null;
+            }
+
+            $nom = $donnees['nom'] ?? '';
+            if ($nom === '') {
+                $erreurs[] = "Ligne {$ligne} : nom vide";
+                continue;
+            }
+
+            $attributs = [
+                'nom'          => mb_substr($nom, 0, 150),
+                'reference'    => $donnees['reference'] ?: null,
+                'prix_achat'   => max(0, (int) ($donnees['prix_achat'] ?? 0)),
+                'prix_vente'   => max(0, (int) ($donnees['prix_vente'] ?? 0)),
+                'seuil_alerte' => max(0, (int) ($donnees['seuil_alerte'] ?? 0)),
+                'unite'        => mb_substr($donnees['unite'] ?: 'unité', 0, 30),
+            ];
+
+            if ($attributs['prix_vente'] <= 0) {
+                $erreurs[] = "Ligne {$ligne} : prix de vente invalide";
+                continue;
+            }
+
+            $existant = $attributs['reference']
+                ? Produit::where('reference', $attributs['reference'])->first()
+                : null;
+
+            if ($existant) {
+                $existant->update($attributs);
+                $maj++;
+                continue;
+            }
+
+            // Le stock initial n'est appliqué qu'à la création : un import ne
+            // doit pas écraser un stock géré par les mouvements.
+            Produit::create($attributs + [
+                'stock'            => max(0, (int) ($donnees['stock'] ?? 0)),
+                'actif'            => true,
+                'visible_boutique' => false,
+            ]);
+            $crees++;
+        }
+
+        fclose($handle);
+
+        Cache::forget('caisse_catalog_' . (session('current_institut_id', Auth::user()->institut_id)));
+        Cache::forget('boutique_' . (session('current_institut_id', Auth::user()->institut_id)) . '_produits');
+
+        $message = \App\Helpers\TexteHelper::pluriel($crees, 'produit créé', 'produits créés')
+            . ', ' . $maj . ' mis à jour.';
+
+        return redirect()->route('dashboard.produits.index')
+            ->with('success', $message)
+            ->with('import_erreurs', array_slice($erreurs, 0, 20));
+    }
+
+    /**
+     * Actions groupées : catégorie, visibilité boutique, activation.
+     */
+    public function actionsGroupees(Request $request)
+    {
+        $data = $request->validate([
+            'ids'            => ['required', 'array', 'min:1'],
+            'ids.*'          => ['uuid'],
+            'action'         => ['required', 'in:categorie,boutique_on,boutique_off,activer,desactiver'],
+            'categorie_id'   => ['nullable', 'uuid', 'exists:categories_produits,id'],
+        ]);
+
+        // Le scope d'établissement garantit qu'on ne touche qu'à ses produits
+        $produits = Produit::whereIn('id', $data['ids']);
+        $nb = (clone $produits)->count();
+
+        match ($data['action']) {
+            'categorie'    => $produits->update(['categorie_id' => $data['categorie_id'] ?? null]),
+            'boutique_on'  => $produits->update(['visible_boutique' => true]),
+            'boutique_off' => $produits->update(['visible_boutique' => false]),
+            'activer'      => $produits->update(['actif' => true]),
+            'desactiver'   => $produits->update(['actif' => false]),
+        };
+
+        return back()->with('success', \App\Helpers\TexteHelper::pluriel($nb, 'produit modifié', 'produits modifiés') . '.');
     }
 
     /**

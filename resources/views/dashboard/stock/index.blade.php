@@ -30,6 +30,38 @@
             </div>
         </div>
 
+        {{-- Indicateurs de pilotage --}}
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="card p-4">
+                <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Valeur du stock</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-slate-100 mt-1">
+                    {{ number_format($valeurStock, 0, ',', ' ') }} <span class="text-sm font-normal text-gray-400">F</span>
+                </p>
+                <p class="text-[11px] text-gray-400 mt-0.5">au coût moyen pondéré</p>
+            </div>
+            <div class="card p-4">
+                <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Ruptures</p>
+                <p class="text-2xl font-bold mt-1 {{ $enRupture > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-900 dark:text-slate-100' }}">
+                    {{ $enRupture }}
+                </p>
+                <p class="text-[11px] text-gray-400 mt-0.5">produits à zéro</p>
+            </div>
+            <div class="card p-4">
+                <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Sous le seuil</p>
+                <p class="text-2xl font-bold mt-1 {{ $nbAlertes > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-900 dark:text-slate-100' }}">
+                    {{ $nbAlertes }}
+                </p>
+                <p class="text-[11px] text-gray-400 mt-0.5">à réapprovisionner</p>
+            </div>
+            <div class="card p-4">
+                <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Capital dormant</p>
+                <p class="text-2xl font-bold mt-1 text-gray-900 dark:text-slate-100">
+                    {{ number_format($valeurDormante, 0, ',', ' ') }} <span class="text-sm font-normal text-gray-400">F</span>
+                </p>
+                <p class="text-[11px] text-gray-400 mt-0.5">aucune vente depuis 60 j</p>
+            </div>
+        </div>
+
         {{-- Filtres --}}
         <div class="card p-4">
             <form method="GET" action="{{ route('dashboard.stock.index') }}" class="flex flex-wrap gap-3">
@@ -182,6 +214,35 @@
                     </div>
                 </div>
             </div>
+        </div>
+        @endif
+
+        {{-- Capital immobilisé : du stock qui ne tourne pas --}}
+        @if($dormants->isNotEmpty())
+        <div class="card overflow-hidden">
+            <div class="px-5 py-3 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-sm font-semibold text-gray-900 dark:text-slate-100">Capital immobilisé</h2>
+                    <p class="text-xs text-gray-400">Du stock, mais aucune vente depuis 60 jours.</p>
+                </div>
+                <span class="text-sm font-bold text-gray-700 dark:text-slate-200 whitespace-nowrap">
+                    {{ number_format($valeurDormante, 0, ',', ' ') }} F
+                </span>
+            </div>
+            <ul class="divide-y divide-gray-50 dark:divide-slate-700/60">
+                @foreach($dormants as $d)
+                <li class="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <a href="{{ route('dashboard.produits.show', $d) }}"
+                       class="font-medium text-gray-800 dark:text-slate-200 hover:text-primary-600 truncate">
+                        {{ $d->nom }}
+                    </a>
+                    <span class="text-xs text-gray-400 whitespace-nowrap ml-3">
+                        {{ $d->stock }} {{ $d->unite }} ·
+                        {{ number_format((int) $d->stock * (int) ($d->cout_moyen_pondere ?: $d->prix_achat), 0, ',', ' ') }} F
+                    </span>
+                </li>
+                @endforeach
+            </ul>
         </div>
         @endif
     </div>
