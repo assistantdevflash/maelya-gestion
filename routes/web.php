@@ -192,6 +192,8 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
     // Stock consultation (tous les rôles)
     Route::get('stock', [StockController::class, 'index'])->name('stock.index');
     Route::get('stock/mouvements', [StockController::class, 'mouvements'])->name('stock.mouvements');
+    Route::get('stock/reapprovisionnement', [StockController::class, 'reapprovisionnement'])->name('stock.reappro');
+    Route::post('stock/generer-bons-commande', [StockController::class, 'genererBonsCommande'])->name('stock.generer-bc');
 
     // Boutique en ligne (admin uniquement pour la config, tous pour la consultation)
     Route::prefix('boutique')->name('boutique.')->group(function () {

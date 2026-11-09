@@ -20,7 +20,7 @@ class Produit extends Model
     }
 
     protected $fillable = [
-        'institut_id', 'categorie_id', 'nom', 'reference', 'code_barre',
+        'institut_id', 'categorie_id', 'fournisseur_id', 'nom', 'reference', 'code_barre',
         'prix_achat', 'cout_moyen_pondere', 'prix_vente', 'prix_promo', 'stock', 'seuil_alerte', 'unite',
         'description', 'description_courte', 'photo', 'actif', 'visible_boutique', 'featured',
     ];
@@ -102,6 +102,11 @@ class Produit extends Model
         if ($img) return asset('storage/' . $img->chemin);
         if ($this->photo) return asset('storage/' . $this->photo);
         return null;
+    }
+
+    public function fournisseur()
+    {
+        return $this->belongsTo(\App\Models\Fournisseur::class, 'fournisseur_id');
     }
 
     public function mouvements()

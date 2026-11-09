@@ -7,6 +7,8 @@ use App\Models\MouvementStock;
 use App\Models\Produit;
 use App\Services\StockService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class StockController extends Controller
 {
@@ -79,6 +81,100 @@ class StockController extends Controller
         }
 
         return back()->with('success', 'Stock corrigé : ' . $mouvement->stock_apres . ' ' . $produit->unite . '.');
+    }
+
+    /**
+     * Réapprovisionnement : produits sous leur seuil, groupés par fournisseur,
+     * avec une quantité suggérée.
+     */
+    public function reapprovisionnement()
+    {
+        $produits = Produit::where('actif', true)
+            ->whereColumn('stock', '<=', 'seuil_alerte')
+            ->with(['fournisseur:id,nom', 'categorie:id,nom'])
+            ->orderBy('stock')
+            ->get();
+
+        $groupes = $produits->groupBy(fn ($p) => $p->fournisseur_id ?? 'sans');
+
+        $suggestions = $produits->mapWithKeys(fn ($p) => [
+            $p->id => max(1, ((int) $p->seuil_alerte * 2) - (int) $p->stock),
+        ]);
+
+        return view('dashboard.stock.reappro', [
+            'produits'    => $produits,
+            'groupes'     => $groupes,
+            'suggestions' => $suggestions,
+        ]);
+    }
+
+    /**
+     * Crée un bon de commande par fournisseur à partir des lignes cochées.
+     */
+    public function genererBonsCommande(Request $request)
+    {
+        $data = $request->validate([
+            'lignes'   => ['required', 'array', 'min:1'],
+            'lignes.*' => ['integer', 'min:1', 'max:9999'],
+        ]);
+
+        $produits = Produit::whereIn('id', array_keys($data['lignes']))
+            ->get(['id', 'nom', 'prix_achat', 'fournisseur_id', 'unite']);
+
+        $sansFournisseur = $produits->whereNull('fournisseur_id');
+
+        $parFournisseur = $produits
+            ->whereNotNull('fournisseur_id')
+            ->groupBy('fournisseur_id');
+
+        if ($parFournisseur->isEmpty()) {
+            return back()->with('error', 'Aucun produit sélectionné n\'a de fournisseur. Renseignez le fournisseur dans la fiche produit.');
+        }
+
+        $crees = 0;
+
+        DB::transaction(function () use ($parFournisseur, $data, &$crees) {
+            foreach ($parFournisseur as $fournisseurId => $lignes) {
+                $bon = \App\Models\BonCommande::create([
+                    'fournisseur_id' => $fournisseurId,
+                    'user_id'        => Auth::id(),
+                    'date_commande'  => now()->toDateString(),
+                    'statut'         => 'brouillon',
+                    'total_ht'       => 0,
+                    'notes'          => 'Généré automatiquement depuis les seuils d\'alerte.',
+                ]);
+
+                $total = 0;
+
+                foreach ($lignes as $produit) {
+                    $quantite  = (int) $data['lignes'][$produit->id];
+                    $prix      = (int) $produit->prix_achat;
+                    $sousTotal = $quantite * $prix;
+                    $total    += $sousTotal;
+
+                    \App\Models\BonCommandeLigne::create([
+                        'bon_commande_id'    => $bon->id,
+                        'produit_id'         => $produit->id,
+                        'libelle'            => $produit->nom,
+                        'quantite_commandee' => $quantite,
+                        'prix_unitaire'      => $prix,
+                        'sous_total'         => $sousTotal,
+                    ]);
+                }
+
+                $bon->update(['total_ht' => $total]);
+                $crees++;
+            }
+        });
+
+        $message = \App\Helpers\TexteHelper::pluriel($crees, 'bon de commande créé', 'bons de commande créés')
+            . ' en brouillon.';
+
+        if ($sansFournisseur->isNotEmpty()) {
+            $message .= ' ' . $sansFournisseur->count() . ' produit(s) sans fournisseur ignoré(s).';
+        }
+
+        return redirect()->route('dashboard.bons-commande.index')->with('success', $message);
     }
 
     /**

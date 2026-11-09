@@ -68,6 +68,23 @@
                         </div>
 
                         <div class="form-group">
+                            <label class="form-label">Fournisseur</label>
+                            <select name="fournisseur_id" class="form-select">
+                                <option value="">Aucun</option>
+                                @foreach(($fournisseurs ?? collect()) as $fournisseur)
+                                    <option value="{{ $fournisseur->id }}"
+                                        {{ old('fournisseur_id', $produit->fournisseur_id ?? '') === $fournisseur->id ? 'selected' : '' }}>
+                                        {{ $fournisseur->nom }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="text-xs text-gray-400 mt-1">
+                                Sert à regrouper les besoins de réapprovisionnement par fournisseur.
+                            </p>
+                            @error('fournisseur_id') <p class="form-error">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="form-group">
                             <label class="form-label">Nom du produit *</label>
                             <input type="text" name="nom" required maxlength="150"
                                    value="{{ old('nom', $produit->nom ?? '') }}"

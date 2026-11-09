@@ -64,7 +64,8 @@ class ProduitController extends Controller
     public function create()
     {
         $categories = CategorieProduit::orderBy('nom')->get();
-        return view('dashboard.produits.create', compact('categories'));
+        $fournisseurs = \App\Models\Fournisseur::where('actif', true)->orderBy('nom')->get(['id', 'nom']);
+        return view('dashboard.produits.create', compact('categories', 'fournisseurs'));
     }
 
     public function store(Request $request)
@@ -72,6 +73,7 @@ class ProduitController extends Controller
         $data = $request->validate([
             'nom' => ['required', 'string', 'max:150'],
             'categorie_id' => ['nullable', 'uuid'],
+            'fournisseur_id' => ['nullable', 'uuid', 'exists:fournisseurs,id'],
             'reference' => ['nullable', 'string', 'max:50'],
             'code_barre' => ['nullable', 'string', 'max:50'],
             'prix_achat' => ['nullable', 'integer', 'min:0'],
@@ -116,8 +118,9 @@ class ProduitController extends Controller
     public function edit(Produit $produit)
     {
         $categories = CategorieProduit::orderBy('nom')->get();
+        $fournisseurs = \App\Models\Fournisseur::where('actif', true)->orderBy('nom')->get(['id', 'nom']);
         $images = $produit->images()->orderBy('ordre')->get();
-        return view('dashboard.produits.edit', compact('produit', 'categories', 'images'));
+        return view('dashboard.produits.edit', compact('produit', 'categories', 'fournisseurs', 'images'));
     }
 
     public function update(Request $request, Produit $produit)
@@ -125,6 +128,7 @@ class ProduitController extends Controller
         $data = $request->validate([
             'nom' => ['required', 'string', 'max:150'],
             'categorie_id' => ['nullable', 'uuid'],
+            'fournisseur_id' => ['nullable', 'uuid', 'exists:fournisseurs,id'],
             'reference' => ['nullable', 'string', 'max:50'],
             'code_barre' => ['nullable', 'string', 'max:50'],
             'prix_achat' => ['nullable', 'integer', 'min:0'],
