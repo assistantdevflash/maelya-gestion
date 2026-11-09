@@ -1,7 +1,7 @@
 <x-dashboard-layout>
     <x-slot name="title">Importer des produits</x-slot>
 
-    <div class="space-y-5 max-w-2xl">
+    <div class="space-y-5 max-w-3xl mx-auto w-full">
         <div class="flex items-center justify-between gap-3">
             <div>
                 <h1 class="text-2xl font-display font-bold text-gray-900 dark:text-slate-100 tracking-tight">Importer des produits</h1>
