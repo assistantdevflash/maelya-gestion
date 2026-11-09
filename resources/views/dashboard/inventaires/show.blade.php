@@ -6,7 +6,7 @@
             <div class="min-w-0">
                 <h1 class="text-lg sm:text-2xl font-display font-bold text-gray-900 truncate">Inventaire {{ $inventaire->date_inventaire->format('d/m/Y') }}</h1>
                 <p class="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">
-                    Par {{ $inventaire->user->name ?? '—' }} •
+                    Par {{ $inventaire->user ? $inventaire->user->prenom . ' ' . $inventaire->user->nom_famille : '—' }} •
                     @php $cls = ['en_cours'=>'badge-warning','valide'=>'badge-success','annule'=>'badge-danger'][$inventaire->statut] ?? 'badge-primary'; @endphp
                     <span class="{{ $cls }} text-[10px] sm:text-xs">{{ ucfirst(str_replace('_',' ',$inventaire->statut)) }}</span>
                 </p>
@@ -16,6 +16,32 @@
 
         @if(session('success'))<div class="alert-success">{{ session('success') }}</div>@endif
         @if(session('error'))<div class="alert-error">{{ session('error') }}</div>@endif
+
+        {{-- Le stock a bougé depuis le comptage : valider écraserait les
+             mouvements intervenus entre-temps (ventes, réceptions). --}}
+        @if(isset($lignesModifiees) && $lignesModifiees->isNotEmpty())
+        <div class="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl">
+            <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            <div class="text-sm text-amber-800 dark:text-amber-300">
+                <p class="font-semibold">
+                    {{ \App\Helpers\TexteHelper::pluriel($lignesModifiees->count(), 'produit a', 'produits ont') }}
+                    bougé depuis le comptage
+                </p>
+                <p class="text-xs mt-1">
+                    Des ventes ou réceptions sont intervenues après votre comptage. La validation recalculera
+                    les écarts sur le stock réel : vérifiez le tableau avant de confirmer.
+                </p>
+                <ul class="mt-2 text-xs list-disc list-inside">
+                    @foreach($lignesModifiees->take(5) as $l)
+                    <li>{{ $l->produit->nom ?? '—' }} : compté {{ $l->stock_compte }}, théorique enregistré {{ $l->stock_theorique }}, réel {{ $stocksActuels[$l->produit_id] ?? '—' }}</li>
+                    @endforeach
+                    @if($lignesModifiees->count() > 5)
+                    <li>… et {{ $lignesModifiees->count() - 5 }} autre(s)</li>
+                    @endif
+                </ul>
+            </div>
+        </div>
+        @endif
 
         <div class="card p-3 sm:p-5 overflow-hidden">
             <div class="overflow-x-auto -webkit-overflow-scrolling:touch">
@@ -60,8 +86,14 @@
 
         @if($inventaire->statut === 'en_cours')
             <div class="flex flex-wrap gap-2">
+                <a href="{{ route('dashboard.inventaires.edit', $inventaire) }}" class="btn-outline text-xs">
+                    Modifier le comptage
+                </a>
                 <form method="POST" action="{{ route('dashboard.inventaires.valider', $inventaire) }}" id="form-valider-inv-{{ $inventaire->id }}">
                     @csrf
+                    @if(isset($lignesModifiees) && $lignesModifiees->isNotEmpty())
+                    <input type="hidden" name="confirmer_mouvements" value="1">
+                    @endif
                     <button type="button"
                             onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-valider-inv-{{ $inventaire->id }}',title:'Valider cet inventaire ?',message:'Les écarts seront appliqués sur le stock. Action irr\u00e9versible.',confirmLabel:'Valider',confirmClass:'!bg-emerald-600 hover:!bg-emerald-700',danger:false}}))"
                             class="btn-primary text-xs">Valider l'inventaire</button>

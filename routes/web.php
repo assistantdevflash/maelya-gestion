@@ -450,8 +450,12 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
     Route::post('bons-commande/{bonsCommande}/recevoir', [\App\Http\Controllers\Dashboard\BonCommandeController::class, 'recevoir'])
         ->name('bons-commande.recevoir');
 
+    // Un inventaire en brouillon doit pouvoir être corrigé : il fallait
+    // jusqu'ici le supprimer et tout ressaisir.
     Route::resource('inventaires', \App\Http\Controllers\Dashboard\InventaireController::class)
-        ->except(['edit', 'update']);
+        ->except(['edit']);
+    Route::get('inventaires/{inventaire}/modifier', [\App\Http\Controllers\Dashboard\InventaireController::class, 'edit'])
+        ->name('inventaires.edit');
 });
 
 // ─── Abonnement (accessible même sans abonnement actif) ───────────────────────
