@@ -18,6 +18,8 @@
 /public/storage
 /storage/*.key
 /storage/pail
+# Cache des métriques de police dompdf (regénéré à la demande)
+/storage/fonts
 /vendor
 Homestead.json
 Homestead.yaml

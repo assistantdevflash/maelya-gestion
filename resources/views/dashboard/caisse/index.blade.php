@@ -252,10 +252,12 @@
             // Construire l'URL du ticket PDF
             const ticketUrl = '{{ route('dashboard.ventes.ticket-pdf', ':id') }}'.replace(':id', printVenteId);
             
-            // Lancer l'impression automatiquement
+            // Lancer l'impression automatiquement. Le PDF a déjà été généré
+            // pendant l'encaissement : quelques dizaines de millisecondes
+            // suffisent pour que le document soit dans le DOM.
             setTimeout(function() {
                 printPDF(ticketUrl);
-            }, 500); // Petit délai pour laisser la page se charger complètement
+            }, 120);
             
             // Nettoyer l'URL (retirer le paramètre print)
             window.history.replaceState({}, document.title, window.location.pathname);

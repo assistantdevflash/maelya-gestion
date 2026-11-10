@@ -270,6 +270,15 @@ class VenteController extends Controller
         \App\Livewire\Caisse::purgerCache($this->institutId());
 
         if ($request->imprimer) {
+            // Le PDF est généré ici, pendant que le caissier voit déjà le
+            // voile « Encaissement en cours… ». La fenêtre d'impression
+            // s'ouvre ensuite sur un fichier prêt, sans attendre dompdf.
+            try {
+                app(\App\Services\TicketPdfService::class)->generer($vente);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('[Ticket] Pré-génération impossible : ' . $e->getMessage());
+            }
+
             // Rediriger vers la caisse avec l'ID de la vente pour déclencher l'impression
             return redirect()->route('dashboard.caisse', ['print' => $vente->id])
                 ->with('success', 'Vente #' . substr($vente->id, 0, 8) . ' enregistrée — ' . number_format($vente->total, 0, ',', ' ') . ' F');
@@ -502,6 +511,9 @@ class VenteController extends Controller
         Cache::forget("dashboard_full:{$this->institutId()}:" . now()->toDateString());
         Cache::forget("dashboard_basic:{$this->institutId()}:" . now()->toDateString());
 
+        // Le ticket en cache d'une vente annulée ne doit plus être réimprimé.
+        app(\App\Services\TicketPdfService::class)->oublier($vente);
+
         return back()->with('success', 'Vente annulée : stock restauré et points reversés.');
     }
 
@@ -511,10 +523,9 @@ class VenteController extends Controller
             abort(403);
         }
 
-        $vente->load('items', 'client', 'institut', 'user');
-        $pdf = Pdf::loadView('pdf.ticket', compact('vente'))
-            ->setPaper([0, 0, 226.77, 600], 'portrait');
-        return $pdf->stream("ticket-{$vente->numero}.pdf");
+        // Ticket mis en cache sur disque : la deuxième ouverture — et celle
+        // qui suit immédiatement l'encaissement — est quasi instantanée.
+        return app(\App\Services\TicketPdfService::class)->reponse($vente);
     }
 
     /**
@@ -523,10 +534,8 @@ class VenteController extends Controller
     public function ticketPdfPublic(string $id)
     {
         $vente = Vente::where('id', $id)->where('statut', 'validee')->firstOrFail();
-        $vente->load('items', 'client', 'institut', 'user');
-        $pdf = Pdf::loadView('pdf.ticket', compact('vente'))
-            ->setPaper([0, 0, 226.77, 600], 'portrait');
-        return $pdf->stream("ticket-{$vente->numero}.pdf");
+
+        return app(\App\Services\TicketPdfService::class)->reponse($vente);
     }
 
     public function facturePdf(Vente $vente)

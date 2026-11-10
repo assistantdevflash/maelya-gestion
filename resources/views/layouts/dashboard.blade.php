@@ -1360,7 +1360,7 @@
                             document.body.removeChild(iframe);
                         } catch (e) {}
                     }, 60000);
-                }, 500); // Petit délai pour s'assurer que le PDF est bien rendu
+                }, 150); // Laisse au moteur PDF le temps d'afficher la première page
             };
 
             iframe.onerror = function() {
