@@ -102,13 +102,15 @@ class Caisse extends Component
 
     // ── Client (seul cas nécessitant des requêtes Livewire) ──
 
-    #[Computed]
     /**
      * Purge le catalogue mis en cache pour cet établissement.
      *
      * Le catalogue de la caisse est mémorisé une heure. Sans purge après une
      * vente, le stock affiché restait figé : le caissier revendait un article
      * déjà épuisé et découvrait l'erreur seulement à la validation.
+     *
+     * ⚠️ Méthode statique : elle ne doit PAS porter #[Computed] (elle prend un
+     * paramètre obligatoire). L'attribut appartient à `selectedClient()`.
      */
     public static function purgerCache(string $institutId): void
     {
@@ -116,6 +118,7 @@ class Caisse extends Component
         \Illuminate\Support\Facades\Cache::forget('caisse_produits_simple_' . $institutId);
     }
 
+    #[Computed]
     public function selectedClient()
     {
         if (! $this->clientId) {

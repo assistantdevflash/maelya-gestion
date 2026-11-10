@@ -121,6 +121,30 @@ class CaisseExperienceTest extends TestCase
             ->assertSee('data-caisse-pos', false);
     }
 
+    public function test_choisir_un_client_ne_casse_pas_la_caisse(): void
+    {
+        $admin = $this->creerAdmin();
+
+        $client = \App\Models\Client::create([
+            'institut_id' => $admin->institut_id,
+            'type_client' => 'personne_physique',
+            'prenom'      => 'Awa',
+            'nom'         => 'Koné',
+            'telephone'   => '0102030405',
+            'actif'       => true,
+        ]);
+
+        // Régression : `#[Computed]` avait été collé sur `purgerCache()`, qui
+        // prend un paramètre obligatoire → Livewire tombait en 500 dès qu'on
+        // sélectionnait un client (donc à chaque re-rendu du composant).
+        Livewire::actingAs($admin)
+            ->test(Caisse::class)
+            ->call('selectClient', $client->id)
+            ->assertOk()
+            ->assertSet('clientId', $client->id)
+            ->assertSee('Awa');
+    }
+
     public function test_les_derniers_vendus_ignorent_les_produits_desactives(): void
     {
         $admin = $this->creerAdmin();
