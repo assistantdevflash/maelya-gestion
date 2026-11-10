@@ -630,15 +630,23 @@ class Caisse extends Component
             return collect();
         }
 
+        // Les clés sont de la forme « produit_<uuid> » : on sépare les ids par
+        // type avant d'interroger la base.
+        $idsParType = ['produit' => [], 'prestation' => []];
+
+        foreach ($cles as $cle => $type) {
+            $idsParType[$type][] = substr($cle, strlen($type) + 1);
+        }
+
         $produits = Produit::where('institut_id', $institutId)
             ->where('actif', true)
-            ->whereIn('id', array_keys(array_filter($cles, fn ($t) => $t === 'produit')))
+            ->whereIn('id', $idsParType['produit'])
             ->get()
             ->keyBy('id');
 
         $prestations = Prestation::where('institut_id', $institutId)
             ->where('actif', true)
-            ->whereIn('id', array_keys(array_filter($cles, fn ($t) => $t === 'prestation')))
+            ->whereIn('id', $idsParType['prestation'])
             ->get()
             ->keyBy('id');
 
