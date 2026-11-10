@@ -24,6 +24,7 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         init() {
             this.restaurerPanier();
             this.$watch('panier', () => this.sauvegarderPanier(), { deep: true });
+            this.installerRaccourcis();
 
             // Mode simplifié : produits uniquement, pas d'onglet prestations.
             if (this.mode === 'simple') {
@@ -78,6 +79,59 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
                 this.modePaiement = 'cash';
                 this.showCreditConfirmation = false;
             });
+        },
+
+        /**
+         * Raccourcis clavier du poste de caisse.
+         *
+         *   /       → place le curseur dans la recherche
+         *   Entrée  → ouvre le paiement (hors champ de saisie)
+         *   Échap   → ferme la modale courante, sinon quitte le champ
+         *
+         * Les traitements sont ignorés dès qu'un champ est en cours de saisie
+         * pour ne pas perturber la saisie du montant remis.
+         */
+        installerRaccourcis() {
+            this._raccourcis = (e) => {
+                const cible = e.target;
+                const dansChamp = !!cible && (
+                    cible.tagName === 'INPUT'
+                    || cible.tagName === 'TEXTAREA'
+                    || cible.tagName === 'SELECT'
+                    || cible.isContentEditable
+                );
+
+                if (e.key === 'Escape') {
+                    if (this.showConfirmation) { this.fermerConfirmation(); return; }
+                    if (this.showVenteRapide) { this.toggleVenteRapide(); return; }
+                    if (this.newClientOpen) { this.newClientOpen = false; return; }
+                    if (this.mobileCartOpen) { this.mobileCartOpen = false; return; }
+                    if (dansChamp) { cible.blur(); }
+                    return;
+                }
+
+                if (dansChamp || e.ctrlKey || e.metaKey || e.altKey) return;
+
+                if (e.key === '/') {
+                    const champ = document.querySelector('[data-recherche]');
+                    if (champ) {
+                        e.preventDefault();
+                        champ.focus();
+                        champ.select();
+                    }
+                    return;
+                }
+
+                if (e.key === 'Enter' && !this.panierVide && !this.showConfirmation) {
+                    e.preventDefault();
+                    this.ouvrirConfirmation();
+                }
+            };
+
+            window.addEventListener('keydown', this._raccourcis);
+            if (typeof this.$cleanup === 'function') {
+                this.$cleanup(() => window.removeEventListener('keydown', this._raccourcis));
+            }
         },
 
         // ── État filtres ──
@@ -318,12 +372,30 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         },
 
         ajouterItem(item) {
-            if (this.enRupture(item)) {
+            if (this.onglet === 'produits' && this.enRupture(item)) {
                 this.showToast(`⛔ ${item.nom} est en rupture de stock`);
                 return;
             }
 
-            const type = this.onglet === 'prestations' ? 'prestation' : 'produit';
+            this.ajouterAuPanier(
+                this.onglet === 'prestations' ? 'prestation' : 'produit',
+                item
+            );
+        },
+
+        /**
+         * Ajoute un article au panier en imposant son type.
+         *
+         * Utilisé par les raccourcis « derniers vendus », où le type ne dépend
+         * pas de l'onglet affiché.
+         */
+        ajouterAuPanier(type, item) {
+            if (type === 'produit' && item.stock !== null
+                && item.stock !== undefined && Number(item.stock) <= 0) {
+                this.showToast(`⛔ ${item.nom} est en rupture de stock`);
+                return;
+            }
+
             const key = `${type}_${item.id}`;
             const existait = !!this.panier[key];
             if (existait) {

@@ -1408,6 +1408,9 @@
     (function () {
         // Déjà en mode standalone = déjà ouvert comme app → rien à faire
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) return;
+        // La caisse occupe tout l'écran : la bannière flottante masquerait le
+        // panier et le bouton de validation. On l'y désactive.
+        if (document.querySelector('[data-caisse-pos]')) return;
         // Utilisateur a explicitement ignoré récemment
         var dismissed = localStorage.getItem('pwa-install-dismissed');
         if (dismissed && Date.now() < parseInt(dismissed)) return;

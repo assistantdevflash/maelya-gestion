@@ -334,6 +334,39 @@ class VenteController extends Controller
         return view('dashboard.caisse.show', compact('vente'));
     }
 
+    /**
+     * Annulation en un clic de la dernière vente encaissée.
+     *
+     * Une erreur de caisse (mauvais client, mauvais montant) doit pouvoir se
+     * corriger sans chercher la vente dans la liste : on reprend la dernière
+     * vente validée des dernières 24 heures et on applique exactement la même
+     * procédure que l'annulation classique (stock rendu, points reversés).
+     */
+    public function annulerDerniere(Request $request)
+    {
+        if (! Auth::user()->isAdmin()) {
+            abort(403, 'Seul un administrateur peut annuler une vente.');
+        }
+
+        $vente = Vente::withoutGlobalScopes()
+            ->where('institut_id', $this->institutId())
+            ->where('statut', 'validee')
+            ->where('created_at', '>=', now()->subDay())
+            ->latest('created_at')
+            ->first();
+
+        if (! $vente) {
+            return back()->with('error', "Aucune vente encaissée dans les dernières 24 heures.");
+        }
+
+        $request->merge([
+            'motif_annulation' => $request->input('motif_annulation')
+                ?: 'Annulation rapide depuis la caisse',
+        ]);
+
+        return $this->annuler($request, $vente);
+    }
+
     public function annuler(Request $request, Vente $vente)
     {
         // Seul l'admin peut annuler une vente

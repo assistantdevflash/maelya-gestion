@@ -14,6 +14,7 @@
         institutId: @js(session('current_institut_id', auth()->user()->institut_id)),
     })"
     class="grid lg:grid-cols-5 gap-4 lg:gap-5 min-h-0"
+    data-caisse-pos
 >
     @php $hasCredits = auth()->user()->aFonctionnalite('credits'); @endphp
     {{-- Succès vente crédit --}}
@@ -44,6 +45,26 @@
                     class="form-input pl-10"
                     autofocus>
             </div>
+
+            {{-- Filet de sécurité : erreur de caisse corrigeable en un clic.
+                 Réservé aux admins, comme l'annulation classique. --}}
+            @if(auth()->user()->isAdmin())
+            <div class="flex justify-end -mt-1">
+                <form method="POST"
+                      action="{{ route('dashboard.ventes.annuler-derniere') }}"
+                      onsubmit="return confirm('Annuler la dernière vente encaissée ? Le stock sera réintégré et les points retirés.');">
+                    @csrf
+                    <button type="submit"
+                            class="inline-flex items-center gap-1.5 text-[11px] font-medium text-gray-400 hover:text-red-600 transition-colors">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                        </svg>
+                        Annuler la dernière vente
+                    </button>
+                </form>
+            </div>
+            @endif
+
             @if(! $simple)
             <div class="flex gap-1.5 p-1 bg-gray-100/80 dark:bg-slate-700/50 rounded-xl">
                 <button @click="changerOnglet('prestations')"
@@ -455,7 +476,7 @@
     </div>
 
     {{-- ═══ Panier droit (masqué sur mobile) ═══ --}}
-    <div class="hidden lg:flex {{ $simple ? 'lg:col-span-3 lg:max-h-[calc(100vh-8.5rem)]' : 'lg:col-span-2' }} flex-col gap-4">
+    <div class="hidden lg:flex {{ $simple ? 'lg:col-span-3' : 'lg:col-span-2' }} lg:sticky lg:top-4 lg:max-h-[calc(100vh-8.5rem)] flex-col gap-4">
 
         {{-- Client (Livewire – seule section nécessitant le serveur) --}}
         @if(auth()->user()->aFonctionnalite('caisse_client'))
@@ -597,19 +618,55 @@
                         </div>
                     </div>
                 </template>
-                <div x-show="panierVide" class="py-14 text-center">
-                    <div class="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                        <svg class="w-7 h-7 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div x-show="panierVide" class="px-4 py-8 text-center">
+                    <div class="w-14 h-14 bg-gray-50 dark:bg-slate-700/40 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-7 h-7 text-gray-200 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                         </svg>
                     </div>
                     <p class="text-sm text-gray-400">Panier vide</p>
-                    <p class="text-xs text-gray-300 mt-0.5">Cliquez sur un article pour l'ajouter</p>
+                    <p class="text-xs text-gray-300 dark:text-slate-500 mt-0.5">
+                        Cliquez sur un article, ou tapez
+                        <kbd class="px-1 py-0.5 rounded border border-gray-300 dark:border-slate-600 text-[10px] font-mono text-gray-500 dark:text-slate-400">/</kbd>
+                        pour chercher
+                    </p>
+
+                    {{-- Raccourcis : le panier vide ne doit pas être un cul-de-sac --}}
+                    <div class="mt-5 space-y-2 text-left">
+                        <button type="button"
+                                @click="toggleVenteRapide()"
+                                class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-dashed border-primary-300 dark:border-primary-700 text-primary-700 dark:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
+                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            <span class="text-xs font-semibold">Vente libre / rapide</span>
+                            <span class="text-[10px] text-primary-400 ml-auto">sans fiche article</span>
+                        </button>
+
+                        @if($derniersVendus->isNotEmpty())
+                            <div class="pt-3">
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Derniers vendus</p>
+                                <div class="flex flex-wrap gap-1.5">
+                                    @foreach($derniersVendus as $article)
+                                        <button type="button"
+                                                @click="ajouterAuPanier(@js($article['type']), @js($article))"
+                                                class="px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-slate-700/60 hover:bg-primary-100 dark:hover:bg-primary-900/30 text-[11px] font-medium text-gray-700 dark:text-slate-200 transition-colors truncate max-w-full">
+                                            {{ $article['nom'] }}
+                                            <span class="text-gray-400 ml-1">{{ number_format($article['prix'], 0, ',', ' ') }} F</span>
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
 
-            {{-- Total + Paiement + Encaisser --}}
-            <div x-show="!panierVide" class="border-t border-gray-100 p-4 space-y-3 bg-gray-50/30 flex-shrink-0">
+            {{-- Total + Paiement + Encaisser — barre collée en bas du panneau,
+                 le total et le bouton d'encaissement restent visibles même
+                 quand la liste d'articles défile. --}}
+            <div x-show="!panierVide"
+                 class="sticky bottom-0 z-10 border-t border-gray-200 dark:border-slate-700 p-4 space-y-3 bg-white dark:bg-slate-800 flex-shrink-0 shadow-[0_-6px_16px_-8px_rgba(15,23,42,0.25)]">
                 {{-- Total --}}
                 @if($simple)
                 {{-- En mode simplifié la ligne affiche directement le net : la

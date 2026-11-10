@@ -453,15 +453,18 @@ class Caisse extends Component
                     ])
             );
 
+            $classementSimple = $this->classementVentes($institutId);
+
             return view('livewire.caisse', [
                 'mode'              => 'simple',
                 'prestations'       => [],
-                'produits'          => $catalog,
+                'produits'          => $this->trierParPopularite(collect($catalog), $classementSimple['produit']),
                 'catPrestations'    => [],
                 'catProduits'       => [],
                 'allCatPrestations' => [],
                 'allCatProduits'    => [],
                 'allClients'        => $this->clientsPourCaisse($institutId),
+                'derniersVendus'    => $this->derniersVendus($institutId),
             ]);
         }
 
@@ -526,16 +529,146 @@ class Caisse extends Component
         $allCatPrestations = collect($catalog['allCatPrestations'])->map(fn ($c) => ['id' => $c['id'], 'nom' => $c['nom']]);
         $allCatProduits    = collect($catalog['allCatProduits'])->map(fn ($c) => ['id' => $c['id'], 'nom' => $c['nom']]);
 
+        // Les articles les plus vendus passent devant : c'est ce que le
+        // caissier cherche en premier.
+        $classement = $this->classementVentes($institutId);
+
         return view('livewire.caisse', [
-            'prestations'        => $catalog['prestations'],
-            'produits'           => $catalog['produits'],
+            'prestations'        => $this->trierParPopularite(collect($catalog['prestations']), $classement['prestation']),
+            'produits'           => $this->trierParPopularite(collect($catalog['produits']), $classement['produit']),
             'catPrestations'     => $catPrestations,
             'catProduits'        => $catProduits,
             'allCatPrestations'  => $allCatPrestations,
             'allCatProduits'     => $allCatProduits,
             'mode'               => 'complet',
             'allClients'         => $this->clientsPourCaisse($institutId),
+            'derniersVendus'     => $this->derniersVendus($institutId),
         ]);
+    }
+
+    /**
+     * Quantités vendues sur les N derniers jours, par article.
+     *
+     * Sert à afficher les articles les plus vendus en tête de grille : sur un
+     * commerce qui propose 300 références, le caissier doit voir d'abord ce
+     * qui sort réellement.
+     *
+     * @return array{prestation: array<string,int>, produit: array<string,int>}
+     */
+    private function classementVentes(string $institutId, int $jours = 30): array
+    {
+        $lignes = \App\Models\VenteItem::query()
+            ->join('ventes', 'ventes.id', '=', 'vente_items.vente_id')
+            ->where('ventes.institut_id', $institutId)
+            ->where('ventes.statut', 'validee')
+            ->where('ventes.created_at', '>=', now()->subDays($jours))
+            ->whereIn('vente_items.type', ['prestation', 'produit'])
+            ->groupBy('vente_items.type', 'vente_items.item_id')
+            ->selectRaw('vente_items.type as type, vente_items.item_id as item_id, SUM(vente_items.quantite) as total')
+            ->get();
+
+        $classement = ['prestation' => [], 'produit' => []];
+
+        foreach ($lignes as $ligne) {
+            $classement[$ligne->type][$ligne->item_id] = (int) $ligne->total;
+        }
+
+        return $classement;
+    }
+
+    /**
+     * Trie une collection d'articles : les plus vendus d'abord, puis par nom.
+     */
+    private function trierParPopularite($articles, array $volumes)
+    {
+        return $articles
+            ->sort(function ($a, $b) use ($volumes) {
+                $va = $volumes[$a['id']] ?? 0;
+                $vb = $volumes[$b['id']] ?? 0;
+
+                if ($va !== $vb) {
+                    return $vb <=> $va;
+                }
+
+                return strnatcasecmp((string) $a['nom'], (string) $b['nom']);
+            })
+            ->values();
+    }
+
+    /**
+     * Derniers articles réellement vendus par l'établissement.
+     *
+     * Affiché dans le panier vide : au lieu d'un écran mort, le caissier
+     * retrouve en un clic ce qui sort le plus souvent.
+     */
+    private function derniersVendus(string $institutId, int $limite = 5)
+    {
+        $lignes = \App\Models\VenteItem::query()
+            ->join('ventes', 'ventes.id', '=', 'vente_items.vente_id')
+            ->where('ventes.institut_id', $institutId)
+            ->where('ventes.statut', 'validee')
+            ->whereIn('vente_items.type', ['prestation', 'produit'])
+            ->whereNotNull('vente_items.item_id')
+            ->orderByDesc('ventes.created_at')
+            ->limit(60)
+            ->get([
+                'vente_items.type as type',
+                'vente_items.item_id as item_id',
+            ]);
+
+        // Déduplication en conservant l'ordre du plus récent au plus ancien.
+        $cles = [];
+        foreach ($lignes as $ligne) {
+            $cle = $ligne->type . '_' . $ligne->item_id;
+            if (! isset($cles[$cle])) {
+                $cles[$cle] = $ligne->type;
+            }
+        }
+
+        $cles = array_slice($cles, 0, $limite, true);
+        if ($cles === []) {
+            return collect();
+        }
+
+        $produits = Produit::where('institut_id', $institutId)
+            ->where('actif', true)
+            ->whereIn('id', array_keys(array_filter($cles, fn ($t) => $t === 'produit')))
+            ->get()
+            ->keyBy('id');
+
+        $prestations = Prestation::where('institut_id', $institutId)
+            ->where('actif', true)
+            ->whereIn('id', array_keys(array_filter($cles, fn ($t) => $t === 'prestation')))
+            ->get()
+            ->keyBy('id');
+
+        $resultat = [];
+
+        foreach ($cles as $cle => $type) {
+            $id = substr($cle, strlen($type) + 1);
+
+            if ($type === 'produit' && $produits->has($id)) {
+                $p = $produits->get($id);
+                $resultat[] = [
+                    'type'  => 'produit',
+                    'id'    => $p->id,
+                    'nom'   => $p->nom,
+                    'prix'  => (int) $p->prix_vente,
+                    'stock' => $p->stock,
+                ];
+            } elseif ($type === 'prestation' && $prestations->has($id)) {
+                $p = $prestations->get($id);
+                $resultat[] = [
+                    'type'  => 'prestation',
+                    'id'    => $p->id,
+                    'nom'   => $p->nom,
+                    'prix'  => (int) $p->prix,
+                    'stock' => null,
+                ];
+            }
+        }
+
+        return collect($resultat);
     }
 
     /**

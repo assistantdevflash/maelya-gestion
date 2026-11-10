@@ -170,6 +170,9 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
     Route::post('caisse/brouillons', [\App\Http\Controllers\Dashboard\CaisseBrouillonController::class, 'store'])->name('caisse.brouillons.store');
     Route::delete('caisse/brouillons/{brouillon}', [\App\Http\Controllers\Dashboard\CaisseBrouillonController::class, 'destroy'])->name('caisse.brouillons.destroy');
     Route::post('ventes', [VenteController::class, 'store'])->name('ventes.store');
+    // Doit précéder les routes à paramètre : "ventes/{vente}".
+    Route::post('ventes/annuler-derniere', [VenteController::class, 'annulerDerniere'])
+        ->name('ventes.annuler-derniere');
     Route::get('ventes', [VenteController::class, 'index'])->name('ventes.index');
     Route::get('ventes/{vente}', [VenteController::class, 'show'])->name('ventes.show');
     Route::post('ventes/{vente}/annuler', [VenteController::class, 'annuler'])->name('ventes.annuler');

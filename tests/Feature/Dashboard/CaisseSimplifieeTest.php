@@ -322,7 +322,10 @@ class CaisseSimplifieeTest extends TestCase
             ->assertOk()
             ->getContent();
 
-        $this->assertStringNotContainsString('lg:max-h-[calc(100vh-8.5rem)]', $html);
+        // La caisse complète conserve ses deux onglets et son mode complet ;
+        // elle n'hérite pas du mode simplifié.
+        $this->assertStringContainsString("changerOnglet('prestations')", $html);
+        $this->assertStringNotContainsString('mode: "simple"', $html);
     }
 
     // ─────────────────────────────────────────────────────────────────────

@@ -117,6 +117,44 @@ class CaisseRobustesseTest extends TestCase
         $this->assertNull(Cache::get($cle), 'Le cache du catalogue doit être purgé après annulation.');
     }
 
+    public function test_l_annulation_en_un_clic_cible_la_derniere_vente(): void
+    {
+        $admin = $this->creerAdmin();
+        $produit = $this->creerProduit($admin, 'Gel douche', 2500, 20);
+
+        foreach ([1, 2] as $quantite) {
+            $this->actingAs($admin)
+                ->post(route('dashboard.ventes.store'), [
+                    'panier_json'   => json_encode($this->panier($produit, $quantite)),
+                    'mode_paiement' => 'cash',
+                    'total'         => 2500 * $quantite,
+                ])
+                ->assertRedirect();
+        }
+
+        $ventes = Vente::orderBy('created_at')->get();
+        $this->assertCount(2, $ventes);
+        $this->assertSame(17, (int) $produit->fresh()->stock);
+
+        $this->actingAs($admin)
+            ->post(route('dashboard.ventes.annuler-derniere'))
+            ->assertRedirect();
+
+        $this->assertSame('validee', $ventes[0]->fresh()->statut, 'La première vente reste valide.');
+        $this->assertSame('annulee', $ventes[1]->fresh()->statut, 'Seule la dernière vente est annulée.');
+        $this->assertSame(19, (int) $produit->fresh()->stock, 'Le stock de la dernière vente est rendu.');
+    }
+
+    public function test_un_employe_ne_peut_pas_annuler_la_derniere_vente(): void
+    {
+        $admin = $this->creerAdmin();
+        $employe = $this->creerAdmin(['role' => 'employe']);
+
+        $this->actingAs($employe)
+            ->post(route('dashboard.ventes.annuler-derniere'))
+            ->assertForbidden();
+    }
+
     public function test_la_purge_du_cache_est_exposee_en_statique(): void
     {
         $admin = $this->creerAdmin();
