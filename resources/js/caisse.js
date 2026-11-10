@@ -5,7 +5,7 @@
  * côté client pour un rendu instantané. Seuls la recherche client, le code
  * promo et la validation de vente passent par Livewire (requêtes DB).
  */
-export default function caisseApp({ prestations, produits, catPrestations, catProduits, allCatPrestations = [], allCatProduits = [], prefilledItems = [], prefilledPanier = [], routeBrouillonStore = '/dashboard/caisse/brouillons', mode = 'complet' }) {
+export default function caisseApp({ prestations, produits, catPrestations, catProduits, allCatPrestations = [], allCatProduits = [], prefilledItems = [], prefilledPanier = [], routeBrouillonStore = '/dashboard/caisse/brouillons', mode = 'complet', institutId = null }) {
     return {
         // ── Catalogue (chargé une seule fois) ──
         prestations,
@@ -22,6 +22,9 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         prefilledPanier,
 
         init() {
+            this.restaurerPanier();
+            this.$watch('panier', () => this.sauvegarderPanier(), { deep: true });
+
             // Mode simplifié : produits uniquement, pas d'onglet prestations.
             if (this.mode === 'simple') {
                 this.onglet = 'produits';
@@ -95,6 +98,14 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
 
         // ── Panier ──
         panier: {},
+
+        // Le panier est conservé dans le navigateur : une erreur de validation
+        // (rupture de stock) ou un rechargement ne doit pas faire perdre la
+        // sélection en cours.
+        institutId,
+        get clePanier() {
+            return 'caisse_panier_' + (this.institutId || 'local');
+        },
         animatingItems: {}, // {key: 'add'|'remove'}
 
         // ── Paiement ──
@@ -296,7 +307,22 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         //  Actions panier (100 % client-side)
         // ═══════════════════════════════════════
 
+        /**
+         * Un produit sans stock ne peut pas être vendu. Le serveur le
+         * refuserait de toute façon ; on l'empêche ici pour éviter au caissier
+         * de composer un panier qui échouera à la validation.
+         */
+        enRupture(item) {
+            return this.onglet === 'produits' && item.stock !== null
+                && item.stock !== undefined && Number(item.stock) <= 0;
+        },
+
         ajouterItem(item) {
+            if (this.enRupture(item)) {
+                this.showToast(`⛔ ${item.nom} est en rupture de stock`);
+                return;
+            }
+
             const type = this.onglet === 'prestations' ? 'prestation' : 'produit';
             const key = `${type}_${item.id}`;
             const existait = !!this.panier[key];
@@ -376,7 +402,41 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
             }
         },
 
+        restaurerPanier() {
+            try {
+                const brut = localStorage.getItem(this.clePanier);
+                if (! brut) return;
+
+                const sauve = JSON.parse(brut);
+                if (sauve && typeof sauve === 'object' && Object.keys(sauve).length) {
+                    this.panier = sauve;
+                }
+            } catch (e) {
+                // Données illisibles : on repart d'un panier vide
+            }
+        },
+
+        sauvegarderPanier() {
+            try {
+                if (Object.keys(this.panier).length === 0) {
+                    localStorage.removeItem(this.clePanier);
+                    return;
+                }
+
+                localStorage.setItem(this.clePanier, JSON.stringify(this.panier));
+            } catch (e) {
+                // Stockage plein ou désactivé : la caisse reste utilisable
+            }
+        },
+
+        oublierPanier() {
+            try {
+                localStorage.removeItem(this.clePanier);
+            } catch (e) {}
+        },
+
         viderPanier() {
+            this.oublierPanier();
             this.panier = {};
             this.modePaiement = 'cash';
             this.referencePaiement = '';

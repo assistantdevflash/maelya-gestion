@@ -91,6 +91,16 @@
             </div>
         </div>
 
+        {{-- Vente enregistrée : le panier local n'a plus lieu d'être --}}
+        @if(session('success') || request('vente_ok'))
+        <script>
+            try {
+                const cle = 'caisse_panier_{{ session('current_institut_id', auth()->user()->institut_id) }}';
+                localStorage.removeItem(cle);
+            } catch (e) {}
+        </script>
+        @endif
+
         {{-- Message de succès après impression --}}
         @if(request('vente_ok'))
             <div x-data="{ show: true }" x-show="show" x-transition

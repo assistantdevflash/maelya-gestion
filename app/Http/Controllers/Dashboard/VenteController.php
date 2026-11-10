@@ -73,184 +73,201 @@ class VenteController extends Controller
             return back()->withErrors(['panier_json' => 'Le panier est vide.']);
         }
 
-        $vente = DB::transaction(function () use ($items, $request) {
-            $totalBrut = 0;
-            $itemsToSave = [];
+        try {
+            $vente = DB::transaction(function () use ($items, $request) {
+                $totalBrut = 0;
+                $itemsToSave = [];
 
-            // Valider que le client appartient à cet institut
-            if ($request->filled('client_id')) {
-                $client = Client::find($request->client_id);
-                abort_unless($client && $client->institut_id === $this->institutId(), 403, 'Client invalide.');
-            }
+                // Valider que le client appartient à cet institut
+                if ($request->filled('client_id')) {
+                    $client = Client::find($request->client_id);
+                    abort_unless($client && $client->institut_id === $this->institutId(), 403, 'Client invalide.');
+                }
 
-            foreach ($items as $item) {
-                if ($item['type'] === 'prestation') {
-                    $model = Prestation::findOrFail($item['id']);
-                    $prix = $model->prix;
-                    $nom = $model->nom;
-                    $itemId = $item['id'];
-                } elseif ($item['type'] === 'libre') {
-                    // Article hors catalogue — prix et nom fournis directement par l'utilisateur
-                    $nom = strip_tags(substr((string) ($item['nom'] ?? ''), 0, 150));
-                    $prix = max(1, min(10_000_000, (int) ($item['prix'] ?? 0)));
-                    abort_if(!$nom || $prix <= 0, 422, 'Article libre invalide.');
-                    $itemId = null;
-                    $quantite = (int) ($item['quantite'] ?? 1);
+                foreach ($items as $item) {
+                    if ($item['type'] === 'prestation') {
+                        $model = Prestation::findOrFail($item['id']);
+                        $prix = $model->prix;
+                        $nom = $model->nom;
+                        $itemId = $item['id'];
+                    } elseif ($item['type'] === 'libre') {
+                        // Article hors catalogue — prix et nom fournis directement par l'utilisateur
+                        $nom = strip_tags(substr((string) ($item['nom'] ?? ''), 0, 150));
+                        $prix = max(1, min(10_000_000, (int) ($item['prix'] ?? 0)));
+                        abort_if(!$nom || $prix <= 0, 422, 'Article libre invalide.');
+                        $itemId = null;
+                        $quantite = (int) ($item['quantite'] ?? 1);
 
-                    // Type et catégorie optionnels pour les stats
-                    $typeLibre = in_array($item['typeLibre'] ?? null, ['prestation', 'produit']) ? $item['typeLibre'] : null;
-                    $categorieId = null;
-                    if ($typeLibre && !empty($item['categorieId'] ?? null)) {
-                        $catId = (string) $item['categorieId'];
-                        if ($typeLibre === 'prestation') {
-                            $catExists = CategoriePrestation::where('institut_id', $this->institutId())
-                                ->where('id', $catId)->exists();
-                        } else {
-                            $catExists = CategorieProduit::where('institut_id', $this->institutId())
-                                ->where('id', $catId)->exists();
+                        // Type et catégorie optionnels pour les stats
+                        $typeLibre = in_array($item['typeLibre'] ?? null, ['prestation', 'produit']) ? $item['typeLibre'] : null;
+                        $categorieId = null;
+                        if ($typeLibre && !empty($item['categorieId'] ?? null)) {
+                            $catId = (string) $item['categorieId'];
+                            if ($typeLibre === 'prestation') {
+                                $catExists = CategoriePrestation::where('institut_id', $this->institutId())
+                                    ->where('id', $catId)->exists();
+                            } else {
+                                $catExists = CategorieProduit::where('institut_id', $this->institutId())
+                                    ->where('id', $catId)->exists();
+                            }
+                            if ($catExists) {
+                                $categorieId = $catId;
+                            }
                         }
-                        if ($catExists) {
-                            $categorieId = $catId;
-                        }
+
+                        $sousTotal = $prix * $quantite;
+                        $totalBrut += $sousTotal;
+
+                        $itemsToSave[] = [
+                            'type' => $item['type'],
+                            'item_id' => $itemId,
+                            'type_libre' => $typeLibre,
+                            'categorie_id' => $categorieId,
+                            'nom_snapshot' => $nom,
+                            'prix_snapshot' => $prix,
+                            'quantite' => $quantite,
+                            'sous_total' => $sousTotal,
+                        ];
+                        continue;
+                    } else {
+                        $model = Produit::findOrFail($item['id']);
+                        $prix = $model->prix_vente;
+                        $nom = $model->nom;
+                        $itemId = $item['id'];
                     }
 
+                    $quantite = (int) ($item['quantite'] ?? 1);
                     $sousTotal = $prix * $quantite;
                     $totalBrut += $sousTotal;
 
                     $itemsToSave[] = [
                         'type' => $item['type'],
                         'item_id' => $itemId,
-                        'type_libre' => $typeLibre,
-                        'categorie_id' => $categorieId,
                         'nom_snapshot' => $nom,
                         'prix_snapshot' => $prix,
                         'quantite' => $quantite,
                         'sous_total' => $sousTotal,
                     ];
-                    continue;
-                } else {
-                    $model = Produit::findOrFail($item['id']);
-                    $prix = $model->prix_vente;
-                    $nom = $model->nom;
-                    $itemId = $item['id'];
                 }
 
-                $quantite = (int) ($item['quantite'] ?? 1);
-                $sousTotal = $prix * $quantite;
-                $totalBrut += $sousTotal;
+                // Valider et appliquer le code de réduction côté serveur
+                $remise = 0;
+                $codeReductionId = null;
+                if ($request->filled('code_reduction_id')) {
+                    $code = CodeReduction::where('institut_id', $this->institutId())
+                        ->find($request->code_reduction_id);
+                    if ($code && !$code->validerPourTotal((int) $totalBrut, $request->client_id ?: null)) {
+                        $remise = $code->calculerRemise((int) $totalBrut);
+                        $codeReductionId = $code->id;
+                        $code->increment('nb_utilisations');
 
-                $itemsToSave[] = [
-                    'type' => $item['type'],
-                    'item_id' => $itemId,
-                    'nom_snapshot' => $nom,
-                    'prix_snapshot' => $prix,
-                    'quantite' => $quantite,
-                    'sous_total' => $sousTotal,
-                ];
-            }
+                        // Si ce code est lié à un avoir, marquer l'avoir comme utilisé
+                        $avoirLie = \App\Models\Avoir::where('code_reduction_id', $code->id)
+                            ->where('statut', 'emis')
+                            ->first();
+                        if ($avoirLie) {
+                            $avoirLie->update(['statut' => 'utilise']);
+                        }
+                    }
+                }
 
-            // Valider et appliquer le code de réduction côté serveur
-            $remise = 0;
-            $codeReductionId = null;
-            if ($request->filled('code_reduction_id')) {
-                $code = CodeReduction::where('institut_id', $this->institutId())
-                    ->find($request->code_reduction_id);
-                if ($code && !$code->validerPourTotal((int) $totalBrut, $request->client_id ?: null)) {
-                    $remise = $code->calculerRemise((int) $totalBrut);
-                    $codeReductionId = $code->id;
-                    $code->increment('nb_utilisations');
+                $total = max(0, $totalBrut - $remise);
 
-                    // Si ce code est lié à un avoir, marquer l'avoir comme utilisé
-                    $avoirLie = \App\Models\Avoir::where('code_reduction_id', $code->id)
-                        ->where('statut', 'emis')
+                $vente = Vente::create([
+                    'institut_id' => $this->institutId(),
+                    'client_id' => $request->client_id ?: null,
+                    'user_id' => Auth::id(),
+                    'total' => $total,
+                    'remise' => $remise,
+                    'pourboire' => max(0, (int) $request->pourboire),
+                    'code_reduction_id' => $codeReductionId,
+                    'mode_paiement' => $request->mode_paiement,
+                    'reference_paiement' => $request->reference_paiement,
+                    'montant_cash' => match($request->mode_paiement) {
+                        'cash'  => $total,
+                        'mixte' => (int) $request->montant_cash,
+                        default => 0,
+                    },
+                    'montant_mobile' => match($request->mode_paiement) {
+                        'mobile_money' => $total,
+                        'mixte'        => (int) $request->montant_mobile,
+                        default        => 0,
+                    },
+                    'montant_carte' => match($request->mode_paiement) {
+                        'carte' => $total,
+                        'mixte' => (int) $request->montant_carte,
+                        default => 0,
+                    },
+                    'statut' => 'validee',
+                    'ip_address' => request()->ip(),
+                ]);
+
+                // Numérotation facture FAC-{année}-{seq} (atomique dans la transaction)
+                $vente->numero_facture = app(FactureNumeroService::class)->generate($this->institutId());
+                $vente->save();
+
+                foreach ($itemsToSave as $item) {
+                    $item['id'] = (string) Str::uuid();
+                    $vente->items()->create($item);
+
+                    // Sortie de stock centralisée : contrôle de disponibilité et
+                    // traçabilité garantis par StockService.
+                    if ($item['type'] === 'produit') {
+                        $produit = Produit::find($item['item_id']);
+                        if ($produit) {
+                            app(StockService::class)->sortir($produit, (int) $item['quantite'], [
+                                'type'     => StockService::SORTIE_VENTE,
+                                'vente_id' => $vente->id,
+                            ]);
+                        }
+                    }
+                }
+
+                // ── Attribuer les points de fidélité ──
+                if ($vente->client_id) {
+                    $programme = ProgrammeFidelite::where('institut_id', $this->institutId())
+                        ->where('actif', true)
                         ->first();
-                    if ($avoirLie) {
-                        $avoirLie->update(['statut' => 'utilise']);
+
+                    if ($programme) {
+                        $points = $programme->calculerPoints($total);
+                        if ($points > 0) {
+                            $vente->client->increment('points_fidelite', $points);
+
+                            HistoriquePoints::create([
+                                'institut_id' => $this->institutId(),
+                                'client_id' => $vente->client_id,
+                                'vente_id' => $vente->id,
+                                'points' => $points,
+                                'type' => 'gain',
+                                'description' => "+{$points} pts (vente #{$vente->numero})",
+                            ]);
+                        }
                     }
                 }
-            }
 
-            $total = max(0, $totalBrut - $remise);
+                return $vente;
+            });
+        } catch (\App\Services\StockInsuffisantException $e) {
+            // Rupture détectée pendant la vente : on revient en caisse avec un
+            // message clair plutôt qu'une erreur 500. Le panier est conservé
+            // par le navigateur (localStorage) et rechargé automatiquement.
+            return back()->with('error', $e->getMessage())->withInput();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('[Vente] ' . $e->getMessage());
 
-            $vente = Vente::create([
-                'institut_id' => $this->institutId(),
-                'client_id' => $request->client_id ?: null,
-                'user_id' => Auth::id(),
-                'total' => $total,
-                'remise' => $remise,
-                'pourboire' => max(0, (int) $request->pourboire),
-                'code_reduction_id' => $codeReductionId,
-                'mode_paiement' => $request->mode_paiement,
-                'reference_paiement' => $request->reference_paiement,
-                'montant_cash' => match($request->mode_paiement) {
-                    'cash'  => $total,
-                    'mixte' => (int) $request->montant_cash,
-                    default => 0,
-                },
-                'montant_mobile' => match($request->mode_paiement) {
-                    'mobile_money' => $total,
-                    'mixte'        => (int) $request->montant_mobile,
-                    default        => 0,
-                },
-                'montant_carte' => match($request->mode_paiement) {
-                    'carte' => $total,
-                    'mixte' => (int) $request->montant_carte,
-                    default => 0,
-                },
-                'statut' => 'validee',
-                'ip_address' => request()->ip(),
-            ]);
+            return back()
+                ->with('error', "La vente n'a pas pu être enregistrée : " . $e->getMessage())
+                ->withInput();
+        }
 
-            // Numérotation facture FAC-{année}-{seq} (atomique dans la transaction)
-            $vente->numero_facture = app(FactureNumeroService::class)->generate($this->institutId());
-            $vente->save();
-
-            foreach ($itemsToSave as $item) {
-                $item['id'] = (string) Str::uuid();
-                $vente->items()->create($item);
-
-                // Sortie de stock centralisée : contrôle de disponibilité et
-                // traçabilité garantis par StockService.
-                if ($item['type'] === 'produit') {
-                    $produit = Produit::find($item['item_id']);
-                    if ($produit) {
-                        app(StockService::class)->sortir($produit, (int) $item['quantite'], [
-                            'type'     => StockService::SORTIE_VENTE,
-                            'vente_id' => $vente->id,
-                        ]);
-                    }
-                }
-            }
-
-            // ── Attribuer les points de fidélité ──
-            if ($vente->client_id) {
-                $programme = ProgrammeFidelite::where('institut_id', $this->institutId())
-                    ->where('actif', true)
-                    ->first();
-
-                if ($programme) {
-                    $points = $programme->calculerPoints($total);
-                    if ($points > 0) {
-                        $vente->client->increment('points_fidelite', $points);
-
-                        HistoriquePoints::create([
-                            'institut_id' => $this->institutId(),
-                            'client_id' => $vente->client_id,
-                            'vente_id' => $vente->id,
-                            'points' => $points,
-                            'type' => 'gain',
-                            'description' => "+{$points} pts (vente #{$vente->numero})",
-                        ]);
-                    }
-                }
-            }
-
-            return $vente;
-        });
-
-        // ── Invalider le cache du dashboard ──
+        // ── Invalider les caches ──
         Cache::forget("dashboard_full:{$this->institutId()}:" . now()->toDateString());
         Cache::forget("dashboard_basic:{$this->institutId()}:" . now()->toDateString());
+
+        // Le catalogue de la caisse est mémorisé une heure : sans cette purge,
+        // le stock affiché restait figé après la vente.
+        \App\Livewire\Caisse::purgerCache($this->institutId());
 
         if ($request->imprimer) {
             // Rediriger vers la caisse avec l'ID de la vente pour déclencher l'impression
@@ -377,6 +394,11 @@ class VenteController extends Controller
                 'annulee_par'      => Auth::id(),
             ]);
         });
+
+        // Le stock vient de remonter : le catalogue en cache doit être rafraîchi.
+        \App\Livewire\Caisse::purgerCache($this->institutId());
+        Cache::forget("dashboard_full:{$this->institutId()}:" . now()->toDateString());
+        Cache::forget("dashboard_basic:{$this->institutId()}:" . now()->toDateString());
 
         return back()->with('success', 'Vente annulée : stock restauré et points reversés.');
     }

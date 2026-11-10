@@ -11,6 +11,7 @@
         prefilledPanier: @js($this->prefilledPanier),
         routeBrouillonStore: @js(route('dashboard.caisse.brouillons.store')),
         mode: @js($mode ?? 'complet'),
+        institutId: @js(session('current_institut_id', auth()->user()->institut_id)),
     })"
     class="grid lg:grid-cols-5 gap-4 lg:gap-5 min-h-0"
 >
@@ -329,8 +330,13 @@
             <template x-for="item in filteredItems" :key="item.id">
                 <button
                     @click="ajouterItem(item)"
-                    :class="quantiteDans(item) > 0 ? 'ring-2 ring-primary-400 bg-primary-50/30' : ''"
-                    class="card p-4 text-left hover:ring-1 hover:ring-primary-300 active:scale-[0.97] transition-all duration-200 group cursor-pointer min-w-0 overflow-hidden">
+                    :disabled="enRupture(item)"
+                    :class="[
+                        quantiteDans(item) > 0 ? 'ring-2 ring-primary-400 bg-primary-50/30' : '',
+                        enRupture(item) ? 'opacity-50 cursor-not-allowed grayscale' : 'hover:ring-1 hover:ring-primary-300 active:scale-[0.97] cursor-pointer'
+                    ]"
+                    :title="enRupture(item) ? 'Produit en rupture de stock' : ''"
+                    class="card p-4 text-left transition-all duration-200 group min-w-0 overflow-hidden relative">
                     <div class="flex items-start justify-between mb-3">
                         {{-- Icône ou photo --}}
                         <template x-if="onglet === 'prestations'">
@@ -352,7 +358,11 @@
                                 </div>
                             </div>
                         </template>
-                        <span x-show="quantiteDans(item) > 0"
+                        <span x-show="enRupture(item)"
+                              class="px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 text-[9px] font-bold uppercase tracking-wide flex-shrink-0">
+                            Rupture
+                        </span>
+                        <span x-show="!enRupture(item) && quantiteDans(item) > 0"
                               x-text="quantiteDans(item)"
                               class="min-w-[22px] h-[22px] rounded-full text-white text-xs font-bold flex items-center justify-center px-1 shadow-sm flex-shrink-0"
                               style="background: linear-gradient(135deg, #9333ea, #ec4899);">
@@ -364,7 +374,9 @@
                         <p class="text-[11px] text-gray-400 mt-0.5" x-text="item.duree + ' min'"></p>
                     </template>
                     <template x-if="onglet === 'produits'">
-                        <p class="text-[11px] text-gray-400 mt-0.5" x-text="'Stock: ' + (item.stock ?? '')"></p>
+                        <p class="text-[11px] mt-0.5 font-medium"
+                           :class="enRupture(item) ? 'text-rose-600 dark:text-rose-400' : 'text-gray-400'"
+                           x-text="enRupture(item) ? 'Épuisé' : 'Stock : ' + (item.stock ?? '—')"></p>
                     </template>
                     <p class="text-sm font-bold mt-1.5" style="background: linear-gradient(135deg, #9333ea, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;" x-text="formatNumber(item.prix) + ' F'"></p>
                 </button>
