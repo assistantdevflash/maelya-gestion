@@ -335,6 +335,80 @@ class VenteController extends Controller
     }
 
     /**
+     * Détail de la dernière vente encaissée, pour la fenêtre d'annulation
+     * rapide de la caisse.
+     *
+     * On renvoie de quoi identifier la vente sans ambiguïté : numéro, heure,
+     * client, caissier, lignes et total. Le caissier doit reconnaître sa vente
+     * avant de confirmer.
+     */
+    public function derniereJson()
+    {
+        if (! Auth::user()->isAdmin()) {
+            return response()->json(['vente' => null, 'message' => 'Accès réservé aux administrateurs.'], 403);
+        }
+
+        $vente = $this->derniereVenteAnnulable();
+
+        if (! $vente) {
+            return response()->json([
+                'vente'   => null,
+                'message' => "Aucune vente encaissée dans les dernières 24 heures.",
+            ]);
+        }
+
+        $vente->loadMissing('items', 'client', 'user');
+
+        return response()->json([
+            'vente' => [
+                'id'                => $vente->id,
+                'numero'            => $vente->numero,
+                'date'              => $vente->created_at->copy()->locale('fr')->isoFormat('D MMMM YYYY [à] HH:mm'),
+                'depuis'            => $vente->created_at->diffForHumans(),
+                'total'             => (int) $vente->total,
+                'remise'            => (int) $vente->remise,
+                'pourboire'         => (int) $vente->pourboire,
+                'mode_paiement'     => $vente->mode_paiement,
+                'mode_paiement_lib' => $this->libelleModePaiement($vente->mode_paiement),
+                'client'            => $vente->client?->nom_affichage,
+                'caissier'          => $vente->user?->name,
+                'nb_articles'       => (int) $vente->items->sum('quantite'),
+                'items'             => $vente->items->map(fn ($item) => [
+                    'nom'        => $item->nom_snapshot,
+                    'quantite'   => (int) $item->quantite,
+                    'prix'       => (int) $item->prix_snapshot,
+                    'sous_total' => (int) $item->sous_total,
+                ])->values(),
+            ],
+        ]);
+    }
+
+    private function libelleModePaiement(?string $mode): string
+    {
+        return match ($mode) {
+            'cash'         => 'Espèces',
+            'carte'        => 'Carte bancaire',
+            'mobile_money' => 'Mobile money',
+            'mixte'        => 'Paiement mixte',
+            'credit'       => 'Crédit',
+            default        => ucfirst((string) $mode),
+        };
+    }
+
+    /**
+     * Dernière vente annulable de l'établissement (24 dernières heures).
+     */
+    private function derniereVenteAnnulable(): ?Vente
+    {
+        return Vente::withoutGlobalScopes()
+            ->where('institut_id', $this->institutId())
+            ->where('statut', 'validee')
+            ->where('created_at', '>=', now()->subDay())
+            ->latest('created_at')
+            ->first();
+    }
+
+    /**
      * Annulation en un clic de la dernière vente encaissée.
      *
      * Une erreur de caisse (mauvais client, mauvais montant) doit pouvoir se
@@ -348,12 +422,7 @@ class VenteController extends Controller
             abort(403, 'Seul un administrateur peut annuler une vente.');
         }
 
-        $vente = Vente::withoutGlobalScopes()
-            ->where('institut_id', $this->institutId())
-            ->where('statut', 'validee')
-            ->where('created_at', '>=', now()->subDay())
-            ->latest('created_at')
-            ->first();
+        $vente = $this->derniereVenteAnnulable();
 
         if (! $vente) {
             return back()->with('error', "Aucune vente encaissée dans les dernières 24 heures.");

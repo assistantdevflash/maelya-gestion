@@ -155,6 +155,55 @@ class CaisseRobustesseTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_le_detail_de_la_derniere_vente_est_expose_pour_la_confirmation(): void
+    {
+        $admin = $this->creerAdmin();
+        $produit = $this->creerProduit($admin, 'Baume corps', 6500, 10);
+
+        $this->actingAs($admin)
+            ->post(route('dashboard.ventes.store'), [
+                'panier_json'   => json_encode($this->panier($produit, 2)),
+                'mode_paiement' => 'cash',
+                'total'         => 13000,
+            ])
+            ->assertRedirect();
+
+        $reponse = $this->actingAs($admin)->getJson(route('dashboard.ventes.derniere-json'));
+
+        $reponse->assertOk();
+
+        $vente = $reponse->json('vente');
+        $this->assertNotNull($vente);
+        $this->assertSame(13000, $vente['total']);
+        $this->assertSame('Espèces', $vente['mode_paiement_lib']);
+        $this->assertSame(2, $vente['nb_articles']);
+        $this->assertCount(1, $vente['items']);
+        $this->assertSame('Baume corps', $vente['items'][0]['nom']);
+        $this->assertSame(2, $vente['items'][0]['quantite']);
+        $this->assertSame(13000, $vente['items'][0]['sous_total']);
+        $this->assertNotEmpty($vente['date']);
+    }
+
+    public function test_le_detail_de_la_derniere_vente_est_vide_sans_vente_recente(): void
+    {
+        $admin = $this->creerAdmin();
+
+        $reponse = $this->actingAs($admin)->getJson(route('dashboard.ventes.derniere-json'));
+
+        $reponse->assertOk();
+        $this->assertNull($reponse->json('vente'));
+        $this->assertNotEmpty($reponse->json('message'));
+    }
+
+    public function test_le_detail_de_la_derniere_vente_est_interdit_aux_employes(): void
+    {
+        $employe = $this->creerAdmin(['role' => 'employe']);
+
+        $this->actingAs($employe)
+            ->getJson(route('dashboard.ventes.derniere-json'))
+            ->assertForbidden();
+    }
+
     public function test_la_purge_du_cache_est_exposee_en_statique(): void
     {
         $admin = $this->creerAdmin();

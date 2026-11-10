@@ -10,6 +10,8 @@
         prefilledItems: @js($this->prefilledItems),
         prefilledPanier: @js($this->prefilledPanier),
         routeBrouillonStore: @js(route('dashboard.caisse.brouillons.store')),
+        routeDerniereVenteJson: @js(route('dashboard.ventes.derniere-json')),
+        routeAnnulerDerniere: @js(route('dashboard.ventes.annuler-derniere')),
         mode: @js($mode ?? 'complet'),
         institutId: @js(session('current_institut_id', auth()->user()->institut_id)),
     })"

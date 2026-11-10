@@ -5,7 +5,7 @@
  * côté client pour un rendu instantané. Seuls la recherche client, le code
  * promo et la validation de vente passent par Livewire (requêtes DB).
  */
-export default function caisseApp({ prestations, produits, catPrestations, catProduits, allCatPrestations = [], allCatProduits = [], prefilledItems = [], prefilledPanier = [], routeBrouillonStore = '/dashboard/caisse/brouillons', mode = 'complet', institutId = null }) {
+export default function caisseApp({ prestations, produits, catPrestations, catProduits, allCatPrestations = [], allCatProduits = [], prefilledItems = [], prefilledPanier = [], routeBrouillonStore = '/dashboard/caisse/brouillons', routeDerniereVenteJson = '/dashboard/ventes/derniere-json', routeAnnulerDerniere = '/dashboard/ventes/annuler-derniere', mode = 'complet', institutId = null }) {
     return {
         // ── Catalogue (chargé une seule fois) ──
         prestations,
@@ -15,6 +15,8 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         allCatPrestations,
         allCatProduits,
         routeBrouillonStore,
+        routeDerniereVenteJson,
+        routeAnnulerDerniere,
         mode,
 
         // ── Pré-remplissage (ex: depuis un RDV) ──
@@ -176,6 +178,13 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         codePromoInput: '',
         codePromoErreur: '',
         codePromoLoading: false,
+
+        // ── Annulation de la dernière vente ──
+        annulationOuverte: false,
+        annulationChargement: false,
+        annulationEnvoi: false,
+        annulationErreur: '',
+        derniereVente: null,
 
         // ── UI ──
         showConfirmation: false,
@@ -572,6 +581,99 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
 
         fermerConfirmation() {
             this.showConfirmation = false;
+        },
+
+        // ═══════════════════════════════════════
+        //  Annulation de la dernière vente
+        // ═══════════════════════════════════════
+
+        /**
+         * Ouvre la fenêtre de confirmation en chargeant le détail de la
+         * dernière vente : le caissier doit voir ce qu'il annule avant de
+         * valider.
+         */
+        async ouvrirAnnulationDerniere() {
+            this.annulationOuverte = true;
+            this.annulationErreur = '';
+            this.annulationChargement = true;
+            this.derniereVente = null;
+
+            try {
+                const r = await fetch(this.routeDerniereVenteJson, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    credentials: 'same-origin',
+                });
+
+                if (r.status === 403) {
+                    this.annulationErreur = 'Seul un administrateur peut annuler une vente.';
+                    return;
+                }
+
+                if (!r.ok) {
+                    throw new Error('HTTP ' + r.status);
+                }
+
+                const data = await r.json();
+                this.derniereVente = data.vente || null;
+                if (!this.derniereVente) {
+                    this.annulationErreur = data.message
+                        || 'Aucune vente encaissée dans les dernières 24 heures.';
+                }
+            } catch (e) {
+                this.annulationErreur = 'Impossible de charger la dernière vente. Vérifiez votre connexion.';
+            } finally {
+                this.annulationChargement = false;
+            }
+        },
+
+        fermerAnnulation() {
+            if (this.annulationEnvoi) return;
+            this.annulationOuverte = false;
+            this.annulationErreur = '';
+            this.derniereVente = null;
+        },
+
+        async confirmerAnnulationDerniere() {
+            if (!this.derniereVente || this.annulationEnvoi) return;
+
+            this.annulationEnvoi = true;
+            this.annulationErreur = '';
+
+            try {
+                const jeton = document.querySelector('meta[name="csrf-token"]')?.content;
+                const r = await fetch(this.routeAnnulerDerniere, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': jeton,
+                    },
+                    credentials: 'same-origin',
+                    body: new URLSearchParams({
+                        motif_annulation: 'Annulation rapide depuis la caisse',
+                    }),
+                });
+
+                if (r.status === 403) {
+                    this.annulationErreur = 'Seul un administrateur peut annuler une vente.';
+                    return;
+                }
+
+                if (!r.ok) {
+                    throw new Error('HTTP ' + r.status);
+                }
+
+                // La vente est annulée côté serveur : le stock et les points
+                // sont rétablis, on recharge pour repartir d'un état sûr.
+                window.location.reload();
+            } catch (e) {
+                this.annulationErreur = "L'annulation n'a pas pu être enregistrée. Réessayez.";
+            } finally {
+                this.annulationEnvoi = false;
+            }
         },
 
         async mettreEnAttente() {

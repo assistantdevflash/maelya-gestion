@@ -1,3 +1,156 @@
+    {{-- ═══ MODAL ANNULATION DE LA DERNIÈRE VENTE ═══ --}}
+    {{-- Réservée aux admins : même règle que le bouton qui l'ouvre. --}}
+    @if(auth()->user()->isAdmin())
+    <div x-show="annulationOuverte" x-cloak class="modal-backdrop"
+         style="z-index: 10000;"
+         x-on:keydown.escape.window="fermerAnnulation()"
+         x-init="$watch('annulationOuverte', v => document.body.classList.toggle('overflow-hidden', v))"
+         @click.self="fermerAnnulation()">
+        <div class="modal max-w-lg" x-transition @click.stop>
+            <div class="modal-header">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-red-50 dark:bg-red-900/30">
+                        <svg class="w-4 h-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="modal-title">Annuler la dernière vente</h3>
+                        <p class="text-[11px] text-gray-400 mt-0.5">Vérifiez qu'il s'agit bien de la bonne vente</p>
+                    </div>
+                </div>
+                <button type="button" @click="fermerAnnulation()" class="btn-icon">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-5 space-y-4">
+                {{-- Chargement --}}
+                <div x-show="annulationChargement" class="py-10 text-center">
+                    <span class="spinner" aria-hidden="true"></span>
+                    <p class="text-xs text-gray-400 mt-3">Recherche de la dernière vente…</p>
+                </div>
+
+                {{-- Aucune vente / erreur --}}
+                <div x-show="!annulationChargement && !derniereVente" class="py-8 text-center">
+                    <div class="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-slate-700/40 flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-6 h-6 text-gray-300 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 014-4h4m0 0l-3-3m3 3l-3 3M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400"
+                       x-text="annulationErreur || 'Aucune vente récente à annuler.'"></p>
+                </div>
+
+                {{-- Détail de la vente --}}
+                <template x-if="derniereVente">
+                    <div class="space-y-4">
+                        {{-- Identification --}}
+                        <div class="flex items-start justify-between gap-3 p-3 rounded-xl bg-gray-50 dark:bg-slate-700/40">
+                            <div class="min-w-0">
+                                <p class="text-sm font-bold text-gray-900 dark:text-white font-mono"
+                                   x-text="'Vente ' + (derniereVente.numero || ('#' + derniereVente.id.slice(0, 8)))"></p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5" x-text="derniereVente.date"></p>
+                                <p class="text-[11px] text-gray-400" x-text="'(' + derniereVente.depuis + ')'"></p>
+                            </div>
+                            <span class="px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-slate-600 flex-shrink-0"
+                                  x-text="derniereVente.mode_paiement_lib"></span>
+                        </div>
+
+                        {{-- Client / caissier --}}
+                        <div class="grid grid-cols-2 gap-3 text-xs">
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Client</p>
+                                <p class="font-semibold text-gray-800 dark:text-gray-200 truncate"
+                                   x-text="derniereVente.client || 'Client de passage'"></p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Encaissé par</p>
+                                <p class="font-semibold text-gray-800 dark:text-gray-200 truncate"
+                                   x-text="derniereVente.caissier || '—'"></p>
+                            </div>
+                        </div>
+
+                        {{-- Articles --}}
+                        <div>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                                    Articles
+                                </p>
+                                <p class="text-[10px] text-gray-400"
+                                   x-text="derniereVente.nb_articles + (derniereVente.nb_articles > 1 ? ' unités' : ' unité')"></p>
+                            </div>
+                            <div class="rounded-xl border border-gray-200 dark:border-slate-600 divide-y divide-gray-100 dark:divide-slate-700 overflow-hidden max-h-48 overflow-y-auto">
+                                <template x-for="(item, i) in derniereVente.items" :key="i">
+                                    <div class="flex items-center gap-3 px-3 py-2 bg-white dark:bg-slate-800">
+                                        <span class="w-6 h-6 rounded-md bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 text-[11px] font-bold flex items-center justify-center flex-shrink-0"
+                                              x-text="item.quantite"></span>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-xs font-medium text-gray-800 dark:text-gray-200 truncate" x-text="item.nom"></p>
+                                            <p class="text-[10px] text-gray-400" x-text="formatNumber(item.prix) + ' F l\'unité'"></p>
+                                        </div>
+                                        <span class="text-xs font-bold text-gray-900 dark:text-white whitespace-nowrap"
+                                              x-text="formatNumber(item.sous_total) + ' F'"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        {{-- Remise / pourboire --}}
+                        <div class="space-y-1 text-xs">
+                            <div x-show="derniereVente.remise > 0" class="flex justify-between text-emerald-600">
+                                <span>Remise appliquée</span>
+                                <span x-text="'− ' + formatNumber(derniereVente.remise) + ' F'"></span>
+                            </div>
+                            <div x-show="derniereVente.pourboire > 0" class="flex justify-between text-gray-500 dark:text-gray-400">
+                                <span>Pourboire</span>
+                                <span x-text="formatNumber(derniereVente.pourboire) + ' F'"></span>
+                            </div>
+                            <div class="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-slate-700">
+                                <span class="font-bold text-gray-900 dark:text-white">Total encaissé</span>
+                                <span class="text-lg font-extrabold text-gray-900 dark:text-white"
+                                      x-text="formatNumber(derniereVente.total) + ' F'"></span>
+                            </div>
+                        </div>
+
+                        {{-- Avertissement --}}
+                        <div class="flex gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40">
+                            <svg class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            <p class="text-[11px] text-amber-800 dark:text-amber-200 leading-relaxed">
+                                Cette annulation est <strong>définitive</strong> : le stock des produits sera réintégré
+                                et les points de fidélité gagnés seront retirés au client.
+                            </p>
+                        </div>
+
+                        <p x-show="annulationErreur" x-text="annulationErreur"
+                           class="text-xs text-red-600 dark:text-red-400"></p>
+                    </div>
+                </template>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" @click="fermerAnnulation()"
+                        class="btn btn-outline text-sm" :disabled="annulationEnvoi">
+                    Retour
+                </button>
+                <button type="button"
+                        @click="confirmerAnnulationDerniere()"
+                        :disabled="!derniereVente || annulationEnvoi"
+                        class="btn text-sm text-white inline-flex items-center gap-2"
+                        :class="(!derniereVente || annulationEnvoi) ? 'opacity-50 cursor-not-allowed' : ''"
+                        style="background: linear-gradient(135deg, #dc2626, #ef4444);">
+                    <span x-show="annulationEnvoi" class="spinner spinner-sm" aria-hidden="true"></span>
+                    <span x-text="annulationEnvoi ? 'Annulation…' : 'Oui, annuler cette vente'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- ═══ MODAL NOUVEAU CLIENT ═══ --}}
     <div x-show="newClientOpen" x-cloak class="modal-backdrop"
          style="z-index: 10000;"
