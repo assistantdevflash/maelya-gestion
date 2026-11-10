@@ -145,6 +145,22 @@ class CaisseExperienceTest extends TestCase
             ->assertSee('Awa');
     }
 
+    public function test_la_modale_de_confirmation_affiche_un_voile_d_encaissement(): void
+    {
+        $admin = $this->creerAdmin();
+
+        $html = $this->actingAs($admin)
+            ->get(route('dashboard.caisse'))
+            ->assertOk()
+            ->getContent();
+
+        // Le caissier doit voir que la vente part au serveur : la modale reste
+        // ouverte avec un spinner au lieu de se fermer sans retour visuel.
+        $this->assertStringContainsString('Encaissement en cours', $html);
+        $this->assertStringContainsString('impressionDemandee', $html);
+        $this->assertStringContainsString('Ne fermez pas cette fenêtre', $html);
+    }
+
     public function test_les_derniers_vendus_ignorent_les_produits_desactives(): void
     {
         $admin = $this->creerAdmin();

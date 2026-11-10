@@ -189,6 +189,9 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         // ── UI ──
         showConfirmation: false,
         loading: false,
+        // Vrai si l'encaissement en cours demande aussi l'impression du
+        // ticket : permet d'animer le bon bouton.
+        impressionDemandee: false,
         enAttenteLoading: false,
         newClientOpen: false,
         mobileCartOpen: false,
@@ -580,6 +583,9 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         },
 
         fermerConfirmation() {
+            // Pendant l'enregistrement, la vente est déjà partie au serveur :
+            // fermer la fenêtre n'aurait plus de sens.
+            if (this.loading) return;
             this.showConfirmation = false;
         },
 
@@ -713,8 +719,21 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
 
         async valider(imprimer = false) {
             if (this.panierVide || this.loading) return;
+
+            // La modale reste ouverte pendant l'enregistrement : c'est là que
+            // le spinner et le libellé « Encaissement… » sont visibles. Elle
+            // disparaît avec le rechargement de la page après la vente.
             this.loading = true;
-            this.showConfirmation = false;
+            this.impressionDemandee = imprimer;
+
+            // Filet de sécurité : si la navigation n'a pas lieu (erreur
+            // serveur, coupure réseau), on rend la main au caissier.
+            clearTimeout(this._minuteurValidation);
+            this._minuteurValidation = setTimeout(() => {
+                this.loading = false;
+                this.impressionDemandee = false;
+            }, 20000);
+
             try {
                 await this.$wire.valider(
                     Object.values(this.panier),
@@ -728,8 +747,11 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
                     this.modePaiement === 'mixte' ? (parseInt(this.montantMixteCartes) || 0) : null,
                     parseInt(this.pourboire) || 0,
                 );
-            } finally {
+            } catch (e) {
+                clearTimeout(this._minuteurValidation);
                 this.loading = false;
+                this.impressionDemandee = false;
+                this.showToast("⚠️ La vente n'a pas pu être enregistrée.");
             }
         },
 
@@ -758,8 +780,15 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         },
 
         async confirmerVenteCredit() {
+            if (this.loading) return;
+
             this.showCreditConfirmation = false;
             this.loading = true;
+
+            clearTimeout(this._minuteurValidation);
+            this._minuteurValidation = setTimeout(() => {
+                this.loading = false;
+            }, 20000);
             const apport = parseInt(this.creditApport) || 0;
             try {
                 await this.$wire.validerVenteCredit(

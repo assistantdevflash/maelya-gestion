@@ -8,7 +8,19 @@
          x-transition:leave-end="opacity-0"
          class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.5);"
          wire:ignore>
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" @click.outside="fermerConfirmation()">
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+             @click.outside="fermerConfirmation()">
+
+            {{-- Voile d'encaissement : la vente part au serveur puis la page
+                 se recharge, il faut le montrer pour éviter les clics répétés. --}}
+            <div x-show="loading" x-cloak
+                 class="absolute inset-0 z-30 rounded-2xl bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center gap-3 px-6 text-center">
+                <span class="spinner spinner-lg" aria-hidden="true"></span>
+                <p class="text-sm font-semibold text-gray-800"
+                   x-text="impressionDemandee ? 'Encaissement et impression en cours…' : 'Encaissement en cours…'"></p>
+                <p class="text-xs text-gray-500">Ne fermez pas cette fenêtre.</p>
+            </div>
+
             {{-- Header --}}
             <div class="p-5 border-b border-gray-100 flex items-center justify-between">
                 <div class="flex items-center gap-3">
@@ -184,18 +196,21 @@
             {{-- Actions (masquées en mode crédit — le panneau crédit a son propre bouton) --}}
             <div class="p-5 border-t border-gray-100 flex flex-col gap-2" x-show="modePaiement !== 'credit'">
                 <div class="grid grid-cols-2 gap-2">
-                    <button @click="fermerConfirmation" class="btn-secondary justify-center py-3">
+                    <button @click="fermerConfirmation"
+                            :disabled="loading"
+                            :class="loading ? 'opacity-50 cursor-not-allowed' : ''"
+                            class="btn-secondary justify-center py-3">
                         Annuler
                     </button>
                     <button @click="valider(false)"
                             :disabled="loading"
                             :class="loading ? 'opacity-70 cursor-not-allowed' : ''"
                             class="btn-primary justify-center py-3">
-                        <span x-show="loading" class="spinner spinner-sm" aria-hidden="true"></span>
+                        <span x-show="loading && !impressionDemandee" class="spinner spinner-sm" aria-hidden="true"></span>
                         <svg x-show="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                         </svg>
-                        Encaisser
+                        <span x-text="(loading && !impressionDemandee) ? 'Encaissement…' : 'Encaisser'"></span>
                     </button>
                 </div>
                 <button @click="valider(true)"
@@ -206,12 +221,11 @@
                             'hidden' => !auth()->user()->aFonctionnalite('caisse_impression'),
                         ])
                         style="background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);">
-                    <span x-show="loading" class="spinner spinner-sm" aria-hidden="true"></span>
+                    <span x-show="loading && impressionDemandee" class="spinner spinner-sm" aria-hidden="true"></span>
                     <svg x-show="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                     </svg>
-                    </svg>
-                    Encaisser & Imprimer
+                    <span x-text="(loading && impressionDemandee) ? 'Impression…' : 'Encaisser & Imprimer'"></span>
                 </button>
             </div>
         </div>
