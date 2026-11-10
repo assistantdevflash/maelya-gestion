@@ -1,9 +1,10 @@
 // ⚠️ Ne JAMAIS importer Quill ici : il est chargé à la demande via
 // `resources/js/quill-editor.js` (voir produits/form.blade.php).
-import caisseApp from './caisse';
+import caisseApp, { selecteurClient } from './caisse';
 
-// Expose le composant Caisse POS en global pour Alpine x-data
+// Expose les composants Alpine de la caisse
 window.caisseApp = caisseApp;
+window.selecteurClient = selecteurClient;
 
 // ═══════════════════════════════════════════════════════════════
 //  GLOBAL FORM LOADING — disable bouton + spinner au submit

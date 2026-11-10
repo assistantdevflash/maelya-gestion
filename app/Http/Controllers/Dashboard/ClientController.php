@@ -213,6 +213,44 @@ class ClientController extends Controller
         ]);
     }
 
+    /**
+     * Recherche de clients pour les sélecteurs de la caisse.
+     *
+     * La caisse ne charge plus 200 clients en mémoire : elle interroge cet
+     * endpoint. Un établissement avec 5 000 clients reste donc utilisable.
+     */
+    public function rechercheJson(Request $request)
+    {
+        $terme = trim((string) $request->input('q', ''));
+
+        $query = Client::query()
+            ->where('institut_id', $this->institutId())
+            ->where('actif', true);
+
+        if ($terme !== '') {
+            $query->recherche($terme);
+        }
+
+        $clients = $query->orderBy('prenom')->orderBy('nom')->limit(15)->get();
+
+        return response()->json(
+            $clients->map(fn (Client $c) => [
+                'id'        => $c->id,
+                'nom'       => $c->nom_affichage,
+                'initiale'  => $c->isEntreprise()
+                    ? '🏢'
+                    : strtoupper(substr($c->prenom ?? $c->nom ?? '?', 0, 1)),
+                'telephone' => $c->telephone ?? '',
+                'search'    => Str::lower(
+                    ($c->prenom ?? '') . ' ' .
+                    ($c->nom ?? '') . ' ' .
+                    ($c->raison_sociale ?? '') . ' ' .
+                    ($c->telephone ?? '')
+                ),
+            ])->values()
+        );
+    }
+
     public function show(Client $client)
     {
         $ventes = $client->ventes()->with('items')->where('statut', 'validee')->latest()->paginate(20);

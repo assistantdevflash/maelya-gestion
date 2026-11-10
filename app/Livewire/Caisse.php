@@ -538,13 +538,19 @@ class Caisse extends Component
         ]);
     }
 
-    /** Liste légère des clients pour le sélecteur Alpine de la caisse. */
+    /**
+     * Petite liste d'amorce pour le sélecteur Alpine de la caisse.
+     *
+     * La recherche réelle est faite côté serveur par
+     * `dashboard.clients.recherche-json` : inutile de charger des centaines
+     * de clients dans la page.
+     */
     private function clientsPourCaisse(string $institutId)
     {
         return Client::where('institut_id', $institutId)
             ->where('actif', true)
             ->orderBy('prenom')
-            ->limit(200)
+            ->limit(12)
             ->get()
             ->map(fn ($c) => [
                 'id'        => $c->id,

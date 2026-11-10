@@ -409,6 +409,10 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
 
     // ── Clients & RDV (accessibles aux employés) ──────────────────────────
     Route::middleware('feature:clients')->group(function () {
+        // Doit précéder le resource : sinon « clients/{client} » capturerait
+        // « clients/recherche-json ».
+        Route::get('clients/recherche-json', [ClientController::class, 'rechercheJson'])
+            ->name('clients.recherche-json');
         Route::resource('clients', ClientController::class)->except(['show', 'edit']);
         Route::get('clients-fidelite/recherche', [ClientController::class, 'rechercheParTokenFidelite'])->name('clients.fidelite.recherche');
         Route::get('clients/{client}', [ClientController::class, 'show'])->name('clients.show');

@@ -611,3 +611,75 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
         },
     };
 }
+
+/**
+ * Sélecteur de client des écrans de caisse.
+ *
+ * Auparavant, les 200 premiers clients de l'établissement étaient injectés
+ * dans la page et filtrés en local : au-delà de 200 clients, les suivants
+ * étaient invisibles à la caisse. Ce composant garde une petite liste de
+ * départ pour l'affichage immédiat et interroge le serveur dès 2 caractères.
+ */
+export function selecteurClient({ initial = [], url = '/dashboard/clients/recherche-json' } = {}) {
+    return {
+        url,
+        clients: initial,
+        search: '',
+        open: false,
+        chargement: false,
+        timer: null,
+
+        get filtered() {
+            if (this.search.length < 2) {
+                return this.clients.slice(0, 8);
+            }
+            const q = this.search.toLowerCase();
+            return this.clients.filter(c => c.search.includes(q)).slice(0, 15);
+        },
+
+        onInput() {
+            this.open = true;
+            clearTimeout(this.timer);
+
+            const q = this.search.trim();
+            if (q.length < 2) {
+                this.clients = initial;
+                return;
+            }
+
+            this.timer = setTimeout(() => this.rechercher(q), 250);
+        },
+
+        async rechercher(q) {
+            this.chargement = true;
+            try {
+                const r = await fetch(`${this.url}?q=${encodeURIComponent(q)}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    credentials: 'same-origin',
+                });
+                if (!r.ok) {
+                    throw new Error('HTTP ' + r.status);
+                }
+                this.clients = await r.json();
+            } catch (e) {
+                // En cas de coupure réseau on garde la liste précédente.
+            } finally {
+                this.chargement = false;
+            }
+        },
+
+        choose(id) {
+            this.open = false;
+            this.search = '';
+            this.clients = initial;
+
+            const composant = this.$wire;
+            if (composant) {
+                composant.selectClient(id);
+            }
+        },
+    };
+}

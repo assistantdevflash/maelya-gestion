@@ -489,26 +489,13 @@
                 </div>
                 @endif
             @else
-                <div x-data="{
-                        clients: {{ $allClients->toJson() }},
-                        search: '',
-                        open: false,
-                        get filtered() {
-                            if (this.search.length < 2) return this.clients.slice(0, 8);
-                            const q = this.search.toLowerCase();
-                            return this.clients.filter(c => c.search.includes(q)).slice(0, 8);
-                        },
-                        choose(id) {
-                            this.open = false;
-                            this.search = '';
-                            $wire.selectClient(id);
-                        }
-                    }" @click.outside="open = false">
+                <div x-data="selecteurClient({ initial: {{ $allClients->toJson() }} })"
+                     @click.outside="open = false">
                     <input
                         type="text"
                         x-model="search"
                         @focus="open = true"
-                        @input="open = true"
+                        @input="onInput()"
                         @keydown.escape="open = false"
                         placeholder="Chercher un client..."
                         class="form-input text-sm">
@@ -525,7 +512,11 @@
                             </button>
                         </template>
                     </div>
-                    <div x-show="open && search.length >= 2 && filtered.length === 0" x-cloak
+                    <div x-show="open && chargement" x-cloak
+                         class="text-xs text-gray-400 mt-2 text-center py-2">
+                        Recherche…
+                    </div>
+                    <div x-show="open && !chargement && search.length >= 2 && filtered.length === 0" x-cloak
                          class="text-xs text-gray-400 mt-2 text-center py-2">
                         Aucun client trouvé
                     </div>
@@ -1585,26 +1576,13 @@
                         </div>
                         @endif
                     @else
-                        <div x-data="{
-                                clients: {{ $allClients->toJson() }},
-                                search: '',
-                                open: false,
-                                get filtered() {
-                                    if (this.search.length < 2) return this.clients.slice(0, 8);
-                                    const q = this.search.toLowerCase();
-                                    return this.clients.filter(c => c.search.includes(q)).slice(0, 8);
-                                },
-                                choose(id) {
-                                    this.open = false;
-                                    this.search = '';
-                                    $wire.selectClient(id);
-                                }
-                            }" @click.outside="open = false">
+                        <div x-data="selecteurClient({ initial: {{ $allClients->toJson() }} })"
+                             @click.outside="open = false">
                             <input
                                 type="text"
                                 x-model="search"
                                 @focus="open = true"
-                                @input="open = true"
+                                @input="onInput()"
                                 @keydown.escape="open = false"
                                 placeholder="Chercher un client..."
                                 class="form-input text-sm w-full">
@@ -1621,7 +1599,11 @@
                                     </button>
                                 </template>
                             </div>
-                            <div x-show="open && search.length >= 2 && filtered.length === 0" x-cloak
+                            <div x-show="open && chargement" x-cloak
+                                 class="text-xs text-gray-400 mt-2 text-center py-2">
+                                Recherche…
+                            </div>
+                            <div x-show="open && !chargement && search.length >= 2 && filtered.length === 0" x-cloak
                                  class="text-xs text-gray-400 mt-2 text-center py-2">
                                 Aucun client trouvé
                             </div>
