@@ -801,6 +801,9 @@ export function selecteurClient({ initial = [], url = '/dashboard/clients/recher
         search: '',
         open: false,
         chargement: false,
+        // Vrai pendant l'aller-retour Livewire de `selectClient` : la
+        // sélection d'un client re-rend la carte client, il faut le montrer.
+        selectionEnCours: false,
         timer: null,
 
         get filtered() {
@@ -845,14 +848,24 @@ export function selecteurClient({ initial = [], url = '/dashboard/clients/recher
             }
         },
 
-        choose(id) {
+        async choose(id) {
+            if (this.selectionEnCours) return;
+
             this.open = false;
             this.search = '';
             this.clients = initial;
 
             const composant = this.$wire;
-            if (composant) {
-                composant.selectClient(id);
+            if (!composant) return;
+
+            this.selectionEnCours = true;
+
+            try {
+                await composant.selectClient(id);
+            } catch (e) {
+                // Livewire signale l'erreur : on laisse la carte inchangée.
+            } finally {
+                this.selectionEnCours = false;
             }
         },
     };

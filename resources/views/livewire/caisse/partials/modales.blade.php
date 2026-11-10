@@ -347,7 +347,13 @@
                             <span class="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Client</span>
                         </div>
                         @if($clientId)
-                            <button wire:click="$set('clientId', null)" class="text-xs text-red-500 hover:text-red-700 font-medium">Retirer</button>
+                            <button wire:click="$set('clientId', null)"
+                                wire:loading.attr="disabled"
+                                wire:target="clientId"
+                                class="inline-flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 font-medium disabled:opacity-60 disabled:cursor-wait">
+                            <span wire:loading wire:target="clientId" class="spinner spinner-sm" aria-hidden="true"></span>
+                            <span>Retirer</span>
+                        </button>
                         @endif
                     </div>
                     @if($clientId)
@@ -368,14 +374,21 @@
                     @else
                         <div x-data="selecteurClient({ initial: {{ $allClients->toJson() }} })"
                              @click.outside="open = false">
-                            <input
-                                type="text"
-                                x-model="search"
-                                @focus="open = true"
-                                @input="onInput()"
-                                @keydown.escape="open = false"
-                                placeholder="Chercher un client..."
-                                class="form-input text-sm w-full">
+                            <div class="relative">
+                                <input
+                                    type="text"
+                                    x-model="search"
+                                    @focus="open = true"
+                                    @input="onInput()"
+                                    @keydown.escape="open = false"
+                                    :disabled="selectionEnCours"
+                                    placeholder="Chercher un client..."
+                                    class="form-input text-sm w-full pr-9 disabled:opacity-60 disabled:cursor-wait">
+                                <span x-show="selectionEnCours" x-cloak
+                                      class="absolute right-3 top-1/2 -translate-y-1/2">
+                                    <span class="spinner spinner-sm" aria-hidden="true"></span>
+                                </span>
+                            </div>
                             <div x-show="open && filtered.length > 0" x-cloak
                                  class="absolute left-5 right-5 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden mt-2 shadow-lg max-h-52 overflow-y-auto bg-white dark:bg-gray-800 z-10">
                                 <template x-for="c in filtered" :key="c.id">

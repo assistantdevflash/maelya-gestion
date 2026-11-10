@@ -3,7 +3,14 @@
 
         {{-- Client (Livewire – seule section nécessitant le serveur) --}}
         @if(auth()->user()->aFonctionnalite('caisse_client'))
-        <div class="card p-4">
+        <div class="card p-4 relative">
+            {{-- Voile pendant l'aller-retour Livewire : choisir ou retirer un
+                 client interroge le serveur, l'attente doit être visible. --}}
+            <div wire:loading.delay.shortest
+                 class="absolute inset-0 z-20 rounded-2xl bg-white/70 dark:bg-slate-800/70 backdrop-blur-[1px] flex items-center justify-center">
+                <span class="spinner" aria-hidden="true"></span>
+            </div>
+
             <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-2">
                     <div class="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center">
@@ -14,7 +21,13 @@
                     <span class="text-xs font-bold text-gray-600 uppercase tracking-wider">Client</span>
                 </div>
                 @if($clientId)
-                    <button wire:click="$set('clientId', null)" class="text-xs text-red-500 hover:text-red-700 font-medium">Retirer</button>
+                    <button wire:click="$set('clientId', null)"
+                            wire:loading.attr="disabled"
+                            wire:target="clientId"
+                            class="inline-flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 font-medium disabled:opacity-60 disabled:cursor-wait">
+                        <span wire:loading wire:target="clientId" class="spinner spinner-sm" aria-hidden="true"></span>
+                        <span>Retirer</span>
+                    </button>
                 @endif
             </div>
             @if($clientId)
@@ -35,14 +48,21 @@
             @else
                 <div x-data="selecteurClient({ initial: {{ $allClients->toJson() }} })"
                      @click.outside="open = false">
-                    <input
-                        type="text"
-                        x-model="search"
-                        @focus="open = true"
-                        @input="onInput()"
-                        @keydown.escape="open = false"
-                        placeholder="Chercher un client..."
-                        class="form-input text-sm">
+                    <div class="relative">
+                        <input
+                            type="text"
+                            x-model="search"
+                            @focus="open = true"
+                            @input="onInput()"
+                            @keydown.escape="open = false"
+                            :disabled="selectionEnCours"
+                            placeholder="Chercher un client..."
+                            class="form-input text-sm pr-9 disabled:opacity-60 disabled:cursor-wait">
+                        <span x-show="selectionEnCours" x-cloak
+                              class="absolute right-3 top-1/2 -translate-y-1/2">
+                            <span class="spinner spinner-sm" aria-hidden="true"></span>
+                        </span>
+                    </div>
                     <div x-show="open && filtered.length > 0" x-cloak
                          class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden mt-2 shadow-sm max-h-52 overflow-y-auto bg-white dark:bg-gray-800">
                         <template x-for="c in filtered" :key="c.id">
