@@ -79,6 +79,125 @@
     </div>
 </div>
 
+{{-- ═══════════════ Le travail du jour ═══════════════ --}}
+@if($stats['relances_dues'] > 0 || $echeances->isNotEmpty())
+<div class="rounded-2xl border-2 border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-900/10 p-5 mb-6">
+    <div class="flex items-start justify-between gap-3 mb-3">
+        <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center flex-shrink-0">
+                <svg class="w-4.5 h-4.5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div>
+                <p class="text-sm font-bold text-gray-900 dark:text-white">À faire aujourd'hui</p>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400">
+                    {{ $stats['relances_dues'] }} relance{{ $stats['relances_dues'] > 1 ? 's' : '' }} ·
+                    {{ $echeances->count() }} abonnement{{ $echeances->count() > 1 ? 's' : '' }} à suivre
+                </p>
+            </div>
+        </div>
+        <a href="{{ route('commercial.relances') }}"
+           class="px-3 py-1.5 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-semibold whitespace-nowrap">
+            Tout voir
+        </a>
+    </div>
+
+    @if($relancesDues->isNotEmpty())
+    <div class="space-y-1.5">
+        @foreach($relancesDues as $prospect)
+            @php $jours = $prospect->joursAvantRelance(); @endphp
+            <div class="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white dark:bg-gray-800">
+                <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 {{ $jours !== null && $jours < 0 ? 'bg-red-500' : 'bg-amber-500' }}"></span>
+                <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate flex-1">{{ $prospect->nom_etablissement }}</span>
+                <span class="text-[10px] text-gray-400 whitespace-nowrap">
+                    @if($jours !== null && $jours < 0)
+                        {{ abs($jours) }} j de retard
+                    @else
+                        aujourd'hui
+                    @endif
+                </span>
+                @if($prospect->contact_telephone)
+                <a href="tel:{{ $prospect->contact_telephone }}"
+                   class="px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[10px] font-bold">Appeler</a>
+                @endif
+            </div>
+        @endforeach
+    </div>
+    @endif
+
+    @if($echeances->isNotEmpty())
+    <div class="mt-2.5 pt-2.5 border-t border-red-200/60 dark:border-red-800/60 space-y-1.5">
+        @foreach($echeances as $ligne)
+            @php
+                $abo = $ligne['abonnement'];
+                $tel = $abo->user?->institut?->telephone ?? $abo->user?->telephone;
+            @endphp
+            <div class="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white dark:bg-gray-800">
+                <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-purple-500"></span>
+                <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate flex-1">
+                    {{ $abo->user?->institut?->nom ?? $abo->user?->nom_complet ?? 'Établissement' }}
+                </span>
+                <span class="text-[10px] font-semibold {{ $ligne['jours'] < 0 ? 'text-red-500' : 'text-amber-600' }} whitespace-nowrap">
+                    @if($ligne['jours'] < 0)
+                        expiré depuis {{ abs($ligne['jours']) }} j
+                    @elseif($ligne['jours'] === 0)
+                        expire aujourd'hui
+                    @else
+                        expire dans {{ $ligne['jours'] }} j
+                    @endif
+                </span>
+                @if($tel)
+                <a href="https://wa.me/{{ preg_replace('/\D/', '', $tel) }}" target="_blank" rel="noopener"
+                   class="px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">WhatsApp</a>
+                @endif
+            </div>
+        @endforeach
+    </div>
+    @endif
+</div>
+@endif
+
+{{-- ═══════════════ Pipeline de prospection ═══════════════ --}}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <a href="{{ route('commercial.prospection', ['statut' => 'actifs']) }}"
+       class="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-100 dark:border-gray-700 hover:border-purple-300 transition-colors">
+        <p class="text-xs text-gray-500 dark:text-gray-400">Prospects en cours</p>
+        <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $stats['en_cours'] }}</p>
+    </a>
+    <a href="{{ route('commercial.relances') }}"
+       class="rounded-2xl p-4 border transition-colors
+              {{ $stats['relances_dues'] > 0 ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700' }}">
+        <p class="text-xs {{ $stats['relances_dues'] > 0 ? 'text-red-600' : 'text-gray-500 dark:text-gray-400' }}">Relances dues</p>
+        <p class="text-2xl font-bold mt-1 {{ $stats['relances_dues'] > 0 ? 'text-red-600' : 'text-gray-900 dark:text-white' }}">{{ $stats['relances_dues'] }}</p>
+    </a>
+    <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-100 dark:border-gray-700">
+        <p class="text-xs text-gray-500 dark:text-gray-400">Prospects convertis</p>
+        <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{{ $stats['convertis'] }}</p>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-100 dark:border-gray-700">
+        <p class="text-xs text-gray-500 dark:text-gray-400">Taux de conversion</p>
+        <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $stats['taux_conversion'] }}%</p>
+    </div>
+</div>
+
+{{-- Sans relance planifiée --}}
+@if($sansRelance->isNotEmpty())
+<div class="rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-4 mb-6">
+    <div class="flex items-center justify-between mb-2">
+        <p class="text-sm font-semibold text-gray-900 dark:text-white">Prospects sans relance prévue</p>
+        <a href="{{ route('commercial.relances') }}" class="text-[11px] font-semibold text-purple-600 dark:text-purple-400">Planifier →</a>
+    </div>
+    <div class="flex flex-wrap gap-1.5">
+        @foreach($sansRelance as $prospect)
+        <span class="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-[11px] text-gray-700 dark:text-gray-300">
+            {{ $prospect->nom_etablissement }}
+        </span>
+        @endforeach
+    </div>
+</div>
+@endif
+
 {{-- Derniers parrainages --}}
 @if($derniersParrainages->isNotEmpty())
 <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 mb-4">

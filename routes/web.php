@@ -550,6 +550,19 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
 // ─── Espace Commercial ────────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:commercial'])->prefix('commercial')->name('commercial.')->group(function () {
     Route::get('/', [CommercialController::class, 'dashboard'])->name('dashboard');
+
+    // ── Prospection ──
+    Route::get('/prospection', [CommercialController::class, 'prospection'])->name('prospection');
+    Route::post('/prospection', [CommercialController::class, 'storeProspect'])->name('prospection.store');
+    Route::patch('/prospection/{prospect}', [CommercialController::class, 'updateProspect'])->name('prospection.update');
+    Route::patch('/prospection/{prospect}/statut', [CommercialController::class, 'changerStatutProspect'])->name('prospection.statut');
+    Route::patch('/prospection/{prospect}/relance', [CommercialController::class, 'planifierRelance'])->name('prospection.relance');
+    Route::post('/prospection/{prospect}/activite', [CommercialController::class, 'ajouterActivite'])->name('prospection.activite');
+    Route::delete('/prospection/{prospect}', [CommercialController::class, 'destroyProspect'])->name('prospection.destroy');
+
+    // ── Relances & échéances ──
+    Route::get('/relances', [CommercialController::class, 'relances'])->name('relances');
+
     Route::get('/parrainages', [CommercialController::class, 'parrainages'])->name('parrainages');
     Route::get('/commissions', [CommercialController::class, 'commissions'])->name('commissions');
     Route::get('/guide', [CommercialController::class, 'guide'])->name('guide');

@@ -28,6 +28,17 @@ class CommercialProfile extends Model
         return $this->hasMany(CommercialCommission::class, 'commercial_id');
     }
 
+    /** Prospects démarchés (aucun compte créé côté plateforme). */
+    public function prospects()
+    {
+        return $this->hasMany(CommercialProspect::class, 'commercial_id');
+    }
+
+    public function activites()
+    {
+        return $this->hasMany(CommercialActivite::class, 'commercial_id');
+    }
+
     public function totalGagne(): int
     {
         return (int) $this->commissions()->where('statut', 'payee')->sum('montant');
