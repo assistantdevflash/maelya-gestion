@@ -51,7 +51,10 @@ class CommercialController extends Controller
         $totalEnAttente = $profil->totalEnAttente();
 
         $derniersParrainages = $profil->parrainages()
-            ->with('proprietaire.institut')
+            ->with([
+                'proprietaire.institut',
+                'proprietaire.abonnements' => fn ($q) => $q->orderByDesc('expire_le'),
+            ])
             ->latest()
             ->limit(5)
             ->get();
@@ -82,8 +85,15 @@ class CommercialController extends Controller
         $profil = $this->getProfil();
         if (!$profil) abort(403);
 
+        // On charge l'abonnement des filleuls : la fin de la période de
+        // commission (parrainage) et l'échéance de l'abonnement sont deux
+        // choses différentes, il faut pouvoir montrer les deux.
         $parrainages = $profil->parrainages()
-            ->with('proprietaire.institut', 'commissions')
+            ->with([
+                'proprietaire.institut',
+                'proprietaire.abonnements' => fn ($q) => $q->orderByDesc('expire_le'),
+                'commissions',
+            ])
             ->latest()
             ->paginate(20);
 

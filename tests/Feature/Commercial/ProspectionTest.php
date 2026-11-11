@@ -369,6 +369,45 @@ class ProspectionTest extends TestCase
         $this->assertSame(1, $prospect->activites()->count());
     }
 
+    public function test_la_page_parrainages_distingue_commission_et_abonnement(): void
+    {
+        [$user, $profil] = $this->creerCommercial();
+
+        $filleul = $this->creerAdmin();
+        $filleul->abonnements()->delete();
+
+        // L'abonnement du filleul court encore 8 jours…
+        Abonnement::create([
+            'user_id'   => $filleul->id,
+            'plan_id'   => $this->creerPlan()->id,
+            'montant'   => 10000,
+            'periode'   => 'mensuel',
+            'statut'    => 'actif',
+            'debut_le'  => now()->subDays(22),
+            'expire_le' => today()->addDays(8),
+        ]);
+
+        // …alors que la période de commission du commercial est terminée.
+        CommercialParrainage::create([
+            'commercial_id'   => $profil->id,
+            'proprietaire_id' => $filleul->id,
+            'expire_le'       => today()->subDays(15),
+        ]);
+
+        $html = $this->actingAs($user)
+            ->get(route('commercial.parrainages'))
+            ->assertOk()
+            ->getContent();
+
+        // L'échéance réelle de l'abonnement est visible…
+        $this->assertStringContainsString('dans 8 j', $html);
+
+        // …et la commission est présentée comme terminée, pas l'abonnement
+        // comme « expiré » (confusion qui faisait croire à un client perdu).
+        $this->assertStringContainsString('Terminée', $html);
+        $this->assertStringNotContainsString('>Expiré<', $html);
+    }
+
     public function test_un_administrateur_n_accede_pas_a_l_espace_commercial(): void
     {
         $admin = $this->creerAdmin();

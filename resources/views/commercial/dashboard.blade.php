@@ -216,7 +216,7 @@
                 @if($p->isActif())
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-[11px] font-medium">Actif</span>
                 @else
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-500 text-[11px] font-medium">Expiré</span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-500 text-[11px] font-medium">Commission terminée</span>
                 @endif
                 <p class="text-[11px] text-gray-400 mt-0.5">Jusqu'au {{ $p->expire_le->format('d/m/Y') }}</p>
             </div>
