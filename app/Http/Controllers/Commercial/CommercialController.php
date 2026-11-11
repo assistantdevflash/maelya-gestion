@@ -230,8 +230,11 @@ class CommercialController extends Controller
         $aRelancer   = $prospection->relancesDues($profil);
         $sansRelance = $prospection->prospectsSansRelance($profil);
 
+        $typesActivite = CommercialProspect::typesActivite();
+
         return view('commercial.prospection', compact(
-            'profil', 'prospects', 'stats', 'aRelancer', 'sansRelance', 'statut', 'recherche'
+            'profil', 'prospects', 'stats', 'aRelancer', 'sansRelance', 'statut', 'recherche',
+            'typesActivite'
         ));
     }
 
@@ -260,7 +263,7 @@ class CommercialController extends Controller
 
         $data = $request->validate([
             'nom_etablissement'  => ['required', 'string', 'max:150'],
-            'type_activite'      => ['nullable', Rule::in(array_keys(CommercialProspect::TYPES_ACTIVITE))],
+            'type_activite'      => ['nullable', Rule::exists('etablissement_types', 'code')->where('actif', true)],
             'ville'              => ['nullable', 'string', 'max:80'],
             'quartier'           => ['nullable', 'string', 'max:80'],
             'contact_nom'        => ['nullable', 'string', 'max:120'],
@@ -300,7 +303,7 @@ class CommercialController extends Controller
 
         $data = $request->validate([
             'nom_etablissement'  => ['required', 'string', 'max:150'],
-            'type_activite'      => ['nullable', Rule::in(array_keys(CommercialProspect::TYPES_ACTIVITE))],
+            'type_activite'      => ['nullable', Rule::exists('etablissement_types', 'code')->where('actif', true)],
             'ville'              => ['nullable', 'string', 'max:80'],
             'quartier'           => ['nullable', 'string', 'max:80'],
             'contact_nom'        => ['nullable', 'string', 'max:120'],

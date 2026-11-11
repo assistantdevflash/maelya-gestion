@@ -44,16 +44,6 @@ class CommercialProspect extends Model
         'basse'   => 'Basse',
     ];
 
-    public const TYPES_ACTIVITE = [
-        'coiffure'    => 'Coiffure',
-        'barbier'     => 'Barbier',
-        'esthetique'  => 'Esthétique',
-        'onglerie'    => 'Onglerie',
-        'spa'         => 'Spa / massage',
-        'maquillage'  => 'Maquillage',
-        'autre'       => 'Autre',
-    ];
-
     protected $fillable = [
         'commercial_id', 'nom_etablissement', 'type_activite', 'ville', 'quartier',
         'contact_nom', 'contact_telephone', 'contact_email',
@@ -116,6 +106,23 @@ class CommercialProspect extends Model
     }
 
     // ── Aides ────────────────────────────────────────────────────────────
+
+    /**
+     * Types d'activité proposés : ce sont ceux de la plateforme
+     * (table `etablissement_types`), pour qu'un prospect se décrive avec le
+     * même vocabulaire que lors de la création de son établissement.
+     *
+     * @return array<string, string> code => libellé
+     */
+    public static function typesActivite(): array
+    {
+        return EtablissementType::actifs()->ordered()->pluck('libelle', 'code')->all();
+    }
+
+    public function libelleTypeActivite(): string
+    {
+        return EtablissementType::libellePour($this->type_activite);
+    }
 
     public function libelleStatut(): string
     {

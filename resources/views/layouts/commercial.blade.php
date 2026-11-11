@@ -237,7 +237,13 @@
         @endif
 
         <main class="flex-1 p-4 md:p-6 max-w-5xl mx-auto w-full">
-            @yield('content')
+            {{-- Contenu : soit une section Blade classique (vues @extends),
+                 soit le slot d'un composant <x-commercial-layout>. --}}
+            @hasSection('content')
+                @yield('content')
+            @else
+                {{ $slot ?? '' }}
+            @endif
         </main>
     </div>
 
@@ -266,5 +272,6 @@
         @endforeach
     </nav>
 
+    @stack('scripts')
 </body>
 </html>

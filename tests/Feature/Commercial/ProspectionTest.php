@@ -19,6 +19,15 @@ class ProspectionTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Les types d'activité viennent de la table de référence de la
+        // plateforme : sans ce seed, la validation « type_activite » échoue.
+        $this->seedTypesEtablissement();
+    }
+
     private function creerCommercial(): array
     {
         $user = User::factory()->create([
@@ -42,7 +51,7 @@ class ProspectionTest extends TestCase
         return CommercialProspect::create(array_merge([
             'commercial_id'     => $profil->id,
             'nom_etablissement' => 'Salon Élégance',
-            'type_activite'     => 'coiffure',
+            'type_activite'     => 'salon_coiffure',
             'ville'             => 'Abidjan',
             'contact_nom'       => 'Mme Koffi',
             'contact_telephone' => '0708091011',
@@ -71,7 +80,7 @@ class ProspectionTest extends TestCase
         $this->actingAs($user)
             ->post(route('commercial.prospection.store'), [
                 'nom_etablissement'    => 'Spa Sérénité',
-                'type_activite'        => 'spa',
+                'type_activite'        => 'institut_beaute',
                 'ville'                => 'Abidjan',
                 'contact_telephone'    => '0102030405',
                 'priorite'             => 'haute',

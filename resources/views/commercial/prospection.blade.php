@@ -168,7 +168,7 @@
                                 @endif
                             </div>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                {{ P::TYPES_ACTIVITE[$prospect->type_activite] ?? '—' }}
+                                {{ $prospect->libelleTypeActivite() }}
                                 @if($prospect->quartier || $prospect->ville)
                                     · {{ trim(($prospect->quartier ?? '') . ' ' . ($prospect->ville ?? '')) }}
                                 @endif
@@ -249,7 +249,7 @@
                                 <div class="grid grid-cols-2 gap-2">
                                     <select name="type_activite" class="form-input text-sm">
                                         <option value="">Activité…</option>
-                                        @foreach(P::TYPES_ACTIVITE as $code => $libelle)
+                                        @foreach($typesActivite as $code => $libelle)
                                         <option value="{{ $code }}" @selected($prospect->type_activite === $code)>{{ $libelle }}</option>
                                         @endforeach
                                     </select>
@@ -385,8 +385,8 @@
                         <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">Activité</label>
                         <select name="type_activite" class="form-input text-sm">
                             <option value="">—</option>
-                            @foreach(P::TYPES_ACTIVITE as $code => $libelle)
-                            <option value="{{ $code }}">{{ $libelle }}</option>
+                            @foreach($typesActivite as $code => $libelle)
+                            <option value="{{ $code }}" @selected(old('type_activite') === $code)>{{ $libelle }}</option>
                             @endforeach
                         </select>
                     </div>
