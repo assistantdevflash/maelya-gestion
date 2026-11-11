@@ -322,7 +322,8 @@
                                 </div>
 
                                 {{-- ═══ Journal d'interactions ═══ --}}
-                                <form @submit.prevent="ajouterInteraction($event.target)"
+                                <form data-ajax
+                                      @submit.prevent="ajouterInteraction($event.target)"
                                       class="rounded-xl border border-gray-200 dark:border-gray-700 p-3 space-y-2.5">
                                     <div>
                                         <p class="text-xs font-bold text-gray-700 dark:text-gray-200">Journal des échanges</p>

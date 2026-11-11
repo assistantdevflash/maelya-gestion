@@ -114,7 +114,7 @@
                         @endif
 
                         {{-- Enregistrer l'appel + replanifier (sans recharger) --}}
-                        <form @submit.prevent="marquerFaite($event.target)" class="flex items-center gap-1.5">
+                        <form data-ajax @submit.prevent="marquerFaite($event.target)" class="flex items-center gap-1.5">
                             <input type="hidden" name="type" value="relance">
                             <input type="hidden" name="contenu" value="Relance effectuée">
                             <input type="hidden" name="prochaine_relance_le" value="{{ today()->addDays(7)->format('Y-m-d') }}">
@@ -239,7 +239,7 @@
         <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 font-semibold">
             {{ $prospect->libelleStatut() }}
         </span>
-        <form @submit.prevent="planifier($event.target)" class="flex items-center gap-1.5">
+        <form data-ajax @submit.prevent="planifier($event.target)" class="flex items-center gap-1.5">
             <input type="date" name="prochaine_relance_le" value="{{ today()->addDays(3)->format('Y-m-d') }}"
                    class="form-input text-xs py-1 px-2 w-36">
             <button type="submit" :disabled="enCours"

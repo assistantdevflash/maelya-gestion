@@ -84,6 +84,10 @@ class ProspectionTest extends TestCase
         $this->assertStringContainsString('enregistré aussitôt', $html);
         $this->assertStringContainsString('Journal des échanges', $html);
         $this->assertStringContainsString('Prochaine relance', $html);
+
+        // Le formulaire doit échapper au loading global : sans cet attribut,
+        // la barre de progression restait bloquée et le bouton désactivé.
+        $this->assertStringContainsString('data-ajax', $html);
     }
 
     public function test_un_commercial_peut_ajouter_un_prospect(): void

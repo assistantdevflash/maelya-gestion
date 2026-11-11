@@ -19,6 +19,11 @@ const handleFormSubmit = (e) => {
     const form = e.target;
     if (!(form instanceof HTMLFormElement)) return;
 
+    // Formulaire géré en JavaScript (fetch + @submit.prevent) : aucune
+    // navigation ne suivra, donc la barre de progression resterait bloquée et
+    // les boutons désactivés pour toujours. On ne touche à rien.
+    if (form.hasAttribute('data-ajax')) return;
+
     // Ignorer si déjà en cours de soumission (double-click protection)
     if (form.classList.contains('is-submitting')) {
         e.preventDefault();
@@ -99,6 +104,9 @@ document.addEventListener('click', (e) => {
         }
     } catch(e) { /* URL invalide, ignorer */ }
 });
+
+// Filet de sécurité : aucune barre ne doit survivre au chargement complet.
+window.addEventListener('load', hideProgressBar);
 
 // Restaurer les boutons en cas de navigation arrière (bfcache)
 window.addEventListener('pageshow', (e) => {
