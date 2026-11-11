@@ -292,11 +292,18 @@
 
                             {{-- Statut + activités --}}
                             <div class="space-y-3">
-                                <div>
-                                    <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 flex items-center gap-2">
-                                        Étape du pipeline
+                                {{-- ═══ Étape du pipeline ═══ --}}
+                                <div class="rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+                                    <div class="flex items-center justify-between gap-2 mb-2">
+                                        <p class="text-xs font-bold text-gray-700 dark:text-gray-200">Où en est ce prospect ?</p>
                                         <span x-show="enCoursStatut" x-cloak class="spinner spinner-sm" aria-hidden="true"></span>
-                                    </p>
+                                        <span x-show="!enCoursStatut" class="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                            enregistré aussitôt
+                                        </span>
+                                    </div>
                                     {{-- x-model (et non :value) : en cas d'échec
                                          le retour arrière réécrit aussi le select,
                                          sinon il affichait un statut fantôme. --}}
@@ -308,28 +315,67 @@
                                         <option value="{{ $code }}">{{ $libelle }}</option>
                                         @endforeach
                                     </select>
+                                    <p class="text-[11px] text-gray-400 mt-1.5">
+                                        À contacter → Contacté → Intéressé → En essai → Converti.
+                                        Le changement est pris en compte immédiatement, sans bouton.
+                                    </p>
                                 </div>
 
-                                <form @submit.prevent="ajouterInteraction($event.target)" class="space-y-2">
-                                    <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Nouvelle interaction</p>
+                                {{-- ═══ Journal d'interactions ═══ --}}
+                                <form @submit.prevent="ajouterInteraction($event.target)"
+                                      class="rounded-xl border border-gray-200 dark:border-gray-700 p-3 space-y-2.5">
+                                    <div>
+                                        <p class="text-xs font-bold text-gray-700 dark:text-gray-200">Journal des échanges</p>
+                                        <p class="text-[11px] text-gray-400 mt-0.5">
+                                            Notez chaque appel ou visite : c'est ce qui garde le fil d'une fois sur l'autre.
+                                        </p>
+                                    </div>
+
                                     <div class="grid grid-cols-2 gap-2">
-                                        <select name="type" class="form-input text-sm">
-                                            @foreach(\App\Models\CommercialActivite::TYPES as $code => $libelle)
-                                            <option value="{{ $code }}">{{ $libelle }}</option>
-                                            @endforeach
-                                        </select>
-                                        <input type="date" name="fait_le" value="{{ today()->format('Y-m-d') }}" class="form-input text-sm">
+                                        <div>
+                                            <label class="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                                                Type d'échange
+                                            </label>
+                                            <select name="type" class="form-input text-sm">
+                                                @foreach(\App\Models\CommercialActivite::TYPES as $code => $libelle)
+                                                <option value="{{ $code }}">{{ $libelle }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                                                Date
+                                            </label>
+                                            <input type="date" name="fait_le" value="{{ today()->format('Y-m-d') }}"
+                                                   class="form-input text-sm">
+                                        </div>
                                     </div>
-                                    <textarea name="contenu" rows="2" required class="form-input text-sm"
-                                              placeholder="Ce qui s'est dit, ce qui a été convenu…"></textarea>
-                                    <div class="flex items-center gap-2">
-                                        <input type="date" name="prochaine_relance_le" class="form-input text-sm flex-1" title="Prochaine relance">
-                                        <button type="submit" :disabled="enCoursInteraction"
-                                                class="btn-primary text-xs px-3 py-1.5 whitespace-nowrap inline-flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-wait">
-                                            <span x-show="enCoursInteraction" x-cloak class="spinner spinner-sm" aria-hidden="true"></span>
-                                            <span x-text="enCoursInteraction ? 'Ajout…' : 'Ajouter'"></span>
-                                        </button>
+
+                                    <div>
+                                        <label class="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                                            Ce qui s'est dit
+                                        </label>
+                                        <textarea name="contenu" rows="2" required class="form-input text-sm"
+                                                  placeholder="Ex. : la gérante veut une démo vendredi, rappeler jeudi."></textarea>
                                     </div>
+
+                                    <div>
+                                        <label class="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                                            Prochaine relance <span class="normal-case tracking-normal text-gray-400">(facultatif)</span>
+                                        </label>
+                                        <input type="date" name="prochaine_relance_le"
+                                               value="{{ $prospect->prochaine_relance_le?->format('Y-m-d') }}"
+                                               class="form-input text-sm">
+                                        <p class="text-[10px] text-gray-400 mt-1">
+                                            Modifiez la date pour replanifier la relance : la fiche remontera dans « Relances » ce jour-là.
+                                        </p>
+                                    </div>
+
+                                    <button type="submit" :disabled="enCoursInteraction"
+                                            class="w-full justify-center btn-primary text-xs px-3 py-2 inline-flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-wait">
+                                        <span x-show="enCoursInteraction" x-cloak class="spinner spinner-sm" aria-hidden="true"></span>
+                                        <span x-text="enCoursInteraction ? 'Enregistrement…' : 'Enregistrer l\'interaction'"></span>
+                                    </button>
                                 </form>
                             </div>
                         </div>

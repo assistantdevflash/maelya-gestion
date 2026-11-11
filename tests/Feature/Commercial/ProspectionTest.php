@@ -78,6 +78,12 @@ class ProspectionTest extends TestCase
         $this->assertStringContainsString('ficheProspect(', $html);
         $this->assertStringNotContainsString('this.form.submit()', $html);
         $this->assertStringContainsString('changerStatut(', $html);
+
+        // La zone d'action doit s'expliquer d'elle-même.
+        $this->assertStringContainsString('Où en est ce prospect', $html);
+        $this->assertStringContainsString('enregistré aussitôt', $html);
+        $this->assertStringContainsString('Journal des échanges', $html);
+        $this->assertStringContainsString('Prochaine relance', $html);
     }
 
     public function test_un_commercial_peut_ajouter_un_prospect(): void
