@@ -359,6 +359,18 @@ class CommercialController extends Controller
             ]);
         }
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok'            => true,
+                'statut'        => $prospect->statut,
+                'libelle'       => $prospect->libelleStatut(),
+                'relance'       => $prospect->libelleRelance(),
+                'niveau'        => $prospect->niveauRelance(),
+                'relance_iso'   => $prospect->prochaine_relance_le?->format('Y-m-d'),
+                'message'       => 'Statut mis à jour : ' . $prospect->libelleStatut() . '.',
+            ]);
+        }
+
         return back()->with('success', 'Statut mis à jour : ' . $prospect->libelleStatut() . '.');
     }
 
@@ -388,8 +400,20 @@ class CommercialController extends Controller
             'fait_le'       => today(),
         ]);
 
-        return back()->with('success', 'Relance planifiée pour le '
-            . \Carbon\Carbon::parse($data['prochaine_relance_le'])->format('d/m/Y') . '.');
+        $message = 'Relance planifiée pour le '
+            . \Carbon\Carbon::parse($data['prochaine_relance_le'])->format('d/m/Y') . '.';
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok'         => true,
+                'relance'    => $prospect->fresh()->libelleRelance(),
+                'niveau'     => $prospect->fresh()->niveauRelance(),
+                'relance_iso' => $prospect->prochaine_relance_le?->format('Y-m-d'),
+                'message'    => $message,
+            ]);
+        }
+
+        return back()->with('success', $message);
     }
 
     /**
@@ -407,7 +431,7 @@ class CommercialController extends Controller
             'prochaine_relance_le' => ['nullable', 'date'],
         ]);
 
-        CommercialActivite::create([
+        $activite = CommercialActivite::create([
             'prospect_id'   => $prospect->id,
             'commercial_id' => $profil->id,
             'type'          => $data['type'],
@@ -422,6 +446,21 @@ class CommercialController extends Controller
         }
 
         $prospect->save();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok'             => true,
+                'activite'       => [
+                    'date'    => $activite->fait_le?->format('d/m'),
+                    'type'    => $activite->libelleType(),
+                    'contenu' => $activite->contenu,
+                ],
+                'nb_interactions' => $prospect->activites()->count(),
+                'relance'         => $prospect->fresh()->libelleRelance(),
+                'niveau'          => $prospect->fresh()->niveauRelance(),
+                'message'         => 'Interaction enregistrée.',
+            ]);
+        }
 
         return back()->with('success', 'Interaction enregistrée.');
     }

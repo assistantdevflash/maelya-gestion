@@ -66,11 +66,18 @@ class ProspectionTest extends TestCase
         [$user, $profil] = $this->creerCommercial();
         $this->creerProspect($profil);
 
-        $this->actingAs($user)
+        $html = $this->actingAs($user)
             ->get(route('commercial.prospection'))
             ->assertOk()
             ->assertSee('Salon Élégance')
-            ->assertSee('Prospection');
+            ->assertSee('Prospection')
+            ->getContent();
+
+        // Le changement d'étape passe désormais par fetch : plus aucun
+        // formulaire ne doit recharger la page au changement de statut.
+        $this->assertStringContainsString('ficheProspect(', $html);
+        $this->assertStringNotContainsString('this.form.submit()', $html);
+        $this->assertStringContainsString('changerStatut(', $html);
     }
 
     public function test_un_commercial_peut_ajouter_un_prospect(): void
@@ -127,6 +134,86 @@ class ProspectionTest extends TestCase
         $this->assertNotNull($prospect->converti_le);
         $this->assertNull($prospect->prochaine_relance_le);
         $this->assertSame(0, $profil->prospects()->aRelancer()->count());
+    }
+
+    public function test_le_changement_de_statut_repond_en_json_pour_le_front(): void
+    {
+        [$user, $profil] = $this->creerCommercial();
+
+        $prospect = $this->creerProspect($profil, [
+            'prochaine_relance_le' => today()->subDays(2)->format('Y-m-d'),
+        ]);
+
+        $reponse = $this->actingAs($user)->patchJson(
+            route('commercial.prospection.statut', $prospect),
+            ['statut' => 'interesse']
+        );
+
+        $reponse->assertOk();
+        $reponse->assertJson([
+            'ok'      => true,
+            'statut'  => 'interesse',
+            'libelle' => 'Intéressé',
+        ]);
+
+        // La réponse porte le libellé de relance prêt à afficher : le front ne
+        // recalcule rien.
+        $this->assertSame('Relance en retard (2 j)', $reponse->json('relance'));
+        $this->assertSame('retard', $reponse->json('niveau'));
+        $this->assertSame('interesse', $prospect->fresh()->statut);
+    }
+
+    public function test_une_conversion_en_json_retire_la_relance(): void
+    {
+        [$user, $profil] = $this->creerCommercial();
+
+        $prospect = $this->creerProspect($profil, [
+            'prochaine_relance_le' => today()->addDays(4)->format('Y-m-d'),
+        ]);
+
+        $reponse = $this->actingAs($user)->patchJson(
+            route('commercial.prospection.statut', $prospect),
+            ['statut' => 'converti']
+        );
+
+        $reponse->assertOk();
+        $this->assertNull($reponse->json('relance'));
+        $this->assertNull($reponse->json('niveau'));
+    }
+
+    public function test_l_ajout_d_une_interaction_repond_en_json(): void
+    {
+        [$user, $profil] = $this->creerCommercial();
+        $prospect = $this->creerProspect($profil);
+
+        $reponse = $this->actingAs($user)->postJson(
+            route('commercial.prospection.activite', $prospect),
+            [
+                'type'    => 'appel',
+                'contenu' => 'Rappelée, elle demande une démo vendredi.',
+                'fait_le' => today()->format('Y-m-d'),
+            ]
+        );
+
+        $reponse->assertOk();
+        $this->assertSame(1, $reponse->json('nb_interactions'));
+        $this->assertSame('Appel', $reponse->json('activite.type'));
+        $this->assertStringContainsString('démo vendredi', $reponse->json('activite.contenu'));
+    }
+
+    public function test_la_planification_de_relance_repond_en_json(): void
+    {
+        [$user, $profil] = $this->creerCommercial();
+        $prospect = $this->creerProspect($profil, ['prochaine_relance_le' => null]);
+
+        $reponse = $this->actingAs($user)->patchJson(
+            route('commercial.prospection.relance', $prospect),
+            ['prochaine_relance_le' => today()->addDays(3)->format('Y-m-d')]
+        );
+
+        $reponse->assertOk();
+        $this->assertSame('Relance dans 3 j', $reponse->json('relance'));
+        $this->assertSame('proche', $reponse->json('niveau'));
     }
 
     public function test_les_relances_en_retard_sont_identifiees(): void

@@ -12,6 +12,16 @@
     ];
 @endphp
 
+<div x-data="toasts()" @commercial-toast.window="ajouter($event.detail)"
+     class="fixed bottom-4 right-4 z-[70] space-y-2 pointer-events-none">
+    <template x-for="t in liste" :key="t.id">
+        <div class="px-4 py-3 rounded-xl shadow-lg text-sm font-semibold text-white max-w-xs"
+             :class="t.type === 'error' ? 'bg-red-600' : 'bg-gray-900 dark:bg-gray-700'"
+             x-transition.opacity.duration.200ms
+             x-text="t.message"></div>
+    </template>
+</div>
+
 <div class="mb-5">
     <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Relances</h1>
     <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
@@ -64,7 +74,12 @@
     <div class="space-y-2.5 mb-6">
         @foreach($relancesDues as $prospect)
             @php $jours = $prospect->joursAvantRelance(); @endphp
-            <div class="rounded-2xl bg-white dark:bg-gray-800 border p-4
+            <div x-data="ligneRelance({
+                    routeActivite: @js(route('commercial.prospection.activite', $prospect)),
+                 })"
+                 x-show="!traitee"
+                 x-transition.opacity.duration.200ms
+                 class="rounded-2xl bg-white dark:bg-gray-800 border p-4
                         {{ $jours !== null && $jours < 0 ? 'border-red-200 dark:border-red-800' : 'border-amber-200 dark:border-amber-800' }}">
                 <div class="flex flex-wrap items-center gap-3">
                     <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-xs font-bold"
@@ -98,14 +113,15 @@
                            class="px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-[11px] font-semibold">WhatsApp</a>
                         @endif
 
-                        {{-- Enregistrer l'appel + replanifier --}}
-                        <form method="POST" action="{{ route('commercial.prospection.activite', $prospect) }}" class="flex items-center gap-1.5">
-                            @csrf
+                        {{-- Enregistrer l'appel + replanifier (sans recharger) --}}
+                        <form @submit.prevent="marquerFaite($event.target)" class="flex items-center gap-1.5">
                             <input type="hidden" name="type" value="relance">
                             <input type="hidden" name="contenu" value="Relance effectuée">
                             <input type="hidden" name="prochaine_relance_le" value="{{ today()->addDays(7)->format('Y-m-d') }}">
-                            <button type="submit" class="px-2.5 py-1.5 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[11px] font-semibold">
-                                Fait (+7 j)
+                            <button type="submit" :disabled="enCours"
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[11px] font-semibold disabled:opacity-60 disabled:cursor-wait">
+                                <span x-show="enCours" x-cloak class="spinner spinner-sm" aria-hidden="true"></span>
+                                <span x-text="enCours ? 'Enregistrement…' : 'Fait (+7 j)'"></span>
                             </button>
                         </form>
                     </div>
@@ -216,17 +232,20 @@
 </p>
 <div class="rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
     @foreach($sansRelance as $prospect)
-    <div class="px-4 py-3 flex flex-wrap items-center gap-3">
+    <div x-data="ligneRelance({ routeRelance: @js(route('commercial.prospection.relance', $prospect)) })"
+         x-show="!traitee" x-transition.opacity.duration.200ms
+         class="px-4 py-3 flex flex-wrap items-center gap-3">
         <span class="text-sm text-gray-800 dark:text-gray-200 flex-1 truncate">{{ $prospect->nom_etablissement }}</span>
         <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 font-semibold">
             {{ $prospect->libelleStatut() }}
         </span>
-        <form method="POST" action="{{ route('commercial.prospection.relance', $prospect) }}" class="flex items-center gap-1.5">
-            @csrf @method('PATCH')
+        <form @submit.prevent="planifier($event.target)" class="flex items-center gap-1.5">
             <input type="date" name="prochaine_relance_le" value="{{ today()->addDays(3)->format('Y-m-d') }}"
                    class="form-input text-xs py-1 px-2 w-36">
-            <button type="submit" class="px-2.5 py-1.5 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[11px] font-semibold whitespace-nowrap">
-                Planifier
+            <button type="submit" :disabled="enCours"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[11px] font-semibold whitespace-nowrap disabled:opacity-60 disabled:cursor-wait">
+                <span x-show="enCours" x-cloak class="spinner spinner-sm" aria-hidden="true"></span>
+                <span x-text="enCours ? '…' : 'Planifier'"></span>
             </button>
         </form>
     </div>

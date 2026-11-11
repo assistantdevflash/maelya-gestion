@@ -148,6 +148,54 @@ class CommercialProspect extends Model
             && $this->prochaine_relance_le->isToday();
     }
 
+    /**
+     * Libellé prêt à afficher pour la prochaine relance.
+     * Renvoie null si aucune relance n'est planifiée ou si le prospect est
+     * sorti du pipeline (converti / perdu).
+     */
+    public function libelleRelance(): ?string
+    {
+        if (! $this->estActif() || $this->prochaine_relance_le === null) {
+            return null;
+        }
+
+        $jours = $this->joursAvantRelance();
+
+        if ($jours === null) {
+            return null;
+        }
+
+        if ($jours < 0) {
+            return 'Relance en retard (' . abs($jours) . ' j)';
+        }
+
+        if ($jours === 0) {
+            return "À relancer aujourd'hui";
+        }
+
+        return 'Relance dans ' . $jours . ' j';
+    }
+
+    /** Niveau d'urgence de la relance : retard | jour | proche | null. */
+    public function niveauRelance(): ?string
+    {
+        if (! $this->estActif() || $this->prochaine_relance_le === null) {
+            return null;
+        }
+
+        $jours = $this->joursAvantRelance();
+
+        if ($jours === null) {
+            return null;
+        }
+
+        if ($jours < 0) {
+            return 'retard';
+        }
+
+        return $jours === 0 ? 'jour' : ($jours <= 7 ? 'proche' : null);
+    }
+
     /** Jours restants avant la relance (négatif si en retard). */
     public function joursAvantRelance(): ?int
     {

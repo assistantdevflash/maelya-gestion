@@ -136,19 +136,25 @@
     @else
         <div class="space-y-2.5">
             @foreach($prospects as $prospect)
-                @php
-                    $jours = $prospect->joursAvantRelance();
-                    $urgence = null;
-                    if ($jours !== null && $prospect->estActif()) {
-                        if ($jours < 0) $urgence = 'retard';
-                        elseif ($jours === 0) $urgence = 'jour';
-                        elseif ($jours <= 7) $urgence = 'proche';
-                    }
-                @endphp
-
-                <div x-data="{ ouvert: false }"
-                     class="rounded-2xl bg-white dark:bg-gray-800 border transition-colors
-                            {{ $urgence === 'retard' ? 'border-red-200 dark:border-red-800' : 'border-gray-100 dark:border-gray-700' }}">
+                <div x-data="ficheProspect({
+                        statut: @js($prospect->statut),
+                        libelleStatut: @js($prospect->libelleStatut()),
+                        relance: @js($prospect->libelleRelance()),
+                        niveau: @js($prospect->niveauRelance()),
+                        routeStatut: @js(route('commercial.prospection.statut', $prospect)),
+                        routeActivite: @js(route('commercial.prospection.activite', $prospect)),
+                        couleurs: @js($couleursStatut),
+                        historique: @js($prospect->activites->take(8)->map(fn ($a) => [
+                            'date'   => $a->fait_le?->format('d/m'),
+                            'type'   => $a->libelleType(),
+                            'contenu' => $a->contenu,
+                        ])->values()),
+                        nbInteractions: {{ $prospect->activites_count }},
+                     })"
+                     :class="niveau === 'retard'
+                        ? 'border-red-200 dark:border-red-800'
+                        : 'border-gray-100 dark:border-gray-700'"
+                     class="rounded-2xl bg-white dark:bg-gray-800 border transition-colors">
 
                     {{-- Ligne principale --}}
                     <div class="p-4 flex flex-wrap items-start gap-3">
@@ -160,9 +166,9 @@
                         <div class="flex-1 min-w-[180px]">
                             <div class="flex flex-wrap items-center gap-1.5">
                                 <p class="text-sm font-bold text-gray-900 dark:text-white">{{ $prospect->nom_etablissement }}</p>
-                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide {{ $couleursStatut[$prospect->statut] ?? $couleursStatut['a_contacter'] }}">
-                                    {{ $prospect->libelleStatut() }}
-                                </span>
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide"
+                                      :class="couleurs[statut] || couleurs['a_contacter']"
+                                      x-text="libelleStatut"></span>
                                 @if($prospect->priorite === 'haute')
                                 <span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">Prioritaire</span>
                                 @endif
@@ -183,7 +189,7 @@
                                 @if($prospect->contact_nom)
                                 <span>{{ $prospect->contact_nom }}</span>
                                 @endif
-                                <span>{{ $prospect->activites_count }} interaction{{ $prospect->activites_count > 1 ? 's' : '' }}</span>
+                                <span x-text="nbInteractions + (nbInteractions > 1 ? ' interactions' : ' interaction')"></span>
                                 @if($prospect->derniere_interaction_le)
                                 <span>Dernier contact : {{ $prospect->derniere_interaction_le->format('d/m/Y') }}</span>
                                 @endif
@@ -191,20 +197,14 @@
                         </div>
 
                         <div class="flex items-center gap-2 ml-auto">
-                            @if($jours !== null && $prospect->estActif())
-                                <span class="px-2 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap
-                                    {{ $urgence === 'retard' ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' :
-                                       ($urgence === 'jour' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' :
-                                       'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300') }}">
-                                    @if($jours < 0)
-                                        Relance en retard ({{ abs($jours) }} j)
-                                    @elseif($jours === 0)
-                                        À relancer aujourd'hui
-                                    @else
-                                        Relance dans {{ $jours }} j
-                                    @endif
-                                </span>
-                            @endif
+                            <span x-show="relance" x-cloak
+                                  class="px-2 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap"
+                                  :class="niveau === 'retard'
+                                     ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+                                     : (niveau === 'jour'
+                                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+                                        : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300')"
+                                  x-text="relance"></span>
 
                             <button @click="ouvert = !ouvert"
                                     class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
@@ -292,18 +292,22 @@
 
                             {{-- Statut + activités --}}
                             <div class="space-y-3">
-                                <form method="POST" action="{{ route('commercial.prospection.statut', $prospect) }}">
-                                    @csrf @method('PATCH')
-                                    <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Étape du pipeline</p>
-                                    <select name="statut" onchange="this.form.submit()" class="form-input text-sm">
+                                <div>
+                                    <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 flex items-center gap-2">
+                                        Étape du pipeline
+                                        <span x-show="enCoursStatut" x-cloak class="spinner spinner-sm" aria-hidden="true"></span>
+                                    </p>
+                                    <select :value="statut"
+                                            @change="changerStatut($event.target.value)"
+                                            :disabled="enCoursStatut"
+                                            class="form-input text-sm disabled:opacity-60 disabled:cursor-wait">
                                         @foreach(P::STATUTS as $code => $libelle)
-                                        <option value="{{ $code }}" @selected($prospect->statut === $code)>{{ $libelle }}</option>
+                                        <option value="{{ $code }}">{{ $libelle }}</option>
                                         @endforeach
                                     </select>
-                                </form>
+                                </div>
 
-                                <form method="POST" action="{{ route('commercial.prospection.activite', $prospect) }}" class="space-y-2">
-                                    @csrf
+                                <form @submit.prevent="ajouterInteraction($event.target)" class="space-y-2">
                                     <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Nouvelle interaction</p>
                                     <div class="grid grid-cols-2 gap-2">
                                         <select name="type" class="form-input text-sm">
@@ -317,29 +321,30 @@
                                               placeholder="Ce qui s'est dit, ce qui a été convenu…"></textarea>
                                     <div class="flex items-center gap-2">
                                         <input type="date" name="prochaine_relance_le" class="form-input text-sm flex-1" title="Prochaine relance">
-                                        <button type="submit" class="btn-primary text-xs px-3 py-1.5 whitespace-nowrap">Ajouter</button>
+                                        <button type="submit" :disabled="enCoursInteraction"
+                                                class="btn-primary text-xs px-3 py-1.5 whitespace-nowrap inline-flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-wait">
+                                            <span x-show="enCoursInteraction" x-cloak class="spinner spinner-sm" aria-hidden="true"></span>
+                                            <span x-text="enCoursInteraction ? 'Ajout…' : 'Ajouter'"></span>
+                                        </button>
                                     </div>
                                 </form>
                             </div>
                         </div>
 
                         {{-- Historique --}}
-                        @if($prospect->activites->isNotEmpty())
-                        <div>
+                        <div x-show="historique.length > 0" x-cloak>
                             <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Historique</p>
                             <ul class="space-y-1.5">
-                                @foreach($prospect->activites->take(8) as $activite)
-                                <li class="flex gap-2 text-xs">
-                                    <span class="text-gray-400 whitespace-nowrap">{{ $activite->fait_le?->format('d/m') }}</span>
-                                    <span class="px-1.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 text-[10px] font-semibold whitespace-nowrap">
-                                        {{ $activite->libelleType() }}
-                                    </span>
-                                    <span class="text-gray-600 dark:text-gray-300">{{ $activite->contenu }}</span>
-                                </li>
-                                @endforeach
+                                <template x-for="(activite, i) in historique" :key="i">
+                                    <li class="flex gap-2 text-xs">
+                                        <span class="text-gray-400 whitespace-nowrap" x-text="activite.date"></span>
+                                        <span class="px-1.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 text-[10px] font-semibold whitespace-nowrap"
+                                              x-text="activite.type"></span>
+                                        <span class="text-gray-600 dark:text-gray-300" x-text="activite.contenu"></span>
+                                    </li>
+                                </template>
                             </ul>
                         </div>
-                        @endif
 
                         {{-- Suppression --}}
                         <form method="POST" action="{{ route('commercial.prospection.destroy', $prospect) }}"
@@ -356,6 +361,17 @@
 
         <div class="mt-4">{{ $prospects->links() }}</div>
     @endif
+
+    {{-- ═══════════════ Toasts (feedback sans rechargement) ═══════════════ --}}
+    <div x-data="toasts()" @commercial-toast.window="ajouter($event.detail)"
+         class="fixed bottom-4 right-4 z-[70] space-y-2 pointer-events-none">
+        <template x-for="t in liste" :key="t.id">
+            <div class="px-4 py-3 rounded-xl shadow-lg text-sm font-semibold text-white max-w-xs"
+                 :class="t.type === 'error' ? 'bg-red-600' : 'bg-gray-900 dark:bg-gray-700'"
+                 x-transition.opacity.duration.200ms
+                 x-text="t.message"></div>
+        </template>
+    </div>
 
     {{-- ═══════════════ Modale nouveau prospect ═══════════════ --}}
     <div x-show="nouveau" x-cloak
@@ -457,4 +473,5 @@
         </div>
     </div>
 </div>
+
 @endsection
