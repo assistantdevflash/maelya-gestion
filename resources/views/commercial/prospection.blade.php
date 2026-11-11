@@ -297,7 +297,10 @@
                                         Étape du pipeline
                                         <span x-show="enCoursStatut" x-cloak class="spinner spinner-sm" aria-hidden="true"></span>
                                     </p>
-                                    <select :value="statut"
+                                    {{-- x-model (et non :value) : en cas d'échec
+                                         le retour arrière réécrit aussi le select,
+                                         sinon il affichait un statut fantôme. --}}
+                                    <select x-model="statut"
                                             @change="changerStatut($event.target.value)"
                                             :disabled="enCoursStatut"
                                             class="form-input text-sm disabled:opacity-60 disabled:cursor-wait">

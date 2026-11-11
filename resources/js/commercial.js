@@ -12,6 +12,31 @@ function jeton() {
     return document.querySelector('meta[name="csrf-token"]')?.content || '';
 }
 
+/**
+ * Message d'erreur adapté au code HTTP renvoyé.
+ * 419 = jeton CSRF absent ou périmé (session expirée).
+ */
+function messageErreur(reponse, defaut) {
+    if (reponse && reponse.status === 419) {
+        return 'Session expirée : rechargez la page (Ctrl+F5).';
+    }
+    if (reponse && reponse.status === 422) {
+        return 'Certaines informations sont incomplètes.';
+    }
+    if (reponse && reponse.status === 403) {
+        return "Vous n'avez pas accès à cette action.";
+    }
+
+    return defaut;
+}
+
+/** Affiche un message dans le coin de l'écran. */
+function notifier(message, type = 'success') {
+    window.dispatchEvent(new CustomEvent('commercial-toast', {
+        detail: { message, type },
+    }));
+}
+
 /** Petits messages éphémères en bas à droite. */
 export function toasts() {
     return {
@@ -42,6 +67,9 @@ export function ficheProspect(config) {
         ouvert: false,
 
         statut: config.statut,
+        // Dernier statut réellement enregistré : sert de point de retour si
+        // l'enregistrement échoue.
+        statutConfirme: config.statut,
         libelleStatut: config.libelleStatut,
         relance: config.relance,
         niveau: config.niveau,
@@ -59,15 +87,31 @@ export function ficheProspect(config) {
         jeton,
 
         async changerStatut(nouveau) {
-            if (this.enCoursStatut || nouveau === this.statut) {
+            if (this.enCoursStatut) {
+                // Un enregistrement est déjà en cours : on rétablit ce que
+                // l'utilisateur voit pour éviter un état incohérent.
+                this.statut = this.statutConfirme;
                 return;
             }
 
-            const precedent = this.statut;
+            if (nouveau === this.statutConfirme) {
+                return;
+            }
+
+            const precedent = this.statutConfirme;
+
+            if (! jeton()) {
+                this.statut = precedent;
+                notifier('Session expirée : rechargez la page (Ctrl+F5).', 'error');
+                return;
+            }
+
             this.enCoursStatut = true;
 
+            let reponse = null;
+
             try {
-                const reponse = await fetch(this.routeStatut, {
+                reponse = await fetch(this.routeStatut, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -84,21 +128,21 @@ export function ficheProspect(config) {
 
                 const data = await reponse.json();
 
+                this.statutConfirme = data.statut;
                 this.statut = data.statut;
                 this.libelleStatut = data.libelle;
                 this.relance = data.relance;
                 this.niveau = data.niveau;
 
-                window.dispatchEvent(new CustomEvent('commercial-toast', {
-                    detail: { message: data.message },
-                }));
+                notifier(data.message);
             } catch (e) {
-                // On remet la valeur précédente : le select reste cohérent.
+                // Le select revient sur le statut réellement enregistré.
                 this.statut = precedent;
 
-                window.dispatchEvent(new CustomEvent('commercial-toast', {
-                    detail: { message: "Le statut n'a pas pu être enregistré.", type: 'error' },
-                }));
+                notifier(
+                    messageErreur(reponse, "Le statut n'a pas pu être enregistré."),
+                    'error'
+                );
             } finally {
                 this.enCoursStatut = false;
             }
@@ -109,10 +153,16 @@ export function ficheProspect(config) {
                 return;
             }
 
+            if (! jeton()) {
+                notifier('Session expirée : rechargez la page (Ctrl+F5).', 'error');
+                return;
+            }
+
             this.enCoursInteraction = true;
+            let reponse = null;
 
             try {
-                const reponse = await fetch(this.routeActivite, {
+                reponse = await fetch(this.routeActivite, {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
@@ -144,9 +194,10 @@ export function ficheProspect(config) {
                     detail: { message: data.message },
                 }));
             } catch (e) {
-                window.dispatchEvent(new CustomEvent('commercial-toast', {
-                    detail: { message: "L'interaction n'a pas pu être enregistrée.", type: 'error' },
-                }));
+                notifier(
+                    messageErreur(reponse, "L'interaction n'a pas pu être enregistrée."),
+                    'error'
+                );
             } finally {
                 this.enCoursInteraction = false;
             }
@@ -171,10 +222,16 @@ export function ligneRelance(config) {
         async marquerFaite(formulaire) {
             if (this.enCours || !this.routeActivite) return;
 
+            if (! jeton()) {
+                notifier('Session expirée : rechargez la page (Ctrl+F5).', 'error');
+                return;
+            }
+
             this.enCours = true;
+            let reponse = null;
 
             try {
-                const reponse = await fetch(this.routeActivite, {
+                reponse = await fetch(this.routeActivite, {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
@@ -195,9 +252,10 @@ export function ligneRelance(config) {
                     detail: { message: data.message || 'Relance enregistrée.' },
                 }));
             } catch (e) {
-                window.dispatchEvent(new CustomEvent('commercial-toast', {
-                    detail: { message: "La relance n'a pas pu être enregistrée.", type: 'error' },
-                }));
+                notifier(
+                    messageErreur(reponse, "La relance n'a pas pu être enregistrée."),
+                    'error'
+                );
             } finally {
                 this.enCours = false;
             }
@@ -206,11 +264,17 @@ export function ligneRelance(config) {
         async planifier(formulaire) {
             if (this.enCours || !this.routeRelance) return;
 
+            if (! jeton()) {
+                notifier('Session expirée : rechargez la page (Ctrl+F5).', 'error');
+                return;
+            }
+
             this.enCours = true;
+            let reponse = null;
 
             try {
                 const donnees = new FormData(formulaire);
-                const reponse = await fetch(this.routeRelance, {
+                reponse = await fetch(this.routeRelance, {
                     method: 'PATCH',
                     headers: {
                         'Accept': 'application/json',
@@ -231,9 +295,10 @@ export function ligneRelance(config) {
                     detail: { message: data.message || 'Relance planifiée.' },
                 }));
             } catch (e) {
-                window.dispatchEvent(new CustomEvent('commercial-toast', {
-                    detail: { message: "La relance n'a pas pu être planifiée.", type: 'error' },
-                }));
+                notifier(
+                    messageErreur(reponse, "La relance n'a pas pu être planifiée."),
+                    'error'
+                );
             } finally {
                 this.enCours = false;
             }

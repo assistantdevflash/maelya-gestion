@@ -408,6 +408,20 @@ class ProspectionTest extends TestCase
         $this->assertStringNotContainsString('>Expiré<', $html);
     }
 
+    public function test_le_layout_commercial_expose_le_jeton_csrf(): void
+    {
+        [$user] = $this->creerCommercial();
+
+        $html = $this->actingAs($user)
+            ->get(route('commercial.prospection'))
+            ->assertOk()
+            ->getContent();
+
+        // Sans cette balise, toutes les actions fetch (changement d'étape,
+        // interaction, relance) partaient avec un jeton vide → 419.
+        $this->assertStringContainsString('name="csrf-token"', $html);
+    }
+
     public function test_un_administrateur_n_accede_pas_a_l_espace_commercial(): void
     {
         $admin = $this->creerAdmin();
