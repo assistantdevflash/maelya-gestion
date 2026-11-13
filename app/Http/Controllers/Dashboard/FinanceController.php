@@ -66,8 +66,13 @@ class FinanceController extends Controller
             ->pluck('total', 'categorie');
 
         // Dernières dépenses
+        $sansJustificatifFiltre = $request->boolean('sans_justificatif');
+
         $depenses = Depense::whereDate('date', '>=', $debut)
             ->whereDate('date', '<=', $fin)
+            ->when($sansJustificatifFiltre, fn ($q) => $q
+                ->where(fn ($sq) => $sq->whereNull('justificatif')->orWhere('justificatif', ''))
+                ->where(fn ($sq) => $sq->whereNull('justificatif_fichier')->orWhere('justificatif_fichier', '')))
             ->latest('date')
             ->paginate(20);
 
@@ -319,23 +324,22 @@ class FinanceController extends Controller
             'devisPrevu', 'commandesPrevues', 'nbDevisPrevu', 'nbCommandesPrevues',
             'creditsPrevu', 'nbEcheancesPrevu',
             'resultat', 'resultatPrec', 'comparaison', 'encoursCredit', 'sansJustificatif',
+            'sansJustificatifFiltre',
             'revenusCertains', 'revenusProbables', 'revenusEsperes', 'soldePrudent'
         ));
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'description' => ['required', 'string', 'max:255'],
-            'categorie' => ['required', 'in:loyer,salaires,fournitures,produits,equipement,marketing,autres'],
-            'montant' => ['required', 'integer', 'min:1'],
-            'date' => ['required', 'date'],
-            'notes' => ['nullable', 'string', 'max:500'],
-        ]);
+        $donnees = $this->validerDepense($request);
+        $donnees['user_id'] = Auth::id();
 
-        $data['user_id'] = Auth::id();
+        $fichier = $this->enregistrerJustificatif($request);
+        if ($fichier) {
+            $donnees['justificatif_fichier'] = $fichier;
+        }
 
-        Depense::create($data);
+        Depense::create($donnees);
 
         // Sans cette purge, le bénéfice du tableau de bord reste figé sur
         // l'ancienne valeur pendant les cinq minutes du cache.
@@ -346,15 +350,17 @@ class FinanceController extends Controller
 
     public function update(Request $request, Depense $depense)
     {
-        $data = $request->validate([
-            'description' => ['required', 'string', 'max:255'],
-            'categorie' => ['required', 'in:loyer,salaires,fournitures,produits,equipement,marketing,autres'],
-            'montant' => ['required', 'integer', 'min:1'],
-            'date' => ['required', 'date'],
-            'notes' => ['nullable', 'string', 'max:500'],
-        ]);
+        $donnees = $this->validerDepense($request);
 
-        $depense->update($data);
+        $fichier = $this->enregistrerJustificatif($request);
+        if ($fichier) {
+            // Remplacer une pièce jointe ne doit pas laisser l'ancienne sur
+            // le disque : elle resterait accessible sans être rattachée.
+            $this->supprimerFichier($depense->justificatif_fichier);
+            $donnees['justificatif_fichier'] = $fichier;
+        }
+
+        $depense->update($donnees);
         DashboardController::purgerCache();
 
         return back()->with('success', 'Dépense mise à jour.');
@@ -362,10 +368,59 @@ class FinanceController extends Controller
 
     public function destroy(Depense $depense)
     {
+        $this->supprimerFichier($depense->justificatif_fichier);
         $depense->delete();
         DashboardController::purgerCache();
 
         return back()->with('success', 'Dépense supprimée.');
+    }
+
+    /**
+     * Règles communes à la création et à la modification d'une dépense.
+     *
+     * `justificatif` porte la référence écrite (« Reçu n° 412 – Boutique
+     * Adjamé »), `justificatif_fichier` la photo ou le PDF du reçu.
+     *
+     * @return array<string, mixed>
+     */
+    private function validerDepense(Request $request): array
+    {
+        $donnees = $request->validate([
+            'description'          => ['required', 'string', 'max:255'],
+            'categorie'            => ['required', 'in:loyer,salaires,fournitures,produits,equipement,marketing,autres'],
+            'montant'              => ['required', 'integer', 'min:1'],
+            'date'                 => ['required', 'date'],
+            'notes'                => ['nullable', 'string', 'max:500'],
+            'justificatif'         => ['nullable', 'string', 'max:255'],
+            'justificatif_fichier' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:5120'],
+        ], [
+            'justificatif_fichier.mimes' => 'Le justificatif doit être une image (JPG, PNG, WEBP) ou un PDF.',
+            'justificatif_fichier.max'   => 'Le justificatif ne doit pas dépasser 5 Mo.',
+        ]);
+
+        // validate() renvoie l'objet UploadedFile : il ne doit jamais arriver
+        // tel quel dans le modèle, on le remplace par son chemin de stockage.
+        unset($donnees['justificatif_fichier']);
+
+        return $donnees;
+    }
+
+    private function enregistrerJustificatif(Request $request): ?string
+    {
+        if (! $request->hasFile('justificatif_fichier')) {
+            return null;
+        }
+
+        $institutId = session('current_institut_id', Auth::user()->institut_id);
+
+        return $request->file('justificatif_fichier')->store('justificatifs/' . $institutId, 'public');
+    }
+
+    private function supprimerFichier(?string $chemin): void
+    {
+        if (filled($chemin) && \Illuminate\Support\Facades\Storage::disk('public')->exists($chemin)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($chemin);
+        }
     }
 
     /** Page depenses pour les employes (depenses personnelles uniquement) */
@@ -467,12 +522,14 @@ class FinanceController extends Controller
             ->latest('date')
             ->get();
 
-        $headers = ['Date', 'Description', 'Catégorie', 'Montant (FCFA)'];
+        $headers = ['Date', 'Description', 'Catégorie', 'Montant (FCFA)', 'Référence justificatif', 'Pièce jointe'];
         $rows = $depenses->map(fn($d) => [
             $d->date->format('d/m/Y'),
             $d->description,
             Depense::categorieLabel($d->categorie),
             $d->montant,
+            $d->justificatif ?? '',
+            $d->justificatif_url ?? '',
         ]);
 
         return response()->streamDownload(function () use ($headers, $rows) {

@@ -84,7 +84,11 @@
                 <p class="text-xs text-gray-400">
                     FCFA
                     @if(($sansJustificatif ?? 0) > 0)
-                        · <span class="text-amber-600 font-semibold">{{ $sansJustificatif }} sans justificatif</span>
+                        · <a href="{{ request()->fullUrlWithQuery(['sans_justificatif' => 1]) }}"
+                             class="text-amber-600 font-semibold underline hover:text-amber-700"
+                             title="Afficher uniquement les dépenses sans référence ni reçu">
+                            {{ \App\Helpers\TexteHelper::pluriel($sansJustificatif, 'sans justificatif', 'sans justificatif') }}
+                        </a>
                     @endif
                 </p>
             </div>
@@ -193,6 +197,18 @@
                 </div>
             </div>
 
+            @if($sansJustificatifFiltre ?? false)
+                <div class="px-5 py-2.5 bg-amber-50 border-b border-amber-100 flex items-center justify-between gap-3">
+                    <p class="text-xs text-amber-800 font-medium">
+                        Filtre actif : seules les dépenses sans référence ni reçu sont affichées.
+                    </p>
+                    <a href="{{ request()->fullUrlWithQuery(['sans_justificatif' => null]) }}"
+                       class="text-xs font-semibold text-amber-700 hover:underline whitespace-nowrap">
+                        Voir toutes les dépenses
+                    </a>
+                </div>
+            @endif
+
             @if($depenses->count() > 0)
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -202,6 +218,7 @@
                             <th class="px-4 py-3 text-left font-semibold text-gray-600 hidden md:table-cell">Catégorie</th>
                             <th class="px-4 py-3 text-left font-semibold text-gray-600 hidden sm:table-cell">Date</th>
                             <th class="px-4 py-3 text-right font-semibold text-gray-600">Montant</th>
+                            <th class="px-4 py-3 text-center font-semibold text-gray-600 hidden md:table-cell">Justificatif</th>
                             <th class="px-4 py-3 text-right font-semibold text-gray-600">Actions</th>
                         </tr>
                     </thead>
@@ -216,11 +233,30 @@
                             <td class="px-4 py-3 text-right font-semibold text-red-600">
                                 {{ number_format($depense->montant, 0, ',', ' ') }} FCFA
                             </td>
+                            <td class="px-4 py-3 text-center hidden md:table-cell">
+                                @if($depense->aUnePieceJointe())
+                                    <a href="{{ $depense->justificatif_url }}" target="_blank" rel="noopener"
+                                       class="badge badge-success text-[10px] inline-flex items-center gap-1"
+                                       title="{{ $depense->justificatif ?: 'Pièce jointe' }}">
+                                        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                                        </svg>
+                                        Reçu
+                                    </a>
+                                @elseif(filled($depense->justificatif))
+                                    <span class="badge badge-warning text-[10px]"
+                                          title="Référence écrite, sans reçu scanné : {{ $depense->justificatif }}">
+                                        Référence
+                                    </span>
+                                @else
+                                    <span class="badge badge-danger text-[10px]" title="Ni référence, ni reçu joint">Aucun</span>
+                                @endif
+                            </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100">
                                     <button
                                         x-data
-                                        @click="$dispatch('edit-depense', { id: '{{ $depense->id }}', description: '{{ addslashes($depense->description) }}', categorie: '{{ $depense->categorie }}', montant: {{ $depense->montant }}, date: '{{ $depense->date->format('Y-m-d') }}', notes: '{{ addslashes($depense->notes ?? '') }}' })"
+                                        @click="$dispatch('edit-depense', { id: '{{ $depense->id }}', description: '{{ addslashes($depense->description) }}', categorie: '{{ $depense->categorie }}', montant: {{ $depense->montant }}, date: '{{ $depense->date->format('Y-m-d') }}', notes: '{{ addslashes($depense->notes ?? '') }}', justificatif: '{{ addslashes($depense->justificatif ?? '') }}', justificatif_url: '{{ $depense->justificatif_url ?? '' }}' })"
                                         class="btn-icon">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -247,7 +283,11 @@
             </div>
             @else
             <div class="p-10 text-center text-gray-400 text-sm">
-                Aucune dépense sur cette période.
+                @if($sansJustificatifFiltre ?? false)
+                    Toutes les dépenses de cette période ont une référence ou un reçu. Rien à compléter.
+                @else
+                    Aucune dépense sur cette période.
+                @endif
             </div>
             @endif
         </div>
@@ -445,20 +485,23 @@
     {{-- Modal dépense --}}
     <div x-data="{
             show: false,
+            fichierExistant: '',
             formAction: '{{ route('dashboard.depenses.store') }}',
             method: 'POST',
-            form: { description: '', categorie: 'autres', montant: '', date: '{{ today()->format('Y-m-d') }}', notes: '' },
+            form: { description: '', categorie: 'autres', montant: '', date: '{{ today()->format('Y-m-d') }}', notes: '', justificatif: '' },
             init() {
                 window.addEventListener('open-depense-modal', () => {
                     this.formAction = '{{ route('dashboard.depenses.store') }}';
                     this.method = 'POST';
-                    this.form = { description: '', categorie: 'autres', montant: '', date: '{{ today()->format('Y-m-d') }}', notes: '' };
+                    this.fichierExistant = '';
+                    this.form = { description: '', categorie: 'autres', montant: '', date: '{{ today()->format('Y-m-d') }}', notes: '', justificatif: '' };
                     this.show = true;
                 });
                 window.addEventListener('edit-depense', (e) => {
                     this.formAction = `/dashboard/depenses/${e.detail.id}`;
                     this.method = 'PUT';
-                    this.form = { description: e.detail.description, categorie: e.detail.categorie, montant: e.detail.montant, date: e.detail.date, notes: e.detail.notes };
+                    this.fichierExistant = e.detail.justificatif_url || '';
+                    this.form = { description: e.detail.description, categorie: e.detail.categorie, montant: e.detail.montant, date: e.detail.date, notes: e.detail.notes, justificatif: e.detail.justificatif || '' };
                     this.show = true;
                 });
             }
@@ -477,7 +520,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form :action="formAction" method="POST" class="space-y-4">
+                <form :action="formAction" method="POST" enctype="multipart/form-data" class="space-y-4">
                     @csrf
                     <template x-if="method === 'PUT'">
                         <input type="hidden" name="_method" value="PUT">
@@ -520,6 +563,37 @@
                         <label class="form-label">Notes</label>
                         <textarea name="notes" rows="2" maxlength="500"
                                   x-model="form.notes" class="form-textarea"></textarea>
+                    </div>
+
+                    {{-- Justificatif : référence écrite et/ou reçu scanné --}}
+                    <div class="form-group">
+                        <label class="form-label">
+                            Référence du justificatif
+                            <span class="text-xs text-gray-400 font-normal">— facultatif</span>
+                        </label>
+                        <input type="text" name="justificatif" maxlength="255"
+                               x-model="form.justificatif" class="form-input"
+                               placeholder="Ex : Reçu n° 412 – Boutique Adjamé">
+                        <p class="text-[11px] text-gray-400 mt-1">
+                            Ce qui permet de retrouver la pièce : numéro de reçu, fournisseur, bon de commande.
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Photo ou PDF du reçu
+                            <span class="text-xs text-gray-400 font-normal">— 5 Mo max</span>
+                        </label>
+                        <input type="file" name="justificatif_fichier"
+                               accept="image/jpeg,image/png,image/webp,application/pdf"
+                               class="form-input file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100">
+                        <template x-if="fichierExistant">
+                            <p class="text-[11px] mt-1">
+                                <a :href="fichierExistant" target="_blank" rel="noopener"
+                                   class="text-primary-600 hover:underline">Voir la pièce jointe actuelle</a>
+                                <span class="text-gray-400"> — laisser vide pour la conserver.</span>
+                            </p>
+                        </template>
                     </div>
 
                     <div class="flex gap-3 pt-2">

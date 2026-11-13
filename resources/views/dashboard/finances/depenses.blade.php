@@ -74,7 +74,8 @@
                                             categorie: '{{ $depense->categorie }}',
                                             montant: {{ $depense->montant }},
                                             date: '{{ $depense->date->format('Y-m-d') }}',
-                                            notes: '{{ addslashes($depense->notes ?? '') }}'
+                                            notes: '{{ addslashes($depense->notes ?? '') }}',
+                                            justificatif: '{{ addslashes($depense->justificatif ?? '') }}'
                                         })"
                                         class="btn-icon text-blue-500" title="Modifier">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,7 +127,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form method="POST" action="{{ route('dashboard.depenses.store') }}" class="space-y-4">
+                <form method="POST" action="{{ route('dashboard.depenses.store') }}" enctype="multipart/form-data" class="space-y-4">
                     @csrf
                     <div class="form-group">
                         <label class="form-label">Description *</label>
@@ -154,6 +155,17 @@
                         <label class="form-label">Notes</label>
                         <textarea name="notes" rows="2" maxlength="500" class="form-input resize-none" placeholder="Optionnel..."></textarea>
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">Référence du justificatif</label>
+                        <input type="text" name="justificatif" maxlength="255" class="form-input"
+                               placeholder="Ex : Reçu n° 412 – Boutique Adjamé">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Photo ou PDF du reçu <span class="text-xs text-gray-400">— 5 Mo max</span></label>
+                        <input type="file" name="justificatif_fichier"
+                               accept="image/jpeg,image/png,image/webp,application/pdf"
+                               class="form-input file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100">
+                    </div>
                     <div class="flex gap-3 pt-1">
                         <button type="button" @click="show = false" class="btn btn-outline flex-1 justify-center">Annuler</button>
                         <button type="submit" class="btn-primary flex-1 justify-center">Enregistrer</button>
@@ -180,7 +192,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form method="POST" :action="'/dashboard/depenses/' + edit.id" class="space-y-4">
+                <form method="POST" :action="'/dashboard/depenses/' + edit.id" enctype="multipart/form-data" class="space-y-4">
                     @csrf @method('PUT')
                     <div class="form-group">
                         <label class="form-label">Description *</label>
@@ -206,6 +218,17 @@
                     <div class="form-group">
                         <label class="form-label">Notes</label>
                         <textarea name="notes" rows="2" maxlength="500" class="form-input resize-none" x-model="edit.notes"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Référence du justificatif</label>
+                        <input type="text" name="justificatif" maxlength="255" class="form-input"
+                               x-model="edit.justificatif" placeholder="Ex : Reçu n° 412">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Remplacer le reçu <span class="text-xs text-gray-400">— facultatif</span></label>
+                        <input type="file" name="justificatif_fichier"
+                               accept="image/jpeg,image/png,image/webp,application/pdf"
+                               class="form-input file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100">
                     </div>
                     <div class="flex gap-3 pt-1">
                         <button type="button" @click="show = false" class="btn btn-outline flex-1 justify-center">Annuler</button>

@@ -143,7 +143,11 @@ class FinanceService
     }
 
     /**
-     * Dépenses de la période sans justificatif joint.
+     * Dépenses de la période sans aucun justificatif.
+     *
+     * Ni référence écrite, ni pièce jointe. La colonne `justificatif` seule
+     * ne suffisait pas : aucun formulaire ne l'alimentait, donc le compteur
+     * valait toujours le nombre total de dépenses.
      */
     public function depensesSansJustificatif(string $institutId, CarbonInterface $debut, CarbonInterface $fin): int
     {
@@ -152,6 +156,9 @@ class FinanceService
             ->whereBetween('date', [$debut->startOfDay(), $fin->endOfDay()])
             ->where(function ($q) {
                 $q->whereNull('justificatif')->orWhere('justificatif', '');
+            })
+            ->where(function ($q) {
+                $q->whereNull('justificatif_fichier')->orWhere('justificatif_fichier', '');
             })
             ->count();
     }

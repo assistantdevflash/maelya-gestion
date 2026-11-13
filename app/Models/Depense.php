@@ -17,13 +17,39 @@ class Depense extends Model
 
     protected $fillable = [
         'institut_id', 'user_id', 'description', 'categorie',
-        'montant', 'date', 'justificatif', 'notes',
+        'montant', 'date', 'justificatif', 'justificatif_fichier', 'notes',
     ];
 
     protected $casts = [
         'montant' => 'integer',
         'date' => 'date',
     ];
+
+    /** Référence écrite OU pièce jointe : la dépense est défendable. */
+    public function aUnJustificatif(): bool
+    {
+        return filled($this->justificatif) || filled($this->justificatif_fichier);
+    }
+
+    public function aUnePieceJointe(): bool
+    {
+        return filled($this->justificatif_fichier);
+    }
+
+    /** URL publique du reçu scanné, si présent. */
+    public function getJustificatifUrlAttribute(): ?string
+    {
+        return $this->justificatif_fichier
+            ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->justificatif_fichier)
+            : null;
+    }
+
+    /** Vrai pour une image : on l'ouvre en aperçu, un PDF se télécharge. */
+    public function justificatifEstImage(): bool
+    {
+        return $this->aUnePieceJointe()
+            && preg_match('/\.(jpe?g|png|webp)$/i', (string) $this->justificatif_fichier) === 1;
+    }
 
     public function user()
     {
