@@ -19,7 +19,12 @@ class FactureARelancer extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public Facture $facture, public ?string $message = null)
+    /**
+     * ⚠️ La propriété ne doit pas s'appeler « message » : Laravel injecte
+     * toujours une variable $message (instance Illuminate\Mail\Message) dans
+     * les vues Mail, ce qui masque la nôtre et casse le rendu.
+     */
+    public function __construct(public Facture $facture, public ?string $corpsMessage = null)
     {
         $this->facture->loadMissing(['client', 'institut']);
     }
@@ -36,7 +41,7 @@ class FactureARelancer extends Mailable
     {
         $facture = $this->facture;
 
-        $message = $this->message ?: trim(
+        $corps = $this->corpsMessage ?: trim(
             'Bonjour ' . ($facture->client_prenom ?: $facture->client?->prenom ?: '') . ",\n\n"
             . 'Sauf erreur de notre part, la facture ' . $facture->numero . ' reste impayée.'
             . "\nMontant restant dû : " . number_format($facture->resteAPayer, 0, ',', ' ') . ' F CFA'
@@ -49,7 +54,11 @@ class FactureARelancer extends Mailable
             view: 'emails.factures.relance',
             with: [
                 'facture' => $facture,
-                'message' => $message,
+                // ⚠️ Ne PAS nommer cette variable « message » : Laravel
+                // réserve ce nom dans les vues Mail (il y injecte l'instance
+                // Illuminate\Mail\Message, ce qui provoquait une erreur 500
+                // « htmlspecialchars(): Argument #1 must be of type string »).
+                'corps'   => $corps,
                 'lien'    => $facture->token
                     ? route('facture.public', ['id' => $facture->id, 'token' => $facture->token])
                     : route('facture.public', ['id' => $facture->id]),

@@ -17,7 +17,12 @@ class RelanceCredit extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public Credit $credit, public string $message)
+    /**
+     * ⚠️ La propriété ne doit pas s'appeler « message » : Laravel injecte
+     * toujours une variable $message (instance Illuminate\Mail\Message) dans
+     * les vues Mail, ce qui masque la nôtre et casse le rendu.
+     */
+    public function __construct(public Credit $credit, public string $corpsMessage)
     {
         $this->credit->loadMissing(['client', 'institut', 'echeances']);
     }
@@ -34,8 +39,9 @@ class RelanceCredit extends Mailable
         return new Content(
             view: 'emails.credits.relance',
             with: [
-                'credit'  => $this->credit,
-                'message' => $this->message,
+                'credit' => $this->credit,
+                // « message » est réservé par Laravel dans les vues Mail.
+                'corps'  => $this->corpsMessage,
                 'suivi'   => app(CreditService::class)->urlSuivi($this->credit),
             ],
         );
