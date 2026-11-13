@@ -13,6 +13,9 @@ export default defineConfig({
                 'resources/js/alpine-app.js',
                 // Chargé uniquement sur les formulaires avec éditeur riche
                 'resources/js/quill-editor.js',
+                // Graphique du tableau de bord — Chart.js est servi par
+                // l'application, plus par un CDN (mode hors-ligne)
+                'resources/js/chart-dashboard.js',
             ],
             refresh: true,
         }),
@@ -23,6 +26,7 @@ export default defineConfig({
                 manualChunks: {
                     'alpine': ['alpinejs'],
                     'quill': ['quill'],
+                    'chart': ['chart.js'],
                 },
                 assetFileNames: (assetInfo) => {
                     let extType = assetInfo.name.split('.').at(1);

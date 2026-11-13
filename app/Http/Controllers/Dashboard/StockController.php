@@ -38,9 +38,31 @@ class StockController extends Controller
         $tousLesProduits = Produit::where('actif', true)->orderBy('nom')->limit(500)->get(['id', 'nom']);
 
         // ── Indicateurs de pilotage ────────────────────────────────────────
-        $valeurStock = (int) Produit::where('actif', true)
-            ->selectRaw('COALESCE(SUM(stock * COALESCE(NULLIF(cout_moyen_pondere, 0), prix_achat, 0)), 0) as total')
-            ->value('total');
+        //
+        // Un produit sans CMP ni prix d'achat est valorisé 0. Additionner sans
+        // le dire donne un total qui ne représente pas le stock réel : sur un
+        // catalogue où 5 produits sur 7 n'ont pas de coût, « Valeur du stock »
+        // n'était que la valeur de l'huile de ricin. On expose donc les deux
+        // populations au lieu de masquer le trou.
+        $agregat = Produit::where('actif', true)
+            ->selectRaw("
+                COALESCE(SUM(stock * COALESCE(NULLIF(cout_moyen_pondere, 0), prix_achat, 0)), 0) as valeur,
+                SUM(CASE WHEN COALESCE(NULLIF(cout_moyen_pondere, 0), prix_achat, 0) > 0 THEN 1 ELSE 0 END) as valorises,
+                SUM(CASE WHEN COALESCE(NULLIF(cout_moyen_pondere, 0), prix_achat, 0) <= 0 THEN 1 ELSE 0 END) as sans_cout
+            ")
+            ->first();
+
+        $valeurStock = (int) ($agregat->valeur ?? 0);
+        $nbValorises = (int) ($agregat->valorises ?? 0);
+        $nbSansCout  = (int) ($agregat->sans_cout ?? 0);
+
+        $produitsSansCout = $nbSansCout > 0
+            ? Produit::where('actif', true)
+                ->whereRaw('COALESCE(NULLIF(cout_moyen_pondere, 0), prix_achat, 0) <= 0')
+                ->orderBy('nom')
+                ->limit(6)
+                ->get(['id', 'nom'])
+            : collect();
 
         $enRupture = Produit::where('actif', true)->where('stock', '<=', 0)->count();
 
@@ -55,13 +77,13 @@ class StockController extends Controller
             ->limit(5)
             ->get(['id', 'nom', 'stock', 'unite', 'cout_moyen_pondere', 'prix_achat']);
 
-        $valeurDormante = (int) $dormants->sum(
-            fn ($p) => (int) $p->stock * (int) ($p->cout_moyen_pondere ?: $p->prix_achat)
-        );
+        // Seuls les produits dont le coût est connu sont valorisables.
+        $valeurDormante = (int) $dormants->sum(fn ($p) => (int) $p->stock * $p->cout_unitaire);
 
         return view('dashboard.stock.index', compact(
             'produits', 'nbAlertes', 'search', 'alerte', 'tousLesProduits',
-            'valeurStock', 'enRupture', 'dormants', 'valeurDormante'
+            'valeurStock', 'nbValorises', 'nbSansCout', 'produitsSansCout',
+            'enRupture', 'dormants', 'valeurDormante'
         ));
     }
 
@@ -84,6 +106,8 @@ class StockController extends Controller
             return back()->with('error', 'Aucune quantité à ajouter.');
         }
 
+        DashboardController::purgerCache();
+
         return back()->with(
             'success',
             "Stock mis à jour : +{$data['quantite']} {$produit->unite} (nouveau stock : {$mouvement->stock_apres})."
@@ -104,6 +128,8 @@ class StockController extends Controller
         if (! $mouvement) {
             return back()->with('info', 'Le stock était déjà à cette valeur.');
         }
+
+        DashboardController::purgerCache();
 
         return back()->with('success', 'Stock corrigé : ' . $mouvement->stock_apres . ' ' . $produit->unite . '.');
     }

@@ -20,6 +20,7 @@
         "vite": "^7.0.7"
     },
     "dependencies": {
+        "chart.js": "^4.6.1",
         "quill": "^2.0.3"
     }
 }

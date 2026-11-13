@@ -99,8 +99,7 @@ class CommandeController extends Controller
         }
 
         Cache::forget("cmd_stats:{$institutId}");
-        Cache::forget("dashboard_full:{$institutId}:" . now()->toDateString());
-        Cache::forget("dashboard_basic:{$institutId}:" . now()->toDateString());
+        DashboardController::purgerCache($institutId);
     }
 
     /**

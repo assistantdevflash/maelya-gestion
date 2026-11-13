@@ -7,12 +7,47 @@ use App\Models\Client;
 use App\Models\Depense;
 use App\Models\Produit;
 use App\Models\Vente;
+use App\Services\FinanceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
+    /**
+     * Préfixes de cache du tableau de bord.
+     *
+     * La version est dans le préfixe : changer la forme des données mises en
+     * cache sans changer la clé laisserait `extract()` avec des variables
+     * manquantes au premier chargement suivant le déploiement.
+     */
+    private const CACHE_DASHBOARD = 'dashboard_full:v2';
+    private const CACHE_DASHBOARD_BASIC = 'dashboard_basic:v2';
+
+    public static function cleCache(string $prefixe, string $institutId): string
+    {
+        return $prefixe . ':' . $institutId . ':' . now()->toDateString();
+    }
+
+    /**
+     * Purge les indicateurs du jour.
+     *
+     * À appeler dès qu'une donnée entre dans les calculs. Sans cela, le patron
+     * qui saisit une dépense de 50 000 F retrouve son ancien bénéfice pendant
+     * cinq minutes, sans le moindre signal que la page est figée.
+     */
+    public static function purgerCache(?string $institutId = null): void
+    {
+        $institutId ??= session('current_institut_id') ?? Auth::user()?->institut_id;
+
+        if (! $institutId) {
+            return;
+        }
+
+        Cache::forget(self::cleCache(self::CACHE_DASHBOARD, $institutId));
+        Cache::forget(self::cleCache(self::CACHE_DASHBOARD_BASIC, $institutId));
+    }
+
     public function index()
     {
         if (Auth::user()->isEmploye()) {
@@ -28,7 +63,7 @@ class DashboardController extends Controller
 
         // ── Plan Basic : dashboard simplifié ─────────────────────────────────
         if (!$user->aFonctionnalite('dashboard_complet')) {
-            $cacheKey = "dashboard_basic:{$institutId}:" . now()->toDateString();
+            $cacheKey = self::cleCache(self::CACHE_DASHBOARD_BASIC, $institutId);
             $stats = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($today, $startOfMonth, $endOfMonth) {
                 return Vente::where('statut', 'validee')
                     ->selectRaw("
@@ -59,10 +94,10 @@ class DashboardController extends Controller
         $endOfPrevMonth   = now()->subMonthNoOverflow()->endOfMonth()->toDateString();
 
         // ── 1. Stats ventes fusionnées (12 requêtes → 1, cache 5 min) ────────
-        $cacheKey = "dashboard_full:{$institutId}:{$today}";
+        $cacheKey = self::cleCache(self::CACHE_DASHBOARD, $institutId);
         $cached = Cache::get($cacheKey);
 
-        if ($cached) {
+        if (is_array($cached)) {
             extract($cached);
         } else {
             $statsVentes = Vente::where('statut', 'validee')
@@ -76,6 +111,7 @@ class DashboardController extends Controller
                     SUM(CASE WHEN mode_paiement = 'carte' AND DATE(created_at) >= ? AND DATE(created_at) <= ? THEN total ELSE 0 END) as paiements_carte,
                     SUM(CASE WHEN mode_paiement = 'mixte' AND DATE(created_at) >= ? AND DATE(created_at) <= ? THEN total ELSE 0 END) as paiements_mixte,
                     SUM(CASE WHEN mode_paiement = 'credit' AND DATE(created_at) >= ? AND DATE(created_at) <= ? THEN montant_paye ELSE 0 END) as paiements_credit,
+                    SUM(CASE WHEN mode_paiement = 'credit' AND DATE(created_at) >= ? AND DATE(created_at) <= ? THEN total - COALESCE(montant_paye, 0) ELSE 0 END) as credit_mois,
                     SUM(CASE WHEN DATE(created_at) = ? THEN CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END ELSE 0 END) as ca_jour_prec,
                     COUNT(CASE WHEN DATE(created_at) = ? THEN 1 END) as ventes_jour_prec,
                     SUM(CASE WHEN DATE(created_at) >= ? AND DATE(created_at) <= ? THEN CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END ELSE 0 END) as ca_mois_prec,
@@ -85,7 +121,7 @@ class DashboardController extends Controller
                     $startOfMonth, $endOfMonth, $startOfMonth, $endOfMonth,
                     $startOfMonth, $endOfMonth, $startOfMonth, $endOfMonth,
                     $startOfMonth, $endOfMonth, $startOfMonth, $endOfMonth,
-                    $startOfMonth, $endOfMonth,
+                    $startOfMonth, $endOfMonth, $startOfMonth, $endOfMonth,
                     $yesterday, $yesterday,
                     $startOfPrevMonth, $endOfPrevMonth, $startOfPrevMonth, $endOfPrevMonth
                 ])->first();
@@ -99,6 +135,7 @@ class DashboardController extends Controller
         $paiementsCarte  = (int) ($statsVentes->paiements_carte ?? 0);
         $paiementsMixte  = (int) ($statsVentes->paiements_mixte ?? 0);
         $paiementsCredit = (int) ($statsVentes->paiements_credit ?? 0);
+        $creditMois      = (int) ($statsVentes->credit_mois ?? 0);
         $caJourPrec      = (int) ($statsVentes->ca_jour_prec ?? 0);
         $ventesJourPrec  = (int) ($statsVentes->ventes_jour_prec ?? 0);
         $caMoisPrec      = (int) ($statsVentes->ca_mois_prec ?? 0);
@@ -114,27 +151,31 @@ class DashboardController extends Controller
             ->first();
 
         $nbClients             = (int) ($statsClients->nb_clients ?? 0);
-        $totalClients          = $nbClients;
         $nouveauxClientsJour   = (int) ($statsClients->nouveaux_jour ?? 0);
         $nouveauxClientsJourPrec = (int) ($statsClients->nouveaux_jour_prec ?? 0);
 
-        // ── 3. Produits en alerte ────────────────────────────────────────
-        $produitsEnAlerte = Produit::where('actif', true)
-            ->whereColumn('stock', '<=', 'seuil_alerte')
-            ->count();
-
-        // ── 4. Dépenses du mois ──────────────────────────────────────────
-        $depensesMois = Depense::whereDate('date', '>=', $startOfMonth)
+        // ── 3. Dépenses et résultat du mois ──────────────────────────────
+        //
+        // ⚠️ Le résultat ne peut pas être « CA − dépenses ». Il faut retirer le
+        // coût des marchandises vendues, sinon le tableau de bord annonce un
+        // bénéfice supérieur à celui du point financier, pour le même mois.
+        // La chaîne complète vient de FinanceService : une seule définition.
+        $depensesMois = (float) Depense::whereDate('date', '>=', $startOfMonth)
             ->whereDate('date', '<=', $endOfMonth)
             ->sum('montant');
 
-        $beneficeEstime = $caMois - $depensesMois;
-        $beneficeMois = $beneficeEstime;
+        $finance          = app(FinanceService::class);
+        $resultatMois     = $finance->resultat($institutId, now()->startOfMonth(), now()->endOfMonth());
+        $resultatMoisPrec = $finance->resultat(
+            $institutId,
+            now()->subMonthNoOverflow()->startOfMonth(),
+            now()->subMonthNoOverflow()->endOfMonth()
+        );
 
         // ── 5. Graphique 30 derniers jours ───────────────────────────────
         $ventesParJour = Vente::where('statut', 'validee')
             ->whereDate('created_at', '>=', now()->subDays(29)->toDateString())
-            ->selectRaw("DATE(created_at) as date, SUM(CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END) as total")
+            ->selectRaw("DATE(created_at) as date, SUM(CASE WHEN mode_paiement = 'credit' THEN COALESCE(montant_paye, 0) ELSE total END) as total")
             ->groupBy('date')
             ->orderBy('date')
             ->pluck('total', 'date');
@@ -154,19 +195,24 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // ── 7. Produits en alerte (liste) ────────────────────────────────
-        $alertesStock = Produit::where('actif', true)
+        // ── 7. Produits en alerte (liste + compteur en une requête) ──────
+        // La liste était limitée à 5 puis comptée dans la vue : le « +N
+        // autres » affichait donc toujours « +1 » quel que soit le nombre
+        // réel d'alertes. On charge jusqu'à 50 lignes et on compte dessus.
+        $alertesStock    = Produit::where('actif', true)
             ->whereColumn('stock', '<=', 'seuil_alerte')
-            ->limit(5)
+            ->orderBy('stock')
+            ->limit(50)
             ->get();
+        $nbAlertesStock  = $alertesStock->count();
 
         $cached = compact(
-            'caJour', 'ventesJour', 'caMois', 'ventesMois',
+            'caJour', 'ventesJour', 'caMois', 'ventesMois', 'creditMois',
             'paiementsCash', 'paiementsMobile', 'paiementsCarte', 'paiementsMixte', 'paiementsCredit',
             'caJourPrec', 'ventesJourPrec', 'caMoisPrec', 'ventesMoisPrec',
-            'nbClients', 'totalClients', 'nouveauxClientsJour', 'nouveauxClientsJourPrec',
-            'produitsEnAlerte', 'depensesMois', 'beneficeEstime', 'beneficeMois',
-            'labels', 'data', 'dernieresVentes', 'alertesStock'
+            'nbClients', 'nouveauxClientsJour', 'nouveauxClientsJourPrec',
+            'depensesMois', 'resultatMois', 'resultatMoisPrec',
+            'labels', 'data', 'dernieresVentes', 'alertesStock', 'nbAlertesStock'
         );
         Cache::put($cacheKey, $cached, now()->addMinutes(5));
     }
@@ -179,8 +225,13 @@ class DashboardController extends Controller
 
         // ── 9. Évolutions ────────────────────────────────────────────────────
         $pct = function ($actuel, $prec) {
-            if ($prec <= 0) {
+            if ($prec == 0) {
                 return $actuel > 0 ? 100 : 0;
+            }
+            // Repartir d'une base négative (mois déficitaire) rend un
+            // pourcentage trompeur : on ne retient que le sens du mouvement.
+            if ($prec < 0) {
+                return $actuel >= 0 ? 100 : -100;
             }
             return round((($actuel - $prec) / $prec) * 100, 1);
         };
@@ -190,6 +241,7 @@ class DashboardController extends Controller
         $evolutionVentesJour   = $pct($ventesJour, $ventesJourPrec);
         $evolutionVentesMois   = $pct($ventesMois, $ventesMoisPrec);
         $evolutionClientsJour  = $pct($nouveauxClientsJour, $nouveauxClientsJourPrec);
+        $evolutionResultat     = $pct($resultatMois['resultat'], $resultatMoisPrec['resultat']);
 
         // ── 10. Anniversaires du jour sans cadeau déjà créé ──────────────────
         $cadeauClientIds = \App\Models\CodeReduction::withoutGlobalScopes()
@@ -214,19 +266,17 @@ class DashboardController extends Controller
 
         $chartData = ['labels' => $labels, 'values' => $data];
 
-        // Invalider le cache après une nouvelle vente du jour (optionnel : purger via Event)
-        // Le cache est déjà régénéré chaque jour (clé inclut la date)
-
         return view('dashboard.index', compact(
-            'caJour', 'caMois', 'nbClients', 'totalClients', 'ventesJour', 'ventesMois',
-            'nouveauxClientsJour', 'produitsEnAlerte', 'depensesMois', 'beneficeEstime', 'beneficeMois',
+            'caJour', 'caMois', 'creditMois', 'nbClients', 'ventesJour', 'ventesMois',
+            'nouveauxClientsJour', 'depensesMois', 'resultatMois', 'resultatMoisPrec',
             'paiementsCash', 'paiementsMobile', 'paiementsCarte', 'paiementsMixte', 'paiementsCredit',
-            'labels', 'data', 'chartData', 'dernieresVentes', 'alertesStock',
+            'labels', 'data', 'chartData', 'dernieresVentes', 'alertesStock', 'nbAlertesStock',
             'abonnement', 'joursRestants', 'anniversairesAujourdhui', 'abonnementSursis', 'sursisJours',
             'rdvsAvenir',
             'caJourPrec', 'caMoisPrec', 'ventesJourPrec', 'ventesMoisPrec',
             'evolutionCa', 'evolutionCaJour', 'evolutionCaMois',
-            'evolutionVentesJour', 'evolutionVentesMois', 'evolutionClientsJour'
+            'evolutionVentesJour', 'evolutionVentesMois', 'evolutionClientsJour',
+            'evolutionResultat'
         ));
     }
 

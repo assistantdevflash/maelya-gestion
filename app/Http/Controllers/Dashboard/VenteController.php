@@ -264,8 +264,7 @@ class VenteController extends Controller
         }
 
         // ── Invalider les caches ──
-        Cache::forget("dashboard_full:{$this->institutId()}:" . now()->toDateString());
-        Cache::forget("dashboard_basic:{$this->institutId()}:" . now()->toDateString());
+        DashboardController::purgerCache($this->institutId());
 
         // Le catalogue de la caisse est mémorisé une heure : sans cette purge,
         // le stock affiché restait figé après la vente.
@@ -673,8 +672,7 @@ class VenteController extends Controller
 
         // Le stock vient de remonter : le catalogue en cache doit être rafraîchi.
         \App\Livewire\Caisse::purgerCache($this->institutId());
-        Cache::forget("dashboard_full:{$this->institutId()}:" . now()->toDateString());
-        Cache::forget("dashboard_basic:{$this->institutId()}:" . now()->toDateString());
+        DashboardController::purgerCache($this->institutId());
 
         // Le ticket en cache d'une vente annulée ne doit plus être réimprimé.
         app(\App\Services\TicketPdfService::class)->oublier($vente);

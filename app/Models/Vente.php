@@ -11,6 +11,31 @@ class Vente extends Model
 {
     use HasUuids, BelongsToInstitut, \App\Traits\Auditable, \App\Traits\EnregistreActivite;
 
+    /**
+     * Libellés des modes de paiement — source unique.
+     *
+     * Le tableau de bord affichait « Cash » pour tout ce qui n'était pas du
+     * mobile money : une vente à crédit ou par carte s'y affichait comme
+     * encaissée en espèces.
+     */
+    public const MODES_PAIEMENT = [
+        'cash'         => 'Espèces',
+        'mobile_money' => 'Mobile money',
+        'carte'        => 'Carte bancaire',
+        'mixte'        => 'Paiement mixte',
+        'credit'       => 'Crédit',
+    ];
+
+    public static function libelleModePaiement(?string $mode): string
+    {
+        return self::MODES_PAIEMENT[$mode] ?? ucfirst((string) $mode);
+    }
+
+    public function getLibelleModePaiementAttribute(): string
+    {
+        return self::libelleModePaiement($this->mode_paiement);
+    }
+
     public function auditLabel(): string
     {
         return 'Vente #' . ($this->numero ?? $this->id);

@@ -66,11 +66,31 @@ class Produit extends Model
         );
     }
 
+    /**
+     * Coût d'achat retenu pour la marge et la valorisation du stock :
+     * le CMP s'il existe, sinon le prix d'achat saisi sur la fiche.
+     */
+    public function getCoutUnitaireAttribute(): int
+    {
+        return (int) ($this->cout_moyen_pondere ?: $this->prix_achat);
+    }
+
+    /**
+     * Vrai si le coût est réellement renseigné.
+     *
+     * Un produit à 0 F de coût n'a pas une marge de 100 % : il n'a pas de
+     * coût, et tout calcul qui l'ignore (marge, valeur du stock, coût des
+     * marchandises vendues) surestime le résultat. À signaler, pas à masquer.
+     */
+    public function aUnCoutConnu(): bool
+    {
+        return $this->cout_unitaire > 0;
+    }
+
     /** Marge unitaire en FCFA (prix vente - CMP, fallback prix achat) */
     public function getMargeUnitaireAttribute(): int
     {
-        $cout = $this->cout_moyen_pondere ?: $this->prix_achat;
-        return max(0, $this->prix_vente - $cout);
+        return max(0, $this->prix_vente - $this->cout_unitaire);
     }
 
     /** Marge % */

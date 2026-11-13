@@ -146,6 +146,7 @@ class ClientController extends Controller
         // Le nombre de clients / VIP / inactifs est mis en cache : on l'invalide
         // immédiatement pour que les compteurs restent justes.
         \Illuminate\Support\Facades\Cache::forget('clients_kpis_' . $this->institutId());
+        DashboardController::purgerCache();
 
         return redirect()->route('dashboard.clients.index')
             ->with('success', 'Client ajouté avec succès.');
@@ -365,6 +366,8 @@ class ClientController extends Controller
 
         $client->update($data);
 
+        DashboardController::purgerCache();
+
         return redirect()->back()
             ->with('success', 'Client mis à jour.');
     }
@@ -405,6 +408,8 @@ class ClientController extends Controller
         }
 
         $client->forceDelete();
+        DashboardController::purgerCache();
+
         return redirect()->route('dashboard.clients.index')
             ->with('success', 'Client définitivement supprimé.');
     }
@@ -412,6 +417,7 @@ class ClientController extends Controller
     public function archiver(Client $client)
     {
         $client->update(['actif' => !$client->actif]);
+        DashboardController::purgerCache();
         $msg = $client->actif ? 'Client réactivé.' : 'Client archivé.';
         return back()->with('success', $msg);
     }

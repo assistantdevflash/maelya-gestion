@@ -37,7 +37,16 @@
                 <p class="text-2xl font-bold text-gray-900 dark:text-slate-100 mt-1">
                     {{ number_format($valeurStock, 0, ',', ' ') }} <span class="text-sm font-normal text-gray-400">F</span>
                 </p>
-                <p class="text-[11px] text-gray-400 mt-0.5">au coût moyen pondéré</p>
+                <p class="text-[11px] text-gray-400 mt-0.5">
+                    sur {{ \App\Helpers\TexteHelper::pluriel($nbValorises, 'produit valorisé', 'produits valorisés') }}
+                </p>
+                @if($nbSansCout > 0)
+                    {{-- Sans cette mention, le total se lit comme la valeur
+                         réelle du stock alors qu'une partie pèse zéro. --}}
+                    <p class="text-[11px] font-medium text-amber-600 mt-0.5">
+                        {{ \App\Helpers\TexteHelper::pluriel($nbSansCout, 'produit sans coût', 'produits sans coût') }}
+                    </p>
+                @endif
             </div>
             <div class="card p-4">
                 <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Ruptures</p>
@@ -61,6 +70,44 @@
                 <p class="text-[11px] text-gray-400 mt-0.5">aucune vente depuis 60 j</p>
             </div>
         </div>
+
+        {{-- Produits sans prix d'achat : la valeur du stock, les marges et le
+             coût des marchandises sont sous-évalués tant qu'ils manquent. --}}
+        @if($nbSansCout > 0)
+        <div class="card p-4 border-l-4 border-amber-400 bg-amber-50/70 dark:bg-amber-950/30">
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-amber-900 dark:text-amber-300 text-sm">
+                        {{ \App\Helpers\TexteHelper::pluriel($nbSansCout, 'produit sans prix d\'achat', 'produits sans prix d\'achat') }}
+                    </p>
+                    <p class="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                        Sans coût renseigné, ils comptent pour 0 F dans la valeur du stock et leur marge s'affiche à 100 %.
+                        Votre bénéfice est donc surestimé.
+                    </p>
+                    <div class="flex flex-wrap gap-1.5 mt-2">
+                        @foreach($produitsSansCout as $p)
+                            <a href="{{ route('dashboard.produits.edit', $p) }}"
+                               class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white/80 dark:bg-slate-800 border border-amber-200 dark:border-amber-800 text-[11px] font-medium text-amber-800 dark:text-amber-300 hover:border-amber-400 transition-colors">
+                                {{ $p->nom }}
+                                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </a>
+                        @endforeach
+                        @if($nbSansCout > $produitsSansCout->count())
+                            <a href="{{ route('dashboard.produits.index') }}"
+                               class="inline-flex items-center px-2 py-1 rounded-lg text-[11px] font-medium text-amber-800 dark:text-amber-300 hover:underline">
+                                +{{ $nbSansCout - $produitsSansCout->count() }} {{ \App\Helpers\TexteHelper::pluriel($nbSansCout - $produitsSansCout->count(), 'autre', 'autres') }}
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
 
         {{-- Filtres --}}
         <div class="card p-4">
@@ -122,15 +169,24 @@
                             <td class="px-4 py-3 text-right text-gray-400 hidden sm:table-cell">
                                 {{ $produit->seuil_alerte }} {{ $produit->unite }}
                             </td>
-                            <td class="px-4 py-3 text-right text-xs text-gray-500 hidden lg:table-cell font-mono">
-                                {{ number_format($produit->cout_moyen_pondere ?: $produit->prix_achat, 0, ',', ' ') }} F
+                            <td class="px-4 py-3 text-right text-xs hidden lg:table-cell font-mono">
+                                @if($produit->aUnCoutConnu())
+                                    {{ number_format($produit->cout_unitaire, 0, ',', ' ') }} F
+                                @else
+                                    <a href="{{ route('dashboard.produits.edit', $produit) }}"
+                                       class="text-amber-600 hover:underline" title="Renseigner le prix d'achat">à renseigner</a>
+                                @endif
                             </td>
                             <td class="px-4 py-3 text-right text-xs hidden lg:table-cell">
                                 @php($mu = $produit->marge_unitaire)
-                                <span class="{{ $mu > 0 ? 'text-emerald-600' : 'text-gray-400' }} font-semibold">
-                                    {{ number_format($mu, 0, ',', ' ') }} F
-                                </span>
-                                <span class="text-gray-400 text-[10px]">({{ $produit->marge_pourcent }}%)</span>
+                                @if($produit->aUnCoutConnu())
+                                    <span class="{{ $mu > 0 ? 'text-emerald-600' : 'text-gray-400' }} font-semibold">
+                                        {{ number_format($mu, 0, ',', ' ') }} F
+                                    </span>
+                                    <span class="text-gray-400 text-[10px]">({{ $produit->marge_pourcent }}%)</span>
+                                @else
+                                    <span class="text-gray-300" title="Marge inconnue : aucun prix d'achat">—</span>
+                                @endif
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-end gap-1.5">
@@ -238,7 +294,11 @@
                     </a>
                     <span class="text-xs text-gray-400 whitespace-nowrap ml-3">
                         {{ $d->stock }} {{ $d->unite }} ·
-                        {{ number_format((int) $d->stock * (int) ($d->cout_moyen_pondere ?: $d->prix_achat), 0, ',', ' ') }} F
+                        @if($d->aUnCoutConnu())
+                            {{ number_format((int) $d->stock * $d->cout_unitaire, 0, ',', ' ') }} F
+                        @else
+                            <span class="text-amber-600">non valorisé</span>
+                        @endif
                     </span>
                 </li>
                 @endforeach

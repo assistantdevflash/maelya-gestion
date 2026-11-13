@@ -129,9 +129,18 @@
                 </div>
                 <p class="text-2xl font-display font-bold text-gray-900 tracking-tight">{{ number_format($caJour ?? 0, 0, ',', ' ') }}</p>
                 <p class="text-xs text-gray-400 mt-1">FCFA aujourd'hui</p>
-                <div class="mt-2 pt-2 border-t border-gray-100/80 flex items-center justify-between gap-2">
-                    <p class="text-xs font-medium text-primary-600">{{ number_format($caMois ?? 0, 0, ',', ' ') }} F ce mois</p>
-                    <x-evolution-badge :pct="$evolutionCaMois ?? 0" title="vs mois précédent" />
+                <div class="mt-2 pt-2 border-t border-gray-100/80 space-y-1">
+                    <div class="flex items-center justify-between gap-2">
+                        <p class="text-xs font-medium text-primary-600">{{ number_format($caMois ?? 0, 0, ',', ' ') }} F ce mois</p>
+                        <x-evolution-badge :pct="$evolutionCaMois ?? 0" title="vs mois précédent" />
+                    </div>
+                    @if(($creditMois ?? 0) > 0)
+                        {{-- Le CA n'est pas tout encaissé : sans cette ligne, on
+                             croit avoir 73 500 F en caisse alors qu'une part est à crédit. --}}
+                        <p class="text-[10px] font-medium text-amber-600">
+                            dont {{ number_format($creditMois, 0, ',', ' ') }} F à crédit
+                        </p>
+                    @endif
                 </div>
             </a>
 
@@ -161,28 +170,35 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                         </svg>
                     </div>
-                    <x-evolution-badge :pct="$evolutionClientsJour ?? 0" title="vs hier" />
+                    <x-evolution-badge :pct="$evolutionClientsJour ?? 0" title="nouveaux clients vs hier" />
                 </div>
-                <p class="text-2xl font-display font-bold text-gray-900 tracking-tight">{{ $totalClients ?? 0 }}</p>
+                <p class="text-2xl font-display font-bold text-gray-900 tracking-tight">{{ $nbClients ?? 0 }}</p>
                 <p class="text-xs text-gray-400 mt-1">Clients actifs</p>
                 <div class="mt-2 pt-2 border-t border-gray-100/80">
                     <p class="text-xs font-medium text-blue-600">+{{ $nouveauxClientsJour ?? 0 }} aujourd'hui</p>
                 </div>
             </a>
 
-            {{-- Bénéfice --}}
+            {{-- Résultat du mois --}}
             <a href="{{ route('dashboard.finances.index') }}" class="stat-card group block cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="w-10 h-10 rounded-xl flex items-center justify-center {{ ($beneficeMois ?? 0) >= 0 ? 'bg-emerald-50' : 'bg-red-50' }}">
-                        <svg class="w-5 h-5 {{ ($beneficeMois ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center {{ ($resultatMois['resultat'] ?? 0) >= 0 ? 'bg-emerald-50' : 'bg-red-50' }}">
+                        <svg class="w-5 h-5 {{ ($resultatMois['resultat'] ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
                         </svg>
                     </div>
+                    <x-evolution-badge :pct="$evolutionResultat ?? 0" title="vs mois précédent" />
                 </div>
-                <p class="text-2xl font-display font-bold text-gray-900 tracking-tight">{{ number_format(abs($beneficeMois ?? 0), 0, ',', ' ') }}</p>
-                <p class="text-xs text-gray-400 mt-1">Bénéfice ce mois</p>
+                {{-- Le signe compte : masquer le « moins » d'un déficit affiche
+                     une perte comme un bénéfice. --}}
+                <p class="text-2xl font-display font-bold tracking-tight {{ ($resultatMois['resultat'] ?? 0) < 0 ? 'text-red-600' : 'text-gray-900' }}">
+                    {{ ($resultatMois['resultat'] ?? 0) < 0 ? '−' : '' }}{{ number_format(abs($resultatMois['resultat'] ?? 0), 0, ',', ' ') }}
+                </p>
+                <p class="text-xs text-gray-400 mt-1">Résultat ce mois</p>
                 <div class="mt-2 pt-2 border-t border-gray-100/80">
-                    <p class="text-xs font-medium {{ ($beneficeMois ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-600' }}">FCFA net</p>
+                    <p class="text-xs font-medium text-gray-500">
+                        marge brute {{ number_format($resultatMois['marge_brute'] ?? 0, 0, ',', ' ') }} F
+                    </p>
                 </div>
             </a>
         </div>
@@ -232,8 +248,10 @@
                                 </div>
                             @endforeach
                         </div>
-                        @if(count($alertesStock) > 4)
-                            <p class="text-xs text-gray-400 mt-3 pt-2 border-t border-gray-100">+{{ count($alertesStock) - 4 }} autres produits</p>
+                        @if(($nbAlertesStock ?? 0) > 4)
+                            <p class="text-xs text-gray-400 mt-3 pt-2 border-t border-gray-100">
+                                +{{ $nbAlertesStock - 4 }} {{ \App\Helpers\TexteHelper::pluriel($nbAlertesStock - 4, 'autre produit', 'autres produits') }}
+                            </p>
                         @endif
                     @else
                         <div class="text-center py-4">
@@ -268,14 +286,20 @@
                                         <p class="text-sm font-semibold text-gray-900">{{ number_format($vente->total, 0, ',', ' ') }} F</p>
                                         <p class="text-[11px] text-gray-400">{{ $vente->created_at->diffForHumans() }}</p>
                                     </div>
-                                    <span class="badge {{ $vente->mode_paiement === 'mobile_money' ? 'badge-primary' : 'bg-gray-100 text-gray-600' }} text-[10px]">
-                                        {{ $vente->mode_paiement === 'mobile_money' ? 'Mobile' : 'Cash' }}
+                                    <span class="badge {{ match($vente->mode_paiement) {
+                                        'mobile_money' => 'badge-primary',
+                                        'carte'        => 'bg-blue-100 text-blue-700',
+                                        'mixte'        => 'bg-purple-100 text-purple-700',
+                                        'credit'       => 'bg-amber-100 text-amber-700',
+                                        default        => 'bg-gray-100 text-gray-600',
+                                    } }} text-[10px]">
+                                        {{ $vente->libelle_mode_paiement }}
                                     </span>
                                 </div>
                             @endforeach
                         </div>
                     @else
-                        <p class="text-xs text-gray-400 text-center py-4">Aucune vente aujourd'hui</p>
+                        <p class="text-xs text-gray-400 text-center py-4">Aucune vente enregistrée</p>
                     @endif
                 </div>
             </div>
@@ -294,12 +318,16 @@
                     <h3 class="font-semibold text-gray-900 text-sm">Paiements ce mois</h3>
                 </div>
                 @php
+                    // Chaque pourcentage est calculé sur le même total. La
+                    // version précédente obtenait le mixte par soustraction :
+                    // tout mode inattendu venait gonfler la part « Mixte ».
                     $totalPaiements = ($paiementsCash ?? 0) + ($paiementsMobile ?? 0) + ($paiementsCarte ?? 0) + ($paiementsMixte ?? 0) + ($paiementsCredit ?? 0);
-                    $pctCash   = $totalPaiements > 0 ? round(($paiementsCash   ?? 0) / $totalPaiements * 100) : 0;
-                    $pctMobile = $totalPaiements > 0 ? round(($paiementsMobile ?? 0) / $totalPaiements * 100) : 0;
-                    $pctCarte  = $totalPaiements > 0 ? round(($paiementsCarte  ?? 0) / $totalPaiements * 100) : 0;
-                    $pctCredit = $totalPaiements > 0 ? round(($paiementsCredit ?? 0) / $totalPaiements * 100) : 0;
-                    $pctMixte  = $totalPaiements > 0 ? (100 - $pctCash - $pctMobile - $pctCarte - $pctCredit) : 0;
+                    $part = fn ($valeur) => $totalPaiements > 0 ? round(($valeur ?? 0) / $totalPaiements * 100) : 0;
+                    $pctCash   = $part($paiementsCash);
+                    $pctCarte  = $part($paiementsCarte);
+                    $pctMobile = $part($paiementsMobile);
+                    $pctMixte  = $part($paiementsMixte);
+                    $pctCredit = $part($paiementsCredit);
                 @endphp
                 <div class="space-y-3">
                     @if($pctCash > 0)
@@ -349,7 +377,7 @@
                     @if($pctCredit > 0)
                     <div>
                         <div class="flex justify-between text-xs mb-1.5">
-                            <span class="text-gray-600 font-medium">📅 Credit</span>
+                            <span class="text-gray-600 font-medium">📅 Crédit</span>
                             <span class="font-bold text-gray-900">{{ $pctCredit }}%</span>
                         </div>
                         <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -373,20 +401,39 @@
                     </div>
                     <h3 class="font-semibold text-gray-900 text-sm">Résumé mensuel</h3>
                 </div>
-                <div class="space-y-3">
+                {{-- Chaîne complète : un « bénéfice » qui ne déduit pas le coût
+                     des marchandises n'est pas un bénéfice. --}}
+                <div class="space-y-2.5">
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-500">Chiffre d'affaires</span>
-                        <span class="text-sm font-bold text-emerald-600">{{ number_format($caMois ?? 0, 0, ',', ' ') }} F</span>
+                        <span class="text-sm text-gray-500">Chiffre d'affaires encaissé</span>
+                        <span class="text-sm font-bold text-gray-900">{{ number_format($resultatMois['ca'] ?? 0, 0, ',', ' ') }} F</span>
+                    </div>
+                    @if(($creditMois ?? 0) > 0)
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-amber-600 pl-3">dont à crédit, non encaissé</span>
+                        <span class="text-xs font-semibold text-amber-600">{{ number_format($creditMois, 0, ',', ' ') }} F</span>
+                    </div>
+                    @endif
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-500">Coût des marchandises</span>
+                        <span class="text-sm font-bold text-red-500">−{{ number_format($resultatMois['couts_marchandises'] ?? 0, 0, ',', ' ') }} F</span>
+                    </div>
+                    <div class="flex justify-between items-center border-t border-gray-100 pt-2.5">
+                        <span class="text-sm font-semibold text-gray-700">Marge brute</span>
+                        <span class="text-sm font-bold text-emerald-600">
+                            {{ number_format($resultatMois['marge_brute'] ?? 0, 0, ',', ' ') }} F
+                            <span class="text-[10px] font-normal text-gray-400">({{ number_format($resultatMois['taux_marge_brute'] ?? 0, 1, ',', ' ') }} %)</span>
+                        </span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-sm text-gray-500">Dépenses</span>
-                        <span class="text-sm font-bold text-red-500">-{{ number_format($depensesMois ?? 0, 0, ',', ' ') }} F</span>
+                        <span class="text-sm font-bold text-red-500">−{{ number_format($resultatMois['depenses'] ?? 0, 0, ',', ' ') }} F</span>
                     </div>
                     <div class="border-t border-gray-100 pt-3">
                         <div class="flex justify-between items-center">
-                            <span class="text-sm font-bold text-gray-900">Bénéfice net</span>
-                            <span class="text-base font-display font-bold {{ ($beneficeMois ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-600' }}">
-                                {{ number_format($beneficeMois ?? 0, 0, ',', ' ') }} F
+                            <span class="text-sm font-bold text-gray-900">Résultat net</span>
+                            <span class="text-base font-display font-bold {{ ($resultatMois['resultat'] ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-600' }}">
+                                {{ ($resultatMois['resultat'] ?? 0) < 0 ? '−' : '' }}{{ number_format(abs($resultatMois['resultat'] ?? 0), 0, ',', ' ') }} F
                             </span>
                         </div>
                     </div>
@@ -396,46 +443,9 @@
     </div>
 
     <x-slot:scripts>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script>
-        const ctx = document.getElementById('caChart').getContext('2d');
-        const chartData = @json($chartData ?? ['labels' => [], 'values' => []]);
-
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: chartData.labels,
-                datasets: [{
-                    label: 'CA (FCFA)',
-                    data: chartData.values,
-                    fill: true,
-                    backgroundColor: 'rgba(139, 92, 246, 0.08)',
-                    borderColor: 'rgb(139, 92, 246)',
-                    borderWidth: 2,
-                    pointBackgroundColor: 'rgb(139, 92, 246)',
-                    pointRadius: 3,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(0,0,0,0.04)' },
-                        ticks: {
-                            callback: v => new Intl.NumberFormat('fr-FR').format(v),
-                            font: { size: 11 }
-                        }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { font: { size: 11 } }
-                    }
-                }
-            }
-        });
-    </script>
+        {{-- Les données du graphique voyagent en JSON : aucun PHP interpolé
+             dans du JavaScript, et Chart.js est servi par l'application. --}}
+        <script type="application/json" id="caChartData">@json($chartData ?? ['labels' => [], 'values' => []])</script>
+        @vite('resources/js/chart-dashboard.js')
     </x-slot:scripts>
 </x-dashboard-layout>

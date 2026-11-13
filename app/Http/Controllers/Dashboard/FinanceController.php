@@ -337,6 +337,10 @@ class FinanceController extends Controller
 
         Depense::create($data);
 
+        // Sans cette purge, le bénéfice du tableau de bord reste figé sur
+        // l'ancienne valeur pendant les cinq minutes du cache.
+        DashboardController::purgerCache();
+
         return back()->with('success', 'Dépense enregistrée.');
     }
 
@@ -351,12 +355,16 @@ class FinanceController extends Controller
         ]);
 
         $depense->update($data);
+        DashboardController::purgerCache();
+
         return back()->with('success', 'Dépense mise à jour.');
     }
 
     public function destroy(Depense $depense)
     {
         $depense->delete();
+        DashboardController::purgerCache();
+
         return back()->with('success', 'Dépense supprimée.');
     }
 
