@@ -2,7 +2,7 @@
     $institut = $commande->institut;
     $cp = $institut->couleur_primaire ?? '#9333ea';
     $cs = $institut->couleur_secondaire ?? '#ec4899';
-    $ca = $institut->couleur_accent ?? '#f59e0b';
+    $couleurAccent = $institut->couleur_accent ?? '#f59e0b';
 
     // Libellés lisibles (accents corrects) pour un document officiel
     $statutLabels = [

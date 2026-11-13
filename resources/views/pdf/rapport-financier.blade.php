@@ -1,7 +1,15 @@
 @php
-    $cp = $institut->couleur_primaire ?? '#7c3aed';
-    $cs = $institut->couleur_secondaire ?? '#8b5cf6';
-    $ca = $institut->couleur_accent ?? '#f59e0b';
+    // ⚠️ Ne jamais nommer une couleur « $ca » : cette variable porte le chiffre
+    // d'affaires passé par le contrôleur. Elle était écrasée ici, d'où
+    // « number_format(): Argument #1 must be of type int|float ».
+    $cp               = $institut->couleur_primaire ?? '#7c3aed';
+    $cs               = $institut->couleur_secondaire ?? '#8b5cf6';
+    $couleurAccent    = $institut->couleur_accent ?? '#f59e0b';
+
+    // Sécurité : les agrégats SQL peuvent revenir en chaîne selon le pilote.
+    $ca              = (float) $ca;
+    $depenses_total  = (float) $depenses_total;
+    $benefice        = (float) $benefice;
 @endphp
 <!DOCTYPE html>
 <html lang="fr">

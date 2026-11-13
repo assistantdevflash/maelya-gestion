@@ -173,6 +173,20 @@ class FinanceResultatTest extends TestCase
             ->assertSee('Marchandises');
     }
 
+    public function test_le_pdf_du_rapport_financier_se_genere(): void
+    {
+        // Régression : la vue écrasait $ca (le chiffre d'affaires) avec la
+        // couleur d'accent de l'institut, ce qui faisait planter number_format.
+        $this->vendre(1);
+
+        $reponse = $this->actingAs($this->admin)
+            ->get(route('dashboard.finances.export-pdf'));
+
+        $reponse->assertOk();
+        $this->assertStringContainsString('application/pdf', (string) $reponse->headers->get('Content-Type'));
+        $this->assertStringStartsWith('%PDF', $reponse->getContent());
+    }
+
     public function test_l_encours_credit_est_calcule(): void
     {
         $this->assertSame(0, app(FinanceService::class)->encoursCredit($this->admin->institut_id)['encours']);

@@ -1,7 +1,7 @@
 @php
     $cp = $institut->couleur_primaire ?? '#059669';
     $cs = $institut->couleur_secondaire ?? '#8B5CF6';
-    $ca = $institut->couleur_accent ?? '#f59e0b';
+    $couleurAccent = $institut->couleur_accent ?? '#f59e0b';
 
     $badge = match (true) {
         $facture->statut === 'annulee'   => 'ANNULÉE',

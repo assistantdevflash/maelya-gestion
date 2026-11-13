@@ -1,7 +1,7 @@
 @php
     $cp = $institut->couleur_primaire ?? '#ec4899';
     $cs = $institut->couleur_secondaire ?? '#7c3aed';
-    $ca = $institut->couleur_accent ?? '#f59e0b';
+    $couleurAccent = $institut->couleur_accent ?? '#f59e0b';
 @endphp
 <!DOCTYPE html>
 <html lang="fr">

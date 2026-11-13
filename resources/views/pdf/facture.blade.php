@@ -2,7 +2,7 @@
     $institut = $vente->institut;
     $cp = $institut->couleur_primaire ?? '#8B5CF6';
     $cs = $institut->couleur_secondaire ?? '#ec4899';
-    $ca = $institut->couleur_accent ?? '#f59e0b';
+    $couleurAccent = $institut->couleur_accent ?? '#f59e0b';
 @endphp
 <!DOCTYPE html>
 <html lang="fr">
