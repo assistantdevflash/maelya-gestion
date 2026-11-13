@@ -288,59 +288,222 @@ class VenteController extends Controller
             ->with('success', 'Vente #' . substr($vente->id, 0, 8) . ' enregistrée — ' . number_format($vente->total, 0, ',', ' ') . ' F');
     }
 
+    /**
+     * Construit la requête de l'historique à partir des filtres de la page.
+     *
+     * Mutualisée entre la liste paginée, la synthèse et les statistiques par
+     * vendeur : sans cela, les totaux affichés ne portaient que sur la page
+     * courante (50 lignes) et non sur l'ensemble du filtre.
+     */
+    private function requeteVentes(Request $request, bool $isEmploye)
+    {
+        return Vente::query()
+            ->when($isEmploye, fn ($q) => $q->where('user_id', Auth::id()))
+            ->when(! $isEmploye && $request->employe_id, fn ($q) => $q->where('user_id', $request->employe_id))
+            ->when($request->debut, fn ($q) => $q->whereDate('created_at', '>=', $request->debut))
+            ->when($request->fin, fn ($q) => $q->whereDate('created_at', '<=', $request->fin))
+            ->when($request->mode, fn ($q) => $q->where('mode_paiement', $request->mode))
+            ->when($request->statut === 'annulees', fn ($q) => $q->where('statut', 'annulee'))
+            ->when($request->statut === 'payees', fn ($q) => $q->where('statut', '!=', 'annulee'))
+            ->when($request->statut === 'credit_retard', fn ($q) => $q
+                ->where('mode_paiement', 'credit')
+                ->where('statut', '!=', 'annulee')
+                ->where('credit_statut', 'retard'))
+            ->when($request->statut === 'credit_en_cours', fn ($q) => $q
+                ->where('mode_paiement', 'credit')
+                ->where('statut', '!=', 'annulee')
+                ->whereIn('credit_statut', ['en_cours', null]))
+            ->when($request->filled('q'), function ($q) use ($request) {
+                $terme = trim((string) $request->q);
+                $like  = '%' . $terme . '%';
+
+                $q->where(function ($sous) use ($like, $terme) {
+                    $sous->where('numero', 'like', $like)
+                         ->orWhere('numero_facture', 'like', $like)
+                         ->orWhereHas('client', function ($c) use ($like) {
+                             $c->where('prenom', 'like', $like)
+                               ->orWhere('nom', 'like', $like)
+                               ->orWhere('raison_sociale', 'like', $like)
+                               ->orWhere('telephone', 'like', $like);
+                         });
+
+                    // Recherche par montant exact (« 8000 », « 8 000 »)
+                    $montant = (int) preg_replace('/\D/', '', $terme);
+                    if ($montant > 0) {
+                        $sous->orWhere('total', $montant);
+                    }
+                });
+            });
+    }
+
     public function index(Request $request)
     {
         $isEmploye = Auth::user()->isEmploye();
 
-        // Membres de l'équipe pour le filtre vendeur (admin seulement)
-        $membres = collect();
+        $membres         = collect();
         $statsParEmploye = collect();
 
-        if (!$isEmploye) {
+        if (! $isEmploye) {
             $institutId = $this->institutId();
 
-            // Employés de l'établissement courant
             $employes = \App\Models\User::where('institut_id', $institutId)
                 ->where('role', 'employe')
                 ->orderBy('prenom')
                 ->get(['id', 'prenom', 'nom_famille', 'role']);
 
-            // Propriétaire de l'établissement courant
             $proprietaire = \App\Models\Institut::find($institutId)?->proprietaire;
-            $membres = $employes;
-            if ($proprietaire && !$membres->contains('id', $proprietaire->id)) {
+            $membres      = $employes;
+            if ($proprietaire && ! $membres->contains('id', $proprietaire->id)) {
                 $membres->prepend($proprietaire);
             }
+        }
 
-            // Stats agrégées par vendeur sur la période filtrée (hors pagination)
-            $statsParEmploye = Vente::with('user:id,prenom,nom_famille,role')
-                ->selectRaw("user_id, COUNT(*) as nb_ventes, SUM(CASE WHEN statut != 'annulee' THEN CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END ELSE 0 END) as total_ventes")
-                ->when($request->debut, fn($q) => $q->whereDate('created_at', '>=', $request->debut))
-                ->when($request->fin, fn($q) => $q->whereDate('created_at', '<=', $request->fin))
-                ->when($request->mode, fn($q) => $q->where('mode_paiement', $request->mode))
+        // ── Synthèse : calculée sur l'ENSEMBLE du filtre, pas sur la page ──
+        $synthese = (clone $this->requeteVentes($request, $isEmploye))
+            ->selectRaw("
+                COUNT(*) as nb_ventes,
+                SUM(CASE WHEN statut = 'annulee' THEN 1 ELSE 0 END) as nb_annulees,
+                SUM(CASE WHEN statut != 'annulee' THEN 1 ELSE 0 END) as nb_valides,
+                SUM(CASE WHEN statut != 'annulee'
+                         THEN CASE WHEN mode_paiement = 'credit' THEN COALESCE(montant_paye, 0) ELSE total END
+                         ELSE 0 END) as total_encaisse
+            ")
+            ->first();
+
+        $repartitionModes = (clone $this->requeteVentes($request, $isEmploye))
+            ->where('statut', '!=', 'annulee')
+            ->selectRaw('mode_paiement, COUNT(*) as nb')
+            ->groupBy('mode_paiement')
+            ->pluck('nb', 'mode_paiement');
+
+        if (! $isEmploye) {
+            $statsParEmploye = $this->requeteVentes($request, $isEmploye)
+                ->with('user:id,prenom,nom_famille,role')
+                ->selectRaw("user_id, COUNT(*) as nb_ventes, SUM(CASE WHEN statut != 'annulee' THEN CASE WHEN mode_paiement = 'credit' THEN COALESCE(montant_paye, 0) ELSE total END ELSE 0 END) as total_ventes")
                 ->groupBy('user_id')
                 ->orderByDesc('total_ventes')
                 ->get();
         }
 
-        $ventes = Vente::with('client', 'user', 'items', 'codeReduction')
-            ->when($isEmploye, fn($q) => $q->where('user_id', Auth::id()))
-            ->when($request->debut, fn($q) => $q->whereDate('created_at', '>=', $request->debut))
-            ->when($request->fin, fn($q) => $q->whereDate('created_at', '<=', $request->fin))
-            ->when($request->mode, fn($q) => $q->where('mode_paiement', $request->mode))
-            ->when(!$isEmploye && $request->employe_id, fn($q) => $q->where('user_id', $request->employe_id))
-            ->latest()
-            ->paginate(50)
-            ->withQueryString();
+        // ── Liste paginée ──
+        $tri     = $request->input('tri', 'recent');
+        $requete = $this->requeteVentes($request, $isEmploye)
+            ->with('client', 'user', 'items', 'codeReduction');
 
-        return view('dashboard.caisse.historique', compact('ventes', 'membres', 'statsParEmploye'));
+        match ($tri) {
+            'montant'  => $requete->orderByDesc('total'),
+            'client'   => $requete->orderBy('client_id')->latest(),
+            'ancien'   => $requete->oldest(),
+            default    => $requete->latest(),
+        };
+
+        $parPage = in_array((int) $request->input('par_page'), [25, 50, 100], true)
+            ? (int) $request->input('par_page')
+            : 50;
+
+        $ventes = $requete->paginate($parPage)->withQueryString();
+
+        return view('dashboard.caisse.historique', compact(
+            'ventes', 'membres', 'statsParEmploye', 'synthese', 'repartitionModes'
+        ));
+    }
+
+    /**
+     * Export CSV de l'historique, en respectant les filtres de l'écran.
+     *
+     * Séparateur « ; » et BOM UTF-8 : le fichier s'ouvre correctement dans
+     * Excel en français, sans manipulation.
+     */
+    public function export(Request $request)
+    {
+        $isEmploye = Auth::user()->isEmploye();
+
+        $ventes = $this->requeteVentes($request, $isEmploye)
+            ->with(['client', 'user'])
+            ->latest()
+            ->get();
+
+        $nom = 'ventes-' . now()->format('Ymd-His') . '.csv';
+
+        return response()->streamDownload(function () use ($ventes) {
+            $sortie = fopen('php://output', 'w');
+
+            // BOM UTF-8 pour qu'Excel reconnaisse les accents.
+            fwrite($sortie, "\xEF\xBB\xBF");
+
+            fputcsv($sortie, [
+                'N° vente', 'Date', 'Client', 'Téléphone', 'Vendeur',
+                'Mode de paiement', 'Statut', 'Total', 'Montant payé', 'Remise',
+            ], ';');
+
+            $modes = [
+                'cash'         => 'Espèces',
+                'carte'        => 'Carte',
+                'mobile_money' => 'Mobile Money',
+                'mixte'        => 'Mixte',
+                'credit'       => 'Crédit',
+            ];
+
+            foreach ($ventes as $vente) {
+                fputcsv($sortie, [
+                    $vente->numero,
+                    $vente->created_at?->format('d/m/Y H:i'),
+                    $vente->client?->nom_affichage ?? 'Anonyme',
+                    $vente->client?->telephone ?? '',
+                    trim(($vente->user?->prenom ?? '') . ' ' . ($vente->user?->nom_famille ?? '')),
+                    $modes[$vente->mode_paiement] ?? ucfirst((string) $vente->mode_paiement),
+                    $vente->statut === 'annulee' ? 'Annulée' : 'Payée',
+                    (int) $vente->total,
+                    $vente->mode_paiement === 'credit' ? (int) ($vente->montant_paye ?? 0) : (int) $vente->total,
+                    (int) ($vente->remise ?? 0),
+                ], ';');
+            }
+
+            fclose($sortie);
+        }, $nom, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $nom . '"',
+        ]);
     }
 
     public function show(Vente $vente)
     {
-        // Les employés peuvent voir les détails de toutes les ventes
-        $vente->load('items', 'client', 'user', 'codeReduction', 'avoirs.codeReduction', 'avoirs.user');
-        return view('dashboard.caisse.show', compact('vente'));
+        $vente->load([
+            'items', 'client', 'user', 'codeReduction',
+            'avoirs.codeReduction', 'avoirs.user',
+            'annuleePar',
+            'mouvementsStock.produit',
+            'credit.echeances',
+        ]);
+
+        // Navigation dans l'historique : vente précédente / suivante de
+        // l'établissement. L'identifiant départage deux ventes enregistrées
+        // dans la même seconde.
+        $precedente = Vente::where('institut_id', $vente->institut_id)
+            ->where(function ($q) use ($vente) {
+                $q->where('created_at', '<', $vente->created_at)
+                  ->orWhere(function ($q2) use ($vente) {
+                      $q2->where('created_at', $vente->created_at)
+                         ->where('id', '<', $vente->id);
+                  });
+            })
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->first(['id', 'numero']);
+
+        $suivante = Vente::where('institut_id', $vente->institut_id)
+            ->where(function ($q) use ($vente) {
+                $q->where('created_at', '>', $vente->created_at)
+                  ->orWhere(function ($q2) use ($vente) {
+                      $q2->where('created_at', $vente->created_at)
+                         ->where('id', '>', $vente->id);
+                  });
+            })
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->first(['id', 'numero']);
+
+        return view('dashboard.caisse.show', compact('vente', 'precedente', 'suivante'));
     }
 
     /**

@@ -13,9 +13,33 @@
                     <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">{{ $vente->created_at->format('d/m/Y à H:i') }}</p>
                 </div>
             </div>
-            <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium flex-shrink-0 {{ $vente->statut === 'validee' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' }}">
-                {{ $vente->statut === 'validee' ? '✓ Validée' : '✕ Annulée' }}
-            </span>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                {{-- Navigation dans l'historique --}}
+                <div class="hidden sm:flex items-center gap-1">
+                    @if($precedente ?? null)
+                        <a href="{{ route('dashboard.ventes.show', $precedente) }}"
+                           title="Vente précédente — {{ $precedente->numero }}"
+                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-200 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </a>
+                    @endif
+                    @if($suivante ?? null)
+                        <a href="{{ route('dashboard.ventes.show', $suivante) }}"
+                           title="Vente suivante — {{ $suivante->numero }}"
+                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-200 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                    @endif
+                </div>
+
+                <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium {{ $vente->statut === 'validee' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' }}">
+                    {{ $vente->statut === 'validee' ? '✓ Validée' : '✕ Annulée' }}
+                </span>
+            </div>
         </div>
 
         <div class="grid lg:grid-cols-3 gap-6">
@@ -130,6 +154,98 @@
                     </div>
                 </div>
                 
+                {{-- Échéancier d'un crédit --}}
+                @if($vente->mode_paiement === 'credit' && $vente->credit)
+                @php
+                    $credit = $vente->credit;
+                    $echeances = $credit->echeances->sortBy('numero');
+                    $restant = max(0, (int) $credit->reste_a_payer);
+                @endphp
+                <div class="card overflow-hidden">
+                    <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex items-center justify-between gap-2 flex-wrap">
+                        <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider">Échéancier du crédit</h2>
+                        <span class="text-xs font-bold {{ $restant > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400' }}">
+                            Reste dû : {{ number_format($restant, 0, ',', ' ') }} FCFA
+                        </span>
+                    </div>
+                    @if($echeances->isEmpty())
+                        <p class="px-4 sm:px-6 py-4 text-sm text-gray-500 dark:text-gray-400">Aucune échéance enregistrée.</p>
+                    @else
+                    <ul class="divide-y divide-gray-100 dark:divide-gray-700">
+                        @foreach($echeances as $echeance)
+                        @php
+                            $soldeEcheance = ($echeance->montant ?? 0) - ($echeance->montant_paye ?? 0);
+                            $enRetard = $echeance->statut !== 'payee'
+                                && $echeance->date_prevue?->isPast();
+                        @endphp
+                        <li class="px-4 sm:px-6 py-3 flex items-center gap-3 text-sm">
+                            <span class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold
+                                {{ $echeance->statut === 'payee' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' :
+                                   ($enRetard ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300') }}">
+                                {{ $echeance->numero }}
+                            </span>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-gray-800 dark:text-gray-200">
+                                    {{ $echeance->date_prevue?->format('d/m/Y') ?? '—' }}
+                                </p>
+                                <p class="text-[11px] text-gray-400">
+                                    @if($echeance->statut === 'payee')
+                                        Payée le {{ $echeance->date_paiement?->format('d/m/Y') ?? '—' }}
+                                    @elseif($enRetard)
+                                        En retard
+                                        @if($soldeEcheance > 0)
+                                            · reste {{ number_format($soldeEcheance, 0, ',', ' ') }} F
+                                        @endif
+                                    @else
+                                        À venir
+                                    @endif
+                                </p>
+                            </div>
+                            <span class="font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                                {{ number_format($echeance->montant ?? 0, 0, ',', ' ') }} F
+                            </span>
+                        </li>
+                        @endforeach
+                    </ul>
+                    @endif
+                </div>
+                @endif
+
+                {{-- Mouvements de stock générés par la vente --}}
+                @if($vente->mouvementsStock->isNotEmpty())
+                <div class="card overflow-hidden">
+                    <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                        <h2 class="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider">Mouvements de stock</h2>
+                    </div>
+                    <ul class="divide-y divide-gray-100 dark:divide-gray-700">
+                        @foreach($vente->mouvementsStock as $mouvement)
+                        {{-- `quantite` est toujours positive : le sens est
+                             donné par la variation du stock. --}}
+                        @php $entree = ($mouvement->stock_apres ?? 0) > ($mouvement->stock_avant ?? 0); @endphp
+                        <li class="px-4 sm:px-6 py-3 flex items-center gap-3 text-sm">
+                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg flex-shrink-0
+                                {{ $entree ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400' }}">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                          d="{{ $entree ? 'M12 4v16m8-8H4' : 'M20 12H4' }}"/>
+                                </svg>
+                            </span>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-gray-800 dark:text-gray-200 truncate">{{ $mouvement->produit?->nom ?? 'Produit supprimé' }}</p>
+                                <p class="text-[11px] text-gray-400">
+                                    {{ $mouvement->motif ?: ucfirst((string) $mouvement->type) }}
+                                    · stock {{ $mouvement->stock_avant }} → {{ $mouvement->stock_apres }}
+                                </p>
+                            </div>
+                            <span class="font-semibold whitespace-nowrap {{ $entree ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
+                                {{ $entree ? '+' : '−' }}{{ $mouvement->quantite }}
+                            </span>
+                        </li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
+
                 {{-- Avoirs émis sur cette vente --}}
                 @if($vente->avoirs->count() > 0)
                 <div class="card overflow-hidden">
@@ -205,6 +321,19 @@
                                     <span x-text="loading ? 'Chargement...' : 'Facture{{ $vente->numero_facture ? ' (' . $vente->numero_facture . ')' : '' }}'"></span>
                                 </button>
                             </div>
+                            @if($vente->statut === 'validee')
+                            @php $lienTicket = route('ticket.public', $vente->id); @endphp
+                            <div x-data="{ copie: false }">
+                                <button type="button"
+                                        @click="navigator.clipboard.writeText('{{ $lienTicket }}').then(() => { copie = true; setTimeout(() => copie = false, 2000); })"
+                                        class="w-full inline-flex items-center justify-center gap-2 px-3.5 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span x-text="copie ? 'Lien copié !' : 'Copier le lien du ticket'"></span>
+                                </button>
+                            </div>
+                            @endif
                             @else
                             <a href="{{ route('abonnement.upgrade', ['feature' => 'caisse_impression']) }}" 
                                class="w-full inline-flex items-center justify-center gap-2 px-3.5 py-2 text-sm font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800 dark:hover:bg-amber-900/30">
@@ -448,9 +577,9 @@
                             @if($vente->annulee_le)
                                 <p class="text-xs text-red-600/80 dark:text-red-400/80 break-words">
                                     Le {{ $vente->annulee_le->format('d/m/Y à H:i') }}
-                                    @if($vente->annulee_par)
-                                        @php($annulePar = \App\Models\User::withoutGlobalScopes()->find($vente->annulee_par))
-                                        @if($annulePar) par {{ $annulePar->name ?? $annulePar->email }} @endif
+                                    @if($vente->annuleePar)
+                                        par
+                                        <strong>{{ trim(($vente->annuleePar->prenom ?? '') . ' ' . ($vente->annuleePar->nom_famille ?? '')) ?: ($vente->annuleePar->name ?? $vente->annuleePar->email) }}</strong>
                                     @endif
                                 </p>
                             @endif

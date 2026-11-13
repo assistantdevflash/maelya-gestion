@@ -69,6 +69,18 @@ class Vente extends Model
         return $this->hasMany(Avoir::class, 'vente_id');
     }
 
+    /** Auteur de l'annulation (colonne annulee_par). */
+    public function annuleePar()
+    {
+        return $this->belongsTo(User::class, 'annulee_par');
+    }
+
+    /** Mouvements de stock générés par cette vente (et son annulation). */
+    public function mouvementsStock()
+    {
+        return $this->hasMany(MouvementStock::class, 'vente_id');
+    }
+
     public function credit()
     {
         return $this->hasOne(Credit::class);

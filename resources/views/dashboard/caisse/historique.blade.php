@@ -12,41 +12,185 @@
             </a>
         </div>
 
+        {{-- Synthèse sur l'ensemble du filtre (pas seulement la page courante) --}}
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="card p-4">
+                <p class="text-xs text-gray-500 dark:text-gray-400">Ventes</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($synthese->nb_valides ?? 0, 0, ',', ' ') }}</p>
+                @if(($synthese->nb_annulees ?? 0) > 0)
+                    <p class="text-[11px] text-red-500 mt-0.5">{{ $synthese->nb_annulees }} annulée{{ $synthese->nb_annulees > 1 ? 's' : '' }}</p>
+                @else
+                    <p class="text-[11px] text-gray-400 mt-0.5">aucune annulation</p>
+                @endif
+            </div>
+            <div class="card p-4">
+                <p class="text-xs text-gray-500 dark:text-gray-400">Total encaissé</p>
+                <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{{ number_format($synthese->total_encaisse ?? 0, 0, ',', ' ') }}</p>
+                <p class="text-[11px] text-gray-400 mt-0.5">FCFA · hors ventes annulées</p>
+            </div>
+            <div class="card p-4">
+                <p class="text-xs text-gray-500 dark:text-gray-400">Panier moyen</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                    {{ number_format(($synthese->nb_valides ?? 0) > 0 ? round($synthese->total_encaisse / $synthese->nb_valides) : 0, 0, ',', ' ') }}
+                </p>
+                <p class="text-[11px] text-gray-400 mt-0.5">FCFA</p>
+            </div>
+            <div class="card p-4">
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-1.5">Modes de paiement</p>
+                <div class="space-y-1">
+                    @php
+                        $libellesModes = ['cash' => 'Espèces', 'carte' => 'Carte', 'mobile_money' => 'Mobile', 'mixte' => 'Mixte', 'credit' => 'Crédit'];
+                        $totalModes = $repartitionModes->sum();
+                    @endphp
+                    @forelse($repartitionModes as $modeCode => $nb)
+                        <div class="flex items-center gap-1.5 text-[11px]">
+                            <span class="text-gray-500 dark:text-gray-400 w-14 truncate">{{ $libellesModes[$modeCode] ?? ucfirst($modeCode) }}</span>
+                            <div class="flex-1 h-1 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <div class="h-full rounded-full" style="width: {{ $totalModes > 0 ? round($nb / $totalModes * 100) : 0 }}%; background: linear-gradient(90deg, #9333ea, #ec4899);"></div>
+                            </div>
+                            <span class="text-gray-400 w-6 text-right">{{ $nb }}</span>
+                        </div>
+                    @empty
+                        <p class="text-[11px] text-gray-400">—</p>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+
         {{-- Filtres --}}
-        <div class="card p-4">
-            <form method="GET" action="{{ route('dashboard.ventes.index') }}" class="flex flex-wrap items-end gap-3"
-                  x-data="{ debut: '{{ request('debut') }}' }">
-                <div class="flex flex-col gap-1">
-                    <label class="text-xs text-gray-500 font-medium">Début</label>
-                    <input type="date" name="debut" x-model="debut" value="{{ request('debut') }}" class="form-input">
+        <div class="card p-4 space-y-3"
+             x-data="{
+                debut: '{{ request('debut') }}',
+                periode(nb) {
+                    const fin = new Date();
+                    const debut = new Date();
+                    if (nb === 'mois') { debut.setDate(1); }
+                    else if (nb === 'mois-1') { debut.setMonth(debut.getMonth() - 1, 1); fin.setDate(0); }
+                    else { debut.setDate(debut.getDate() - nb); }
+                    const iso = d => d.toISOString().slice(0, 10);
+                    document.getElementById('filtre-debut').value = iso(debut);
+                    document.getElementById('filtre-fin').value = iso(fin);
+                    this.debut = iso(debut);
+                    document.getElementById('form-filtres-ventes').submit();
+                }
+             }">
+
+            {{-- Périodes rapides --}}
+            <div class="flex flex-wrap gap-1.5">
+                <button type="button" @click="periode(0)"
+                        class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                    Aujourd'hui
+                </button>
+                <button type="button" @click="periode(7)"
+                        class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                    7 jours
+                </button>
+                <button type="button" @click="periode(30)"
+                        class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                    30 jours
+                </button>
+                <button type="button" @click="periode('mois')"
+                        class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                    Ce mois
+                </button>
+                <button type="button" @click="periode('mois-1')"
+                        class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                    Mois dernier
+                </button>
+            </div>
+
+            <form method="GET" action="{{ route('dashboard.ventes.index') }}" id="form-filtres-ventes"
+                  class="space-y-3">
+                {{-- Recherche --}}
+                <div class="relative">
+                    <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" name="q" value="{{ request('q') }}"
+                           placeholder="Rechercher : n° de vente, client, téléphone, montant…"
+                           class="form-input pl-10">
                 </div>
-                <div class="flex flex-col gap-1">
-                    <label class="text-xs text-gray-500 font-medium">Fin</label>
-                    <input type="date" name="fin" :min="debut" value="{{ request('fin') }}" class="form-input">
+
+                <div class="flex flex-wrap items-end gap-3">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-500 font-medium">Début</label>
+                        <input type="date" name="debut" id="filtre-debut" x-model="debut" value="{{ request('debut') }}" class="form-input">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-500 font-medium">Fin</label>
+                        <input type="date" name="fin" id="filtre-fin" :min="debut" value="{{ request('fin') }}" class="form-input">
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-500 font-medium">Statut</label>
+                        <select name="statut" class="form-select w-auto">
+                            <option value="">Tous</option>
+                            <option value="payees" {{ request('statut') === 'payees' ? 'selected' : '' }}>Payées</option>
+                            <option value="annulees" {{ request('statut') === 'annulees' ? 'selected' : '' }}>Annulées</option>
+                            <option value="credit_en_cours" {{ request('statut') === 'credit_en_cours' ? 'selected' : '' }}>Crédits en cours</option>
+                            <option value="credit_retard" {{ request('statut') === 'credit_retard' ? 'selected' : '' }}>Crédits en retard</option>
+                        </select>
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-500 font-medium">Mode</label>
+                        <select name="mode" class="form-select w-auto">
+                            <option value="">Tous</option>
+                            <option value="cash" {{ request('mode') === 'cash' ? 'selected' : '' }}>Espèces</option>
+                            <option value="carte" {{ request('mode') === 'carte' ? 'selected' : '' }}>Carte</option>
+                            <option value="mobile_money" {{ request('mode') === 'mobile_money' ? 'selected' : '' }}>Mobile Money</option>
+                            <option value="mixte" {{ request('mode') === 'mixte' ? 'selected' : '' }}>Mixte</option>
+                            <option value="credit" {{ request('mode') === 'credit' ? 'selected' : '' }}>Crédit</option>
+                        </select>
+                    </div>
+
+                    @if(!Auth::user()->isEmploye() && $membres->count() > 1)
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-500 font-medium">Vendeur</label>
+                        <select name="employe_id" class="form-select w-auto">
+                            <option value="">Tous</option>
+                            @foreach($membres as $membre)
+                            <option value="{{ $membre->id }}" {{ request('employe_id') === $membre->id ? 'selected' : '' }}>
+                                {{ $membre->prenom }} {{ $membre->nom_famille }}@if($membre->role === 'admin') (Admin)@endif
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
+
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-500 font-medium">Tri</label>
+                        <select name="tri" class="form-select w-auto">
+                            <option value="recent" {{ request('tri', 'recent') === 'recent' ? 'selected' : '' }}>Plus récentes</option>
+                            <option value="ancien" {{ request('tri') === 'ancien' ? 'selected' : '' }}>Plus anciennes</option>
+                            <option value="montant" {{ request('tri') === 'montant' ? 'selected' : '' }}>Montant décroissant</option>
+                            <option value="client" {{ request('tri') === 'client' ? 'selected' : '' }}>Client</option>
+                        </select>
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-500 font-medium">Par page</label>
+                        <select name="par_page" class="form-select w-auto">
+                            @foreach([25, 50, 100] as $n)
+                            <option value="{{ $n }}" {{ (int) request('par_page', 50) === $n ? 'selected' : '' }}>{{ $n }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-primary py-2">Filtrer</button>
+
+                    <a href="{{ route('dashboard.ventes.export', request()->query()) }}"
+                       class="btn-outline border py-2 inline-flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        Exporter
+                    </a>
+
+                    @if(request()->hasAny(['debut','fin','mode','employe_id','statut','q','tri']))
+                        <a href="{{ route('dashboard.ventes.index') }}" class="btn btn-ghost border py-2">Réinitialiser</a>
+                    @endif
                 </div>
-                <select name="mode" class="form-select w-auto self-end">
-                    <option value="">Tous modes</option>
-                    <option value="cash" {{ request('mode') === 'cash' ? 'selected' : '' }}>Especes</option>
-                    <option value="carte" {{ request('mode') === 'carte' ? 'selected' : '' }}>Carte</option>
-                    <option value="mobile_money" {{ request('mode') === 'mobile_money' ? 'selected' : '' }}>Mobile Money</option>
-                    <option value="mixte" {{ request('mode') === 'mixte' ? 'selected' : '' }}>Mixte</option>
-                    <option value="credit" {{ request('mode') === 'credit' ? 'selected' : '' }}>Credit</option>
-                </select>
-                @if(!Auth::user()->isEmploye() && $membres->count() > 1)
-                <select name="employe_id" class="form-select w-auto self-end">
-                    <option value="">Tous les vendeurs</option>
-                    @foreach($membres as $membre)
-                    <option value="{{ $membre->id }}" {{ request('employe_id') === $membre->id ? 'selected' : '' }}>
-                        {{ $membre->prenom }} {{ $membre->nom_famille }}
-                        @if($membre->role === 'admin') (Admin) @endif
-                    </option>
-                    @endforeach
-                </select>
-                @endif
-                <button type="submit" class="btn-outline self-end border py-2">Filtrer</button>
-                @if(request()->hasAny(['debut','fin','mode','employe_id']))
-                    <a href="{{ route('dashboard.ventes.index') }}" class="btn btn-ghost self-end border py-2">Réinitialiser</a>
-                @endif
             </form>
         </div>
 
@@ -74,10 +218,15 @@
                     </thead>
                     <tbody class="divide-y divide-gray-50">
                         @foreach($ventes as $idx => $vente)
-                        <tr class="hover:bg-gray-50 group transition-colors cursor-pointer" 
-                            onclick="window.location.href='{{ route('dashboard.ventes.show', $vente) }}'">
+                        <tr class="hover:bg-gray-50 dark:hover:bg-slate-700/40 group transition-colors">
                             <td class="px-4 py-3">
-                                <span class="font-mono text-xs text-gray-600">{{ $vente->numero }}</span>
+                                {{-- Lien réel (et non un onclick sur la ligne) :
+                                     accessible au clavier et ouvrable dans un
+                                     nouvel onglet. --}}
+                                <a href="{{ route('dashboard.ventes.show', $vente) }}"
+                                   class="font-mono text-xs text-primary-600 dark:text-primary-400 hover:underline focus:outline-none focus:ring-2 focus:ring-primary-400 rounded px-1 -mx-1">
+                                    {{ $vente->numero }}
+                                </a>
                             </td>
                             <td class="px-4 py-3 text-gray-500 hidden sm:table-cell text-xs">
                                 {{ $vente->created_at->format('d/m/Y H:i') }}
@@ -148,7 +297,8 @@
             </div>
             <div class="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
                 <p class="text-xs text-gray-400">
-                    Total periode : <strong class="text-gray-900">{{ number_format($ventes->sum(fn($v) => $v->mode_paiement === 'credit' ? ($v->montant_paye ?? 0) : $v->total), 0, ',', ' ') }} FCFA</strong>
+                    Total période : <strong class="text-gray-900">{{ number_format($synthese->total_encaisse ?? 0, 0, ',', ' ') }} FCFA</strong>
+                    <span class="text-gray-400">sur {{ number_format($synthese->nb_valides ?? 0, 0, ',', ' ') }} vente{{ ($synthese->nb_valides ?? 0) > 1 ? 's' : '' }}</span>
                 </p>
                 {{ $ventes->withQueryString()->links() }}
             </div>
