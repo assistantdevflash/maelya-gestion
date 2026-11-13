@@ -54,42 +54,111 @@
             </form>
         </div>
 
-        {{-- KPI résumé --}}
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {{-- ═══ Résultat de la période ═══ --}}
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="stat-card">
-                <p class="text-xs text-gray-500 mb-1">Chiffre d'affaires</p>
-                <p class="text-xl font-bold text-emerald-600">{{ number_format($totalVentes, 0, ',', ' ') }}</p>
-                <p class="text-xs text-gray-400">FCFA</p>
+                <p class="text-xs text-gray-500 mb-1">Chiffre d'affaires encaissé</p>
+                <p class="text-xl font-bold text-emerald-600">{{ number_format($resultat['ca'], 0, ',', ' ') }}</p>
+                <p class="text-xs text-gray-400">
+                    FCFA · {{ $resultat['nb_ventes'] }} vente{{ $resultat['nb_ventes'] > 1 ? 's' : '' }}
+                    @if($comparaison($resultat['ca'], $resultatPrec['ca']) !== null)
+                        <span class="font-semibold {{ $comparaison($resultat['ca'], $resultatPrec['ca']) >= 0 ? 'text-emerald-600' : 'text-red-500' }}">
+                            {{ $comparaison($resultat['ca'], $resultatPrec['ca']) >= 0 ? '▲' : '▼' }}{{ abs($comparaison($resultat['ca'], $resultatPrec['ca'])) }} %
+                        </span>
+                    @endif
+                </p>
             </div>
             <div class="stat-card">
-                <p class="text-xs text-gray-500 mb-1">Total dépenses</p>
-                <p class="text-xl font-bold text-red-600">{{ number_format($totalDepenses, 0, ',', ' ') }}</p>
-                <p class="text-xs text-gray-400">FCFA</p>
+                <p class="text-xs text-gray-500 mb-1">Coût des marchandises</p>
+                <p class="text-xl font-bold text-amber-600">{{ number_format($resultat['couts_marchandises'], 0, ',', ' ') }}</p>
+                <p class="text-xs text-gray-400">FCFA · ce qui a été vendu</p>
             </div>
             <div class="stat-card">
-                <p class="text-xs text-gray-500 mb-1">Bénéfice net</p>
-                <p class="text-xl font-bold {{ $benefice >= 0 ? 'text-primary-600' : 'text-red-600' }}">{{ number_format($benefice, 0, ',', ' ') }}</p>
-                <p class="text-xs text-gray-400">FCFA</p>
+                <p class="text-xs text-gray-500 mb-1">Marge brute</p>
+                <p class="text-xl font-bold text-primary-600">{{ number_format($resultat['marge_brute'], 0, ',', ' ') }}</p>
+                <p class="text-xs text-gray-400">FCFA · {{ $resultat['taux_marge_brute'] }} % du CA</p>
             </div>
             <div class="stat-card">
-                <p class="text-xs text-gray-500 mb-1">Nb ventes</p>
-                <p class="text-xl font-bold text-gray-900">{{ $nbVentes }}</p>
-                <p class="text-xs text-gray-400">validées</p>
+                <p class="text-xs text-gray-500 mb-1">Dépenses d'exploitation</p>
+                <p class="text-xl font-bold text-red-600">{{ number_format($resultat['depenses'], 0, ',', ' ') }}</p>
+                <p class="text-xs text-gray-400">
+                    FCFA
+                    @if(($sansJustificatif ?? 0) > 0)
+                        · <span class="text-amber-600 font-semibold">{{ $sansJustificatif }} sans justificatif</span>
+                    @endif
+                </p>
             </div>
         </div>
 
-        {{-- Valorisation stock + marge potentielle --}}
-        @if(($valeurStock ?? 0) > 0 || ($margePotentielleStock ?? 0) > 0)
-        <div class="grid grid-cols-2 gap-4">
-            <div class="stat-card">
-                <p class="text-xs text-gray-500 mb-1">Valeur du stock (CMP)</p>
-                <p class="text-xl font-bold text-blue-600">{{ number_format($valeurStock ?? 0, 0, ',', ' ') }}</p>
-                <p class="text-xs text-gray-400">FCFA immobilisés</p>
+        {{-- ═══ Résultat net (chaîne explicite) ═══ --}}
+        <div class="card p-4 sm:p-5">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                    <span class="text-gray-500">CA encaissé <strong class="text-gray-900 dark:text-white">{{ number_format($resultat['ca'], 0, ',', ' ') }}</strong></span>
+                    <span class="text-gray-300">−</span>
+                    <span class="text-gray-500">Marchandises <strong class="text-gray-900 dark:text-white">{{ number_format($resultat['couts_marchandises'], 0, ',', ' ') }}</strong></span>
+                    <span class="text-gray-300">=</span>
+                    <span class="text-gray-500">Marge brute <strong class="text-primary-600">{{ number_format($resultat['marge_brute'], 0, ',', ' ') }}</strong></span>
+                    <span class="text-gray-300">−</span>
+                    <span class="text-gray-500">Dépenses <strong class="text-gray-900 dark:text-white">{{ number_format($resultat['depenses'], 0, ',', ' ') }}</strong></span>
+                </div>
+                <div class="text-right">
+                    <p class="text-[11px] uppercase tracking-wider text-gray-400 font-semibold">Résultat net</p>
+                    <p class="text-2xl font-extrabold {{ $resultat['resultat'] >= 0 ? 'text-emerald-600' : 'text-red-600' }}">
+                        {{ number_format($resultat['resultat'], 0, ',', ' ') }} <span class="text-sm font-bold">FCFA</span>
+                    </p>
+                    @if($comparaison($resultat['resultat'], $resultatPrec['resultat']) !== null)
+                        <p class="text-[11px] font-semibold {{ $comparaison($resultat['resultat'], $resultatPrec['resultat']) >= 0 ? 'text-emerald-600' : 'text-red-500' }}">
+                            {{ $comparaison($resultat['resultat'], $resultatPrec['resultat']) >= 0 ? '▲' : '▼' }}
+                            {{ abs($comparaison($resultat['resultat'], $resultatPrec['resultat'])) }} % vs période précédente
+                        </p>
+                    @endif
+                </div>
             </div>
-            <div class="stat-card">
-                <p class="text-xs text-gray-500 mb-1">Marge potentielle (si tout vendu)</p>
-                <p class="text-xl font-bold text-emerald-600">{{ number_format($margePotentielleStock ?? 0, 0, ',', ' ') }}</p>
-                <p class="text-xs text-gray-400">FCFA</p>
+
+            <div class="mt-4 pt-3 border-t border-gray-100 dark:border-slate-700 grid sm:grid-cols-3 gap-3 text-xs">
+                <div>
+                    <p class="text-gray-400">Panier moyen</p>
+                    <p class="font-bold text-gray-900 dark:text-white">{{ number_format($resultat['panier_moyen'], 0, ',', ' ') }} F</p>
+                </div>
+                <div>
+                    <p class="text-gray-400">Seuil de rentabilité</p>
+                    <p class="font-bold text-gray-900 dark:text-white">
+                        @if($resultat['seuil_rentabilite'] !== null)
+                            {{ number_format($resultat['seuil_rentabilite'], 0, ',', ' ') }} F de CA
+                        @else
+                            —
+                        @endif
+                    </p>
+                    @if($resultat['seuil_rentabilite'] !== null)
+                        <p class="text-[10px] text-gray-400">pour couvrir les dépenses de la période</p>
+                    @endif
+                </div>
+                <div>
+                    <p class="text-gray-400">Encours crédit client</p>
+                    <p class="font-bold text-gray-900 dark:text-white">{{ number_format($encoursCredit['encours'] ?? 0, 0, ',', ' ') }} F</p>
+                    @if(($encoursCredit['en_retard'] ?? 0) > 0)
+                        <p class="text-[10px] text-red-500 font-semibold">dont {{ number_format($encoursCredit['en_retard'], 0, ',', ' ') }} F en retard</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        {{-- ═══ Stock : photo à date, pas un flux de la période ═══ --}}
+        @if(($valeurStock ?? 0) > 0 || ($margePotentielleStock ?? 0) > 0)
+        <div class="card p-4">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">Stock à aujourd'hui</p>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-xs text-gray-500 mb-1">Valeur du stock (CMP)</p>
+                    <p class="text-lg font-bold text-blue-600">{{ number_format($valeurStock ?? 0, 0, ',', ' ') }}</p>
+                    <p class="text-[10px] text-gray-400">FCFA immobilisés</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500 mb-1">Marge si tout est vendu</p>
+                    <p class="text-lg font-bold text-emerald-600">{{ number_format($margePotentielleStock ?? 0, 0, ',', ' ') }}</p>
+                    <p class="text-[10px] text-gray-400">projection, hors période</p>
+                </div>
             </div>
         </div>
         @endif
@@ -277,40 +346,62 @@
                 </form>
             </div>
 
-            {{-- KPI trésorerie --}}
-            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <div class="card p-4">
-                    <p class="text-xs text-gray-500 dark:text-slate-400 uppercase">Entrées prévues</p>
-                    <p class="text-2xl font-bold text-emerald-600 mt-1">{{ number_format($revenusPrevu, 0, ',', ' ') }} F</p>
+            {{-- KPI trésorerie, classés par degré de certitude --}}
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="card p-4 border-l-4 border-emerald-500">
+                    <p class="text-xs text-gray-500 dark:text-slate-400 uppercase">Certain</p>
+                    <p class="text-2xl font-bold text-emerald-600 mt-1">{{ number_format($revenusCertains, 0, ',', ' ') }} F</p>
                     <p class="text-xs text-gray-400 mt-1">
-                        {{ $rdvFuturs->count() }} RDV{{ $rdvFuturs->count() > 1 ? 's' : '' }}
-                        @if($nbDevisPrevu > 0) · {{ $nbDevisPrevu }} devis @endif
-                        @if($nbCommandesPrevues > 0) · {{ $nbCommandesPrevues }} cmd @endif
-                        @if(($nbEcheancesPrevu ?? 0) > 0) · {{ $nbEcheancesPrevu }} échéance{{ $nbEcheancesPrevu > 1 ? 's' : '' }} crédit @endif
+                        Créances clients et commandes déjà engagées
                     </p>
-                    @if(($creditsPrevu ?? 0) > 0)
-                    <p class="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1">
-                        dont {{ number_format($creditsPrevu, 0, ',', ' ') }} F de crédits à recouvrer
+                    <p class="text-[11px] text-gray-500 dark:text-slate-400 mt-1">
+                        @if(($creditsPrevu ?? 0) > 0) {{ $nbEcheancesPrevu }} échéance{{ $nbEcheancesPrevu > 1 ? 's' : '' }} de crédit @endif
+                        @if($nbCommandesPrevues > 0) · {{ $nbCommandesPrevues }} commande{{ $nbCommandesPrevues > 1 ? 's' : '' }} @endif
                     </p>
-                    @endif
                 </div>
-                <div class="card p-4">
-                    <p class="text-xs text-gray-500 dark:text-slate-400 uppercase">Ventes prévues</p>
-                    <p class="text-2xl font-bold text-blue-600 mt-1">{{ number_format($projectionVentes, 0, ',', ' ') }} F</p>
-                    <p class="text-xs text-gray-400 mt-1">Projection {{ $joursPrevi }}j (moy. CA)</p>
+                <div class="card p-4 border-l-4 border-blue-500">
+                    <p class="text-xs text-gray-500 dark:text-slate-400 uppercase">Probable</p>
+                    <p class="text-2xl font-bold text-blue-600 mt-1">{{ number_format($revenusProbables, 0, ',', ' ') }} F</p>
+                    <p class="text-xs text-gray-400 mt-1">
+                        {{ $rdvFuturs->count() }} rendez-vous pris — le client peut encore annuler
+                    </p>
                 </div>
-                <div class="card p-4">
-                    <p class="text-xs text-gray-500 dark:text-slate-400 uppercase">Dépenses prévues</p>
-                    <p class="text-2xl font-bold text-red-600 mt-1">{{ number_format($projectionDepenses, 0, ',', ' ') }} F</p>
-                    <p class="text-xs text-gray-400 mt-1">Projection {{ $joursPrevi }}j (moy. 90j)</p>
-                </div>
-                <div class="card p-4 {{ $soldePrevi >= 0 ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-red-50 dark:bg-red-900/20' }}">
-                    <p class="text-xs text-gray-500 dark:text-slate-400 uppercase">Solde net projeté</p>
-                    <p class="text-2xl font-bold mt-1 {{ $soldePrevi >= 0 ? 'text-emerald-700' : 'text-red-700' }}">
-                        {{ ($soldePrevi >= 0 ? '+' : '') . number_format($soldePrevi, 0, ',', ' ') }} F
+                <div class="card p-4 border-l-4 border-amber-500">
+                    <p class="text-xs text-gray-500 dark:text-slate-400 uppercase">Espéré</p>
+                    <p class="text-2xl font-bold text-amber-600 mt-1">{{ number_format($revenusEsperes, 0, ',', ' ') }} F</p>
+                    <p class="text-xs text-gray-400 mt-1">
+                        {{ $nbDevisPrevu }} devis envoyé{{ $nbDevisPrevu > 1 ? 's' : '' }}, pas encore accepté{{ $nbDevisPrevu > 1 ? 's' : '' }}
                     </p>
                 </div>
             </div>
+
+            {{-- Solde prudent vs solde complet --}}
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="card p-4">
+                    <p class="text-xs text-gray-500 dark:text-slate-400 uppercase">Dépenses prévues</p>
+                    <p class="text-2xl font-bold text-red-600 mt-1">{{ number_format($projectionDepenses, 0, ',', ' ') }} F</p>
+                    <p class="text-xs text-gray-400 mt-1">Projection {{ $joursPrevi }} j (moyenne 90 j)</p>
+                </div>
+                <div class="card p-4 {{ $soldePrudent >= 0 ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-red-50 dark:bg-red-900/20' }}">
+                    <p class="text-xs text-gray-500 dark:text-slate-400 uppercase">Solde prudent</p>
+                    <p class="text-2xl font-bold mt-1 {{ $soldePrudent >= 0 ? 'text-emerald-700' : 'text-red-700' }}">
+                        {{ ($soldePrudent >= 0 ? '+' : '') . number_format($soldePrudent, 0, ',', ' ') }} F
+                    </p>
+                    <p class="text-[11px] text-gray-500 mt-1">Certain + probable − dépenses</p>
+                </div>
+                <div class="card p-4">
+                    <p class="text-xs text-gray-500 dark:text-slate-400 uppercase">Solde avec les devis</p>
+                    <p class="text-2xl font-bold mt-1 {{ $soldePrevi >= 0 ? 'text-emerald-700' : 'text-red-700' }}">
+                        {{ ($soldePrevi >= 0 ? '+' : '') . number_format($soldePrevi, 0, ',', ' ') }} F
+                    </p>
+                    <p class="text-[11px] text-gray-500 mt-1">Si tous les devis aboutissent</p>
+                </div>
+            </div>
+
+            <p class="text-[11px] text-gray-400 dark:text-gray-500">
+                La tendance statistique des ventes ({{ number_format($projectionVentes, 0, ',', ' ') }} F sur {{ $joursPrevi }} j)
+                n'est pas additionnée à ces soldes : elle recouvre déjà les rendez-vous, devis, commandes et échéances comptés ci-dessus.
+            </p>
 
             {{-- Graphique --}}
             <div class="card p-4">

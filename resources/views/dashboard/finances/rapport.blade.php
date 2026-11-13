@@ -30,18 +30,31 @@
     </form>
 
     {{-- Résumé --}}
-    <div class="grid sm:grid-cols-3 gap-4">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div class="card p-5">
-            <p class="text-xs text-gray-400 uppercase tracking-wider">Revenus</p>
-            <p class="text-2xl font-bold text-green-600 mt-1">{{ number_format($revenus, 0, ',', ' ') }} F</p>
+            <p class="text-xs text-gray-400 uppercase tracking-wider">CA encaissé</p>
+            <p class="text-xl font-bold text-green-600 mt-1">{{ number_format($resultatRapport['ca'], 0, ',', ' ') }} F</p>
+            <p class="text-[11px] text-gray-400">{{ $resultatRapport['nb_ventes'] }} vente{{ $resultatRapport['nb_ventes'] > 1 ? 's' : '' }}</p>
+        </div>
+        <div class="card p-5">
+            <p class="text-xs text-gray-400 uppercase tracking-wider">Marchandises</p>
+            <p class="text-xl font-bold text-amber-600 mt-1">{{ number_format($resultatRapport['couts_marchandises'], 0, ',', ' ') }} F</p>
+            <p class="text-[11px] text-gray-400">coût de ce qui a été vendu</p>
+        </div>
+        <div class="card p-5">
+            <p class="text-xs text-gray-400 uppercase tracking-wider">Marge brute</p>
+            <p class="text-xl font-bold text-primary-600 mt-1">{{ number_format($resultatRapport['marge_brute'], 0, ',', ' ') }} F</p>
+            <p class="text-[11px] text-gray-400">{{ $resultatRapport['taux_marge_brute'] }} % du CA</p>
         </div>
         <div class="card p-5">
             <p class="text-xs text-gray-400 uppercase tracking-wider">Dépenses</p>
-            <p class="text-2xl font-bold text-red-600 mt-1">{{ number_format($totalDepenses, 0, ',', ' ') }} F</p>
+            <p class="text-xl font-bold text-red-600 mt-1">{{ number_format($resultatRapport['depenses'], 0, ',', ' ') }} F</p>
+            <p class="text-[11px] text-gray-400">exploitation</p>
         </div>
         <div class="card p-5">
-            <p class="text-xs text-gray-400 uppercase tracking-wider">Bénéfice net</p>
-            <p class="text-2xl font-bold {{ $benefice >= 0 ? 'text-green-600' : 'text-red-600' }} mt-1">{{ number_format($benefice, 0, ',', ' ') }} F</p>
+            <p class="text-xs text-gray-400 uppercase tracking-wider">Résultat net</p>
+            <p class="text-xl font-bold {{ $resultatRapport['resultat'] >= 0 ? 'text-green-600' : 'text-red-600' }} mt-1">{{ number_format($resultatRapport['resultat'], 0, ',', ' ') }} F</p>
+            <p class="text-[11px] text-gray-400">{{ $resultatRapport['marge_nette'] }} % du CA</p>
         </div>
     </div>
 

@@ -521,7 +521,10 @@ class CreditModuleTest extends TestCase
             ->get(route('dashboard.finances.index'))
             ->assertOk()
             ->assertSee('Projection financière')
-            ->assertSee('crédits à recouvrer', false);
+            // Les créances clients figurent désormais dans les revenus
+            // « Certain », avec le nombre d'échéances attendues.
+            ->assertSee('Certain')
+            ->assertSee("échéance");
     }
 
     // ─────────────────────────────────────────────────────────────────────

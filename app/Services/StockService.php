@@ -120,6 +120,9 @@ class StockService
                 'motif'       => $options['motif'] ?? null,
                 'quantite'    => $quantite,
                 'vente_id'    => $options['vente_id'] ?? null,
+                // Coût unitaire figé au moment de la sortie : c'est lui qui
+                // permet de calculer la marge réelle des ventes.
+                'prix_unitaire' => $options['prix_unitaire'] ?? null,
                 'stock_avant' => $stockAvant,
                 'stock_apres' => $stockAvant - $quantite,
                 'note'        => $options['note'] ?? null,

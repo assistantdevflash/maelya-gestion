@@ -22,28 +22,30 @@ class FinanceController extends Controller
         $debut = \Carbon\Carbon::parse($debutStr);
         $fin = \Carbon\Carbon::parse($finStr);
 
-        $totalVentes = Vente::where('statut', 'validee')
-            ->whereDate('created_at', '>=', $debut)
-            ->whereDate('created_at', '<=', $fin)
-            ->selectRaw("SUM(CASE WHEN mode_paiement = 'credit' THEN montant_paye ELSE total END) as total_reel")
-            ->value('total_reel') ?? 0;
+        $institutId = session('current_institut_id', Auth::user()->institut_id);
 
-        $nbVentes = Vente::where('statut', 'validee')
-            ->whereDate('created_at', '>=', $debut)
-            ->whereDate('created_at', '<=', $fin)
-            ->where(function ($q) {
-                // Exclure les crédits non payés (montant_paye = 0)
-                $q->where('mode_paiement', '!=', 'credit')
-                  ->orWhere('montant_paye', '>', 0);
-            })
-            ->count();
+        // ── Chaîne de résultat : CA − coût marchandises − dépenses ──
+        $finance   = app(\App\Services\FinanceService::class);
+        $resultat  = $finance->resultat($institutId, $debut->copy()->startOfDay(), $fin->copy()->endOfDay());
 
-        $totalDepenses = Depense::whereDate('date', '>=', $debut)
-            ->whereDate('date', '<=', $fin)
-            ->sum('montant');
+        // Période précédente de même durée, pour comparer.
+        $duree      = $debut->diffInSeconds($fin) + 1;
+        $precFin    = $debut->copy()->subSecond();
+        $precDebut  = $precFin->copy()->subSeconds($duree - 1);
+        $resultatPrec = $finance->resultat($institutId, $precDebut, $precFin);
 
-        $benefice = $totalVentes - $totalDepenses;
-        $marge = $totalVentes > 0 ? round(($benefice / $totalVentes) * 100, 1) : 0;
+        $comparaison = function (int $actuel, int $precedent): ?float {
+            return $precedent > 0 ? round(($actuel - $precedent) * 100 / $precedent, 1) : null;
+        };
+
+        $totalVentes    = $resultat['ca'];
+        $nbVentes       = $resultat['nb_ventes'];
+        $totalDepenses  = $resultat['depenses'];
+        $benefice       = $resultat['resultat'];
+        $marge          = $resultat['marge_nette'];
+
+        $encoursCredit  = $finance->encoursCredit($institutId);
+        $sansJustificatif = $finance->depensesSansJustificatif($institutId, $debut, $fin);
 
         // Valorisation du stock + marge potentielle (basée sur CMP)
         $produitsValorisation = \App\Models\Produit::where('actif', true)
@@ -90,8 +92,6 @@ class FinanceController extends Controller
                 'ca' => (int) ($ventesParMois[$key] ?? 0),
             ];
         }
-
-        $institutId = session('current_institut_id', Auth::user()->institut_id);
 
         // ── Prestations par catégorie (inclut les ventes rapides type_libre=prestation) ──
         $regularPresta = VenteItem::query()
@@ -205,6 +205,10 @@ class FinanceController extends Controller
             return $r->prestations->sum('prix');
         });
 
+        // Revenus « probables » : rendez-vous déjà pris (le client peut encore
+        // annuler, mais la place est réservée).
+        $revenusProbables = $revenusPrevu;
+
         // Devis envoyés ou acceptés (non transformés, non refusés)
         $devisPrevu = \App\Models\Devis::whereIn('statut', ['envoye', 'accepte'])
             ->whereDate('date_expiration', '>=', $debutPrevi)
@@ -232,7 +236,14 @@ class FinanceController extends Controller
 
         $creditsPrevu       = (int) $echeancesCredit->sum(fn ($e) => max(0, (int) $e->montant - (int) $e->montant_paye));
         $nbEcheancesPrevu   = $echeancesCredit->count();
-        $revenusPrevu      += $creditsPrevu;
+
+        // ── Classement par degré de certitude ──
+        // « Certain » : argent déjà engagé (échéances de crédit, commandes en cours).
+        // « Probable » : rendez-vous pris.
+        // « Espéré » : devis envoyés, pas encore acceptés.
+        $revenusCertains  = (int) $commandesPrevues + (int) $creditsPrevu;
+        $revenusEsperes   = (int) $devisPrevu;
+        $revenusPrevu     = $revenusCertains + $revenusProbables + $revenusEsperes;
 
         // Moyenne quotidienne des ventes des 30 derniers jours (hors crédits non payés)
         $caRecent = Vente::where('statut', 'validee')
@@ -247,7 +258,12 @@ class FinanceController extends Controller
         $depQuotidienne = $depensesRecentes / 90;
         $projectionDepenses = (int) round($depQuotidienne * $joursPrevi);
 
-        $soldePrevi = $revenusPrevu + $projectionVentes - $projectionDepenses;
+        // On n'ajoute PAS la projection statistique des ventes : elle décrit
+        // déjà les RDV, devis, commandes et échéances comptés ci-dessus.
+        // L'additionner reviendrait à compter deux fois le même argent.
+        $soldePrevi        = $revenusPrevu - $projectionDepenses;
+        // Le solde « prudent » ne retient que le certain et le probable.
+        $soldePrudent      = $revenusCertains + $revenusProbables - $projectionDepenses;
 
         // Détail par jour pour graphique
         $jourLabel = [];
@@ -287,7 +303,9 @@ class FinanceController extends Controller
                 ->filter(fn ($e) => $e->date_prevue && $e->date_prevue->isSameDay($d))
                 ->sum(fn ($e) => max(0, (int) $e->montant - (int) $e->montant_paye));
 
-            $jourEntrees[] = (int) ($entrees + $caQuotidien);
+            // Pas de lissage statistique ici : seules les entrées connues
+            // apparaissent, jour par jour.
+            $jourEntrees[] = (int) $entrees;
             $jourSorties[] = (int) $depQuotidienne;
         }
 
@@ -299,7 +317,9 @@ class FinanceController extends Controller
             'joursPrevi', 'revenusPrevu', 'projectionVentes', 'projectionDepenses',
             'soldePrevi', 'jourLabel', 'jourEntrees', 'jourSorties', 'rdvFuturs',
             'devisPrevu', 'commandesPrevues', 'nbDevisPrevu', 'nbCommandesPrevues',
-            'creditsPrevu', 'nbEcheancesPrevu'
+            'creditsPrevu', 'nbEcheancesPrevu',
+            'resultat', 'resultatPrec', 'comparaison', 'encoursCredit', 'sansJustificatif',
+            'revenusCertains', 'revenusProbables', 'revenusEsperes', 'soldePrudent'
         ));
     }
 
@@ -362,15 +382,11 @@ class FinanceController extends Controller
         $debut = $request->input('debut', now()->startOfMonth()->toDateString());
         $fin = $request->input('fin', now()->toDateString());
 
+        // Toutes les ventes validées, y compris les crédits en cours.
         $ventes = Vente::with('client', 'items')
             ->where('statut', 'validee')
             ->whereDate('created_at', '>=', $debut)
             ->whereDate('created_at', '<=', $fin)
-            ->where(function ($q) {
-                // Exclure les crédits non payés
-                $q->where('mode_paiement', '!=', 'credit')
-                  ->orWhere('montant_paye', '>', 0);
-            })
             ->latest()
             ->get();
 
@@ -379,12 +395,21 @@ class FinanceController extends Controller
             ->latest('date')
             ->get();
 
-        $revenus = $ventes->sum(fn ($v) => $v->mode_paiement === 'credit' ? $v->montant_paye : $v->total);
-        $totalDepenses = $depenses->sum('montant');
-        $benefice = $revenus - $totalDepenses;
+        // Même chaîne de calcul que l'écran : CA − marchandises − dépenses.
+        $institutId = session('current_institut_id', Auth::user()->institut_id);
+        $resultatRapport = app(\App\Services\FinanceService::class)->resultat(
+            $institutId,
+            \Carbon\Carbon::parse($debut)->startOfDay(),
+            \Carbon\Carbon::parse($fin)->endOfDay()
+        );
+
+        $revenus       = $resultatRapport['ca'];
+        $totalDepenses = $resultatRapport['depenses'];
+        $benefice      = $resultatRapport['resultat'];
 
         return view('dashboard.finances.rapport', compact(
-            'ventes', 'depenses', 'revenus', 'totalDepenses', 'benefice', 'debut', 'fin'
+            'ventes', 'depenses', 'revenus', 'totalDepenses', 'benefice', 'debut', 'fin',
+            'resultatRapport'
         ));
     }
 

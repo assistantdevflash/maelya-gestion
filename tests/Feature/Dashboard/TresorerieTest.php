@@ -22,6 +22,10 @@ class TresorerieTest extends TestCase
         $response->assertOk();
         // La trésorerie prévisionnelle est un onglet de la page Finances.
         $response->assertSee('Projection financière');
-        $response->assertSee('Entrées prévues');
+        // Les entrées sont désormais classées par degré de certitude.
+        $response->assertSee('Certain');
+        $response->assertSee('Probable');
+        $response->assertSee('Espéré');
+        $response->assertSee('Solde prudent');
     }
 }

@@ -218,6 +218,8 @@ class VenteController extends Controller
                             app(StockService::class)->sortir($produit, (int) $item['quantite'], [
                                 'type'     => StockService::SORTIE_VENTE,
                                 'vente_id' => $vente->id,
+                                // Coût de revient figé à la vente.
+                                'prix_unitaire' => $produit->cout_moyen_pondere ?: $produit->prix_achat,
                             ]);
                         }
                     }
