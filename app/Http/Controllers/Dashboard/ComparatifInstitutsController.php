@@ -3,73 +3,104 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Models\Client;
-use App\Models\Vente;
+use App\Services\ComparatifInstitutsService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class ComparatifInstitutsController extends Controller
 {
-    public function index()
+    public function __construct(private ComparatifInstitutsService $service)
+    {
+    }
+
+    private function instituts()
     {
         $user = Auth::user();
         abort_unless($user->aPlanEntreprise(), 403, 'Cette fonctionnalité nécessite le plan Entreprise.');
 
-        $instituts = $user->mesInstituts()->where('actif', true)->orderBy('nom')->get();
-        $debutMois = now()->startOfMonth();
-        $finMois   = now()->endOfMonth();
+        return $user->mesInstituts()->where('actif', true)->orderBy('nom')->get();
+    }
 
-        $stats = [];
-        foreach ($instituts as $i) {
-            $caMois = Vente::withoutGlobalScopes()
-                ->where('institut_id', $i->id)
-                ->where('statut', '!=', 'annulee')
-                ->whereBetween('created_at', [$debutMois, $finMois])
-                ->sum('total');
+    private function donnees(Request $request): array
+    {
+        $instituts = $this->instituts();
+        $periode   = $this->service->periode(
+            $request->input('periode', 'mois'),
+            $request->input('du'),
+            $request->input('au')
+        );
 
-            $nbVentes = Vente::withoutGlobalScopes()
-                ->where('institut_id', $i->id)
-                ->where('statut', '!=', 'annulee')
-                ->whereBetween('created_at', [$debutMois, $finMois])
-                ->count();
+        $stats = $this->service->stats(
+            $instituts, $periode['debut'], $periode['fin'],
+            $periode['prec_debut'], $periode['prec_fin']
+        );
 
-            $nbClients = Client::withoutGlobalScopes()
-                ->where('institut_id', $i->id)->count();
+        $tri = $request->input('tri', 'ca');
 
-            $nbClientsNouv = Client::withoutGlobalScopes()
-                ->where('institut_id', $i->id)
-                ->whereBetween('created_at', [$debutMois, $finMois])
-                ->count();
+        usort($stats, function ($a, $b) use ($tri) {
+            return match ($tri) {
+                'nom'      => strcasecmp($a['institut']->nom, $b['institut']->nom),
+                'ventes'   => $b['nb_ventes'] <=> $a['nb_ventes'],
+                'panier'   => $b['panier_moyen'] <=> $a['panier_moyen'],
+                'clients'  => $b['nb_clients'] <=> $a['nb_clients'],
+                'evolution'=> ($b['evolution'] ?? -INF) <=> ($a['evolution'] ?? -INF),
+                default    => $b['ca'] <=> $a['ca'],
+            };
+        });
 
-            $topPresta = DB::table('vente_items')
-                ->join('ventes', 'vente_items.vente_id', '=', 'ventes.id')
-                ->where('ventes.institut_id', $i->id)
-                ->where('ventes.statut', '!=', 'annulee')
-                ->whereBetween('ventes.created_at', [$debutMois, $finMois])
-                ->where('vente_items.type', 'prestation')
-                ->select('vente_items.nom_snapshot', DB::raw('COUNT(*) as nb'))
-                ->groupBy('vente_items.nom_snapshot')
-                ->orderByDesc('nb')
-                ->limit(1)
-                ->first();
-
-            $stats[] = [
-                'institut'       => $i,
-                'ca_mois'        => (int) $caMois,
-                'nb_ventes'      => $nbVentes,
-                'nb_clients'     => $nbClients,
-                'nb_clients_nouv'=> $nbClientsNouv,
-                'panier_moyen'   => $nbVentes > 0 ? (int) ($caMois / $nbVentes) : 0,
-                'top_presta'     => $topPresta?->nom_snapshot,
-            ];
-        }
-
-        // Tri par CA décroissant
-        usort($stats, fn($a, $b) => $b['ca_mois'] <=> $a['ca_mois']);
-
-        $totalCa = array_sum(array_column($stats, 'ca_mois'));
+        $totalCa     = array_sum(array_column($stats, 'ca'));
         $totalVentes = array_sum(array_column($stats, 'nb_ventes'));
+        $totalClients = array_sum(array_column($stats, 'nb_clients'));
 
-        return view('dashboard.comparatif.index', compact('stats', 'totalCa', 'totalVentes'));
+        return compact('instituts', 'stats', 'periode', 'tri', 'totalCa', 'totalVentes', 'totalClients');
+    }
+
+    public function index(Request $request)
+    {
+        return view('dashboard.comparatif.index', $this->donnees($request));
+    }
+
+    /**
+     * Export CSV du comparatif, dans l'ordre affiché à l'écran.
+     */
+    public function export(Request $request)
+    {
+        $donnees = $this->donnees($request);
+        $nom     = 'comparatif-' . now()->format('Ymd-His') . '.csv';
+
+        return response()->streamDownload(function () use ($donnees) {
+            $sortie = fopen('php://output', 'w');
+            fwrite($sortie, "\xEF\xBB\xBF"); // BOM UTF-8 pour Excel
+
+            fputcsv($sortie, [
+                'Établissement', 'CA encaissé', 'Évolution (%)', 'Ventes',
+                'Panier moyen', 'Annulées', 'Taux annulation (%)', 'Remises',
+                'Part crédit (%)', 'Produits vendus', 'Clients actifs', 'Nouveaux clients',
+                'Période',
+            ], ';');
+
+            foreach ($donnees['stats'] as $ligne) {
+                fputcsv($sortie, [
+                    $ligne['institut']->nom,
+                    $ligne['ca'],
+                    $ligne['evolution'] ?? '',
+                    $ligne['nb_ventes'],
+                    $ligne['panier_moyen'],
+                    $ligne['nb_annulees'],
+                    $ligne['taux_annulation'],
+                    $ligne['remises'],
+                    $ligne['part_credit'],
+                    $ligne['produits_qte'],
+                    $ligne['nb_clients'],
+                    $ligne['nb_nouveaux'],
+                    $donnees['periode']['libelle'],
+                ], ';');
+            }
+
+            fclose($sortie);
+        }, $nom, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $nom . '"',
+        ]);
     }
 }

@@ -291,6 +291,8 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
         // Comparatif multi-instituts (feature: multi_instituts) — admin uniquement
         Route::get('comparatif', [\App\Http\Controllers\Dashboard\ComparatifInstitutsController::class, 'index'])
             ->middleware(['feature:multi_instituts', 'role:admin'])->name('comparatif.index');
+        Route::get('comparatif/export', [\App\Http\Controllers\Dashboard\ComparatifInstitutsController::class, 'export'])
+            ->middleware(['feature:multi_instituts', 'role:admin'])->name('comparatif.export');
 
         // Fournisseurs (admin)
         Route::resource('fournisseurs', \App\Http\Controllers\Dashboard\FournisseurController::class)
