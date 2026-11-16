@@ -211,7 +211,11 @@
     {{-- Actions --}}
     @if($abonnement->statut === 'en_attente')
     <div class="card p-6">
-        <h2 class="font-bold text-lg text-gray-900 mb-4">Actions</h2>
+        <h2 class="font-bold text-lg text-gray-900 mb-1">Actions</h2>
+        <p class="text-sm text-gray-500 mb-4">
+            « Clôturer sans notifier » ferme une demande abandonnée : aucun motif, aucune notification,
+            aucun e-mail. À réserver aux procédures interrompues avant le paiement.
+        </p>
         <div class="flex flex-wrap gap-4">
             <form id="form-valider-{{ $abonnement->id }}" action="{{ route('admin.abonnements.valider', $abonnement) }}" method="POST">
                 @csrf @method('PATCH')
@@ -235,6 +239,18 @@
                                 onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-rejeter-{{ $abonnement->id }}',title:'Rejeter cet abonnement',message:'L\'abonnement sera rejeté et le client notifié.',confirmLabel:'Rejeter',confirmClass:'!bg-red-600 hover:!bg-red-700',danger:true}}))">Confirmer</button>
                     </div>
                 </div>
+            </form>
+
+            {{-- Rejet silencieux : même action, sans les effets côté client --}}
+            <form id="form-cloturer-{{ $abonnement->id }}" action="{{ route('admin.abonnements.rejeter', $abonnement) }}" method="POST">
+                @csrf @method('PATCH')
+                <input type="hidden" name="silencieux" value="1">
+                <button type="button" class="btn-outline"
+                        title="Rejeter sans motif et sans prévenir le client"
+                        onclick="window.dispatchEvent(new CustomEvent('confirm-action',{detail:{formId:'form-cloturer-{{ $abonnement->id }}',title:'Clôturer sans notifier',message:'La demande sera rejetée sans motif. Le client ne recevra ni notification, ni e-mail, ni push.',confirmLabel:'Clôturer',confirmClass:'!bg-gray-700 hover:!bg-gray-800',danger:false}}))">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.73 21a2 2 0 01-3.46 0M18.63 13A17.9 17.9 0 0118 8M6.26 6.26A5.86 5.86 0 006 8c0 7-3 9-3 9h14m-9-15a6 6 0 0112 0M3 3l18 18"/></svg>
+                    Clôturer sans notifier
+                </button>
             </form>
         </div>
     </div>

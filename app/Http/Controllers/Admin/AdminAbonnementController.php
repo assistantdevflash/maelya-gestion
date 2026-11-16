@@ -323,13 +323,30 @@ class AdminAbonnementController extends Controller
             return back()->with('error', 'Ce n\'est pas une demande en attente.');
         }
 
+        // Rejet silencieux : on clôture une demande abandonnée sans rien dire
+        // au client. Aucune notification, aucun e-mail, aucun push.
+        $silencieux = $request->boolean('silencieux');
+
         $request->validate(['notes_admin' => ['nullable', 'string', 'max:500']]);
 
         $abonnement->update([
             'statut' => 'rejete',
-            'notes_admin' => $request->notes_admin,
+            // `notes_admin` est affiché au client dans son historique : y
+            // laisser un motif rendrait le rejet « silencieux » explicite.
+            'notes_admin' => $silencieux ? null : $request->notes_admin,
             'valide_par' => Auth::id(),
         ]);
+
+        if ($silencieux) {
+            // Seule trace : le journal de l'application. `valide_par` dit qui.
+            \Log::info('[Abonnement] Demande clôturée sans notification', [
+                'abonnement_id' => $abonnement->id,
+                'user_id'       => $abonnement->user_id,
+                'admin_id'      => Auth::id(),
+            ]);
+
+            return back()->with('success', 'Demande clôturée. Le client n\'a reçu aucune notification.');
+        }
 
         if ($abonnement->user) {
             NotificationService::notifyUser(
