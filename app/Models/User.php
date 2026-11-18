@@ -91,6 +91,12 @@ class User extends Authenticatable
         return $this->hasOne(Abonnement::class, 'user_id')
             ->where('statut', 'actif')
             ->where('expire_le', '>=', now()->toDateString())
+            // Un renouvellement payé d'avance a une date de début future : il
+            // ne doit pas prendre la main sur la période en cours. Les lignes
+            // anciennes sans date de début restent éligibles.
+            // whereDate : le pilote SQLite stocke `Y-m-d H:i:s`, une
+            // comparaison de chaînes échouerait le jour du basculement.
+            ->where(fn ($q) => $q->whereNull('debut_le')->orWhereDate('debut_le', '<=', now()->toDateString()))
             ->latest('expire_le');
     }
 

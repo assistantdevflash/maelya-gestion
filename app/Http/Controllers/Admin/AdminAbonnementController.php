@@ -111,33 +111,11 @@ class AdminAbonnementController extends Controller
         $plan = $abonnement->plan;
         $jours = $plan->joursPourPeriode($abonnement->periode);
 
-        // Récupérer l'abonnement actif avant de l'expirer
-        $aboActif = Abonnement::where('user_id', $abonnement->user_id)
-            ->where('id', '!=', $abonnement->id)
-            ->where('statut', 'actif')
-            ->where('expire_le', '>=', now()->toDateString())
-            ->latest('expire_le')
-            ->first();
-
-        // Renouvellement (même plan) → départ le lendemain de l'expiration, jours restants préservés
-        // Mise à niveau (plan supérieur) → départ immédiat, accès aux nouvelles fonctionnalités tout de suite
-        $estRenouvellement = $aboActif && $aboActif->plan_id === $abonnement->plan_id;
-        $debutNouveau = ($estRenouvellement && $aboActif->expire_le->isAfter(now()))
-            ? $aboActif->expire_le->addDay()
-            : now();
-
-        // Expirer les abonnements actifs précédents de cet utilisateur
-        Abonnement::where('user_id', $abonnement->user_id)
-            ->where('id', '!=', $abonnement->id)
-            ->where('statut', 'actif')
-            ->update(['statut' => 'expire']);
-
-        $abonnement->update([
-            'statut' => 'actif',
-            'debut_le' => $debutNouveau->toDateString(),
-            'expire_le' => $debutNouveau->copy()->addDays($jours)->toDateString(),
-            'valide_par' => Auth::id(),
-        ]);
+        // Dates et sort du précédent abonnement : renouvellement et
+        // rétrogradation enchaînent sur l'échéance en cours, une mise à
+        // niveau démarre tout de suite. Règle centralisée dans le service.
+        $periode = app(\App\Services\AbonnementPeriodeService::class)
+            ->activer($abonnement, $jours, ['valide_par' => Auth::id()]);
 
         // Invalider le cache d'accès boutique (si l'option est incluse)
         $user = $abonnement->user;
@@ -197,11 +175,8 @@ class AdminAbonnementController extends Controller
             $parrainage->update(['statut' => 'valide']);
 
             // Bonus parrain : prolonger son abonnement actif
-            $aboParrain = Abonnement::where('user_id', $parrainage->parrain_id)
-                ->where('statut', 'actif')
-                ->where('expire_le', '>=', now()->toDateString())
-                ->latest('expire_le')
-                ->first();
+            $aboParrain = app(\App\Services\AbonnementPeriodeService::class)
+                ->enCoursPour($parrainage->parrain_id);
 
             if ($aboParrain) {
                 $aboParrain->update([
@@ -314,7 +289,9 @@ class AdminAbonnementController extends Controller
                 );
             }
         }
-        return back()->with('success', "Abonnement validé ! Actif jusqu'au " . $abonnementFresh->expire_le->format('d/m/Y') . '.' . ($parrainage ? ' Bonus parrainage appliqué.' : ''));
+        return back()->with('success', "Abonnement validé ! Actif du " . $abonnementFresh->debut_le->format('d/m/Y') . " au " . $abonnementFresh->expire_le->format('d/m/Y') . '.'
+            . ($periode['jours_reportes'] > 0 ? ' Les ' . \App\Helpers\TexteHelper::pluriel($periode['jours_reportes'], 'jour restant', 'jours restants') . ' ont été reportés.' : '')
+            . ($parrainage ? ' Bonus parrainage appliqué.' : ''));
     }
 
     public function rejeter(Request $request, Abonnement $abonnement)

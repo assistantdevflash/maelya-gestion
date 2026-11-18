@@ -28,12 +28,11 @@ class WebhookController extends Controller
 
         if ($statut === '00') {
             // Paiement réussi
-            $abonnement->update([
-                'statut' => 'actif',
-                'debut_le' => now()->toDateString(),
-                'expire_le' => now()->addDays($abonnement->plan->duree_jours)->toDateString(),
-                'metadata' => $request->all(),
-            ]);
+            $abonnement->update(['metadata' => $request->all()]);
+
+            // Même règle que les autres chemins d'activation : on n'efface pas
+            // les jours déjà payés sur un renouvellement.
+            $periode = app(\App\Services\AbonnementPeriodeService::class)->activer($abonnement);
 
             // Réconcilier les quotas (mise en sommeil / réveil)
             if ($abonnement->user) {

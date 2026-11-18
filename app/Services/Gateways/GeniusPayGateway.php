@@ -396,22 +396,17 @@ class GeniusPayGateway implements PaymentGatewayInterface
         $plan  = $abonnement->plan;
         $jours = $plan->joursPourPeriode($abonnement->periode);
 
-        // Expirer les abonnements actifs précédents
-        Abonnement::where('user_id', $abonnement->user_id)
-            ->where('id', '!=', $abonnement->id)
-            ->where('statut', 'actif')
-            ->update(['statut' => 'expire']);
-
-        $debut = now();
-        $abonnement->update([
-            'statut'    => 'actif',
-            'debut_le'  => $debut->toDateString(),
-            'expire_le' => $debut->copy()->addDays($jours)->toDateString(),
-            'metadata'  => array_merge($abonnement->metadata ?? [], [
+        // Renouvellement et rétrogradation enchaînent sur l'échéance en cours,
+        // une mise à niveau démarre tout de suite. Sans cela, payer trois jours
+        // avant la fin effaçait ces trois jours.
+        app(\App\Services\AbonnementPeriodeService::class)->activer(
+            $abonnement,
+            $jours,
+            ['metadata' => array_merge($abonnement->metadata ?? [], [
                 'payment_method' => 'geniuspay',
                 'geniuspay_ref'  => $transaction->gateway_reference,
-            ]),
-        ]);
+            ])]
+        );
 
         // Lier la transaction à l'abonnement
         $transaction->update(['abonnement_id' => $abonnement->id]);

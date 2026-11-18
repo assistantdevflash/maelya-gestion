@@ -211,25 +211,23 @@ class AdminInstitutController extends Controller
         }
 
         $plan = PlanAbonnement::findOrFail($request->plan_id);
-        $expireLe = now()->addDays($jours)->toDateString();
 
-        // Expirer les abonnements précédents
-        Abonnement::where('user_id', $owner->id)
-            ->where('statut', 'actif')
-            ->update(['statut' => 'expire']);
-
-        Abonnement::create([
+        // Mêmes règles que pour un paiement : un renouvellement ou une
+        // rétrogradation enchaîne sur l'échéance en cours, une mise à niveau
+        // démarre tout de suite.
+        $abonnementOffert = Abonnement::create([
             'user_id' => $owner->id,
             'plan_id' => $plan->id,
             'montant' => 0,
             'periode' => 'mensuel',
             'reference_transfert' => 'OFFERT-' . strtoupper(substr(md5(uniqid()), 0, 8)),
-            'statut' => 'actif',
-            'debut_le' => now()->toDateString(),
-            'expire_le' => $expireLe,
-            'valide_par' => auth()->id(),
+            'statut' => 'en_attente',
             'notes_admin' => 'Abonnement offert par l\'administrateur.',
         ]);
+
+        $periode  = app(\App\Services\AbonnementPeriodeService::class)
+            ->activer($abonnementOffert, $jours, ['valide_par' => auth()->id()]);
+        $expireLe = $periode['expire']->toDateString();
 
         // ── Option boutique en ligne (add-on, facturation par établissement) ──
         $avecBoutique = $request->boolean('option_boutique');

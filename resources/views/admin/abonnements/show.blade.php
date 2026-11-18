@@ -76,10 +76,22 @@
                 <div>
                     <span class="text-gray-400">Début</span>
                     <p class="font-medium">{{ $abonnement->debut_le?->format('d/m/Y') ?? '—' }}</p>
+                    @if($abonnement->debut_le && $abonnement->debut_le->isAfter(now()))
+                        {{-- Renouvellement enchaîné : la période payée commence
+                             après la fin de celle en cours, elle n'est pas perdue. --}}
+                        <p class="text-[11px] text-amber-600 mt-0.5">
+                            Enchaîne sur l'abonnement en cours
+                        </p>
+                    @endif
                 </div>
                 <div>
                     <span class="text-gray-400">Expiration</span>
                     <p class="font-medium">{{ $abonnement->expire_le?->format('d/m/Y') ?? '—' }}</p>
+                    @if(($abonnement->metadata['jours_reportes'] ?? 0) > 0)
+                        <p class="text-[11px] text-emerald-600 mt-0.5">
+                            {{ \App\Helpers\TexteHelper::pluriel((int) $abonnement->metadata['jours_reportes'], 'jour reporté', 'jours reportés') }}
+                        </p>
+                    @endif
                 </div>
                 <div>
                     <span class="text-gray-400">Référence transfert</span>
