@@ -12,11 +12,17 @@
     <meta property="og:url" content="{{ $ogUrl }}">
     <meta property="og:title" content="{{ $ogTitle ?? $produit->nom . ' — ' . $institut->nom }}">
     <meta property="og:description" content="{{ $ogDescription ?? ($produit->description_courte ?? $produit->description ?? 'Commandez en ligne avec livraison à domicile') }}">
-    @if($ogImage ?? null)
-        <meta property="og:image" content="{{ $ogImage }}">
+    @php
+        $ogImageBoutique = $ogImage ?? \App\Helpers\SeoHelper::imagePourProduit($produit->photo ?? null, $institut);
+    @endphp
+    <meta property="og:image" content="{{ $ogImageBoutique }}">
+    @if(\App\Helpers\SeoHelper::estImageDefaut($ogImageBoutique))
+    <meta property="og:image:width" content="{{ \App\Helpers\SeoHelper::LARGEUR_DEFAUT }}">
+    <meta property="og:image:height" content="{{ \App\Helpers\SeoHelper::HAUTEUR_DEFAUT }}">
     @endif
     <meta property="og:locale" content="fr_FR">
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="{{ $ogImageBoutique }}">
 
     {{-- SEO : URL de référence (sans paramètre de suivi) --}}
     <link rel="canonical" href="{{ $ogUrl }}">

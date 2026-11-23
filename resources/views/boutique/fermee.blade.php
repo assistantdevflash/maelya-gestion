@@ -9,6 +9,7 @@
          mais le lien reste fonctionnel pour les clients qui l'ont gardé. --}}
     <meta name="robots" content="noindex, follow">
     <meta property="og:title" content="{{ $institut->nom }} - Boutique momentanément fermée">
+    <meta property="og:image" content="{{ \App\Helpers\SeoHelper::imagePourInstitut($institut) }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('boutique.partials.couleurs', ['institut' => $institut])
 </head>

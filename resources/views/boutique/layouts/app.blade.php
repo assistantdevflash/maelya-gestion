@@ -18,9 +18,14 @@
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:title" content="{{ $ogTitle ?? $institut->nom . ' - Boutique en ligne' }}">
     <meta property="og:description" content="{{ $ogDescription ?? 'Découvrez nos produits et passez commande en ligne' }}">
-    <meta property="og:image" content="{{ $ogImage ?? asset('storage/' . $institut->logo) }}">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    @php
+        $ogImageBoutique = $ogImage ?? \App\Helpers\SeoHelper::imagePourInstitut($institut);
+    @endphp
+    <meta property="og:image" content="{{ $ogImageBoutique }}">
+    @if(\App\Helpers\SeoHelper::estImageDefaut($ogImageBoutique))
+    <meta property="og:image:width" content="{{ \App\Helpers\SeoHelper::LARGEUR_DEFAUT }}">
+    <meta property="og:image:height" content="{{ \App\Helpers\SeoHelper::HAUTEUR_DEFAUT }}">
+    @endif
     <meta property="og:site_name" content="{{ $institut->nom }}">
     <meta property="og:locale" content="fr_FR">
 
@@ -29,7 +34,7 @@
     <meta name="twitter:url" content="{{ url()->current() }}">
     <meta name="twitter:title" content="{{ $ogTitle ?? $institut->nom . ' - Boutique en ligne' }}">
     <meta name="twitter:description" content="{{ $ogDescription ?? 'Découvrez nos produits et passez commande en ligne' }}">
-    <meta name="twitter:image" content="{{ $ogImage ?? asset('storage/' . $institut->logo) }}">
+    <meta name="twitter:image" content="{{ $ogImageBoutique }}">
 
     {{-- WhatsApp / Mobile --}}
     <meta property="og:image:alt" content="{{ $institut->nom }}">

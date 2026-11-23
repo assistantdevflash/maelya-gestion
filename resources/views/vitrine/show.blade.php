@@ -13,26 +13,24 @@
     <meta property="og:title" content="{{ $institut->nom }}{{ $institut->ville ? ' — ' . $institut->ville : '' }}">
     <meta property="og:description" content="Découvrez les prestations et produits de {{ $institut->nom }}{{ $institut->ville ? ', ' . $institut->ville : '' }}.">
     <meta property="og:url" content="{{ url()->current() }}">
-    @if($institut->logo)
-    <meta property="og:image" content="{{ asset('storage/' . $institut->logo) }}">
-    <meta property="og:image:type" content="image/jpeg">
-    @else
-    <meta property="og:image" content="{{ asset('og-image.svg') }}">
-    <meta property="og:image:type" content="image/svg+xml">
+    {{-- Logo de l'établissement s'il existe, visuel Maëlya Gestion sinon.
+         Jamais de SVG : WhatsApp et Facebook ne savent pas l'afficher. --}}
+    @php
+        $ogImage = \App\Helpers\SeoHelper::imagePourInstitut($institut);
+    @endphp
+    <meta property="og:image" content="{{ $ogImage }}">
+    <meta property="og:image:type" content="image/png">
+    @if(\App\Helpers\SeoHelper::estImageDefaut($ogImage))
+    <meta property="og:image:width" content="{{ \App\Helpers\SeoHelper::LARGEUR_DEFAUT }}">
+    <meta property="og:image:height" content="{{ \App\Helpers\SeoHelper::HAUTEUR_DEFAUT }}">
     @endif
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="{{ $institut->nom }}">
 
     {{-- Twitter Card --}}
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ $institut->nom }}{{ $institut->ville ? ' — ' . $institut->ville : '' }}">
     <meta name="twitter:description" content="Découvrez les prestations et produits de {{ $institut->nom }}{{ $institut->ville ? ', ' . $institut->ville : '' }}.">
-    @if($institut->logo)
-    <meta name="twitter:image" content="{{ asset('storage/' . $institut->logo) }}">
-    @else
-    <meta name="twitter:image" content="{{ asset('og-image.svg') }}">
-    @endif
+    <meta name="twitter:image" content="{{ $ogImage }}">
     <meta name="twitter:image:alt" content="{{ $institut->nom }}">
 
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">

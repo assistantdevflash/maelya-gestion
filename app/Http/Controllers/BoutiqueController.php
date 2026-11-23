@@ -176,7 +176,7 @@ class BoutiqueController extends Controller
             'tri'           => $tri,
             'ogTitle'       => $institut->nom . ' - Boutique en ligne',
             'ogDescription' => 'Découvrez nos produits et passez commande en ligne avec livraison à domicile',
-            'ogImage'       => $institut->logo ? asset('storage/' . $institut->logo) : null,
+            'ogImage'       => \App\Helpers\SeoHelper::imagePourInstitut($institut),
             // La catégorie et la page restent indexables, pas la recherche ni
             // le tri (contenu dupliqué).
             'canonical'     => route('shop.index', array_filter([
@@ -227,7 +227,7 @@ class BoutiqueController extends Controller
             'produitsSimilaires' => $produitsSimilaires,
             'ogTitle' => $produit->nom . ' - ' . $institut->nom,
             'ogDescription' => $produit->description ?? 'Commandez ce produit en ligne',
-            'ogImage' => $produit->photo ? asset('storage/' . $produit->photo) : asset('storage/' . $institut->logo),
+            'ogImage' => \App\Helpers\SeoHelper::imagePourProduit($produit->photo, $institut),
         ]);
     }
 

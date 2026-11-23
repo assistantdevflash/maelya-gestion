@@ -240,8 +240,20 @@ class Institut extends Model
         return $this->hasMany(\App\Models\Credit::class, 'institut_id');
     }
 
+    /**
+     * URL du logo, toujours exploitable.
+     *
+     * On vérifie l'existence du fichier : un logo supprimé du disque mais
+     * resté en base produisait une image cassée. Le repli pointe désormais
+     * sur le logo officiel, `images/logo-placeholder.png` n'ayant jamais
+     * existé.
+     */
     public function getLogoUrlAttribute(): string
     {
-        return $this->logo ? asset('storage/' . $this->logo) : asset('images/logo-placeholder.png');
+        if (filled($this->logo) && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->logo)) {
+            return \Illuminate\Support\Facades\Storage::disk('public')->url($this->logo);
+        }
+
+        return asset('images/logo.png');
     }
 }

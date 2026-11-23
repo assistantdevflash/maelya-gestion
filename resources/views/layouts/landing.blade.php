@@ -25,7 +25,7 @@
     <meta property="og:title" content="{{ isset($title) ? $title . ' — Maëlya Gestion' : 'Maëlya Gestion' }}">
     <meta property="og:description" content="{{ $metaDescription ?? 'Caisse, clients, rendez-vous, stocks et finances dans une seule application. Sans engagement, sans complexité. Découvrez pourquoi +500 établissements font confiance à Maëlya Gestion.' }}">
     <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:image" content="{{ asset('og-image.png') }}">
+    <meta property="og:image" content="{{ \App\Helpers\SeoHelper::imageDefaut() }}">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -35,7 +35,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ isset($title) ? $title . ' — Maëlya Gestion' : 'Maëlya Gestion' }}">
     <meta name="twitter:description" content="{{ $metaDescription ?? 'Caisse, clients, rendez-vous, stocks et finances dans une seule application. Sans engagement, sans complexité. Découvrez pourquoi +500 établissements font confiance à Maëlya Gestion.' }}">
-    <meta name="twitter:image" content="{{ asset('og-image.png') }}">
+    <meta name="twitter:image" content="{{ \App\Helpers\SeoHelper::imageDefaut() }}">
     <meta name="twitter:image:alt" content="Maëlya Gestion — La solution de gestion des indépendants et PME de service">
     {{-- Anti-flash : appliquer le thème avant le rendu --}}
     <script>
