@@ -1,5 +1,25 @@
 <x-landing-layout :title="$title ?? null" :meta-description="$metaDescription ?? null">
 
+@push('jsonld')
+{{-- Liste des secteurs publiés : aide les moteurs à relier l'application
+     aux recherches par métier. Elle suit la table des types d'établissement. --}}
+@if(($types ?? collect())->isNotEmpty())
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'ItemList',
+    'name' => 'Secteurs couverts par Maëlya Gestion',
+    'itemListElement' => $types->values()->map(fn ($type, $index) => [
+        '@type' => 'ListItem',
+        'position' => $index + 1,
+        'name' => $type->libelle,
+        'url' => route('secteur', $type->slug),
+    ])->all(),
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}
+</script>
+@endif
+@endpush
+
 {{-- ═══ HERO ═══ --}}
 <section class="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-gray-950 via-primary-950 to-gray-900">
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
@@ -139,35 +159,35 @@
 </section>
 
 {{-- ═══ POUR QUI ═══ --}}
-<section class="py-24 bg-white dark:bg-gray-950">
+<section id="secteurs" class="py-24 bg-white dark:bg-gray-950">
     <div class="max-w-6xl mx-auto px-4 sm:px-6">
         <div class="text-center mb-16">
             <div class="inline-flex items-center gap-2 bg-primary-50 text-primary-700 text-xs font-bold px-4 py-1.5 rounded-full mb-4 uppercase tracking-wider">Pour qui ?</div>
             <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">Conçu pour les indépendants et PME de service</h2>
-            <p class="text-lg text-gray-500 dark:text-gray-400 mt-4 max-w-2xl mx-auto leading-relaxed">Quel que soit votre secteur d'activité, Maëlya Gestion s'adapte à votre métier</p>
+            <p class="text-lg text-gray-500 dark:text-gray-400 mt-4 max-w-2xl mx-auto leading-relaxed">
+                @if(($types ?? collect())->isNotEmpty())
+                    {{ \App\Helpers\TexteHelper::pluriel($types->count(), 'métier', 'métiers') }} déjà pris en charge. Choisissez le vôtre pour voir ce que l'application change au quotidien.
+                @else
+                    Quel que soit votre secteur d'activité, Maëlya Gestion s'adapte à votre métier.
+                @endif
+            </p>
         </div>
 
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            @foreach([
-                ['✂️', 'Salons de coiffure', 'Barbershops, coiffeurs mixtes'],
-                ['💅', 'Instituts de beauté', 'Soins esthétiques, manucure, pédicure'],
-                ['💆', 'Spas & Centres de bien-être', 'Massages, hammam, soins du corps'],
-                ['🚗', 'Auto-écoles', 'Leçons de conduite, examens'],
-                ['🩺', 'Cabinets médicaux & paramédicaux', 'Médecins, kinés, psychologues'],
-                ['🔧', 'Ateliers & Services techniques', 'Réparations, maintenance, dépannage'],
-                ['📚', 'Centres de formation', 'Cours particuliers, stages, formations'],
-                ['👗', 'Boutiques de service', 'Retouches, location, personnalisation'],
-                ['💼', 'Autres PME de service', 'Agences, consultants, freelances'],
-            ] as [$emoji, $title, $desc])
-                <div class="relative bg-gradient-to-br from-primary-50/50 to-secondary-50/30 dark:from-gray-800 dark:to-gray-800/50 rounded-xl p-5 border border-primary-100/60 dark:border-gray-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group">
+            @foreach(($types ?? collect()) as $type)
+                <a href="{{ route('secteur', $type->slug) }}"
+                   class="relative bg-gradient-to-br from-primary-50/50 to-secondary-50/30 dark:from-gray-800 dark:to-gray-800/50 rounded-xl p-5 border border-primary-100/60 dark:border-gray-700 hover:shadow-lg hover:-translate-y-0.5 hover:border-primary-300 transition-all duration-300 group">
                     <div class="flex items-start gap-3">
-                        <span class="text-3xl group-hover:scale-110 transition-transform">{{ $emoji }}</span>
+                        <span class="text-3xl group-hover:scale-110 transition-transform" aria-hidden="true">{{ config('secteurs.' . $type->code . '.emoji', '🏢') }}</span>
                         <div class="flex-1 min-w-0">
-                            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-0.5">{{ $title }}</h3>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $desc }}</p>
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-0.5">{{ $type->libelle }}</h3>
+                            <p class="text-xs text-primary-600 dark:text-primary-400 inline-flex items-center gap-1">
+                                Voir la solution
+                                <svg class="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                            </p>
                         </div>
                     </div>
-                </div>
+                </a>
             @endforeach
         </div>
 

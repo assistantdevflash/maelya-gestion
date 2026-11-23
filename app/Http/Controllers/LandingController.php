@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\SeoHelper;
+use App\Models\EtablissementType;
 use App\Models\MessageContact;
 use App\Models\PlanAbonnement;
 use App\Services\NotificationService;
 use App\Services\PushNotificationService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -13,16 +16,196 @@ use Illuminate\Support\Str;
 
 class LandingController extends Controller
 {
+    /**
+     * Longueur maximale d'une méta description avant troncature par Google.
+     */
+    private const LONGUEUR_DESCRIPTION = 158;
+
     public function index()
     {
         $plans = PlanAbonnement::where('actif', true)->orderBy('ordre')->get();
+
+        // Les types d'établissement pilotent le référencement : la liste
+        // affichée et les mots-clés suivent ce qui est actif dans
+        // l'administration, sans intervention dans le code.
+        $types = EtablissementType::pourSeo();
+
         return view('landing.index', [
             'plans' => $plans,
-            'title' => 'Maëlya Gestion — Logiciel de gestion pour indépendants, PME et entreprises de service',
-            // SEO : l'énumération des secteurs est volontaire et doit être conservée
-            // (couverture des requêtes « logiciel de gestion salon », « spa », etc.).
-            'metaDescription' => 'Solution de gestion complète pour salons, instituts, spas, auto-écoles, cabinets, ateliers et PME de service. Caisse, clients, rendez-vous, stocks et finances dans une seule application. Essai gratuit 14 jours.',
+            'types' => $types,
+            'title' => 'Logiciel de gestion pour indépendants, PME et entreprises de service',
+            'metaDescription' => $this->descriptionAccueil($types),
         ]);
+    }
+
+    /**
+     * Page publique dédiée à un type d'établissement.
+     *
+     * C'est cette page — et non la page d'accueil — qui se positionne sur les
+     * recherches du type « logiciel de gestion salon de coiffure ».
+     */
+    public function secteur(string $slug)
+    {
+        $type = EtablissementType::trouverParSlug($slug);
+
+        // Un type désactivé ou supprimé ne doit pas rester accessible : son URL
+        // renvoie une page introuvable plutôt qu'un contenu périmé.
+        abort_if($type === null, 404);
+
+        $contenu = config('secteurs.' . $type->code) ?? config('secteurs._defaut');
+        $libelleMinuscule = mb_strtolower($type->libelle);
+
+        $autres = EtablissementType::pourSeo()
+            ->reject(fn (EtablissementType $autre) => $autre->id === $type->id)
+            ->values();
+
+        $description = 'Caisse, rendez-vous, clients, stocks et finances pour '
+            . $libelleMinuscule
+            . '. Maëlya Gestion, logiciel de gestion pensé pour la Côte d\'Ivoire. Essai gratuit 14 jours.';
+
+        $questionsCommunes = $this->questionsCommunes($libelleMinuscule);
+
+        return view('landing.secteur', [
+            'type' => $type,
+            'contenu' => $contenu,
+            'autres' => $autres,
+            'titre' => 'Logiciel de gestion pour ' . $libelleMinuscule,
+            'title' => 'Logiciel de gestion pour ' . $libelleMinuscule,
+            'metaDescription' => $description,
+            'questionsCommunes' => $questionsCommunes,
+            'jsonLd' => $this->donneesStructureesSecteur($type, $contenu, $libelleMinuscule, $description, $questionsCommunes),
+        ]);
+    }
+
+    /**
+     * Méta description de l'accueil, construite à partir des types actifs.
+     *
+     * On ajoute les libellés tant que la longueur utile le permet, puis on
+     * s'arrête : une description trop longue est coupée par Google au milieu
+     * d'un mot.
+     */
+    private function descriptionAccueil(Collection $types): string
+    {
+        $prefixe = 'Logiciel de gestion pour ';
+        $suffixe = '. Caisse, stocks et finances réunis. Essai gratuit 14 jours.';
+        $noms = $types->map(fn (EtablissementType $type) => mb_strtolower($type->libelle))->all();
+
+        for ($nombre = count($noms); $nombre >= 1; $nombre--) {
+            $liste = implode(', ', array_slice($noms, 0, $nombre));
+
+            if ($nombre < count($noms)) {
+                $liste .= ' et bien d\'autres';
+            }
+
+            $candidat = $prefixe . $liste . $suffixe;
+
+            if (mb_strlen($candidat) <= self::LONGUEUR_DESCRIPTION) {
+                return $candidat;
+            }
+        }
+
+        return 'Logiciel de gestion des indépendants et PME de service' . $suffixe;
+    }
+
+    /**
+     * Données structurées de la page secteur : service, fil d'Ariane et FAQ.
+     */
+    private function donneesStructureesSecteur(
+        EtablissementType $type,
+        array $contenu,
+        string $libelleMinuscule,
+        string $description,
+        array $questionsCommunes
+    ): array {
+        $jsonLd = [
+            [
+                '@context' => 'https://schema.org',
+                '@type' => 'Service',
+                'name' => 'Logiciel de gestion pour ' . $libelleMinuscule,
+                'serviceType' => 'Logiciel de gestion',
+                'description' => $description,
+                'url' => route('secteur', $type->slug),
+                'image' => SeoHelper::imageDefaut(),
+                'areaServed' => ['@type' => 'Country', 'name' => 'Côte d\'Ivoire'],
+                'provider' => [
+                    '@type' => 'Organization',
+                    'name' => 'Maëlya Gestion',
+                    'url' => url('/'),
+                ],
+                'offers' => [
+                    '@type' => 'Offer',
+                    'price' => '0',
+                    'priceCurrency' => 'XOF',
+                    'description' => 'Essai gratuit de 14 jours, sans engagement',
+                ],
+            ],
+            [
+                '@context' => 'https://schema.org',
+                '@type' => 'BreadcrumbList',
+                'itemListElement' => [
+                    [
+                        '@type' => 'ListItem',
+                        'position' => 1,
+                        'name' => 'Accueil',
+                        'item' => route('home'),
+                    ],
+                    [
+                        '@type' => 'ListItem',
+                        'position' => 2,
+                        'name' => $type->libelle,
+                        'item' => route('secteur', $type->slug),
+                    ],
+                ],
+            ],
+        ];
+
+        $questions = [];
+
+        if (filled($contenu['question'] ?? null) && filled($contenu['reponse'] ?? null)) {
+            $questions[] = [
+                '@type' => 'Question',
+                'name' => $contenu['question'],
+                'acceptedAnswer' => ['@type' => 'Answer', 'text' => $contenu['reponse']],
+            ];
+        }
+
+        foreach ($questionsCommunes as [$question, $reponse]) {
+            $questions[] = [
+                '@type' => 'Question',
+                'name' => $question,
+                'acceptedAnswer' => ['@type' => 'Answer', 'text' => $reponse],
+            ];
+        }
+        $jsonLd[] = [
+            '@context' => 'https://schema.org',
+            '@type' => 'FAQPage',
+            'mainEntity' => $questions,
+        ];
+
+        return $jsonLd;
+    }
+
+    /**
+     * Questions posées pour chaque secteur.
+     */
+    public function questionsCommunes(string $libelleMinuscule): array
+    {
+        return [
+            [
+                'Combien de temps faut-il pour démarrer ?',
+                'Moins de deux minutes : vous créez votre compte, vous saisissez le nom de votre '
+                    . $libelleMinuscule
+                    . ' et vous commencez à encaisser. L\'essai est gratuit pendant 14 jours, sans carte bancaire.',
+            ],
+            [
+                'Maëlya Gestion fonctionne-t-il sur téléphone ?',
+                'Oui. L\'application est conçue d\'abord pour le mobile et s\'installe sur l\'écran d\'accueil du téléphone, comme une application classique.',
+            ],
+            [
+                'Mes données sont-elles visibles par d\'autres établissements ?',
+                'Non. Chaque établissement dispose de son propre espace cloisonné. Vos clients, vos ventes et vos finances ne sont accessibles qu\'aux utilisateurs que vous avez créés.',
+            ],
+        ];
     }
 
     public function apropos()
@@ -172,6 +355,17 @@ class LandingController extends Controller
             ['url' => route('faq'),      'priority' => '0.8', 'changefreq' => 'monthly', 'lastmod' => now()->toIso8601String()],
             ['url' => route('contact'),  'priority' => '0.7', 'changefreq' => 'monthly', 'lastmod' => now()->toIso8601String()],
         ];
+
+        // Une entrée par type d'établissement publié : ce sont les pages qui
+        // captent les recherches par métier.
+        foreach (EtablissementType::pourSeo() as $type) {
+            $pages[] = [
+                'url' => route('secteur', $type->slug),
+                'priority' => '0.9',
+                'changefreq' => 'monthly',
+                'lastmod' => $type->updated_at?->toIso8601String() ?? now()->toIso8601String(),
+            ];
+        }
 
         // Ajouter toutes les pages vitrine actives
         $instituts = \App\Models\Institut::where('vitrine_active', true)

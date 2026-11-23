@@ -57,6 +57,10 @@ Route::post('/contact', [LandingController::class, 'sendContact'])->name('contac
 Route::get('/mentions-legales', [LandingController::class, 'mentionsLegales'])->name('mentions');
 Route::get('/sitemap.xml', [LandingController::class, 'sitemap'])->name('sitemap');
 
+// ─── Pages « secteur » : une page publique par type d'établissement actif ─────
+// Le slug vient du code du type géré depuis l'espace super admin.
+Route::get('/logiciel-de-gestion/{slug}', [LandingController::class, 'secteur'])->name('secteur');
+
 // ─── Vitrine publique des établissements ──────────────────────────────────────
 Route::get('/e/{slug}', [VitrineController::class, 'show'])->name('vitrine.show');
 Route::post('/e/{slug}/reserver', [VitrineController::class, 'reserver'])->name('vitrine.reserver');

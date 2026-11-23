@@ -24,6 +24,19 @@
         <div class="alert-success">{{ session('success') }}</div>
     @endif
 
+    {{-- Ces types alimentent aussi le site public : autant le dire ici. --}}
+    <div class="flex items-start gap-3 rounded-xl border border-primary-100 bg-primary-50/60 dark:border-slate-700 dark:bg-slate-800/60 px-4 py-3">
+        <svg class="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+        </svg>
+        <p class="text-sm text-gray-600 dark:text-slate-300 leading-relaxed">
+            Chaque type <strong>actif</strong> dispose d'une page publique « Logiciel de gestion pour… »
+            sur le site, référencée dans le sitemap. Renommer, désactiver ou ajouter un type met
+            le site à jour immédiatement.
+            <a href="{{ route('sitemap') }}" target="_blank" rel="noopener" class="text-primary-600 dark:text-primary-400 font-semibold hover:underline whitespace-nowrap">Voir le sitemap</a>
+        </p>
+    </div>
+
     {{-- Liste des types --}}
     <div class="card">
         <div class="card-body p-0">
@@ -42,6 +55,13 @@
                         {{ $type->actif ? 'Actif' : 'Inactif' }}
                     </button>
                     <div class="flex items-center gap-3 flex-shrink-0">
+                        @if($type->actif && !in_array($type->code, \App\Models\EtablissementType::CODES_GENERIQUES, true))
+                        <a href="{{ route('secteur', $type->slug) }}" target="_blank" rel="noopener"
+                           title="Voir la page publique de ce type" aria-label="Voir la page publique de ce type"
+                           class="text-gray-400 dark:text-slate-500 hover:text-primary-600">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        </a>
+                        @endif
                         <a href="{{ route('admin.etablissement-types.edit', $type) }}" class="text-primary-600 text-xs hover:underline">Modifier</a>
                         <form action="{{ route('admin.etablissement-types.destroy', $type) }}" method="POST" class="inline" onsubmit="return confirm('Supprimer ce type ?')">
                             @csrf @method('DELETE')
@@ -85,7 +105,15 @@
                                     {{ $type->actif ? 'Actif' : 'Inactif' }}
                                 </button>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                                @if($type->actif && !in_array($type->code, \App\Models\EtablissementType::CODES_GENERIQUES, true))
+                                <a href="{{ route('secteur', $type->slug) }}" target="_blank" rel="noopener"
+                                   title="Voir la page publique de ce type"
+                                   aria-label="Voir la page publique de ce type"
+                                   class="inline-flex items-center align-middle text-gray-400 hover:text-primary-600 dark:text-slate-500 dark:hover:text-primary-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                </a>
+                                @endif
                                 <a href="{{ route('admin.etablissement-types.edit', $type) }}" class="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300">
                                     Modifier
                                 </a>

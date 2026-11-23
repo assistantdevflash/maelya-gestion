@@ -318,6 +318,27 @@
                 </div>
             </div>
 
+            {{-- Secteurs : liens internes vers les pages « métier ».
+                 La liste suit les types d'établissement actifs de
+                 l'administration, sans liste figée dans le code. --}}
+            @php
+                $secteursPiedDePage = $types ?? \App\Models\EtablissementType::pourSeo();
+            @endphp
+            @if($secteursPiedDePage->isNotEmpty())
+            <div class="mt-10">
+                <h3 class="text-sm font-semibold text-white mb-4 uppercase tracking-wider">Secteurs d'activité</h3>
+                <ul class="flex flex-wrap gap-x-5 gap-y-2.5 text-sm">
+                    @foreach($secteursPiedDePage as $secteurPiedDePage)
+                    <li>
+                        <a href="{{ route('secteur', $secteurPiedDePage->slug) }}" class="hover:text-white transition-colors duration-200">
+                            {{ $secteurPiedDePage->libelle }}
+                        </a>
+                    </li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
+
             <div class="border-t border-gray-800/50 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
                 <p>© {{ date('Y') }} Maëlya Gestion. Tous droits réservés.</p>
             </div>
