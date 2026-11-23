@@ -35,7 +35,7 @@
     </div>
 
     <div class="body">
-        <p class="greeting">Bonjour {{ $destinataire->prenom }} 👋</p>
+        <p class="greeting">Bonjour{{ $prenom ? ' ' . $prenom : '' }} 👋</p>
         <div class="message">{!! $corps !!}</div>
     </div>
 

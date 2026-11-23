@@ -522,7 +522,11 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::delete('messages/{message}', [AdminMessageController::class, 'destroy'])->name('messages.destroy');
     Route::get('emails', [AdminEmailController::class, 'index'])->name('emails.index');
     Route::get('emails/composer', [AdminEmailController::class, 'composer'])->name('emails.composer');
-    Route::post('emails', [AdminEmailController::class, 'send'])->name('emails.send');
+    // Envoi par tranches : la campagne est créée, puis chaque appel traite
+    // un lot de destinataires. Aucune requête ne bloque sur trente envois.
+    Route::post('emails/campagne', [AdminEmailController::class, 'demarrer'])->name('emails.campagne.demarrer');
+    Route::post('emails/campagne/{campagne}/lot', [AdminEmailController::class, 'lot'])->name('emails.campagne.lot');
+    Route::post('emails/test', [AdminEmailController::class, 'tester'])->name('emails.test');
     Route::patch('banniere/{annonce}/toggle', [AdminEmailController::class, 'toggleBanniere'])->name('emails.toggle-banniere');
     Route::delete('banniere/{annonce}', [AdminEmailController::class, 'deleteBanniere'])->name('emails.delete-banniere');
     Route::get('logs', [AdminLogsController::class, 'index'])->name('logs.index');

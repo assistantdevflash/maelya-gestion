@@ -12,9 +12,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
+/**
+ * Emails, notifications push et bannières depuis l'espace super-admin.
+ *
+ * L'envoi de masse se fait par tranches successives appelées en AJAX :
+ * la campagne est créée avant le premier message, sa progression est suivie
+ * en direct, et un envoi interrompu peut être repris. Cela évite de bloquer
+ * une requête HTTP le temps de trente envois SMTP — et de perdre la trace
+ * de ce qui est parti si elle expire.
+ */
 class AdminEmailController extends Controller
 {
-    public function index()
+    /** Nombre de destinataires traités par requête. */
+    public const TAILLE_LOT = 5;
+
+    public function index(Request $request)
     {
         try {
             $historique = EmailCampagne::with('expediteur')
@@ -25,7 +37,6 @@ class AdminEmailController extends Controller
             $historique = new \Illuminate\Pagination\LengthAwarePaginator(collect(), 0, 20, 1);
         }
 
-        // Récupérer les bannières avec stats de lecture
         try {
             $bannieres = AnnonceAdmin::with(['expediteur', 'lecteurs'])
                 ->withCount('lecteurs')
@@ -36,217 +47,422 @@ class AdminEmailController extends Controller
             $bannieres = new \Illuminate\Pagination\LengthAwarePaginator(collect(), 0, 20, 1);
         }
 
-        return view('admin.emails.index', compact('historique', 'bannieres'));
+        // L'onglet demandé par les redirections (après une action sur une
+        // bannière) était ignoré : la vue le code en dur à « emails ».
+        $onglet = in_array($request->query('tab'), ['emails', 'bannieres'], true)
+            ? $request->query('tab')
+            : 'emails';
+
+        return view('admin.emails.index', compact('historique', 'bannieres', 'onglet'));
     }
 
-    public function composer()
+    public function composer(Request $request)
     {
         $instituts = Institut::with('proprietaire')
             ->whereHas('proprietaire')
             ->orderBy('nom')
             ->get();
 
-        return view('admin.emails.composer', compact('instituts'));
-    }
-
-    public function send(Request $request)
-    {
-        $request->validate([
-            'mode'               => ['required', 'in:tous,selection,un,personnalise'],
-            'send_mode'          => ['required', 'in:email,both,push,banner'],
-            'sujet'              => ['required_unless:send_mode,push,banner', 'nullable', 'string', 'max:255'],
-            'corps'              => ['required_unless:send_mode,push,banner', 'nullable', 'string'],
-            'instituts'          => ['required_if:mode,selection', 'array'],
-            'instituts.*'        => ['string', 'exists:instituts,id'],
-            'institut_id'        => ['required_if:mode,un', 'nullable', 'string', 'exists:instituts,id'],
-            'email_personnalise'  => ['required_if:mode,personnalise', 'nullable', 'email', 'max:255'],
-            'nom_personnalise'    => ['nullable', 'string', 'max:100'],
-            'push_titre'          => ['required_unless:send_mode,email', 'nullable', 'string', 'max:60'],
-            'push_message'        => ['nullable', 'string', 'max:120'],
-            'banner_type'         => ['required_if:send_mode,banner', 'nullable', 'in:info,success,warning,danger'],
-            'banner_message'      => ['required_if:send_mode,banner', 'nullable', 'string', 'max:500'],
-            'banner_duree'        => ['nullable', 'integer', 'min:1', 'max:365'],
-        ], [
-            'sujet.required_unless'          => 'Le sujet est requis pour un envoi email.',
-            'corps.required_unless'          => 'Le corps du message est requis pour un envoi email.',
-            'push_titre.required_unless'     => 'Le titre de la notification est requis.',
-            'banner_message.required_if'     => 'Le message de la bannière est requis.',
-            'instituts.required_if'          => 'Sélectionnez au moins un établissement.',
-            'institut_id.required_if'        => 'Sélectionnez un établissement.',
-            'email_personnalise.required_if' => 'Saisissez une adresse email.',
-            'email_personnalise.email'       => 'L\'adresse email n\'est pas valide.',
+        // Adresse du propriétaire par établissement : permet de compter en
+        // direct les doublons d'une sélection (un propriétaire peut gérer
+        // plusieurs établissements).
+        $emailsParInstitut = $instituts->mapWithKeys(fn ($i) => [
+            $i->id => mb_strtolower((string) $i->proprietaire?->email),
         ]);
 
-        $sendMode = $request->input('send_mode', 'email');
-
-        // ── Mode Bannière ────────────────────────────────────────────────────
-        if ($sendMode === 'banner') {
-            return $this->createBanner($request);
+        // Réutilisation d'une campagne passée : on repart du sujet et du corps.
+        $brouillon = null;
+        if ($request->filled('depuis')) {
+            $brouillon = EmailCampagne::find($request->query('depuis'));
         }
 
-        $doEmail  = in_array($sendMode, ['email', 'both']);
-        $doPush   = in_array($sendMode, ['both', 'push']);
+        $tailleLot = (int) config('admin.emails.taille_lot', self::TAILLE_LOT);
 
-        // Nettoyer le corps si Quill renvoie du HTML vide (seulement si email requis)
-        $corps = null;
-        if ($doEmail) {
-            $corps = strip_tags($request->corps ?? '') === '' ? null : $request->corps;
-            if (!$corps) {
-                return back()->withErrors(['corps' => 'Le corps du message est vide.'])->withInput();
+        return view('admin.emails.composer', compact('instituts', 'emailsParInstitut', 'brouillon', 'tailleLot'));
+    }
+
+    /**
+     * Crée la campagne et renvoie la liste de ses cibles.
+     * Aucun message n'est envoyé ici : les tranches suivent.
+     */
+    public function demarrer(Request $request)
+    {
+        $canal = (string) $request->input('send_mode', 'email');
+
+        $regles = [
+            'mode'      => ['required', 'in:tous,selection,un,personnalise'],
+            'send_mode' => ['required', 'in:email,both,push,banner'],
+        ];
+
+        if (in_array($canal, ['email', 'both'], true)) {
+            $regles['sujet'] = ['required', 'string', 'max:255'];
+            $regles['corps'] = ['required', 'string'];
+        }
+
+        if (in_array($canal, ['push', 'both'], true)) {
+            $regles['push_titre']   = ['required', 'string', 'max:60'];
+            $regles['push_message'] = ['nullable', 'string', 'max:120'];
+        }
+
+        if ($canal === 'banner') {
+            $regles['banner_titre']   = ['required', 'string', 'max:60'];
+            $regles['banner_message'] = ['required', 'string', 'max:500'];
+            $regles['banner_type']    = ['nullable', 'in:info,success,warning,danger'];
+            $regles['banner_duree']   = ['nullable', 'integer', 'min:1', 'max:365'];
+        }
+
+        $regles += match ($request->input('mode')) {
+            'selection'    => ['instituts' => ['required', 'array', 'min:1'], 'instituts.*' => ['string', 'exists:instituts,id']],
+            'un'           => ['institut_id' => ['required', 'string', 'exists:instituts,id']],
+            'personnalise' => ['email_personnalise' => ['required', 'email', 'max:255'], 'nom_personnalise' => ['nullable', 'string', 'max:100']],
+            default        => [],
+        };
+
+        $donnees = $request->validate($regles, [
+            'sujet.required'          => 'Le sujet est requis pour un envoi par email.',
+            'corps.required'          => 'Le corps du message est requis pour un envoi par email.',
+            'push_titre.required'     => 'Le titre de la notification est requis.',
+            'banner_titre.required'   => 'Le titre de la bannière est requis.',
+            'banner_message.required' => 'Le message de la bannière est requis.',
+            'instituts.required'      => 'Sélectionnez au moins un établissement.',
+            'institut_id.required'    => 'Sélectionnez un établissement.',
+            'email_personnalise.required' => 'Saisissez une adresse email.',
+        ]);
+
+        // ── Bannière : création immédiate, rien à envoyer ──────────────────
+        if ($canal === 'banner') {
+            if ($request->input('mode') === 'personnalise') {
+                return response()->json([
+                    'ok'     => false,
+                    'erreur' => 'Les bannières ne sont pas disponibles en mode « email personnalisé ».',
+                ], 422);
             }
+
+            $resultat = $this->creerBanniere($request);
+
+            return response()->json([
+                'ok'       => true,
+                'redirect' => route('admin.emails.index', ['tab' => 'bannieres']),
+                'message'  => $resultat['message'],
+            ]);
         }
 
-        $sujet       = $request->sujet ?? '';
-        $mode        = $request->mode;
-        $pushTitre   = $request->input('push_titre') ?: mb_substr($sujet, 0, 60);
-        $pushMessage = $request->input('push_message') ?: ($corps ? mb_substr(strip_tags($corps), 0, 120) : '');
-        // Mode push-only sur email personnalisé : impossible, on l'interdit côté frontend mais on sécurise côté serveur
-        if ($sendMode === 'push' && $mode === 'personnalise') {
-            return back()->withErrors(['send_mode' => 'La notification push n\'est pas disponible en mode email personnalisé.'])->withInput();
+        if ($request->input('mode') === 'personnalise' && in_array($canal, ['push', 'both'], true)) {
+            return response()->json([
+                'ok'     => false,
+                'erreur' => 'La notification push n\'est pas disponible en mode « email personnalisé » : il n\'y a pas de compte associé.',
+            ], 422);
         }
-        $destinataires = collect();
 
-        if ($mode === 'tous') {
-            $destinataires = Institut::with('proprietaire')
-                ->whereHas('proprietaire')
-                ->get()
-                ->map(fn($i) => $i->proprietaire)
-                ->filter();
+        $cibles = $this->cibles($request);
 
-        } elseif ($mode === 'selection') {
-            $destinataires = Institut::with('proprietaire')
-                ->whereIn('id', $request->instituts)
-                ->whereHas('proprietaire')
-                ->get()
-                ->map(fn($i) => $i->proprietaire)
-                ->filter();
-
-        } elseif ($mode === 'un') {
-            $institut = Institut::with('proprietaire')->findOrFail($request->institut_id);
-            if ($institut->proprietaire) {
-                $destinataires = collect([$institut->proprietaire]);
-            }
-
-        } elseif ($mode === 'personnalise') {
-            // Créer un User factice avec juste l'email et le prénom
-            $fake = new User();
-            $fake->email  = $request->email_personnalise;
-            $fake->prenom = $request->nom_personnalise ?: explode('@', $request->email_personnalise)[0];
-            $fake->nom    = '';
-            $destinataires = collect([$fake]);
+        if ($cibles === []) {
+            return response()->json([
+                'ok'     => false,
+                'erreur' => 'Aucun destinataire valide pour cette sélection.',
+            ], 422);
         }
+
+        $corps = in_array($canal, ['email', 'both'], true)
+            ? (strip_tags((string) ($donnees['corps'] ?? '')) === '' ? null : $donnees['corps'])
+            : null;
+
+        if (in_array($canal, ['email', 'both'], true) && ! $corps) {
+            return response()->json([
+                'ok'     => false,
+                'erreur' => 'Le corps du message est vide.',
+            ], 422);
+        }
+
+        $titrePush   = $donnees['push_titre'] ?? null;
+        $messagePush = $donnees['push_message'] ?? null;
+
+        if ($titrePush) {
+            $messagePush = $messagePush ?: mb_substr(strip_tags((string) $corps), 0, 120);
+        }
+
+        $campagne = EmailCampagne::create([
+            'envoye_par'           => auth()->id(),
+            'sujet'                => $donnees['sujet'] ?? ($titrePush ?: ''),
+            'corps'                => $corps,
+            'mode'                 => $donnees['mode'],
+            'send_mode'            => $canal,
+            'statut'               => 'en_cours',
+            'nb_total'             => count($cibles),
+            'nb_envoyes'           => 0,
+            'nb_echecs'            => 0,
+            'destinataires_emails' => [],
+            'cibles'               => $cibles,
+        ]);
+
+        return response()->json([
+            'ok'          => true,
+            'campagne_id' => $campagne->id,
+            'total'       => $campagne->nb_total,
+            'canal'       => $campagne->canal_libelle,
+            'destinataires' => array_column($cibles, 'email'),
+            'lot'         => (int) config('admin.emails.taille_lot', self::TAILLE_LOT),
+        ]);
+    }
+
+    /**
+     * Traite la tranche suivante de la campagne.
+     */
+    public function lot(EmailCampagne $campagne)
+    {
+        $campagne->refresh();
+
+        if ($campagne->nb_restants <= 0) {
+            $this->cloturer($campagne);
+
+            return response()->json($this->etatCampagne($campagne, [], []));
+        }
+
+        $tranche = $campagne->prochaineTranche((int) config('admin.emails.taille_lot', self::TAILLE_LOT));
+
+        $doEmail = in_array($campagne->send_mode, ['email', 'both', null], true);
+        $doPush  = in_array($campagne->send_mode, ['push', 'both'], true);
 
         $envoyes = 0;
         $echecs  = 0;
         $erreurs = [];
-        $emailsEnvoyes = [];
+        $emailsOk = [];
 
-        foreach ($destinataires as $user) {
+        foreach ($tranche as $cible) {
+            $email  = (string) ($cible['email'] ?? '');
+            $prenom = (string) ($cible['prenom'] ?? '');
+            $userId = $cible['user_id'] ?? null;
+
+            if ($email === '') {
+                $echecs++;
+                $erreurs[] = 'Adresse manquante dans la cible.';
+
+                continue;
+            }
+
             try {
                 if ($doEmail) {
-                    Mail::to($user->email)->send(new EmailManuel($sujet, $corps, $user));
-                    $emailsEnvoyes[] = $user->email;
-                    $envoyes++;
+                    Mail::to($email)->send(new EmailManuel(
+                        (string) $campagne->sujet,
+                        (string) $campagne->corps,
+                        $prenom
+                    ));
                 }
-                if ($doPush && ($user->id ?? null)) {
-                    try {
+
+                if ($doPush && $userId) {
+                    $utilisateur = User::find($userId);
+                    if ($utilisateur) {
                         app(\App\Services\PushNotificationService::class)->sendToUser(
-                            $user,
-                            $pushTitre,
-                            $pushMessage,
+                            $utilisateur,
+                            (string) ($campagne->sujet ?: 'Maëlya Gestion'),
+                            mb_substr(strip_tags((string) $campagne->corps), 0, 120),
                             '/dashboard'
                         );
-                    } catch (\Throwable $e) { \Log::warning('[Push] ' . $e->getMessage()); }
-                    if (!$doEmail) $envoyes++; // compter les envois push-only
+                    }
                 }
-            } catch (\Exception $e) {
+
+                $envoyes++;
+                $emailsOk[] = $email;
+            } catch (\Throwable $e) {
                 $echecs++;
-                $erreurs[] = $user->email . ' : ' . $e->getMessage();
-                Log::error('[AdminEmail] Échec envoi à ' . $user->email, [
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString(),
-                ]);
+                $erreurs[] = $email . ' : ' . $e->getMessage();
+                Log::error('[AdminEmail] Échec envoi à ' . $email, ['error' => $e->getMessage()]);
             }
         }
 
-        // Sauvegarder la campagne dans l'historique
-        try {
-            EmailCampagne::create([
-                'envoye_par'           => auth()->id(),
-                'sujet'                => $sujet,
-                'corps'                => $corps,
-                'mode'                 => $mode,
-                'destinataires_emails' => $emailsEnvoyes,
-                'nb_envoyes'           => $envoyes,
-                'nb_echecs'            => $echecs,
-                'erreurs'              => $erreurs ? implode("\n", $erreurs) : null,
-            ]);
-        } catch (\Throwable $e) {
-            Log::error('[AdminEmail] Impossible de sauvegarder la campagne : ' . $e->getMessage());
+        if ($envoyes > 0) {
+            $campagne->increment('nb_envoyes', $envoyes);
         }
-
-        if ($envoyes === 0 && $echecs > 0) {
-            return redirect()->route('admin.emails.index')
-                ->with('error', "Aucun email n'a pu être envoyé. Consultez les logs. Erreur : " . $erreurs[0]);
-        }
-
-        $what = match($sendMode) {
-            'both'  => 'Email + notification envoyés',
-            'push'  => 'Notification envoyée',
-            default => 'Email envoyé',
-        };
-        $message = "{$what} à " . \App\Helpers\TexteHelper::pluriel($envoyes, 'destinataire', 'destinataires') . ' avec succès.';
         if ($echecs > 0) {
-            $message .= ' (' . \App\Helpers\TexteHelper::pluriel($echecs, 'échec', 'échecs') . ')';
+            $campagne->increment('nb_echecs', $echecs);
         }
 
-        return redirect()->route('admin.emails.index')->with('success', $message);
+        $campagne->refresh();
+
+        $campagne->update([
+            'destinataires_emails' => array_values(array_merge($campagne->destinataires_emails ?? [], $emailsOk)),
+            'erreurs'              => trim(
+                ($campagne->erreurs ? $campagne->erreurs . "\n" : '') . implode("\n", $erreurs)
+            ) ?: null,
+        ]);
+
+        if ($campagne->nb_restants <= 0) {
+            $this->cloturer($campagne);
+        }
+
+        return response()->json($this->etatCampagne($campagne, $emailsOk, $erreurs));
     }
 
     /**
-     * Créer une bannière administrateur
+     * Envoi de contrôle à l'adresse du super-admin connecté.
      */
-    private function createBanner(Request $request)
+    public function tester(Request $request)
     {
-        $mode = $request->mode;
+        $donnees = $request->validate([
+            'sujet' => ['required', 'string', 'max:255'],
+            'corps' => ['required', 'string'],
+        ], [
+            'sujet.required' => 'Renseignez un sujet avant d\'envoyer le test.',
+            'corps.required' => 'Renseignez un message avant d\'envoyer le test.',
+        ]);
+
+        $destinataire = auth()->user();
+
+        try {
+            Mail::to($destinataire->email)->send(new EmailManuel(
+                '[TEST] ' . $donnees['sujet'],
+                $donnees['corps'],
+                $destinataire->prenom ?: $destinataire->name
+            ));
+        } catch (\Throwable $e) {
+            Log::error('[AdminEmail] Test impossible : ' . $e->getMessage());
+
+            return response()->json([
+                'ok'     => false,
+                'erreur' => 'Envoi du test impossible : ' . $e->getMessage(),
+            ], 500);
+        }
+
+        return response()->json([
+            'ok'     => true,
+            'message'=> 'Test envoyé à ' . $destinataire->email . '.',
+        ]);
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Construit la liste des destinataires, dédoublonnée par adresse.
+     *
+     * Un propriétaire qui gère plusieurs établissements ne doit recevoir
+     * qu'un seul message : sans `unique`, il recevait l'email autant de fois
+     * qu'il a d'établissements.
+     *
+     * @return array<int, array{email: string, prenom: string, user_id: ?string}>
+     */
+    private function cibles(Request $request): array
+    {
+        $mode = (string) $request->input('mode');
+
+        if ($mode === 'personnalise') {
+            $email = (string) $request->input('email_personnalise');
+
+            $cibles = collect([[
+                'email'   => $email,
+                'prenom'  => (string) ($request->input('nom_personnalise') ?: explode('@', $email)[0]),
+                'user_id' => null,
+            ]]);
+        } else {
+            $requete = Institut::with('proprietaire')->whereHas('proprietaire');
+
+            if ($mode === 'selection') {
+                $requete->whereIn('id', (array) $request->input('instituts', []));
+            } elseif ($mode === 'un') {
+                $requete->where('id', $request->input('institut_id'));
+            }
+
+            $cibles = $requete->get()
+                ->map(fn ($institut) => $institut->proprietaire)
+                ->filter()
+                ->map(fn (User $proprietaire) => [
+                    'email'   => (string) $proprietaire->email,
+                    'prenom'  => (string) ($proprietaire->prenom ?: $proprietaire->name),
+                    'user_id' => $proprietaire->id,
+                ]);
+        }
+
+        return $cibles
+            ->filter(fn ($c) => filled($c['email']))
+            ->unique(fn ($c) => mb_strtolower($c['email']))
+            ->values()
+            ->all();
+    }
+
+    private function cloturer(EmailCampagne $campagne): void
+    {
+        $campagne->refresh();
+
+        $statut = 'termine';
+        if ($campagne->nb_envoyes === 0 && $campagne->nb_echecs > 0) {
+            $statut = 'echec';
+        } elseif ($campagne->nb_echecs > 0) {
+            $statut = 'partial';
+        }
+
+        $campagne->update(['statut' => $statut]);
+    }
+
+    /**
+     * @param  array<int, string>  $emailsOk
+     * @param  array<int, string>  $erreurs
+     * @return array<string, mixed>
+     */
+    private function etatCampagne(EmailCampagne $campagne, array $emailsOk, array $erreurs): array
+    {
+        $campagne->refresh();
+
+        return [
+            'ok'         => true,
+            'envoyes'    => $campagne->nb_envoyes,
+            'echecs'     => $campagne->nb_echecs,
+            'total'      => $campagne->nb_total,
+            'restants'   => $campagne->nb_restants,
+            'progression'=> $campagne->progression,
+            'statut'     => $campagne->statut,
+            'statut_libelle' => $campagne->statut_libelle,
+            'termine'    => $campagne->nb_restants <= 0,
+            'emails_ok'  => $emailsOk,
+            'erreurs'    => $erreurs,
+        ];
+    }
+
+    /**
+     * Crée une bannière administrateur.
+     *
+     * @return array{nb_cibles: int, message: string}
+     */
+    private function creerBanniere(Request $request): array
+    {
+        $mode = (string) $request->input('mode');
         $institutIds = [];
 
         if ($mode === 'tous') {
-            // Bannière pour tous : pas besoin de stocker les IDs
             $cible = 'tous';
         } elseif ($mode === 'selection') {
             $cible = 'selection';
-            $institutIds = $request->instituts;
-        } elseif ($mode === 'un') {
-            $cible = 'un';
-            $institutIds = [$request->institut_id];
+            $institutIds = (array) $request->input('instituts', []);
         } else {
-            return back()->withErrors(['mode' => 'Les bannières ne sont pas disponibles en mode email personnalisé.'])->withInput();
+            $cible = 'un';
+            $institutIds = [$request->input('institut_id')];
         }
 
-        $expireLe = null;
-        if ($request->filled('banner_duree')) {
-            $expireLe = now()->addDays((int) $request->banner_duree);
-        }
+        $expireLe = $request->filled('banner_duree')
+            ? now()->addDays((int) $request->input('banner_duree'))
+            : null;
 
         AnnonceAdmin::create([
             'expediteur_id' => auth()->id(),
-            'titre' => $request->push_titre,
-            'message' => $request->banner_message,
-            'type' => $request->banner_type ?? 'info',
-            'cible' => $cible,
+            'titre'         => $request->input('banner_titre'),
+            'message'       => $request->input('banner_message'),
+            'type'          => $request->input('banner_type') ?: 'info',
+            'cible'         => $cible,
             'instituts_ids' => $institutIds,
-            'actif' => true,
-            'expire_le' => $expireLe,
+            'actif'         => true,
+            'expire_le'     => $expireLe,
         ]);
 
         $nbCibles = $cible === 'tous' ? Institut::count() : count($institutIds);
-        $dureeText = $request->filled('banner_duree')
-            ? ' (expire dans ' . \App\Helpers\TexteHelper::pluriel((int) $request->banner_duree, 'jour', 'jours') . ')'
+
+        $duree = $request->filled('banner_duree')
+            ? ' (expire dans ' . \App\Helpers\TexteHelper::pluriel((int) $request->input('banner_duree'), 'jour', 'jours') . ')'
             : ' (sans expiration)';
 
-        return redirect()->route('admin.emails.index')
-            ->with('success', 'Bannière créée et visible pour ' . \App\Helpers\TexteHelper::pluriel($nbCibles, 'établissement', 'établissements') . $dureeText . '.');
+        return [
+            'nb_cibles' => $nbCibles,
+            'message'   => 'Bannière créée et visible pour '
+                . \App\Helpers\TexteHelper::pluriel($nbCibles, 'établissement', 'établissements')
+                . $duree . '.',
+        ];
     }
 
     /**
@@ -268,9 +484,10 @@ class AdminEmailController extends Controller
      */
     public function toggleBanniere(AnnonceAdmin $annonce)
     {
-        $annonce->update(['actif' => !$annonce->actif]);
+        $annonce->update(['actif' => ! $annonce->actif]);
 
         $label = $annonce->actif ? 'activée' : 'désactivée';
+
         return redirect()->route('admin.emails.index', ['tab' => 'bannieres'])
             ->with('success', "Bannière {$label} avec succès.");
     }
@@ -287,4 +504,3 @@ class AdminEmailController extends Controller
             ->with('success', 'Bannière supprimée.');
     }
 }
-

@@ -1,8 +1,7 @@
 @extends('layouts.admin')
-@section('page-title', 'Composer un email')
+@section('page-title', 'Composer un message')
 
 @push('styles')
-<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
 <style>
     .ql-toolbar.ql-snow {
         background: var(--ql-toolbar-bg, #f9fafb);
@@ -14,12 +13,11 @@
         border-color: #e5e7eb;
         border-radius: 0 0 12px 12px;
         font-size: 14px;
-        min-height: 220px;
+        min-height: 200px;
     }
-    .ql-editor { min-height: 220px; color: #111827; }
+    .ql-editor { min-height: 200px; color: #111827; }
     .ql-editor.ql-blank::before { color: #9ca3af; font-style: normal; }
 
-    /* Dark mode */
     .dark .ql-toolbar.ql-snow  { --ql-toolbar-bg: rgb(255 255 255 / 0.05); border-color: rgb(255 255 255 / 0.1); }
     .dark .ql-container.ql-snow { --ql-bg: rgb(255 255 255 / 0.03); border-color: rgb(255 255 255 / 0.1); }
     .dark .ql-editor { color: #f3f4f6; }
@@ -32,606 +30,916 @@
     .dark .ql-toolbar button:hover svg .ql-fill,
     .dark .ql-toolbar button.ql-active svg .ql-fill { fill: #a855f7; }
     .dark .ql-snow .ql-picker.ql-expanded .ql-picker-label { color: #a855f7; border-color: rgb(255 255 255 / 0.1); }
+
+    .apercu-email p { margin-bottom: 10px; }
+    .apercu-email ul, .apercu-email ol { padding-left: 18px; margin-bottom: 10px; list-style: disc; }
+    .apercu-email a { color: #9333ea; text-decoration: underline; }
+    .apercu-email strong { font-weight: 700; }
 </style>
 @endpush
 
 @section('content')
-<div class="space-y-6" x-data="{
-    mode: 'tous',
-    selectedInstituts: [],
-    institutMap: {{ $instituts->pluck('nom', 'id')->toJson() }},
-    emailPerso: '',
-    nomPerso: '',
-    sendMode: 'email',
-    pushTitre: '',
-    pushMessage: '',
-    bannerType: 'info',
-    bannerMessage: '',
-    bannerDuree: '',
-    get sendEmail() { return this.sendMode !== 'push' && this.sendMode !== 'banner'; },
-    get sendPush()  { return this.sendMode !== 'email' && this.sendMode !== 'banner'; },
-    get sendBanner() { return this.sendMode === 'banner'; },
-    toggleAll(instituts) {
-        if (this.selectedInstituts.length === instituts.length) {
-            this.selectedInstituts = [];
-        } else {
-            this.selectedInstituts = instituts.map(i => i.id);
-        }
-    }
-}" x-init="$watch('mode', () => { selectedInstituts = [] })">
+@php
+    $donneesInit = [
+        'instituts'      => $instituts->map(fn ($i) => [
+            'id'    => $i->id,
+            'nom'   => $i->nom,
+            'ville' => $i->ville,
+        ])->values(),
+        'emails'         => $emailsParInstitut,
+        'tailleLot'      => $tailleLot,
+        'routes'         => [
+            'demarrer' => route('admin.emails.campagne.demarrer'),
+            'lot'      => route('admin.emails.campagne.lot', ['campagne' => '__ID__']),
+            'test'     => route('admin.emails.test'),
+            'historique' => route('admin.emails.index'),
+        ],
+        'brouillon'      => $brouillon ? [
+            'sujet' => $brouillon->sujet,
+            'corps' => $brouillon->corps,
+        ] : null,
+        'anciennes'      => old(),
+    ];
+@endphp
 
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="page-title">Composer un envoi</h1>
-            <p class="page-subtitle">Envoyez un email, une notification push, ou les deux.</p>
+<div x-data="composerEmail(@js($donneesInit))" x-cloak class="pb-28">
+
+    {{-- ═══ En-tête ═══ --}}
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
+        <div class="flex-1 min-w-0">
+            <h1 class="page-title">Composer un message</h1>
+            <p class="page-subtitle hidden sm:block">Un email, une notification, une bannière — ou les deux à la fois.</p>
         </div>
-        <a href="{{ route('admin.emails.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/10 transition-all shadow-sm">
+        <a href="{{ route('admin.emails.index') }}"
+           class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/10 transition-all shadow-sm flex-shrink-0">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             Historique
         </a>
     </div>
 
-    @if(session('success'))
-    <div class="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl text-green-800 dark:text-green-300 text-sm font-medium">
-        <svg class="w-5 h-5 flex-shrink-0 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        {{ session('success') }}
+    @if($brouillon)
+    <div class="mb-5 flex items-start gap-3 p-4 rounded-2xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
+        <svg class="w-5 h-5 flex-shrink-0 text-purple-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="text-sm text-purple-800 dark:text-purple-200">
+            <p class="font-semibold">Message repris d'une campagne précédente</p>
+            <p class="text-xs mt-0.5">Le sujet et le corps sont pré-remplis. Les destinataires sont à choisir à nouveau — aucune adresse n'est reprise pour éviter un renvoi accidentel.</p>
+        </div>
     </div>
     @endif
 
-    @if(session('error'))
-    <div class="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl text-red-800 dark:text-red-300 text-sm">
-        <svg class="w-5 h-5 flex-shrink-0 text-red-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <span>{{ session('error') }}</span>
+    {{-- ═══ Fil des étapes ═══ --}}
+    <div class="card-admin p-1.5 mb-6">
+        <div class="flex gap-1">
+            <template x-for="s in etapes" :key="s.numero">
+                <button type="button" @click="allerA(s.numero)"
+                        :class="etape === s.numero
+                            ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-sm'
+                            : (etape > s.numero ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400 dark:text-gray-500')"
+                        class="flex-1 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2">
+                    <span class="w-5 h-5 rounded-full text-[11px] flex items-center justify-center flex-shrink-0"
+                          :class="etape === s.numero ? 'bg-gradient-to-br from-purple-600 to-pink-500 text-white' : (etape > s.numero ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300' : 'bg-gray-100 dark:bg-white/10')"
+                          x-text="etape > s.numero ? '✓' : s.numero"></span>
+                    <span class="truncate" x-text="s.titre"></span>
+                </button>
+            </template>
+        </div>
     </div>
-    @endif
 
-    @if($errors->any())
-    <div class="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl text-red-800 dark:text-red-300 text-sm">
-        <svg class="w-5 h-5 flex-shrink-0 text-red-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <ul class="list-disc list-inside space-y-1">
-            @foreach($errors->all() as $error)
-            <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-    @endif
+    <div class="grid lg:grid-cols-5 gap-6 items-start">
 
-    <form method="POST" action="{{ route('admin.emails.send') }}" class="space-y-6" id="email-form">
-        @csrf
+        {{-- ═══ Colonne formulaire ═══ --}}
+        <div class="lg:col-span-3 space-y-6">
 
-        {{-- Choix du mode --}}
-        <div class="card-admin p-6">
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Destinataires</h2>
+            {{-- ───── Étape 1 : canal ───── --}}
+            <div x-show="etape === 1" class="card-admin p-6">
+                <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-1">Par quel canal ?</h2>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Le reste du formulaire s'adapte à votre choix.</p>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-                <label class="relative cursor-pointer" @click="mode = 'tous'">
-                    <input type="radio" name="mode" value="tous" class="sr-only" :checked="mode === 'tous'" checked>
-                    <div :class="mode === 'tous' ? 'ring-2 ring-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'ring-1 ring-gray-200 dark:ring-white/10 hover:ring-purple-300'" class="rounded-2xl p-4 transition-all">
-                        <div class="flex items-center gap-3">
-                            <div :class="mode === 'tous' ? 'bg-purple-100 dark:bg-purple-800' : 'bg-gray-100 dark:bg-white/10'" class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <svg class="w-5 h-5" :class="mode === 'tous' ? 'text-purple-600 dark:text-purple-300' : 'text-gray-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <template x-for="c in canaux" :key="c.code">
+                        <button type="button" @click="canal = c.code"
+                                :class="canal === c.code ? 'ring-2 ring-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'ring-1 ring-gray-200 dark:ring-white/10 hover:ring-purple-300'"
+                                class="rounded-2xl p-4 text-left transition-all">
+                            <div class="flex items-start gap-3">
+                                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                                     :class="canal === c.code ? 'bg-purple-100 dark:bg-purple-800 text-purple-600 dark:text-purple-300' : 'bg-gray-100 dark:bg-white/10 text-gray-500'">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="c.icone"/></svg>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-sm font-semibold" :class="canal === c.code ? 'text-purple-700 dark:text-purple-300' : 'text-gray-700 dark:text-gray-300'" x-text="c.titre"></p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5" x-text="c.detail"></p>
+                                </div>
                             </div>
-                            <div>
-                                <p class="text-sm font-semibold" :class="mode === 'tous' ? 'text-purple-700 dark:text-purple-300' : 'text-gray-700 dark:text-gray-300'">Tous les établissements</p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $instituts->count() }} établissements</p>
-                            </div>
-                        </div>
-                    </div>
-                </label>
-
-                <label class="relative cursor-pointer" @click="mode = 'selection'">
-                    <input type="radio" name="mode" value="selection" class="sr-only" :checked="mode === 'selection'">
-                    <div :class="mode === 'selection' ? 'ring-2 ring-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'ring-1 ring-gray-200 dark:ring-white/10 hover:ring-purple-300'" class="rounded-2xl p-4 transition-all">
-                        <div class="flex items-center gap-3">
-                            <div :class="mode === 'selection' ? 'bg-purple-100 dark:bg-purple-800' : 'bg-gray-100 dark:bg-white/10'" class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <svg class="w-5 h-5" :class="mode === 'selection' ? 'text-purple-600 dark:text-purple-300' : 'text-gray-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-                            </div>
-                            <div>
-                                <p class="text-sm font-semibold" :class="mode === 'selection' ? 'text-purple-700 dark:text-purple-300' : 'text-gray-700 dark:text-gray-300'">Sélection multiple</p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">Choisir des établissements</p>
-                            </div>
-                        </div>
-                    </div>
-                </label>
-
-                <label class="relative cursor-pointer" @click="mode = 'un'">
-                    <input type="radio" name="mode" value="un" class="sr-only" :checked="mode === 'un'">
-                    <div :class="mode === 'un' ? 'ring-2 ring-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'ring-1 ring-gray-200 dark:ring-white/10 hover:ring-purple-300'" class="rounded-2xl p-4 transition-all">
-                        <div class="flex items-center gap-3">
-                            <div :class="mode === 'un' ? 'bg-purple-100 dark:bg-purple-800' : 'bg-gray-100 dark:bg-white/10'" class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <svg class="w-5 h-5" :class="mode === 'un' ? 'text-purple-600 dark:text-purple-300' : 'text-gray-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                            </div>
-                            <div>
-                                <p class="text-sm font-semibold" :class="mode === 'un' ? 'text-purple-700 dark:text-purple-300' : 'text-gray-700 dark:text-gray-300'">Un seul établissement</p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">Ciblage précis</p>
-                            </div>
-                        </div>
-                    </div>
-                </label>
-
-                <label class="relative cursor-pointer" @click="mode = 'personnalise'">
-                    <input type="radio" name="mode" value="personnalise" class="sr-only" :checked="mode === 'personnalise'">
-                    <div :class="mode === 'personnalise' ? 'ring-2 ring-pink-500 bg-pink-50 dark:bg-pink-900/20' : 'ring-1 ring-gray-200 dark:ring-white/10 hover:ring-pink-300'" class="rounded-2xl p-4 transition-all">
-                        <div class="flex items-center gap-3">
-                            <div :class="mode === 'personnalise' ? 'bg-pink-100 dark:bg-pink-800' : 'bg-gray-100 dark:bg-white/10'" class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <svg class="w-5 h-5" :class="mode === 'personnalise' ? 'text-pink-600 dark:text-pink-300' : 'text-gray-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/></svg>
-                            </div>
-                            <div>
-                                <p class="text-sm font-semibold" :class="mode === 'personnalise' ? 'text-pink-700 dark:text-pink-300' : 'text-gray-700 dark:text-gray-300'">Email personnalisé</p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">Saisir une adresse</p>
-                            </div>
-                        </div>
-                    </div>
-                </label>
-            </div>
-
-            {{-- Liste de sélection multiple --}}
-            <div x-show="mode === 'selection'" x-cloak x-transition class="space-y-3"
-                 x-data="{ search: '' }">
-
-                {{-- Barre de recherche + compteur + tout sélectionner --}}
-                <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                    <div class="relative flex-1">
-                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
-                        </svg>
-                        <input type="text" x-model="search" placeholder="Rechercher un établissement…"
-                               class="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all">
-                    </div>
-                    <div class="flex items-center gap-3 flex-shrink-0">
-                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-                            <span class="font-bold text-purple-600 dark:text-purple-400" x-text="selectedInstituts.length"></span> <span x-text="selectedInstituts.length > 1 ? 'sélectionnés' : 'sélectionné'"></span>
-                        </span>
-                        <button type="button"
-                                @click="toggleAll({{ $instituts->map(fn($i) => ['id' => $i->id])->values()->toJson() }})"
-                                class="text-xs font-medium px-3 py-1.5 rounded-lg border border-purple-200 dark:border-purple-800 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors">
-                            Tout sélectionner
                         </button>
-                        <button type="button" x-show="selectedInstituts.length > 0" x-cloak
-                                @click="selectedInstituts = []"
-                                class="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                            Effacer
-                        </button>
-                    </div>
-                </div>
-
-                @if($errors->has('instituts'))
-                <p class="text-xs text-red-500">{{ $errors->first('instituts') }}</p>
-                @endif
-
-                {{-- Grille avec scroll fixe --}}
-                <div class="h-64 overflow-y-auto rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.02] p-2">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5">
-                        @foreach($instituts as $institut)
-                        <label class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer transition-colors"
-                               x-show="search === '' || '{{ strtolower($institut->nom . ' ' . $institut->ville) }}'.includes(search.toLowerCase())"
-                               :class="selectedInstituts.includes({{ $institut->id }}) ? 'bg-purple-100 dark:bg-purple-900/40 ring-1 ring-purple-300 dark:ring-purple-700' : 'hover:bg-white dark:hover:bg-white/5'">
-                            <input type="checkbox" name="instituts[]" value="{{ $institut->id }}"
-                                   x-model="selectedInstituts" :value="{{ $institut->id }}"
-                                   class="w-4 h-4 rounded text-purple-600 border-gray-300 focus:ring-purple-500 flex-shrink-0">
-                            <div class="min-w-0">
-                                <p class="text-xs font-semibold text-gray-900 dark:text-white truncate leading-tight">{{ $institut->nom }}</p>
-                                <p class="text-[11px] text-gray-400 truncate">{{ $institut->ville }}</p>
-                            </div>
-                        </label>
-                        @endforeach
-                    </div>
-                    {{-- Message si aucun résultat --}}
-                    <p class="text-center text-sm text-gray-400 py-6 hidden"
-                       x-show="{{ $instituts->count() }} > 0 && search !== '' && document.querySelectorAll('[x-show]:not([style*=\'none\'])').length === 0">
-                        Aucun établissement ne correspond à votre recherche.
-                    </p>
-                </div>
-
-                {{-- Chips des sélectionnés --}}
-                <div x-show="selectedInstituts.length > 0" x-cloak class="flex flex-wrap gap-1.5 pt-1">
-                    <template x-for="id in selectedInstituts" :key="id">
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300">
-                            <span x-text="institutMap[id] || id"></span>
-                            <button type="button" @click="selectedInstituts = selectedInstituts.filter(i => i !== id)"
-                                    class="ml-0.5 hover:text-purple-900 dark:hover:text-white leading-none">✕</button>
-                        </span>
                     </template>
                 </div>
-            </div>
 
-            {{-- Un seul établissement --}}
-            <div x-show="mode === 'un'" x-cloak x-transition>
-                @if($errors->has('institut_id'))
-                <p class="text-xs text-red-500 mb-1">{{ $errors->first('institut_id') }}</p>
-                @endif
-                <select name="institut_id" class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all">
-                    <option value="">— Choisir un établissement —</option>
-                    @foreach($instituts as $institut)
-                    <option value="{{ $institut->id }}" {{ old('institut_id') == $institut->id ? 'selected' : '' }}>
-                        {{ $institut->nom }} – {{ $institut->ville }} ({{ $institut->proprietaire?->email }})
-                    </option>
-                    @endforeach
-                </select>
-            </div>
-
-            {{-- Email personnalisé --}}
-            <div x-show="mode === 'personnalise'" x-cloak x-transition class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Adresse email <span class="text-red-500">*</span></label>
-                    @if($errors->has('email_personnalise'))
-                    <p class="text-xs text-red-500 mb-1">{{ $errors->first('email_personnalise') }}</p>
-                    @endif
-                    <input type="email" name="email_personnalise" x-model="emailPerso"
-                           value="{{ old('email_personnalise') }}"
-                           placeholder="exemple@domaine.com"
-                           class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Prénom / Nom <span class="text-gray-400 font-normal">(optionnel)</span></label>
-                    <input type="text" name="nom_personnalise" x-model="nomPerso"
-                           value="{{ old('nom_personnalise') }}"
-                           placeholder="Ex : Marie Dupont"
-                           class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all">
-                </div>
-            </div>
-        </div>
-
-        {{-- Composition du message (masqué si push uniquement) --}}
-        <div x-show="sendEmail" x-cloak x-transition class="card-admin p-6 space-y-5">
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Message email</h2>
-
-            {{-- Modèles prédéfinis --}}
-            <div>
-                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Modèles prédéfinis</p>
-                <div class="flex flex-wrap gap-2" id="presets-container">
-                    <button type="button" data-preset="bienvenue"
-                            class="preset-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
-                        👋 Bienvenue & prise en main
-                    </button>
-                    <button type="button" data-preset="abonnement-expire"
-                            class="preset-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors">
-                        ⏰ Abonnement expiré
-                    </button>
-                    <button type="button" data-preset="satisfaction"
-                            class="preset-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors">
-                        ⭐ Sondage satisfaction
-                    </button>
-                    <button type="button" data-preset="nouveaute"
-                            class="preset-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors">
-                        🚀 Annonce nouveauté
-                    </button>
-                    <button type="button" data-preset="inactif"
-                            class="preset-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-50 dark:bg-gray-700/40 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700/60 transition-colors">
-                        💤 Compte inactif
+                <div class="flex justify-end mt-6">
+                    <button type="button" @click="allerA(2)"
+                            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all active:scale-95"
+                            style="background: linear-gradient(135deg, #9333ea, #ec4899);">
+                        Choisir les destinataires
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </button>
                 </div>
             </div>
 
-            {{-- Sujet --}}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Sujet</label>
-                @if($errors->has('sujet'))
-                <p class="text-xs text-red-500 mb-1">{{ $errors->first('sujet') }}</p>
-                @endif
-                <input type="text" name="sujet" id="sujet-input" value="{{ old('sujet') }}"
-                       placeholder="Objet de votre email…"
-                       class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all">
-            </div>
+            {{-- ───── Étape 2 : destinataires ───── --}}
+            <div x-show="etape === 2" class="card-admin p-6">
+                <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Qui doit recevoir ?</h2>
 
-            {{-- Éditeur riche --}}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Corps du message</label>
-                @if($errors->has('corps'))
-                <p class="text-xs text-red-500 mb-1">{{ $errors->first('corps') }}</p>
-                @endif
-                <div id="quill-editor"></div>
-                <input type="hidden" name="corps" id="corps-input" value="{{ old('corps') }}">
-                <p class="text-xs text-gray-400 mt-2">Utilisez la barre d'outils pour mettre en forme votre message.</p>
-            </div>
-        </div>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+                    <template x-for="m in modes" :key="m.code">
+                        <button type="button" @click="mode = m.code"
+                                :class="mode === m.code ? (m.code === 'personnalise' ? 'ring-2 ring-pink-500 bg-pink-50 dark:bg-pink-900/20' : 'ring-2 ring-purple-500 bg-purple-50 dark:bg-purple-900/20') : 'ring-1 ring-gray-200 dark:ring-white/10 hover:ring-purple-300'"
+                                class="rounded-2xl p-3.5 text-left transition-all">
+                            <p class="text-sm font-semibold" :class="mode === m.code ? (m.code === 'personnalise' ? 'text-pink-700 dark:text-pink-300' : 'text-purple-700 dark:text-purple-300') : 'text-gray-700 dark:text-gray-300'" x-text="m.titre"></p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5" x-text="m.detail"></p>
+                        </button>
+                    </template>
+                </div>
 
-        {{-- Sélecteur de type d'envoi --}}
-        <div class="card-admin p-6">
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Type d'envoi</h2>
-            <input type="hidden" name="send_mode" :value="sendMode">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-
-                <button type="button" @click="sendMode = 'email'"
-                        :class="sendMode === 'email' ? 'ring-2 ring-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'ring-1 ring-gray-200 dark:ring-white/10 hover:ring-purple-300'"
-                        class="rounded-2xl p-4 text-left transition-all">
-                    <div class="flex items-center gap-3">
-                        <div :class="sendMode === 'email' ? 'bg-purple-100 dark:bg-purple-800' : 'bg-gray-100 dark:bg-white/10'" class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <svg class="w-5 h-5" :class="sendMode === 'email' ? 'text-purple-600 dark:text-purple-300' : 'text-gray-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                {{-- Sélection multiple --}}
+                <div x-show="mode === 'selection'" x-cloak class="space-y-3">
+                    <div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                        <div class="relative flex-1 w-full">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
+                            <input type="text" x-model="recherche" placeholder="Rechercher un établissement…"
+                                   class="w-full pl-9 pr-3 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                         </div>
-                        <div>
-                            <p class="text-sm font-semibold" :class="sendMode === 'email' ? 'text-purple-700 dark:text-purple-300' : 'text-gray-700 dark:text-gray-300'">Email uniquement</p>
-                            <p class="text-xs text-gray-500">Sans notification</p>
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                            <button type="button" @click="toutBasculer()"
+                                    class="text-xs font-medium px-3 py-1.5 rounded-lg border border-purple-200 dark:border-purple-800 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors">
+                                <span x-text="tousFiltresSelectionnes ? 'Tout désélectionner' : 'Tout sélectionner'"></span>
+                            </button>
+                            <button type="button" x-show="selectedInstituts.length > 0" @click="selectedInstituts = []"
+                                    class="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                Effacer
+                            </button>
                         </div>
                     </div>
-                </button>
 
-                <button type="button" @click="sendMode = 'both'"
-                        :class="sendMode === 'both' ? 'ring-2 ring-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'ring-1 ring-gray-200 dark:ring-white/10 hover:ring-purple-300'"
-                        class="rounded-2xl p-4 text-left transition-all">
-                    <div class="flex items-center gap-3">
-                        <div :class="sendMode === 'both' ? 'bg-purple-100 dark:bg-purple-800' : 'bg-gray-100 dark:bg-white/10'" class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <svg class="w-5 h-5" :class="sendMode === 'both' ? 'text-purple-600 dark:text-purple-300' : 'text-gray-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    <div class="h-56 overflow-y-auto rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.02] p-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                            <template x-for="i in institutsFiltres" :key="i.id">
+                                <label class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer transition-colors"
+                                       :class="selectedInstituts.includes(i.id) ? 'bg-purple-100 dark:bg-purple-900/40 ring-1 ring-purple-300 dark:ring-purple-700' : 'hover:bg-white dark:hover:bg-white/5'">
+                                    <input type="checkbox" :value="i.id" x-model="selectedInstituts"
+                                           class="w-4 h-4 rounded text-purple-600 border-gray-300 focus:ring-purple-500 flex-shrink-0">
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-semibold text-gray-900 dark:text-white truncate leading-tight" x-text="i.nom"></p>
+                                        <p class="text-[11px] text-gray-400 truncate" x-text="i.ville"></p>
+                                    </div>
+                                </label>
+                            </template>
                         </div>
-                        <div>
-                            <p class="text-sm font-semibold" :class="sendMode === 'both' ? 'text-purple-700 dark:text-purple-300' : 'text-gray-700 dark:text-gray-300'">Email + Notification</p>
-                            <p class="text-xs text-gray-500">Les deux à la fois</p>
-                        </div>
+                        <p x-show="institutsFiltres.length === 0" x-cloak class="text-center text-sm text-gray-400 py-8">
+                            Aucun établissement ne correspond à « <span x-text="recherche"></span> ».
+                        </p>
                     </div>
-                </button>
 
-                <button type="button" @click="sendMode = 'push'"
-                        :class="sendMode === 'push' ? 'ring-2 ring-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'ring-1 ring-gray-200 dark:ring-white/10 hover:ring-indigo-300'"
-                        class="rounded-2xl p-4 text-left transition-all">
-                    <div class="flex items-center gap-3">
-                        <div :class="sendMode === 'push' ? 'bg-indigo-100 dark:bg-indigo-800' : 'bg-gray-100 dark:bg-white/10'" class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <svg class="w-5 h-5" :class="sendMode === 'push' ? 'text-indigo-600 dark:text-indigo-300' : 'text-gray-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2v-1H6v1a2 2 0 002 2zM12 2a6 6 0 016 6v3.159c0 .538.214 1.055.595 1.436L20 14H4l1.405-1.405A2.032 2.032 0 006 11.158V8a6 6 0 016-6z"/></svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold" :class="sendMode === 'push' ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300'">Notification uniquement</p>
-                            <p class="text-xs text-gray-500">Sans email</p>
-                        </div>
+                    <div x-show="selectedInstituts.length > 0" class="flex flex-wrap gap-1.5">
+                        <template x-for="id in selectedInstituts" :key="id">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300">
+                                <span x-text="nomInstitut(id)"></span>
+                                <button type="button" @click="selectedInstituts = selectedInstituts.filter(x => x !== id)" class="ml-0.5 hover:text-purple-900 dark:hover:text-white leading-none">✕</button>
+                            </span>
+                        </template>
                     </div>
-                </button>
+                </div>
 
-                <button type="button" @click="sendMode = 'banner'"
-                        :class="sendMode === 'banner' ? 'ring-2 ring-amber-500 bg-amber-50 dark:bg-amber-900/20' : 'ring-1 ring-gray-200 dark:ring-white/10 hover:ring-amber-300'"
-                        class="rounded-2xl p-4 text-left transition-all">
-                    <div class="flex items-center gap-3">
-                        <div :class="sendMode === 'banner' ? 'bg-amber-100 dark:bg-amber-800' : 'bg-gray-100 dark:bg-white/10'" class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <svg class="w-5 h-5" :class="sendMode === 'banner' ? 'text-amber-600 dark:text-amber-300' : 'text-gray-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold" :class="sendMode === 'banner' ? 'text-amber-700 dark:text-amber-300' : 'text-gray-700 dark:text-gray-300'">Bannière dashboard</p>
-                            <p class="text-xs text-gray-500">Affiché en haut</p>
-                        </div>
-                    </div>
-                </button>
-
-            </div>
-
-            {{-- Avertissement mode personnalisé + push --}}
-            <div x-show="(sendPush || sendBanner) && mode === 'personnalise'" x-cloak x-transition
-                 class="mt-4 flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-3 py-2">
-                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span x-text="sendPush ? 'La notification push ne sera pas envoyée en mode \"Email personnalisé\" (pas de compte utilisateur associé).' : 'Les bannières ne sont pas disponibles en mode \"Email personnalisé\".'"></span>
-            </div>
-        </div>
-
-        {{-- Champs push --}}
-        <div x-show="sendPush" x-cloak x-transition class="card-admin p-6 space-y-4">
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Contenu de la notification</h2>
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">
-                    Titre <span class="text-gray-400 font-normal">(max 60 caractères)</span>
-                </label>
-                <input type="text" name="push_titre" x-model="pushTitre" maxlength="60"
-                       x-init="$watch('sendMode', v => { if(v !== 'email' && !pushTitre) pushTitre = (document.getElementById('sujet-input')?.value || '').substring(0,60) })"
-                       placeholder="Ex : 📢 Mise à jour importante"
-                       class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all">
-                <p class="text-right text-xs text-gray-400 mt-1" x-text="(pushTitre.length) + '/60'"></p>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">
-                    Message <span class="text-gray-400 font-normal">(max 120 caractères)</span>
-                </label>
-                <textarea name="push_message" x-model="pushMessage" maxlength="120" rows="2"
-                          placeholder="Message court affiché dans la notification…"
-                          class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all resize-none"></textarea>
-                <p class="text-right text-xs text-gray-400 mt-1" x-text="(pushMessage.length) + '/120'"></p>
-            </div>
-        </div>
-
-        {{-- Champs bannière --}}
-        <div x-show="sendBanner" x-cloak x-transition class="card-admin p-6 space-y-4">
-            <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Configuration de la bannière</h2>
-            
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">
-                    Titre <span class="text-red-500">*</span> <span class="text-gray-400 font-normal">(max 60 caractères)</span>
-                </label>
-                <input type="text" name="push_titre" x-model="pushTitre" maxlength="60" required
-                       placeholder="Ex : ✨ Nouvelle fonctionnalité disponible"
-                       class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all">
-                <p class="text-right text-xs text-gray-400 mt-1" x-text="(pushTitre.length) + '/60'"></p>
-                @if($errors->has('push_titre'))
-                <p class="text-xs text-red-500 mt-1">{{ $errors->first('push_titre') }}</p>
-                @endif
-            </div>
-
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">
-                    Message <span class="text-red-500">*</span> <span class="text-gray-400 font-normal">(max 500 caractères)</span>
-                </label>
-                <textarea name="banner_message" x-model="bannerMessage" maxlength="500" rows="3" required
-                          placeholder="Message affiché dans la bannière en haut du dashboard…"
-                          class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all resize-none"></textarea>
-                <p class="text-right text-xs text-gray-400 mt-1" x-text="(bannerMessage.length) + '/500'"></p>
-                @if($errors->has('banner_message'))
-                <p class="text-xs text-red-500 mt-1">{{ $errors->first('banner_message') }}</p>
-                @endif
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Type de bannière</label>
-                    <select name="banner_type" x-model="bannerType" 
-                            class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all">
-                        <option value="info">ℹ️ Information (bleu)</option>
-                        <option value="success">✅ Succès (vert)</option>
-                        <option value="warning">⚠️ Avertissement (orange)</option>
-                        <option value="danger">🚨 Important (rouge)</option>
+                {{-- Un seul --}}
+                <div x-show="mode === 'un'" x-cloak>
+                    <select x-model="institutUnique" class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">— Choisir un établissement —</option>
+                        <template x-for="i in instituts" :key="i.id">
+                            <option :value="i.id" x-text="i.nom + ' – ' + i.ville"></option>
+                        </template>
                     </select>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Durée d'affichage (facultatif)</label>
-                    <input type="number" name="banner_duree" x-model="bannerDuree" min="1" max="365"
-                           placeholder="Illimité"
-                           class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all">
-                    <p class="text-xs text-gray-400 mt-1">En jours (laisser vide = sans expiration)</p>
+                {{-- Personnalisé --}}
+                <div x-show="mode === 'personnalise'" x-cloak class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Adresse email <span class="text-red-500">*</span></label>
+                        <input type="email" x-model="emailPerso" placeholder="exemple@domaine.com"
+                               class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Prénom / Nom <span class="text-gray-400 font-normal">(optionnel)</span></label>
+                        <input type="text" x-model="nomPerso" placeholder="Ex : Marie Dupont"
+                               class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500">
+                    </div>
+                </div>
+
+                {{-- Compteur de doublons --}}
+                <div class="mt-5 flex flex-wrap items-center gap-2 text-xs">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 font-medium">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        <span x-text="resumeDestinataires"></span>
+                    </span>
+                    <span x-show="nbDoublons > 0" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 font-medium">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <span x-text="nbDoublons + (nbDoublons > 1 ? ' doublons évités' : ' doublon évité')"></span>
+                    </span>
+                </div>
+
+                <div class="flex justify-between gap-3 mt-6">
+                    <button type="button" @click="allerA(1)" class="px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">Retour</button>
+                    <button type="button" @click="allerA(3)"
+                            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all active:scale-95"
+                            style="background: linear-gradient(135deg, #9333ea, #ec4899);">
+                        Rédiger le message
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </button>
                 </div>
             </div>
 
-            <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
-                <div class="flex items-start gap-3">
-                    <svg class="w-5 h-5 flex-shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <div class="text-xs text-amber-800 dark:text-amber-300">
-                        <p class="font-semibold mb-1">À propos des bannières :</p>
-                        <ul class="list-disc list-inside space-y-1">
-                            <li>La bannière s'affiche en haut du dashboard des établissements ciblés</li>
-                            <li>Elle reste visible jusqu'à ce que l'utilisateur clique sur "C'est compris !"</li>
-                            <li>Si une durée est définie, elle disparaît automatiquement après expiration</li>
-                        </ul>
+            {{-- ───── Étape 3 : contenu ───── --}}
+            <div x-show="etape === 3" class="space-y-6">
+
+                {{-- Bannière --}}
+                <div x-show="estBanniere" x-cloak class="card-admin p-6 space-y-4">
+                    <div>
+                        <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Bannière du tableau de bord</h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Affichée en haut du tableau de bord des établissements ciblés, jusqu'à ce qu'ils cliquent sur « C'est compris ».</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Titre <span class="text-red-500">*</span></label>
+                        <input type="text" id="banner-titre" x-model="bannerTitre" maxlength="60" placeholder="Ex : ✨ Nouvelle fonctionnalité disponible"
+                               class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <p class="text-right text-xs text-gray-400 mt-1" x-text="bannerTitre.length + '/60'"></p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Message <span class="text-red-500">*</span></label>
+                        <textarea id="banner-message" x-model="bannerMessage" maxlength="500" rows="3" placeholder="Message affiché dans la bannière…"
+                                  class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none"></textarea>
+                        <p class="text-right text-xs text-gray-400 mt-1" x-text="bannerMessage.length + '/500'"></p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Type</label>
+                            <select x-model="bannerType" class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                <option value="info">ℹ️ Information (bleu)</option>
+                                <option value="success">✅ Succès (vert)</option>
+                                <option value="warning">⚠️ Avertissement (orange)</option>
+                                <option value="danger">🚨 Important (rouge)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Durée d'affichage</label>
+                            <input type="number" x-model="bannerDuree" min="1" max="365" placeholder="Illimité"
+                                   class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            <p class="text-xs text-gray-400 mt-1">En jours — vide = sans expiration</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Email --}}
+                <div x-show="besoinEmail" x-cloak class="card-admin p-6 space-y-5">
+                    <div class="flex items-center justify-between gap-3">
+                        <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Message email</h2>
+                        <div class="flex flex-wrap gap-1.5">
+                            <template x-for="p in presets" :key="p.cle">
+                                <button type="button" @click="appliquerPreset(p)"
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/10 hover:border-purple-300 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+                                        x-text="p.libelle"></button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Sujet <span class="text-red-500">*</span></label>
+                        <input type="text" id="sujet-input" x-model="sujet" maxlength="255" placeholder="Objet de votre email…"
+                               class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Corps du message <span class="text-red-500">*</span></label>
+                        <div id="quill-editor"></div>
+                        <p class="text-xs text-gray-400 mt-2">La mise en forme est reprise telle quelle dans l'email.</p>
+                    </div>
+                </div>
+
+                {{-- Push --}}
+                <div x-show="besoinPush" x-cloak class="card-admin p-6 space-y-4">
+                    <div>
+                        <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Notification push</h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Affichée sur le téléphone, sans ouvrir l'application.</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Titre <span class="text-red-500">*</span></label>
+                        <input type="text" id="push-titre" x-model="pushTitre" maxlength="60" placeholder="Ex : 📢 Mise à jour importante"
+                               class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <p class="text-right text-xs text-gray-400 mt-1" x-text="pushTitre.length + '/60'"></p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Message <span class="text-gray-400 font-normal">(facultatif — dérivé du corps sinon)</span></label>
+                        <textarea x-model="pushMessage" maxlength="120" rows="2" placeholder="Message court affiché dans la notification…"
+                                  class="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+                        <p class="text-right text-xs text-gray-400 mt-1" x-text="pushMessage.length + '/120'"></p>
+                    </div>
+                </div>
+
+                <div class="flex justify-between gap-3">
+                    <button type="button" @click="allerA(2)" class="px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">Retour</button>
+                    <button type="button" @click="envoyerTest()" :disabled="enCours || !besoinEmail"
+                            :class="besoinEmail ? '' : 'opacity-40 cursor-not-allowed'"
+                            class="px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                        M'envoyer un test
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {{-- ═══ Colonne aperçu ═══ --}}
+        <div class="lg:col-span-2 space-y-4 lg:sticky lg:top-4">
+            <div class="card-admin overflow-hidden">
+                <div class="px-4 py-3 border-b border-gray-100 dark:border-white/10 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    <h3 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">Aperçu</h3>
+                </div>
+
+                <div class="p-4 space-y-4">
+
+                    {{-- Aperçu email --}}
+                    <div x-show="besoinEmail" class="rounded-xl overflow-hidden border border-gray-200 dark:border-white/10">
+                        <div class="px-4 py-5 text-center" style="background: linear-gradient(135deg, #9333ea, #ec4899);">
+                            <div class="w-9 h-9 mx-auto rounded-xl bg-white/20 flex items-center justify-center text-base mb-2">✉️</div>
+                            <p class="text-white font-bold text-sm">{{ config('app.name') }}</p>
+                            <p class="text-white/80 text-[11px] mt-0.5">Message de votre équipe</p>
+                        </div>
+                        <div class="bg-white dark:bg-slate-800 p-4">
+                            <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Sujet</p>
+                            <p class="text-sm font-semibold text-gray-900 dark:text-white mb-3 break-words" x-text="sujet || 'Sans objet'"></p>
+                            <p class="text-sm font-medium text-gray-900 dark:text-white mb-2">Bonjour 👋</p>
+                            <div class="text-[13px] text-gray-600 dark:text-gray-300 leading-relaxed apercu-email max-h-48 overflow-y-auto"
+                                 x-html="corpsHtmlApercu || '<span class=\'text-gray-400 italic\'>Le message apparaîtra ici…</span>'"></div>
+                        </div>
+                    </div>
+
+                    {{-- Aperçu push --}}
+                    <div x-show="besoinPush" x-cloak class="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-900 p-3">
+                        <div class="flex items-start gap-2.5">
+                            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg, #9333ea, #ec4899);">
+                                <span class="text-white text-xs font-bold">M</span>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">Maëlya · maintenant</p>
+                                <p class="text-xs font-semibold text-white break-words" x-text="pushTitre || sujet || 'Titre de la notification'"></p>
+                                <p class="text-[11px] text-gray-300 mt-0.5 line-clamp-2 break-words" x-text="pushMessage || messagePushApercu"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Aperçu bannière --}}
+                    <div x-show="estBanniere" x-cloak>
+                        <div class="rounded-xl p-3 border" :class="classesBanniere">
+                            <p class="text-sm font-semibold" x-text="bannerTitre || 'Titre de la bannière'"></p>
+                            <p class="text-xs mt-0.5" x-text="bannerMessage || 'Le message de la bannière apparaîtra ici.'"></p>
+                        </div>
+                    </div>
+
+                    {{-- Récapitulatif destinataires --}}
+                    <div class="pt-3 border-t border-gray-100 dark:border-white/10 space-y-1.5">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-gray-500 dark:text-gray-400">Destinataires</span>
+                            <span class="font-bold text-gray-900 dark:text-white" x-text="nbDestinataires"></span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-gray-500 dark:text-gray-400">Canal</span>
+                            <span class="font-semibold text-purple-600 dark:text-purple-400" x-text="libelleCanal"></span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-gray-500 dark:text-gray-400">Durée estimée</span>
+                            <span class="font-semibold text-gray-700 dark:text-gray-300" x-text="dureeEstimee"></span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        {{-- Bouton d'envoi --}}
-        <div class="flex items-center justify-between">
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-                <span x-show="mode === 'tous'">Envoi à <strong class="text-gray-700 dark:text-gray-200">{{ $instituts->count() }} établissements</strong></span>
-                <span x-show="mode === 'selection'" x-cloak>Envoi à <strong class="text-gray-700 dark:text-gray-200" x-text="selectedInstituts.length + (selectedInstituts.length > 1 ? ' établissements' : ' établissement')"></strong></span>
-                <span x-show="mode === 'un'" x-cloak>Envoi à <strong class="text-gray-700 dark:text-gray-200">1 établissement</strong></span>
-                <span x-show="mode === 'personnalise'" x-cloak>Envoi à <strong class="text-pink-600 dark:text-pink-400" x-text="emailPerso || '—'"></strong></span>
-            </p>
-
-            <button type="submit"
-                    style="background: linear-gradient(135deg, #9333ea, #ec4899);"
-                    class="inline-flex items-center gap-2 px-6 py-3 text-white font-semibold text-sm rounded-xl shadow-lg hover:opacity-90 transition-all active:scale-95">
-                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <line x1="22" y1="2" x2="11" y2="13"/>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                </svg>
-                <span x-show="sendMode === 'email'">Envoyer l'email</span>
-                <span x-show="sendMode === 'both'" x-cloak>Envoyer email + notification</span>
-                <span x-show="sendMode === 'push'" x-cloak>Envoyer la notification</span>
-                <span x-show="sendMode === 'banner'" x-cloak>Créer la bannière</span>
+    {{-- ═══ Barre d'action collante ═══ --}}
+    <div class="fixed bottom-[3.5rem] lg:bottom-0 left-0 right-0 z-30 border-t border-gray-200 dark:border-white/10 bg-white/95 dark:bg-slate-900/95 backdrop-blur px-4 py-3 lg:pl-64">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+            <div class="min-w-0">
+                <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                    <span x-text="nbDestinataires"></span>
+                    <span x-text="nbDestinataires > 1 ? 'destinataires' : 'destinataire'"></span>
+                    · <span class="text-purple-600 dark:text-purple-400" x-text="libelleCanal"></span>
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 truncate" x-text="sousTitreAction"></p>
+            </div>
+            <button type="button" @click="demanderConfirmation()" :disabled="enCours"
+                    class="inline-flex items-center gap-2 px-5 py-2.5 text-white font-semibold text-sm rounded-xl shadow-lg hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 flex-shrink-0"
+                    style="background: linear-gradient(135deg, #9333ea, #ec4899);">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                <span x-text="estBanniere ? 'Créer la bannière' : 'Envoyer'"></span>
             </button>
         </div>
-    </form>
+    </div>
+
+    {{-- ═══ Modale de confirmation ═══ --}}
+    <div x-show="confirmOuverte" x-cloak @keydown.escape.window="confirmOuverte = false"
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" @click.self="confirmOuverte = false">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6" x-transition>
+            <div class="flex items-start gap-3 mb-4">
+                <div class="w-11 h-11 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+                <div class="min-w-0">
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white" x-text="titreConfirmation"></h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1" x-text="texteConfirmation"></p>
+                </div>
+            </div>
+
+            <div class="rounded-xl bg-gray-50 dark:bg-white/5 p-3 space-y-1 text-xs mb-5">
+                <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Destinataires</span><span class="font-semibold text-gray-900 dark:text-white" x-text="nbDestinataires"></span></div>
+                <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Canal</span><span class="font-semibold text-gray-900 dark:text-white" x-text="libelleCanal"></span></div>
+                <div class="flex justify-between" x-show="besoinEmail"><span class="text-gray-500 dark:text-gray-400">Sujet</span><span class="font-semibold text-gray-900 dark:text-white truncate ml-3" x-text="sujet || '—'"></span></div>
+            </div>
+
+            <div class="flex gap-3">
+                <button type="button" @click="confirmOuverte = false" class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 font-medium text-sm hover:bg-gray-50 dark:hover:bg-white/5 transition">Annuler</button>
+                <button type="button" @click="lancer()"
+                        class="flex-1 px-4 py-2.5 rounded-xl text-white font-semibold text-sm transition active:scale-95"
+                        style="background: linear-gradient(135deg, #9333ea, #ec4899);"
+                        x-text="estBanniere ? 'Créer' : 'Envoyer'"></button>
+            </div>
+        </div>
+    </div>
+
+    {{-- ═══ Modale de progression ═══ --}}
+    <div x-show="progressionOuverte" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6" x-transition>
+            <div class="text-center mb-5">
+                <div class="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center"
+                     :class="termine ? 'bg-green-100 dark:bg-green-900/30' : 'bg-purple-100 dark:bg-purple-900/30'">
+                    <svg x-show="!termine" class="w-6 h-6 text-purple-600 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    <svg x-show="termine" class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <h3 class="text-base font-bold text-gray-900 dark:text-white" x-text="titreProgression"></h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1" x-text="texteProgression"></p>
+            </div>
+
+            <div class="h-2.5 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden mb-2">
+                <div class="h-full rounded-full transition-all duration-500" :style="'width:' + progression + '%'" style="background: linear-gradient(90deg, #9333ea, #ec4899);"></div>
+            </div>
+            <p class="text-center text-xs text-gray-500 dark:text-gray-400 mb-4">
+                <span x-text="progression"></span> %
+            </p>
+
+            <div x-show="erreursLot.length > 0" class="mb-4">
+                <p class="text-xs font-semibold text-red-500 mb-1">Erreurs</p>
+                <div class="max-h-24 overflow-y-auto rounded-lg bg-red-50 dark:bg-red-900/20 p-2 text-[11px] text-red-700 dark:text-red-300 space-y-0.5">
+                    <template x-for="(e, idx) in erreursLot" :key="idx"><p x-text="e"></p></template>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button type="button" x-show="termine" @click="terminer()"
+                        class="flex-1 px-4 py-2.5 rounded-xl text-white font-semibold text-sm"
+                        style="background: linear-gradient(135deg, #9333ea, #ec4899);">
+                    Voir l'historique
+                </button>
+                <button type="button" x-show="termine && arret" @click="reprendre()"
+                        class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 font-medium text-sm">
+                    Reprendre l'envoi
+                </button>
+                <button type="button" x-show="!termine" @click="interrompre()"
+                        class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 font-medium text-sm">
+                    Interrompre
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+@vite('resources/js/quill-editor.js')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+function composerEmail(init) {
+    return {
+        // ── données serveur ──────────────────────────────────────────────
+        instituts: init.instituts,
+        emailsParInstitut: init.emails ?? {},
+        routes: init.routes,
+        tailleLot: init.tailleLot || 5,
+        anciennes: init.anciennes ?? {},
 
-    // ── Init Quill ──────────────────────────────────────────────────────────
-    const quill = new Quill('#quill-editor', {
-        theme: 'snow',
-        placeholder: 'Rédigez votre message ici…',
-        modules: {
-            toolbar: [
-                [{ header: [1, 2, 3, false] }],
-                ['bold', 'italic', 'underline'],
-                [{ color: [] }, { background: [] }],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                ['link'],
-                ['clean']
-            ]
-        }
-    });
+        // ── état ─────────────────────────────────────────────────────────
+        etape: 1,
+        canal: 'email',
+        mode: 'tous',
+        selectedInstituts: [],
+        institutUnique: '',
+        emailPerso: '',
+        nomPerso: '',
+        recherche: '',
+        sujet: init.brouillon?.sujet ?? '',
+        corps: init.brouillon?.corps ?? '',
+        corpsHtmlApercu: init.brouillon?.corps ?? '',
+        pushTitre: '',
+        pushMessage: '',
+        bannerTitre: '',
+        bannerMessage: '',
+        bannerType: 'info',
+        bannerDuree: '',
 
-    // Pré-remplir si retour d'erreur (old value)
-    const oldCorps = document.getElementById('corps-input').value;
-    if (oldCorps) {
-        quill.clipboard.dangerouslyPasteHTML(oldCorps);
-    }
+        confirmOuverte: false,
+        progressionOuverte: false,
+        enCours: false,
+        arret: false,
+        campagneId: null,
+        progression: 0,
+        termine: false,
+        envoyes: 0,
+        echecs: 0,
+        erreursLot: [],
+        messageFinal: '',
 
-    // Synchroniser le hidden input avant soumission
-    document.getElementById('email-form').addEventListener('submit', function () {
-        document.getElementById('corps-input').value = quill.root.innerHTML;
-    });
+        // ── référentiels ─────────────────────────────────────────────────
+        etapes: [
+            { numero: 1, titre: 'Canal' },
+            { numero: 2, titre: 'Destinataires' },
+            { numero: 3, titre: 'Message' },
+        ],
+        canaux: [
+            { code: 'email', titre: 'Email seul', detail: 'Sans notification', icone: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
+            { code: 'both', titre: 'Email + notification', detail: 'Les deux à la fois', icone: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9' },
+            { code: 'push', titre: 'Notification seule', detail: 'Sans email', icone: 'M12 18h.01M8 21h8a2 2 0 002-2v-1H6v1a2 2 0 002 2zM12 2a6 6 0 016 6v3.159c0 .538.214 1.055.595 1.436L20 14H4l1.405-1.405A2.032 2.032 0 006 11.158V8a6 6 0 016-6z' },
+            { code: 'banner', titre: 'Bannière dashboard', detail: 'Affichée en haut', icone: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
+        ],
+        modes: [
+            { code: 'tous', titre: 'Tous', detail: 'Tout le monde' },
+            { code: 'selection', titre: 'Sélection', detail: 'Choisir' },
+            { code: 'un', titre: 'Un seul', detail: 'Ciblage précis' },
+            { code: 'personnalise', titre: 'Adresse libre', detail: 'Hors plateforme' },
+        ],
+        presets: [
+            { cle: 'bienvenue', libelle: '👋 Bienvenue', sujet: 'Comment se passe votre prise en main de Maëlya Gestion ?', corps: "<p>Bonjour,</p><p>Vous avez rejoint <strong>Maëlya Gestion</strong> il y a quelques jours et nous espérons que tout se passe bien !</p><p>Nous voulions prendre de vos nouvelles :</p><ul><li>Avez-vous réussi à configurer votre établissement ?</li><li>Avez-vous des questions sur les fonctionnalités ?</li><li>Rencontrez-vous une difficulté ?</li></ul><p>Notre équipe est disponible pour vous accompagner. Répondez directement à cet email.</p><p>Bonne continuation,<br><strong>L'équipe Maëlya Gestion</strong></p>" },
+            { cle: 'expire', libelle: '⏰ Abonnement expiré', sujet: 'Votre abonnement Maëlya Gestion a expiré – besoin d\'aide ?', corps: "<p>Bonjour,</p><p>Votre abonnement <strong>Maëlya Gestion</strong> est arrivé à expiration.</p><p>Nous voulions nous assurer que tout s'est bien passé :</p><ul><li>Avez-vous rencontré un problème lors du paiement ?</li><li>Souhaitez-vous changer de plan ?</li></ul><p>Répondez à cet email et nous vous aiderons personnellement.</p><p>Cordialement,<br><strong>L'équipe Maëlya Gestion</strong></p>" },
+            { cle: 'satisfaction', libelle: '⭐ Satisfaction', sujet: 'Votre avis compte pour nous', corps: "<p>Bonjour,</p><p>Votre retour nous est précieux !</p><ul><li>Êtes-vous satisfait(e) des fonctionnalités ?</li><li>Quelles améliorations souhaiteriez-vous ?</li><li>Recommanderiez-vous Maëlya Gestion ?</li></ul><p>Répondez simplement à cet email.</p><p>Merci pour votre confiance,<br><strong>L'équipe Maëlya Gestion</strong></p>" },
+            { cle: 'nouveaute', libelle: '🚀 Nouveauté', sujet: '🚀 Découvrez les nouveautés de Maëlya Gestion', corps: "<p>Bonjour,</p><p>De nouvelles fonctionnalités arrivent sur <strong>Maëlya Gestion</strong> !</p><ul><li>✨ [Nouveauté 1]</li><li>🛠️ [Nouveauté 2]</li></ul><p>Connectez-vous pour les découvrir.</p><p><strong>L'équipe Maëlya Gestion</strong></p>" },
+            { cle: 'inactif', libelle: '💤 Inactif', sujet: 'Votre établissement vous manque sur Maëlya Gestion', corps: "<p>Bonjour,</p><p>Nous avons remarqué que vous n'aviez pas utilisé <strong>Maëlya Gestion</strong> depuis un moment.</p><p>Votre espace est toujours actif :</p><ul><li>📅 Rendez-vous et prestations</li><li>👥 Suivi clientèle</li><li>💰 Caisse et finances</li><li>📦 Stocks</li></ul><p>Besoin d'un coup de main ? Répondez à cet email.</p><p>À très bientôt,<br><strong>L'équipe Maëlya Gestion</strong></p>" },
+        ],
 
-    // ── Modèles prédéfinis ──────────────────────────────────────────────────
-    const presets = {
-        'bienvenue': {
-            sujet: 'Comment se passe votre prise en main de Maëlya Gestion ?',
-            corps: `<p>Bonjour,</p>
-<p>Vous avez rejoint <strong>Maëlya Gestion</strong> il y a quelques jours et nous espérons que tout se passe bien !</p>
-<p>Nous voulions simplement prendre de vos nouvelles et savoir si :</p>
-<ul>
-  <li>Vous avez bien réussi à configurer votre établissement ?</li>
-  <li>Vous avez des questions sur les fonctionnalités disponibles ?</li>
-  <li>Vous rencontrez des difficultés ou avez besoin d'aide ?</li>
-</ul>
-<p>Notre équipe est disponible pour vous accompagner. N'hésitez pas à nous répondre directement à cet email.</p>
-<p>Bonne continuation,<br><strong>L'équipe Maëlya Gestion</strong></p>`
+        // ── calculs ──────────────────────────────────────────────────────
+        get besoinEmail() { return this.canal === 'email' || this.canal === 'both'; },
+        get besoinPush() { return this.canal === 'push' || this.canal === 'both'; },
+        get estBanniere() { return this.canal === 'banner'; },
+
+        get libelleCanal() {
+            return { email: 'Email seul', both: 'Email + push', push: 'Push seule', banner: 'Bannière' }[this.canal];
         },
-        'abonnement-expire': {
-            sujet: 'Votre abonnement Maëlya Gestion a expiré – besoin d\'aide ?',
-            corps: `<p>Bonjour,</p>
-<p>Nous avons remarqué que votre abonnement <strong>Maëlya Gestion</strong> est arrivé à expiration.</p>
-<p>Nous voulions nous assurer que tout s'est bien passé et comprendre si vous avez rencontré des difficultés pour renouveler :</p>
-<ul>
-  <li>Avez-vous rencontré un problème lors du paiement ?</li>
-  <li>Souhaitez-vous changer de plan ?</li>
-  <li>Avez-vous des questions sur nos offres ?</li>
-</ul>
-<p>Votre accès à la plateforme est temporairement limité, mais il suffit de renouveler votre abonnement pour retrouver toutes vos fonctionnalités.</p>
-<p>Répondez à cet email et nous vous aiderons personnellement.</p>
-<p>Cordialement,<br><strong>L'équipe Maëlya Gestion</strong></p>`
+
+        get institutsFiltres() {
+            const q = this.recherche.trim().toLowerCase();
+            if (!q) return this.instituts;
+            return this.instituts.filter(i =>
+                (i.nom + ' ' + (i.ville || '')).toLowerCase().includes(q)
+            );
         },
-        'satisfaction': {
-            sujet: 'Votre avis compte pour nous – évaluez Maëlya Gestion',
-            corps: `<p>Bonjour,</p>
-<p>Cela fait un moment que vous utilisez <strong>Maëlya Gestion</strong> et votre retour nous est précieux !</p>
-<p>Pourriez-vous prendre 2 minutes pour nous partager votre expérience ?</p>
-<ul>
-  <li>Êtes-vous satisfait(e) des fonctionnalités ?</li>
-  <li>Y a-t-il des améliorations que vous souhaiteriez voir ?</li>
-  <li>Recommanderiez-vous Maëlya Gestion à d'autres professionnels ?</li>
-</ul>
-<p>Vos retours nous permettent d'améliorer la plateforme pour mieux répondre à vos besoins. Répondez simplement à cet email !</p>
-<p>Merci pour votre confiance,<br><strong>L'équipe Maëlya Gestion</strong></p>`
+
+        get tousFiltresSelectionnes() {
+            const filtres = this.institutsFiltres;
+            return filtres.length > 0 && filtres.every(i => this.selectedInstituts.includes(i.id));
         },
-        'nouveaute': {
-            sujet: '🚀 Découvrez les nouveautés de Maëlya Gestion',
-            corps: `<p>Bonjour,</p>
-<p>Nous avons le plaisir de vous annoncer de nouvelles fonctionnalités sur <strong>Maëlya Gestion</strong> !</p>
-<p><strong>Au programme :</strong></p>
-<ul>
-  <li>✨ [Décrivez la nouveauté 1]</li>
-  <li>🛠️ [Décrivez la nouveauté 2]</li>
-  <li>📊 [Décrivez la nouveauté 3]</li>
-</ul>
-<p>Connectez-vous dès maintenant sur votre espace pour découvrir ces nouvelles fonctionnalités.</p>
-<p>Bonne utilisation !<br><strong>L'équipe Maëlya Gestion</strong></p>`
+
+        get emailsSelection() {
+            if (this.mode === 'tous') {
+                return this.instituts.map(i => this.emailsParInstitut[i.id]).filter(Boolean);
+            }
+            if (this.mode === 'selection') {
+                return this.selectedInstituts.map(id => this.emailsParInstitut[id]).filter(Boolean);
+            }
+            if (this.mode === 'un') {
+                return this.institutUnique ? [this.emailsParInstitut[this.institutUnique]].filter(Boolean) : [];
+            }
+            return this.emailPerso ? [this.emailPerso.toLowerCase()] : [];
         },
-        'inactif': {
-            sujet: 'Votre établissement vous manque sur Maëlya Gestion',
-            corps: `<p>Bonjour,</p>
-<p>Nous avons remarqué que vous n'avez pas utilisé <strong>Maëlya Gestion</strong> depuis un moment.</p>
-<p>Nous voulions simplement vous rappeler que votre espace est toujours actif et que de nombreuses fonctionnalités vous attendent :</p>
-<ul>
-  <li>📅 Gestion de vos rendez-vous et prestations</li>
-  <li>👥 Suivi de votre clientèle</li>
-  <li>💰 Caisse et point financier</li>
-  <li>📦 Gestion des stocks</li>
-</ul>
-<p>Si vous rencontrez des difficultés ou avez besoin d'un coup de main, nous sommes là. Répondez à cet email !</p>
-<p>À très bientôt,<br><strong>L'équipe Maëlya Gestion</strong></p>`
-        }
+
+        get nbDestinataires() {
+            return new Set(this.emailsSelection).size;
+        },
+
+        get nbDoublons() {
+            return Math.max(0, this.emailsSelection.length - this.nbDestinataires);
+        },
+
+        get resumeDestinataires() {
+            if (this.mode === 'personnalise') {
+                return this.emailPerso ? '1 destinataire' : 'Aucune adresse saisie';
+            }
+            const n = this.nbDestinataires;
+            return n + (n > 1 ? ' destinataires uniques' : ' destinataire');
+        },
+
+        get messagePushApercu() {
+            const txt = (this.corpsHtmlApercu || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+            return txt ? txt.substring(0, 120) : 'Message court affiché dans la notification…';
+        },
+
+        get dureeEstimee() {
+            const n = this.nbDestinataires;
+            if (n === 0) return '—';
+            const s = Math.ceil(n / this.tailleLot) * 2;
+            return s < 60 ? '~' + s + ' s' : '~' + Math.ceil(s / 60) + ' min';
+        },
+
+        get sousTitreAction() {
+            if (this.estBanniere) return 'Visible jusqu\'à clic sur « C\'est compris »';
+            if (this.besoinEmail) return this.sujet || 'Aucun sujet défini';
+            return 'Notification sans email';
+        },
+
+        get classesBanniere() {
+            return {
+                info:    'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-200',
+                success: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-900 dark:text-green-200',
+                warning: 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200',
+                danger:  'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-900 dark:text-red-200',
+            }[this.bannerType] || 'bg-gray-50 border-gray-200 text-gray-900';
+        },
+
+        get titreConfirmation() {
+            return this.estBanniere ? 'Créer cette bannière ?' : 'Confirmer l\'envoi';
+        },
+
+        get texteConfirmation() {
+            const n = this.nbDestinataires;
+            if (this.estBanniere) {
+                return 'Elle sera affichée à ' + n + (n > 1 ? ' établissements' : ' établissement') + '.';
+            }
+            return 'Un message partira vers ' + n + (n > 1 ? ' destinataires' : ' destinataire') + '. Cette action est irréversible.';
+        },
+
+        get titreProgression() {
+            if (!this.termine) return 'Envoi en cours…';
+            if (this.arret) return 'Envoi interrompu';
+            return this.echecs > 0 ? 'Envoi terminé avec des erreurs' : 'Envoi terminé';
+        },
+
+        get texteProgression() {
+            return this.envoyes + ' envoyé(s) · ' + this.echecs + ' échec(s)' +
+                (this.termine ? '' : ' · ' + (this.nbDestinataires - this.envoyes - this.echecs) + ' restant(s)');
+        },
+
+        // ── actions ──────────────────────────────────────────────────────
+        nomInstitut(id) {
+            const i = this.instituts.find(x => x.id === id);
+            return i ? i.nom : id;
+        },
+
+        allerA(n) {
+            if (n > 1 && this.etape === 1 && this.canal === 'personnalise') this.canal = 'email';
+            if (n === 3) {
+                if (this.mode === 'selection' && this.selectedInstituts.length === 0) return;
+                if (this.mode === 'un' && !this.institutUnique) return;
+                if (this.mode === 'personnalise' && !this.emailPerso) return;
+            }
+            this.etape = n;
+        },
+
+        toutBasculer() {
+            const ids = this.institutsFiltres.map(i => i.id);
+            if (this.tousFiltresSelectionnes) {
+                this.selectedInstituts = this.selectedInstituts.filter(id => !ids.includes(id));
+            } else {
+                this.selectedInstituts = [...new Set([...this.selectedInstituts, ...ids])];
+            }
+        },
+
+        appliquerPreset(p) {
+            this.sujet = p.sujet;
+            this.corps = p.corps;
+            this.corpsHtmlApercu = p.corps;
+            if (window.__quill) {
+                window.__quill.clipboard.dangerouslyPasteHTML(p.corps);
+            }
+            if (this.besoinPush && !this.pushTitre) {
+                this.pushTitre = p.sujet.substring(0, 60);
+            }
+        },
+
+        demanderConfirmation() {
+            // Contrôles minimaux côté client ; le serveur reste juge.
+            if (this.nbDestinataires === 0 && this.mode !== 'personnalise') return this.alerte('Sélectionnez au moins un destinataire.');
+            if (this.mode === 'personnalise' && !this.emailPerso) return this.alerte('Saisissez une adresse email.');
+            if (this.besoinEmail && !this.sujet.trim()) return this.alerte('Renseignez un sujet.');
+            if (this.besoinEmail && !(this.corpsHtmlApercu || '').replace(/<[^>]*>/g, '').trim()) return this.alerte('Le corps du message est vide.');
+            if (this.besoinPush && !this.pushTitre.trim() && !this.sujet.trim()) return this.alerte('Renseignez un titre de notification.');
+            if (this.estBanniere && (!this.bannerTitre.trim() || !this.bannerMessage.trim())) return this.alerte('Titre et message de la bannière sont requis.');
+
+            this.confirmOuverte = true;
+        },
+
+        alerte(message) {
+            this.erreursLot = [message];
+            this.termine = true;
+            this.progressionOuverte = true;
+            this.envoyes = 0;
+            this.echecs = 0;
+            this.progression = 0;
+        },
+
+        async lancer() {
+            this.confirmOuverte = false;
+            this.enCours = true;
+            this.arret = false;
+            this.erreursLot = [];
+            this.progression = 0;
+            this.envoyes = 0;
+            this.echecs = 0;
+            this.termine = false;
+            this.progressionOuverte = true;
+
+            const charge = {
+                mode: this.mode,
+                send_mode: this.canal,
+                sujet: this.sujet,
+                corps: this.corps,
+                push_titre: this.pushTitre,
+                push_message: this.pushMessage,
+                banner_titre: this.bannerTitre,
+                banner_message: this.bannerMessage,
+                banner_type: this.bannerType,
+                banner_duree: this.bannerDuree,
+                instituts: this.selectedInstituts,
+                institut_id: this.institutUnique,
+                email_personnalise: this.emailPerso,
+                nom_personnalise: this.nomPerso,
+            };
+
+            try {
+                const reponse = await this.post(this.routes.demarrer, charge);
+                if (!reponse.ok) {
+                    this.erreursLot = [reponse.erreur || 'Envoi impossible.'];
+                    this.termine = true;
+                    this.enCours = false;
+                    return;
+                }
+
+                if (reponse.redirect) {
+                    window.location.href = reponse.redirect;
+                    return;
+                }
+
+                this.campagneId = reponse.campagne_id;
+                await this.boucle();
+            } catch (e) {
+                this.erreursLot = [e.message];
+                this.termine = true;
+                this.enCours = false;
+            }
+        },
+
+        async boucle() {
+            while (!this.arret) {
+                const url = this.routes.lot.replace('__ID__', this.campagneId);
+                let etat;
+                try {
+                    etat = await this.post(url, {});
+                } catch (e) {
+                    this.erreursLot.push(e.message);
+                    this.termine = true;
+                    break;
+                }
+                if (!etat.ok) {
+                    this.erreursLot.push(etat.erreur || 'Erreur pendant l\'envoi.');
+                    this.termine = true;
+                    break;
+                }
+
+                this.envoyes = etat.envoyes;
+                this.echecs = etat.echecs;
+                this.progression = etat.progression;
+                this.erreursLot = etat.erreurs || [];
+
+                if (etat.termine) {
+                    this.termine = true;
+                    break;
+                }
+            }
+            this.enCours = false;
+        },
+
+        interrompre() {
+            this.arret = true;
+            this.enCours = false;
+        },
+
+        async reprendre() {
+            this.arret = false;
+            this.termine = false;
+            this.enCours = true;
+            await this.boucle();
+        },
+
+        terminer() {
+            window.location.href = this.routes.historique;
+        },
+
+        async envoyerTest() {
+            if (!this.sujet.trim() || !(this.corpsHtmlApercu || '').replace(/<[^>]*>/g, '').trim()) {
+                return this.alerte('Renseignez un sujet et un message avant d\'envoyer un test.');
+            }
+            try {
+                const r = await this.post(this.routes.test, { sujet: this.sujet, corps: this.corps });
+                this.erreursLot = [];
+                this.envoyes = 0;
+                this.echecs = 0;
+                this.progression = 0;
+                this.termine = true;
+                this.messageFinal = r.message || 'Test envoyé.';
+                this.progressionOuverte = true;
+            } catch (e) {
+                this.alerte(e.message);
+            }
+        },
+
+        async post(url, charge) {
+            const reponse = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                },
+                body: JSON.stringify(charge),
+            });
+
+            let donnees = {};
+            try { donnees = await reponse.json(); } catch (e) { /* réponse vide */ }
+
+            if (!reponse.ok) {
+                if (donnees.errors) {
+                    const premier = Object.values(donnees.errors)[0];
+                    throw new Error(Array.isArray(premier) ? premier[0] : premier);
+                }
+                if (donnees.erreur) throw new Error(donnees.erreur);
+                if (reponse.status === 419) throw new Error('Session expirée : rechargez la page.');
+                throw new Error('Erreur ' + reponse.status);
+            }
+
+            return donnees;
+        },
+
+        // ── init ─────────────────────────────────────────────────────────
+        init() {
+            this.$watch('canal', (v) => {
+                if (v === 'push' || v === 'both') {
+                    if (!this.pushTitre && this.sujet) this.pushTitre = this.sujet.substring(0, 60);
+                }
+                if (this.mode === 'personnalise' && (v === 'push' || v === 'both')) {
+                    this.mode = 'tous';
+                }
+            });
+
+            this.$watch('sujet', (v) => {
+                if (this.besoinPush && !this.pushTitre) this.pushTitre = (v || '').substring(0, 60);
+            });
+
+            document.addEventListener('DOMContentLoaded', () => this.initQuill());
+            if (document.readyState !== 'loading') this.initQuill();
+        },
+
+        initQuill() {
+            const cible = document.getElementById('quill-editor');
+            if (!cible || typeof window.Quill === 'undefined' || window.__quill) return;
+
+            const quill = new window.Quill('#quill-editor', {
+                theme: 'snow',
+                placeholder: 'Rédigez votre message ici…',
+                modules: {
+                    toolbar: [
+                        [{ header: [2, 3, false] }],
+                        ['bold', 'italic', 'underline'],
+                        [{ color: [] }],
+                        [{ list: 'ordered' }, { list: 'bullet' }],
+                        ['link'],
+                        ['clean'],
+                    ],
+                },
+            });
+
+            window.__quill = quill;
+
+            if (this.corps) {
+                quill.clipboard.dangerouslyPasteHTML(this.corps);
+            }
+
+            quill.on('text-change', () => {
+                this.corps = quill.root.innerHTML;
+                this.corpsHtmlApercu = quill.root.innerHTML;
+            });
+        },
     };
-
-    document.querySelectorAll('.preset-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            const key = this.dataset.preset;
-            const preset = presets[key];
-            if (!preset) return;
-
-            document.getElementById('sujet-input').value = preset.sujet;
-            quill.clipboard.dangerouslyPasteHTML(preset.corps);
-
-            // Feedback visuel
-            document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('ring-2', 'ring-purple-400'));
-            this.classList.add('ring-2', 'ring-purple-400');
-        });
-    });
-
-});
+}
 </script>
 @endpush
