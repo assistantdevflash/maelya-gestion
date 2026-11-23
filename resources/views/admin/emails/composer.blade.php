@@ -424,7 +424,9 @@
     </div>
 
     {{-- ═══ Barre d'action collante ═══ --}}
-    <div class="fixed bottom-[3.5rem] lg:bottom-0 left-0 right-0 z-30 border-t border-gray-200 dark:border-white/10 bg-white/95 dark:bg-slate-900/95 backdrop-blur px-4 py-3 lg:pl-64">
+    {{-- Sur grand écran la barre démarre après la sidebar (260 px) : avec un
+         simple padding, le premier caractère passait sous le menu fixe. --}}
+    <div class="fixed bottom-[3.5rem] lg:bottom-0 left-0 lg:left-[260px] right-0 z-30 border-t border-gray-200 dark:border-white/10 bg-white/95 dark:bg-slate-900/95 backdrop-blur px-4 py-3">
         <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
             <div class="min-w-0">
                 <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">
