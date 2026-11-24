@@ -11,10 +11,12 @@ class AvisPublicController extends Controller
     public function show(string $token)
     {
         $avis = AvisClient::withoutGlobalScopes()->where('token', $token)->firstOrFail();
-        if ($avis->repondu_le) {
-            return view('public.avis.deja-repondu', compact('avis'));
-        }
         $institut = Institut::find($avis->institut_id);
+
+        if ($avis->repondu_le) {
+            return view('public.avis.deja-repondu', compact('avis', 'institut'));
+        }
+
         return view('public.avis.formulaire', compact('avis', 'institut'));
     }
 
@@ -35,6 +37,9 @@ class AvisPublicController extends Controller
             'repondu_le'  => now(),
         ])->save();
 
-        return view('public.avis.merci', compact('avis'));
+        return view('public.avis.merci', [
+            'avis' => $avis,
+            'institut' => Institut::find($avis->institut_id),
+        ]);
     }
 }

@@ -45,6 +45,29 @@ class EtablissementType extends Model
     }
 
     /**
+     * Contenu éditorial de la page publique du type.
+     *
+     * Le code saisi dans l'administration peut varier pour un même métier
+     * (`salle_de_sport`, `fitness`…). `config/secteurs.php` contient donc une
+     * table d'équivalences qui ramène vers l'entrée canonique ; à défaut, le
+     * contenu générique prend le relais.
+     */
+    public function contenuEditorial(): array
+    {
+        $canonique = config('secteurs._equivalences.' . $this->code, $this->code);
+
+        return config('secteurs.' . $canonique) ?? config('secteurs._defaut') ?? [];
+    }
+
+    /**
+     * Pictogramme affiché sur la carte du secteur.
+     */
+    public function getEmojiAttribute(): string
+    {
+        return $this->contenuEditorial()['emoji'] ?? '🏢';
+    }
+
+    /**
      * Scope : types actifs uniquement
      */
     public function scopeActifs($query)

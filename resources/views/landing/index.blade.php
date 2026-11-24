@@ -178,7 +178,7 @@
                 <a href="{{ route('secteur', $type->slug) }}"
                    class="relative bg-gradient-to-br from-primary-50/50 to-secondary-50/30 dark:from-gray-800 dark:to-gray-800/50 rounded-xl p-5 border border-primary-100/60 dark:border-gray-700 hover:shadow-lg hover:-translate-y-0.5 hover:border-primary-300 transition-all duration-300 group">
                     <div class="flex items-start gap-3">
-                        <span class="text-3xl group-hover:scale-110 transition-transform" aria-hidden="true">{{ config('secteurs.' . $type->code . '.emoji', '🏢') }}</span>
+                        <span class="text-3xl group-hover:scale-110 transition-transform" aria-hidden="true">{{ $type->emoji }}</span>
                         <div class="flex-1 min-w-0">
                             <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-0.5">{{ $type->libelle }}</h3>
                             <p class="text-xs text-primary-600 dark:text-primary-400 inline-flex items-center gap-1">

@@ -149,7 +149,7 @@
             @foreach($autres as $autre)
             <a href="{{ route('secteur', $autre->slug) }}"
                class="inline-flex items-center gap-2 bg-primary-50/70 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-medium px-4 py-2.5 rounded-xl border border-primary-100/60 dark:border-gray-700 hover:text-primary-700 dark:hover:text-primary-300 hover:border-primary-300 hover:-translate-y-0.5 transition-all duration-200">
-                <span aria-hidden="true">{{ config('secteurs.' . $autre->code . '.emoji', '🏢') }}</span>
+                <span aria-hidden="true">{{ $autre->emoji }}</span>
                 {{ $autre->libelle }}
             </a>
             @endforeach

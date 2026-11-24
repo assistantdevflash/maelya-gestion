@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carte fidélité — {{ $client->prenom }}</title>
+    @php
+        $titrePartage = $institut ? 'Carte de fidélité — ' . $institut->nom : 'Carte de fidélité — Maëlya Gestion';
+        $descriptionPartage = $institut
+            ? 'Consultez votre solde de points et l\'historique de vos visites chez ' . $institut->nom . '.'
+            : 'Consultez votre solde de points et l\'historique de vos visites.';
+    @endphp
+    @include('public.partials.partage', compact('institut', 'titrePartage', 'descriptionPartage'))
     @vite('resources/css/app.css')
 </head>
 <body class="bg-gradient-to-br from-rose-100 via-pink-50 to-amber-50 min-h-screen flex items-center justify-center p-4">

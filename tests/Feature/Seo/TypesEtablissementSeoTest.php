@@ -185,6 +185,24 @@ class TypesEtablissementSeoTest extends TestCase
             ->assertSee('Caisse, clients, rendez-vous, stocks et finances', false);
     }
 
+    public function test_une_salle_de_sport_recoit_un_contenu_dedie_quel_que_soit_son_code(): void
+    {
+        // Le code dépend du libellé saisi dans l'administration : un même
+        // métier peut arriver sous plusieurs formes. Toutes doivent aboutir
+        // au contenu rédigé, jamais au texte générique.
+        foreach (['salle_de_sport_et_fitness', 'salle_de_sport', 'salle_sport_fitness', 'fitness'] as $code) {
+            EtablissementType::query()->delete();
+            $this->creerType($code, 'Salle de sport et fitness', 1);
+
+            $reponse = $this->get(route('secteur', str_replace('_', '-', $code)))->assertOk();
+
+            $reponse->assertSee('Puis-je gérer un abonnement payé en plusieurs fois ?');
+            $reponse->assertSee('💪');
+            // « réunit tout ce qu'il faut » n'appartient qu'au contenu générique.
+            $reponse->assertDontSee('réunit tout ce qu');
+        }
+    }
+
     public function test_le_contenu_editorial_du_secteur_est_affiche(): void
     {
         $this->creerType('salon_coiffure', 'Salon de coiffure', 1);

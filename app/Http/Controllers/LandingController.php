@@ -52,7 +52,7 @@ class LandingController extends Controller
         // renvoie une page introuvable plutôt qu'un contenu périmé.
         abort_if($type === null, 404);
 
-        $contenu = config('secteurs.' . $type->code) ?? config('secteurs._defaut');
+        $contenu = $type->contenuEditorial();
         $libelleMinuscule = mb_strtolower($type->libelle);
 
         $autres = EtablissementType::pourSeo()

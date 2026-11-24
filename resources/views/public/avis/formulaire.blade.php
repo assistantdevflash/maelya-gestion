@@ -3,7 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Donnez votre avis</title>
+    <title>Donnez votre avis{{ $institut ? ' — ' . $institut->nom : '' }}</title>
+    @php
+        $titrePartage = $institut ? 'Donnez votre avis — ' . $institut->nom : 'Donnez votre avis — Maëlya Gestion';
+        $descriptionPartage = $institut
+            ? 'Notez votre dernière visite chez ' . $institut->nom . ' : votre avis aide l\'établissement à progresser.'
+            : 'Notez votre dernière visite : votre avis aide l\'établissement à progresser.';
+    @endphp
+    @include('public.partials.partage', compact('institut', 'titrePartage', 'descriptionPartage'))
     @vite('resources/css/app.css')
     {{-- Alpine bundlé LOCALEMENT (plus de dépendance à unpkg) --}}
     @vite('resources/js/public.js')

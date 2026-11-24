@@ -10,6 +10,40 @@
  */
 return [
 
+    /**
+     * Équivalences de codes.
+     *
+     * Le code d'un type est dérivé du libellé saisi dans l'administration. Un
+     * même métier peut donc arriver sous plusieurs codes selon la formulation
+     * choisie. Cette table renvoie vers l'entrée éditoriale canonique, pour
+     * qu'aucune page ne tombe dans le contenu générique par simple différence
+     * d'orthographe.
+     */
+    '_equivalences' => [
+        'salle_de_sport'            => 'salle_de_sport_et_fitness',
+        'salle_de_sport_fitness'    => 'salle_de_sport_et_fitness',
+        'salle_sport_fitness'       => 'salle_de_sport_et_fitness',
+        'sport_fitness'             => 'salle_de_sport_et_fitness',
+        'salle_de_sport_et_fitness' => 'salle_de_sport_et_fitness',
+        'fitness'                   => 'salle_de_sport_et_fitness',
+        'sport'                     => 'salle_de_sport_et_fitness',
+        'coiffure'                  => 'salon_coiffure',
+        'salon_de_coiffure'         => 'salon_coiffure',
+        'institut_de_beaute'        => 'institut_beaute',
+        'auto_ecoles'               => 'auto_ecole',
+        'cabinet_medical_paramedical' => 'cabinet_medical',
+        'atelier_service_technique' => 'atelier_technique',
+        'pressing_laverie'          => 'pressing',
+        'informatique'              => 'informatique_telephonie',
+        'telephonie'                => 'informatique_telephonie',
+        'optique'                   => 'optiquelunetterie',
+        'optique_lunetterie'        => 'optiquelunetterie',
+        'boutique_de_mode'          => 'boutique_mode',
+        'centre_de_formation'       => 'centre_formation',
+        'business_centre'           => 'business_center',
+        'depot_de_gaz'              => 'depot_gaz',
+    ],
+
     // ── Contenu de repli pour tout type non décrit ci-dessous ───────────────
     '_defaut' => [
         'emoji' => '🏢',
@@ -93,6 +127,22 @@ return [
         ],
         'question' => "Comment faire revenir mes clientes régulièrement ?",
         'reponse' => "La carte de fidélité et l'historique des visites vous indiquent qui revient et à quelle fréquence. Vous relancez ainsi au bon moment, sans tenir de cahier.",
+    ],
+
+    // ── Sport et remise en forme ───────────────────────────────────────────
+    'salle_de_sport_et_fitness' => [
+        'emoji' => '💪',
+        'intro' => "Séances à l'unité, abonnements, cours collectifs : une salle de sport vit de la régularité de ses membres. Maëlya Gestion encaisse les formules, suit chaque membre, ses paiements et le stock de la boutique, sans cahier ni tableur.",
+        'points' => [
+            "Encaissez une séance, un mois d'abonnement ou un cours en quelques secondes, en espèces ou par Mobile Money.",
+            "Une fiche membre complète : historique des passages, des paiements et des formules souscrites.",
+            "Les abonnements payés en plusieurs fois passent par une vente à crédit, avec échéancier et suivi des impayés.",
+            "Un agenda pour les cours collectifs et les séances de coaching, avec rappel envoyé aux participants.",
+            "Le stock des boissons, compléments et accessoires suivi, avec alerte avant la rupture.",
+            "Une carte de fidélité et des codes de réduction pour les parrainages et les séances d'essai.",
+        ],
+        'question' => "Puis-je gérer un abonnement payé en plusieurs fois ?",
+        'reponse' => "Oui. L'abonnement est enregistré comme une vente à crédit : l'échéancier se crée automatiquement, chaque versement est tracé, et le tableau de bord signale les impayés à relancer.",
     ],
 
     // ── Commerce ───────────────────────────────────────────────────────────

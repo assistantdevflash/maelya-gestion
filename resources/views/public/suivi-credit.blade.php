@@ -4,7 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suivi de mon crédit — {{ $institut?->nom ?? config('app.name') }}</title>
-    <meta name="robots" content="noindex, nofollow">
+    @php
+        $titrePartage = 'Suivi de mon crédit' . ($institut ? ' — ' . $institut->nom : ' — Maëlya Gestion');
+        $descriptionPartage = $institut
+            ? 'Consultez le montant restant, les échéances et vos paiements pour votre crédit chez ' . $institut->nom . '.'
+            : 'Consultez le montant restant, les échéances et vos paiements de votre crédit.';
+    @endphp
+    @include('public.partials.partage', compact('institut', 'titrePartage', 'descriptionPartage'))
     @php
         $cp = $institut?->couleur_primaire ?? '#9333ea';
         $cs = $institut?->couleur_secondaire ?? '#ec4899';
