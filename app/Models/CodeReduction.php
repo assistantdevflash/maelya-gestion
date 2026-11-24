@@ -14,12 +14,13 @@ class CodeReduction extends Model
 
     protected $fillable = [
         'institut_id', 'client_id', 'code', 'description', 'type', 'valeur',
-        'montant_minimum', 'date_debut', 'date_fin',
+        'plafond_remise', 'montant_minimum', 'date_debut', 'date_fin',
         'limite_utilisation', 'nb_utilisations', 'actif',
     ];
 
     protected $casts = [
         'valeur'            => 'integer',
+        'plafond_remise'    => 'integer',
         'montant_minimum'   => 'integer',
         'limite_utilisation'=> 'integer',
         'nb_utilisations'   => 'integer',
@@ -101,12 +102,54 @@ class CodeReduction extends Model
 
     /**
      * Calcule le montant de la remise pour ce total.
+     *
+     * Un plafond éventuel s'applique aux codes en pourcentage :
+     * « −20 % mais 10 000 F maximum ».
      */
     public function calculerRemise(int $total): int
     {
-        if ($this->type === 'pourcentage') {
-            return (int) round($total * $this->valeur / 100);
+        $remise = $this->type === 'pourcentage'
+            ? (int) round($total * $this->valeur / 100)
+            : min($this->valeur, $total);
+
+        if ($this->plafond_remise !== null) {
+            $remise = min($remise, $this->plafond_remise);
         }
-        return min($this->valeur, $total);
+
+        // Une remise ne peut jamais dépasser le panier.
+        return max(0, min($remise, $total));
+    }
+
+    /**
+     * Libellé court de la remise : « −10 % », « −5 000 F », et le plafond
+     * éventuel : « −20 % (max 10 000 F) ».
+     */
+    public function libelleRemise(): string
+    {
+        $base = $this->type === 'pourcentage'
+            ? '−' . $this->valeur . ' %'
+            : '−' . number_format($this->valeur, 0, ',', ' ') . ' F';
+
+        if ($this->type === 'pourcentage' && $this->plafond_remise !== null) {
+            $base .= ' (max ' . number_format($this->plafond_remise, 0, ',', ' ') . ' F)';
+        }
+
+        return $base;
+    }
+
+    /**
+     * Le code est-il réservé à un client ?
+     */
+    public function estReserveAUnClient(): bool
+    {
+        return $this->client_id !== null;
+    }
+
+    /**
+     * Historique des utilisations, du plus récent au plus ancien.
+     */
+    public function utilisations()
+    {
+        return $this->hasMany(CodeReductionUtilisation::class, 'code_reduction_id')->latest();
     }
 }

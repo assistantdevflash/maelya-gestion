@@ -139,7 +139,7 @@
                 form.submit();
             "
         >
-            @livewire('caisse', ['client' => request('client'), 'rdv' => request('rdv'), 'brouillon' => request('brouillon'), 'mode' => $simple ? 'simple' : 'complet'])
+            @livewire('caisse', ['client' => request('client'), 'rdv' => request('rdv'), 'brouillon' => request('brouillon'), 'code' => request('code'), 'mode' => $simple ? 'simple' : 'complet'])
         </div>
 
         {{-- Formulaire caché pour soumettre via POST classique --}}

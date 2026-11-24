@@ -14,6 +14,7 @@
         routeAnnulerDerniere: @js(route('dashboard.ventes.annuler-derniere')),
         mode: @js($mode ?? 'complet'),
         institutId: @js(session('current_institut_id', auth()->user()->institut_id)),
+        codeInitial: @js($this->codeInitial),
     })"
     class="grid lg:grid-cols-5 gap-4 lg:gap-5 min-h-0"
     data-caisse-pos

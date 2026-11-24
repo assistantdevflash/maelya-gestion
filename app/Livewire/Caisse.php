@@ -44,6 +44,9 @@ class Caisse extends Component
     /** Panier complet pré-rempli (depuis un brouillon) */
     public array $prefilledPanier = [];
 
+    /** Code promo pré-rempli (lien « utiliser à la caisse » ou QR d'un coupon) */
+    public string $codeInitial = '';
+
     /** Crédit */
     public int $creditApport = 0;
     public int $creditNbEcheances = 3;
@@ -58,8 +61,10 @@ class Caisse extends Component
     /** Message succès après vente crédit */
     public ?string $creditSuccess = null;
 
-    public function mount(?string $client = null, ?string $rdv = null, ?string $brouillon = null, ?string $mode = null)
+    public function mount(?string $client = null, ?string $rdv = null, ?string $brouillon = null, ?string $mode = null, ?string $code = null)
     {
+        $this->codeInitial = strtoupper(trim((string) $code));
+
         // La caisse simplifiée est réservée à la formule Premium+ (scan code-barres),
         // mais reste disponible pendant l'essai gratuit. Garde-fou serveur : même
         // si le paramètre est forcé, on retombe sur la caisse complète.

@@ -153,6 +153,7 @@ class VenteController extends Controller
                 // Valider et appliquer le code de réduction côté serveur
                 $remise = 0;
                 $codeReductionId = null;
+                $utilisationCode = null;
                 if ($request->filled('code_reduction_id')) {
                     $code = CodeReduction::where('institut_id', $this->institutId())
                         ->find($request->code_reduction_id);
@@ -160,6 +161,16 @@ class VenteController extends Controller
                         $remise = $code->calculerRemise((int) $totalBrut);
                         $codeReductionId = $code->id;
                         $code->increment('nb_utilisations');
+
+                        // Historique : qui, quand, sur quelle vente, combien.
+                        // La vente n'existe pas encore, elle sera rattachée juste après.
+                        $utilisationCode = \App\Models\CodeReductionUtilisation::create([
+                            'code_reduction_id' => $code->id,
+                            'institut_id'       => $this->institutId(),
+                            'client_id'         => $request->client_id ?: null,
+                            'code'              => $code->code,
+                            'montant_remise'    => $remise,
+                        ]);
 
                         // Si ce code est lié à un avoir, marquer l'avoir comme utilisé
                         $avoirLie = \App\Models\Avoir::where('code_reduction_id', $code->id)
@@ -205,6 +216,11 @@ class VenteController extends Controller
                 // Numérotation facture FAC-{année}-{seq} (atomique dans la transaction)
                 $vente->numero_facture = app(FactureNumeroService::class)->generate($this->institutId());
                 $vente->save();
+
+                // Rattacher l'utilisation du code à la vente désormais créée.
+                if ($utilisationCode) {
+                    $utilisationCode->update(['vente_id' => $vente->id]);
+                }
 
                 foreach ($itemsToSave as $item) {
                     $item['id'] = (string) Str::uuid();

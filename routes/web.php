@@ -315,14 +315,20 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
         // Codes de réduction (feature: codes_reduction)
         Route::middleware('feature:codes_reduction')->group(function () {
             Route::get('codes-reduction', [CodeReductionController::class, 'index'])->name('codes-reduction.index');
+            Route::get('codes-reduction/export', [CodeReductionController::class, 'export'])->name('codes-reduction.export');
             Route::post('codes-reduction', [CodeReductionController::class, 'store'])->name('codes-reduction.store');
+            Route::post('codes-reduction/generer', [CodeReductionController::class, 'generer'])->name('codes-reduction.generer');
             Route::get('codes-reduction/{codeReduction}/print', [CodeReductionController::class, 'print'])->name('codes-reduction.print');
+            Route::get('codes-reduction/{codeReduction}/utilisations', [CodeReductionController::class, 'utilisations'])->name('codes-reduction.utilisations');
+            Route::post('codes-reduction/{codeReduction}/dupliquer', [CodeReductionController::class, 'dupliquer'])->name('codes-reduction.dupliquer');
             Route::patch('codes-reduction/{codeReduction}/toggle', [CodeReductionController::class, 'toggle'])->name('codes-reduction.toggle');
+            Route::put('codes-reduction/{codeReduction}', [CodeReductionController::class, 'update'])->name('codes-reduction.update');
             Route::delete('codes-reduction/{codeReduction}', [CodeReductionController::class, 'destroy'])->name('codes-reduction.destroy');
         });
 
         // Avoirs — redirigé vers la page Remises & Avoirs (onglet avoirs)
         Route::get('avoirs', fn() => redirect()->route('dashboard.codes-reduction.index', ['tab' => 'avoirs']))->name('avoirs.index');
+        Route::get('avoirs/export', [\App\Http\Controllers\Dashboard\AvoirController::class, 'export'])->name('avoirs.export');
         Route::post('ventes/{vente}/avoirs', [\App\Http\Controllers\Dashboard\AvoirController::class, 'store'])->name('ventes.avoirs.store');
         Route::patch('avoirs/{avoir}/marquer-utilise', [\App\Http\Controllers\Dashboard\AvoirController::class, 'marquerUtilise'])->name('avoirs.marquer-utilise');
 

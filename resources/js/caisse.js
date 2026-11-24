@@ -5,7 +5,7 @@
  * côté client pour un rendu instantané. Seuls la recherche client, le code
  * promo et la validation de vente passent par Livewire (requêtes DB).
  */
-export default function caisseApp({ prestations, produits, catPrestations, catProduits, allCatPrestations = [], allCatProduits = [], prefilledItems = [], prefilledPanier = [], routeBrouillonStore = '/dashboard/caisse/brouillons', routeDerniereVenteJson = '/dashboard/ventes/derniere-json', routeAnnulerDerniere = '/dashboard/ventes/annuler-derniere', mode = 'complet', institutId = null }) {
+export default function caisseApp({ prestations, produits, catPrestations, catProduits, allCatPrestations = [], allCatProduits = [], prefilledItems = [], prefilledPanier = [], routeBrouillonStore = '/dashboard/caisse/brouillons', routeDerniereVenteJson = '/dashboard/ventes/derniere-json', routeAnnulerDerniere = '/dashboard/ventes/annuler-derniere', mode = 'complet', institutId = null, codeInitial = '' }) {
     return {
         // ── Catalogue (chargé une seule fois) ──
         prestations,
@@ -175,7 +175,9 @@ export default function caisseApp({ prestations, produits, catPrestations, catPr
 
         // ── Code promo ──
         codePromo: null,
-        codePromoInput: '',
+        // Un code peut arriver pré-rempli depuis un lien
+        // (« Utiliser à la caisse » ou QR code d'un coupon).
+        codePromoInput: codeInitial || '',
         codePromoErreur: '',
         codePromoLoading: false,
 

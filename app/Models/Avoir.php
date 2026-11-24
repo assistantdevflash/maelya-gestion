@@ -50,4 +50,27 @@ class Avoir extends Model
     {
         return $this->belongsTo(CodeReduction::class, 'code_reduction_id');
     }
+
+    /**
+     * Statut réel de l'avoir.
+     *
+     * Un avoir « émis » dont le code a déjà servi est en réalité utilisé.
+     * La règle vivait dans la vue ; elle est ici pour être testable et
+     * partagée par les exports.
+     */
+    public function statutEffectif(): string
+    {
+        if ($this->statut === 'emis'
+            && $this->codeReduction
+            && $this->codeReduction->nb_utilisations > 0) {
+            return 'utilise';
+        }
+
+        return $this->statut;
+    }
+
+    public function estUtilise(): bool
+    {
+        return $this->statutEffectif() === 'utilise';
+    }
 }

@@ -136,11 +136,17 @@
 
             <div class="code-box">
                 <span class="code-val">{{ $code->code }}</span>
-                <span class="code-remise">
-                    {{ $code->type === 'pourcentage'
-                        ? '-'.$code->valeur.'%'
-                        : '-'.number_format($code->valeur, 0, ',', ' ').' FCFA' }}
-                </span>
+                <span class="code-remise">{{ $code->libelleRemise() }}</span>
+            </div>
+
+            {{-- QR code : ouvert avec l'appareil photo du personnel, il remplit
+                 la caisse avec ce code. --}}
+            <div style="text-align:center;margin:10px 0;">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=0&data={{ urlencode(url(route('dashboard.caisse')) . '?code=' . $code->code) }}"
+                     alt="QR code du code {{ $code->code }}"
+                     width="120" height="120"
+                     style="border:1px solid #eee;border-radius:4px;padding:4px;">
+                <p style="font-size:9px;color:#888;margin-top:2px;">Scanner en caisse pour appliquer le code</p>
             </div>
 
             <div class="details">
@@ -156,6 +162,12 @@
                         {{ $code->montant_minimum ? number_format($code->montant_minimum, 0, ',', ' ').' FCFA' : 'Aucun' }}
                     </span>
                 </div>
+                @if($code->type === 'pourcentage' && $code->plafond_remise)
+                <div class="row">
+                    <span class="lbl">Remise maximale</span>
+                    <span class="val">{{ number_format($code->plafond_remise, 0, ',', ' ') }} FCFA</span>
+                </div>
+                @endif
                 <div class="row">
                     <span class="lbl">Valable du</span>
                     <span class="val">{{ $code->date_debut ? $code->date_debut->format('d/m/Y') : '—' }}</span>
