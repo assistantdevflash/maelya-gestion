@@ -37,6 +37,14 @@
             'limite_utilisation' => $code->limite_utilisation ?? '',
             'client_id' => $code->client_id ?? '',
         ]])->all();
+        // Liste des clients pour le sélecteur avec recherche (comme à la caisse).
+        $clientsListe = $clients->map(fn ($c) => [
+            'id'            => $c->id,
+            'initiale'      => mb_strtoupper(mb_substr($c->prenom ?: ($c->nom ?: '?'), 0, 1)),
+            'nom_affichage' => $c->nom_complet ?: trim(($c->prenom ?? '') . ' ' . ($c->nom ?? '')),
+            'telephone'     => (string) ($c->telephone ?? ''),
+            'search'        => mb_strtolower(trim(($c->prenom ?? '') . ' ' . ($c->nom ?? '') . ' ' . ($c->telephone ?? ''))),
+        ])->values()->all();
     @endphp
 
     <script type="application/json" id="codes-donnees">{!! json_encode($codesDonnees, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
@@ -544,6 +552,59 @@
                             @endforeach
                         </div>
 
+                        {{-- Client concerné : recherche, comme à la caisse et sur les devis --}}
+                        <div class="form-group mb-0" @click.outside="listeOuverte = false">
+                            <label class="form-label">Client concerné <span class="text-gray-400 font-normal text-xs">(vide = tous les clients)</span></label>
+
+                            {{-- Client sélectionné --}}
+                            <template x-if="clientChoisi">
+                                <div class="flex items-center gap-3 p-2.5 bg-primary-50 dark:bg-primary-900/20 rounded-xl">
+                                    <div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" x-text="clientChoisi.initiale"></div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-semibold text-gray-900 dark:text-white truncate" x-text="clientChoisi.nom_affichage"></p>
+                                        <p class="text-xs text-gray-500 dark:text-slate-400" x-text="clientChoisi.telephone"></p>
+                                    </div>
+                                    <button type="button" @click="retirerClient()" class="text-xs text-red-500 hover:text-red-700 font-medium flex-shrink-0">Changer</button>
+                                </div>
+                            </template>
+
+                            {{-- Recherche --}}
+                            <template x-if="! clientChoisi">
+                                <div class="relative">
+                                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                    <input type="text" x-model="rechercheClient"
+                                           @focus="listeOuverte = true" @input="listeOuverte = true"
+                                           @keydown.escape="listeOuverte = false"
+                                           placeholder="Chercher un client par nom ou téléphone…"
+                                           class="form-input text-sm pl-9">
+
+                                    <div x-show="listeOuverte" x-cloak
+                                         class="absolute z-30 left-0 right-0 mt-1 border border-gray-200 dark:border-slate-600 rounded-xl overflow-hidden shadow-lg max-h-56 overflow-y-auto bg-white dark:bg-slate-800">
+                                        <button type="button" @mousedown.prevent="form.client_id = ''; rechercheClient = ''; listeOuverte = false"
+                                                class="w-full text-left px-3 py-2 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:bg-primary-50/60 dark:hover:bg-slate-700 border-b border-gray-100 dark:border-slate-700">
+                                            Tous les clients — aucune restriction
+                                        </button>
+
+                                        <template x-for="c in clientsFiltres" :key="c.id">
+                                            <button type="button"
+                                                    @mousedown.prevent="choisirClient(c)" @touchend.prevent="choisirClient(c)"
+                                                    class="w-full text-left px-3 py-2.5 text-sm hover:bg-primary-50/50 dark:hover:bg-gray-700 flex items-center gap-2.5 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors">
+                                                <div class="w-7 h-7 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center text-primary-700 text-xs font-bold flex-shrink-0" x-text="c.initiale"></div>
+                                                <span class="font-medium text-gray-900 dark:text-white truncate" x-text="c.nom_affichage"></span>
+                                                <span class="text-gray-400 text-xs ml-auto whitespace-nowrap" x-text="c.telephone"></span>
+                                            </button>
+                                        </template>
+
+                                        <p x-show="rechercheClient.trim().length >= 2 && clientsFiltres.length === 0"
+                                           class="text-xs text-gray-400 px-3 py-3 text-center">Aucun client trouvé</p>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <input type="hidden" name="client_id" :value="form.client_id">
+                            @error('client_id')<p class="text-xs text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+
                         <div class="grid grid-cols-2 gap-3">
                             <div class="form-group mb-0">
                                 <label class="form-label">Code *</label>
@@ -618,24 +679,14 @@
 
                         <div class="grid grid-cols-2 gap-3">
                             <div class="form-group mb-0">
-                                <label class="form-label">Client <span class="text-gray-400 font-normal text-xs">(optionnel)</span></label>
-                                <select name="client_id" x-model="form.client_id" class="form-select">
-                                    <option value="">Tous les clients</option>
-                                    @foreach($clients as $c)
-                                        <option value="{{ $c->id }}">{{ $c->prenom }} {{ $c->nom }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="form-group mb-0">
                                 <label class="form-label">Limite <span class="text-gray-400 font-normal text-xs">(optionnel)</span></label>
                                 <input type="number" name="limite_utilisation" x-model.number="form.limite_utilisation" min="1" class="form-input" placeholder="Illimité si vide">
                             </div>
-                        </div>
-
-                        <div class="form-group mb-0">
-                            <label class="form-label">Description <span class="text-gray-400 font-normal text-xs">(optionnel)</span></label>
-                            <input type="text" name="description" x-model="form.description" maxlength="255" class="form-input"
-                                   placeholder="Ex : Réduction de bienvenue pour nouveaux clients">
+                            <div class="form-group mb-0">
+                                <label class="form-label">Description <span class="text-gray-400 font-normal text-xs">(optionnel)</span></label>
+                                <input type="text" name="description" x-model="form.description" maxlength="255" class="form-input"
+                                       placeholder="Ex : Réduction de bienvenue">
+                            </div>
                         </div>
 
                         <div class="flex gap-3 pt-1">
@@ -779,6 +830,35 @@
                 historique: { ouvert: false, chargement: false, code: '', lignes: [] },
                 form: {},
 
+                clientsListe: {!! $js($clientsListe) !!},
+                rechercheClient: '',
+                listeOuverte: false,
+
+                get clientsFiltres() {
+                    const q = (this.rechercheClient || '').toLowerCase().trim();
+                    const liste = this.clientsListe || [];
+
+                    if (q.length < 2) return liste.slice(0, 8);
+
+                    return liste.filter(c => c.search.includes(q)).slice(0, 8);
+                },
+
+                get clientChoisi() {
+                    if (! this.form.client_id) return null;
+
+                    return (this.clientsListe || []).find(c => c.id === this.form.client_id) || null;
+                },
+
+                choisirClient(client) {
+                    this.form.client_id = client.id;
+                    this.rechercheClient = '';
+                    this.listeOuverte = false;
+                },
+
+                retirerClient() {
+                    this.form.client_id = '';
+                    this.rechercheClient = '';
+                },
                 init() {
                     this.form = this.formVide();
 
@@ -818,11 +898,15 @@
 
                 ouvrirCreation() {
                     this.form = this.formVide();
+                    this.rechercheClient = '';
+                    this.listeOuverte = false;
                     this.modal = 'code';
                 },
 
                 ouvrirEdition(id) {
                     this.form = Object.assign(this.formVide(), this.donnees[id] || {});
+                    this.rechercheClient = '';
+                    this.listeOuverte = false;
                     this.modal = 'code';
                 },
 
@@ -832,6 +916,7 @@
 
                 fermerTout() {
                     this.modal = null;
+                    this.listeOuverte = false;
                     this.historique.ouvert = false;
                 },
 

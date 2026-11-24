@@ -225,6 +225,25 @@ class RemisesAvoirsTest extends TestCase
 
     // ── Modification, duplication, lot ───────────────────────────────────────
 
+    public function test_le_selecteur_de_client_propose_une_recherche(): void
+    {
+        Client::create([
+            'institut_id' => $this->institutId,
+            'prenom'      => 'Fatou',
+            'nom'         => 'Traore',
+            'telephone'   => '0705060708',
+            'actif'       => true,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('dashboard.codes-reduction.index'))
+            ->assertOk()
+            ->assertSee('Chercher un client par nom ou téléphone')
+            ->assertSee('Fatou Traore')
+            // Plus de liste déroulante native : le choix passe par la recherche.
+            ->assertDontSee('<select name="client_id"', false);
+    }
+
     public function test_un_code_peut_etre_modifie(): void
     {
         $code = $this->creerCode(['code' => 'ANCIEN', 'valeur' => 10]);
