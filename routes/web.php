@@ -394,6 +394,7 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
             Route::post('mes-instituts/apparence/reset', [MesInstitutsController::class, 'resetApparence'])->name('mes-instituts.apparence.reset');
 
             // Routes dynamiques
+            Route::get('mes-instituts/{institut}', [MesInstitutsController::class, 'show'])->name('mes-instituts.show');
             Route::get('mes-instituts/{institut}/edit', [MesInstitutsController::class, 'edit'])->name('mes-instituts.edit');
             Route::put('mes-instituts/{institut}', [MesInstitutsController::class, 'update'])->name('mes-instituts.update');
             Route::post('mes-instituts/{institut}/logo', [MesInstitutsController::class, 'updateLogo'])->name('mes-instituts.logo');

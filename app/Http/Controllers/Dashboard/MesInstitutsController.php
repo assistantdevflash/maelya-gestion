@@ -248,6 +248,85 @@ class MesInstitutsController extends Controller
         return back()->with('success', "L'établissement \"{$institut->nom}\" est de nouveau actif.");
     }
 
+    // ─── Fiche détaillée (lecture seule) ───────────────────────────────────
+
+    /**
+     * Fiche d'un établissement, en lecture seule.
+     *
+     * Toutes les requêtes filtrent explicitement sur `institut_id` et
+     * s'affranchissent du scope multi-tenant : la fiche d'un établissement doit
+     * rester consultable pendant qu'on en gère un autre.
+     */
+    public function show(Institut $institut)
+    {
+        $user = Auth::user();
+        $aAcces = $institut->proprietaire_id === $user->id || $user->institut_id === $institut->id;
+        abort_unless($aAcces, 403, 'Accès refusé.');
+
+        $debutMois     = now()->startOfMonth();
+        $moisPrecedent = now()->subMonthNoOverflow()->startOfMonth();
+
+        $ventesMois = \App\Models\Vente::withoutGlobalScopes()
+            ->where('institut_id', $institut->id)
+            ->where('statut', 'validee')
+            ->where('created_at', '>=', $debutMois);
+
+        $caMois       = (int) (clone $ventesMois)->sum('total');
+        $nbVentesMois = (clone $ventesMois)->count();
+
+        $caPrecedent = (int) \App\Models\Vente::withoutGlobalScopes()
+            ->where('institut_id', $institut->id)
+            ->where('statut', 'validee')
+            ->where('created_at', '>=', $moisPrecedent)
+            ->where('created_at', '<', $debutMois)
+            ->sum('total');
+
+        $evolution = $caPrecedent > 0
+            ? (int) round(($caMois - $caPrecedent) / $caPrecedent * 100)
+            : null;
+
+        $stats = [
+            'clients'         => \App\Models\Client::withoutGlobalScopes()
+                ->where('institut_id', $institut->id)->where('actif', true)->count(),
+            'nouveaux_clients' => \App\Models\Client::withoutGlobalScopes()
+                ->where('institut_id', $institut->id)->where('actif', true)
+                ->where('created_at', '>=', $debutMois)->count(),
+            'produits'        => \App\Models\Produit::withoutGlobalScopes()
+                ->where('institut_id', $institut->id)->where('actif', true)->count(),
+            'ca_mois'         => $caMois,
+            'ventes_mois'     => $nbVentesMois,
+            'ca_precedent'    => $caPrecedent,
+            'evolution'       => $evolution,
+            'credits_encours' => (int) \App\Models\Credit::withoutGlobalScopes()
+                ->where('institut_id', $institut->id)->where('statut', 'en_cours')->sum('reste_a_payer'),
+            'rdv_a_venir'     => \App\Models\RendezVous::withoutGlobalScopes()
+                ->where('institut_id', $institut->id)
+                ->whereIn('statut', ['en_attente', 'confirme'])
+                ->where('debut_le', '>=', now())
+                ->count(),
+        ];
+
+        $equipe = \App\Models\User::where('institut_id', $institut->id)
+            ->orderBy('prenom')
+            ->get();
+
+        $dernieresVentes = \App\Models\Vente::withoutGlobalScopes()
+            ->where('institut_id', $institut->id)
+            ->with('client')
+            ->latest()
+            ->limit(6)
+            ->get();
+
+        $typeLabel   = EtablissementType::libellePour($institut->type);
+        $estCourant  = $institut->id === $user->currentInstitutId();
+        $vitrineUrl  = route('vitrine.show', $institut->slug);
+
+        return view('dashboard.mes-instituts.show', compact(
+            'institut', 'stats', 'equipe', 'dernieresVentes',
+            'typeLabel', 'estCourant', 'vitrineUrl'
+        ));
+    }
+
     // ─── Apparence (couleurs) ───────────────────────────────────────────────
 
     public function edit(Institut $institut)
