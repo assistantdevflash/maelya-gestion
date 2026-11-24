@@ -50,7 +50,8 @@ class CodeReduction extends Model
 
     public function estExpire(): bool
     {
-        return $this->date_fin !== null && $this->date_fin->isPast();
+        // Un code qui expire aujourd'hui reste valable toute la journée.
+        return $this->date_fin !== null && $this->date_fin->copy()->endOfDay()->isPast();
     }
 
     public function estPasEncoreValide(): bool
@@ -58,13 +59,18 @@ class CodeReduction extends Model
         return $this->date_debut !== null && $this->date_debut->isFuture();
     }
 
-    /** Retourne 'actif' | 'epuise' | 'expire' | 'inactif' */
+    /**
+     * Retourne 'actif' | 'programme' | 'epuise' | 'expire' | 'inactif'.
+     *
+     * « Programmé » distingue un code dont la date de début est à venir d'un
+     * code réellement désactivé : les deux étaient affichés « Inactif ».
+     */
     public function statut(): string
     {
         if (!$this->actif)         return 'inactif';
         if ($this->estEpuise())    return 'epuise';
         if ($this->estExpire())    return 'expire';
-        if ($this->estPasEncoreValide()) return 'inactif';
+        if ($this->estPasEncoreValide()) return 'programme';
         return 'actif';
     }
 

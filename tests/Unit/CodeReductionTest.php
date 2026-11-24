@@ -53,7 +53,17 @@ class CodeReductionTest extends TestCase
         $code = $this->makeCode(['date_debut' => now()->addDay()]);
 
         $this->assertTrue($code->estPasEncoreValide());
-        $this->assertSame('inactif', $code->statut());
+        // Un code dont la date de début est à venir est « programmé », pas
+        // « inactif » : le confondre avec un code désactivé induisait en erreur.
+        $this->assertSame('programme', $code->statut());
+    }
+
+    public function test_un_code_expirant_aujourd_hui_reste_valable_jusqu_au_soir(): void
+    {
+        $code = $this->makeCode(['date_fin' => now()]);
+
+        $this->assertFalse($code->estExpire(), 'Le dernier jour de validité doit compter.');
+        $this->assertSame('actif', $code->statut());
     }
 
     public function test_epuise_quand_utilisations_atteintes(): void

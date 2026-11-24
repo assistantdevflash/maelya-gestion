@@ -43,18 +43,28 @@ class CodeReductionController extends Controller
             ->get();
 
         // Stats calculées en base (indépendantes de la pagination)
+        //
+        // Les bornes sont passées en paramètres plutôt qu'écrites en dur :
+        // `NOW()` n'existe pas en SQLite, où la page tombait en erreur 500.
+        $maintenant  = now();
+        $aujourdhui  = $maintenant->toDateString();
+
         $stats = CodeReduction::where('institut_id', $institutId)
             ->selectRaw("
                 COUNT(*) as total,
-                SUM(CASE WHEN actif = 1 
+                COALESCE(SUM(CASE WHEN actif = 1
                     AND (limite_utilisation IS NULL OR nb_utilisations < limite_utilisation)
-                    AND (date_fin IS NULL OR date_fin >= NOW())
-                    AND (date_debut IS NULL OR date_debut <= NOW())
-                    THEN 1 ELSE 0 END) as actifs,
+                    AND (date_fin IS NULL OR date_fin >= ?)
+                    AND (date_debut IS NULL OR date_debut <= ?)
+                    THEN 1 ELSE 0 END), 0) as actifs,
                 COALESCE(SUM(nb_utilisations), 0) as utilisations
-            ")
+            ", [$aujourdhui, $maintenant->toDateTimeString()])
             ->first()
             ->toArray();
+
+        $stats['total']        = (int) $stats['total'];
+        $stats['actifs']       = (int) $stats['actifs'];
+        $stats['utilisations'] = (int) $stats['utilisations'];
 
         $avoirs = Avoir::where('institut_id', $this->institutId())
             ->with(['vente', 'client', 'codeReduction'])
@@ -73,7 +83,14 @@ class CodeReductionController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return view('dashboard.codes-reduction.index', compact('codes', 'stats', 'clients', 'avoirs'));
+        return view('dashboard.codes-reduction.index', [
+            'codes'   => $codes,
+            'stats'   => $stats,
+            'clients' => $clients,
+            'avoirs'  => $avoirs,
+            // Permet d'ouvrir directement l'onglet demandé par un lien.
+            'onglet'  => $request->input('tab') === 'avoirs' ? 'avoirs' : 'codes',
+        ]);
     }
 
     public function store(Request $request)

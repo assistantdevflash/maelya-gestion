@@ -1,5 +1,5 @@
 <x-dashboard-layout>
-    <div class="space-y-5" x-data="{ onglet: 'codes' }">
+    <div class="space-y-5" x-data="{ onglet: '{{ $onglet ?? 'codes' }}' }">
 
         {{-- En-tête --}}
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -70,12 +70,12 @@
             </button>
         </div>
         {{-- Recherche --}}
-        <div class="relative flex-shrink-0 flex items-center gap-1" x-data="{ q: '{{ request('q') }}' }">
+        <div class="relative flex-shrink-0 flex items-center gap-1">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
             <form method="GET" action="{{ route('dashboard.codes-reduction.index') }}" class="flex items-center gap-1">
-                <input type="text" name="q" x-model="q" placeholder="Rechercher code, client..."
+                <input type="text" name="q" value="{{ request('q') }}" placeholder="Rechercher code, client..."
                        class="w-48 pl-9 pr-3 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary-400">
                 @if(request('q'))
                 <a href="{{ route('dashboard.codes-reduction.index') }}"
@@ -115,6 +115,8 @@
                                 <span class="badge badge-warning text-xs">Épuisé</span>
                             @elseif($statut === 'expire')
                                 <span class="badge badge-danger text-xs">Expiré</span>
+                            @elseif($statut === 'programme')
+                                <span class="badge badge-info text-xs">Programmé</span>
                             @else
                                 <span class="badge text-xs bg-gray-100 text-gray-500">Inactif</span>
                             @endif
@@ -134,7 +136,7 @@
                             @if($code->montant_minimum)
                                 Min. {{ number_format($code->montant_minimum, 0, ',', ' ') }} FCFA &nbsp;&middot;&nbsp;
                             @endif
-                            {{ $code->nb_utilisations }} utilisation{{ $code->nb_utilisations > 1 ? 's' : '' }}
+                            {{ \App\Helpers\TexteHelper::pluriel($code->nb_utilisations, 'utilisation', 'utilisations') }}
                             @if($code->limite_utilisation)
                                 / {{ $code->limite_utilisation }}
                             @endif
@@ -198,6 +200,11 @@
                 </div>
                 @endforeach
             </div>
+            @if($codes->hasPages())
+            <div class="px-5 py-3 border-t border-gray-100 dark:border-slate-800">
+                {{ $codes->links() }}
+            </div>
+            @endif
         </div>
         @else
         <div class="card p-12 text-center">
@@ -215,6 +222,7 @@
 
         {{-- Avoirs --}}
         <div x-show="onglet === 'avoirs'" class="card overflow-hidden">
+            <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
                 <thead class="bg-gray-50 dark:bg-slate-800">
                     <tr>
@@ -304,6 +312,7 @@
                     @endforelse
                 </tbody>
             </table>
+            </div>
             @if($avoirs->hasPages())
             <div class="px-4 py-3 border-t border-gray-100 dark:border-slate-800">
                 {{ $avoirs->links() }}
