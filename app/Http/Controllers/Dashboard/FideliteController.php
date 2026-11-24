@@ -7,10 +7,9 @@ use App\Models\Client;
 use App\Models\CodeReduction;
 use App\Models\HistoriquePoints;
 use App\Models\ProgrammeFidelite;
+use App\Services\FideliteService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class FideliteController extends Controller
 {
@@ -25,15 +24,30 @@ class FideliteController extends Controller
 
         $programme = ProgrammeFidelite::where('institut_id', $institutId)->first();
 
-        // Top clients par points (avec codes fidélité actifs)
+        $search = trim((string) $request->input('q'));
+
+        // Par défaut, seuls les clients qui ont des points à convertir.
+        // « tous » permet de retrouver un client à zéro point pour l'ajuster.
+        $filtrePoints = $request->input('clients') === 'tous' ? 'tous' : 'avec_points';
+
         $clients = Client::where('institut_id', $institutId)
             ->where('actif', true)
-            ->where('points_fidelite', '>', 0)
+            ->when($filtrePoints === 'avec_points', fn ($q) => $q->where('points_fidelite', '>', 0))
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($q2) use ($search) {
+                    $q2->where('prenom', 'like', "%{$search}%")
+                       ->orWhere('nom', 'like', "%{$search}%")
+                       ->orWhere('raison_sociale', 'like', "%{$search}%")
+                       ->orWhere('telephone', 'like', "%{$search}%");
+                });
+            })
             ->with(['codesReductionFidelite' => function ($q) {
                 $q->where('actif', true)
-                  ->where('code', 'like', 'FID-%')
+                  ->where('code', 'like', FideliteService::PREFIXE_CODE . '%')
+                  // Comparaison sur la date du jour : un code qui expire
+                  // aujourd'hui reste affiché jusqu'au soir.
                   ->where(function ($q2) {
-                      $q2->whereNull('date_fin')->orWhere('date_fin', '>=', now());
+                      $q2->whereNull('date_fin')->orWhere('date_fin', '>=', now()->toDateString());
                   })
                   ->where(function ($q2) {
                       $q2->whereNull('limite_utilisation')->orWhereColumn('nb_utilisations', '<', 'limite_utilisation');
@@ -44,23 +58,28 @@ class FideliteController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        // Stats globales
-        $totalPoints = Client::where('institut_id', $institutId)->sum('points_fidelite');
-        $clientsAvecPoints = Client::where('institut_id', $institutId)->where('points_fidelite', '>', 0)->count();
+        // Tous les compteurs portent sur les clients actifs, comme le classement.
+        $base = fn () => Client::where('institut_id', $institutId)->where('actif', true);
+
+        $totalPoints       = (int) $base()->sum('points_fidelite');
+        $clientsAvecPoints = $base()->where('points_fidelite', '>', 0)->count();
+        $clientsEligibles  = $programme
+            ? $base()->where('points_fidelite', '>=', $programme->seuil_recompense)->count()
+            : 0;
+
         $recompensesDistribuees = HistoriquePoints::where('institut_id', $institutId)
             ->where('type', 'recompense')
             ->count();
 
-        // Derniers mouvements
         $derniersMouvements = HistoriquePoints::where('institut_id', $institutId)
-            ->with('client')
+            ->with(['client', 'user', 'codeReduction'])
             ->latest()
-            ->limit(10)
+            ->limit(12)
             ->get();
 
         return view('dashboard.fidelite.index', compact(
-            'programme', 'clients', 'totalPoints', 'clientsAvecPoints',
-            'recompensesDistribuees', 'derniersMouvements'
+            'programme', 'clients', 'totalPoints', 'clientsAvecPoints', 'clientsEligibles',
+            'recompensesDistribuees', 'derniersMouvements', 'search', 'filtrePoints'
         ));
     }
 
@@ -85,86 +104,116 @@ class FideliteController extends Controller
         return back()->with('success', 'Programme de fidélité mis à jour.');
     }
 
-    public function recompenser(Request $request, Client $client)
+    public function recompenser(Request $request, Client $client, FideliteService $service)
     {
         $institutId = $this->institutId();
 
         abort_unless($client->institut_id === $institutId, 403);
 
-        $programme = ProgrammeFidelite::where('institut_id', $institutId)->first();
-        abort_unless($programme && $programme->actif, 403, 'Programme de fidélité non configuré.');
-        abort_unless($client->points_fidelite >= $programme->seuil_recompense, 422, 'Points insuffisants.');
+        $programme = $service->programmeActif($institutId);
 
-        $code = DB::transaction(function () use ($client, $programme, $institutId) {
-            // Déduire les points
-            $client->decrement('points_fidelite', $programme->seuil_recompense);
+        abort_unless($programme, 403, 'Programme de fidélité non configuré.');
 
-            HistoriquePoints::create([
-                'institut_id' => $institutId,
-                'client_id' => $client->id,
-                'points' => -$programme->seuil_recompense,
-                'type' => 'recompense',
-                'description' => 'Conversion en code de réduction',
-            ]);
+        try {
+            $code = $service->convertir($client, $programme, Auth::id());
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors());
+        }
 
-            // Générer un code de réduction
-            $code = CodeReduction::create([
-                'institut_id' => $institutId,
-                'client_id' => $client->id,
-                'code' => 'FID-' . strtoupper(Str::random(6)),
-                'description' => 'Récompense fidélité pour ' . $client->nom_complet,
-                'type' => $programme->type_recompense,
-                'valeur' => $programme->valeur_recompense,
-                'date_debut' => now(),
-                'date_fin' => now()->addDays(30),
-                'limite_utilisation' => 1,
-                'actif' => true,
-            ]);
+        $valeur = $programme->valeur_recompense . ($programme->type_recompense === 'pourcentage' ? '%' : ' FCFA');
 
-            return $code;
-        });
-
-        return back()->with('success', "Code {$code->code} généré pour {$client->nom_complet} ({$programme->valeur_recompense}" . ($programme->type_recompense === 'pourcentage' ? '%' : ' FCFA') . " de réduction).");
+        return back()->with('success', "Code {$code->code} généré pour {$client->nom_complet} ({$valeur} de réduction).");
     }
 
-    public function ajuster(Request $request, Client $client)
+    public function ajuster(Request $request, Client $client, FideliteService $service)
     {
-        $request->validate([
+        $data = $request->validate([
             'points' => ['required', 'integer', 'not_in:0'],
             'description' => ['required', 'string', 'max:255'],
         ]);
 
+        abort_unless($client->institut_id === $this->institutId(), 403);
+
+        try {
+            $applique = $service->ajuster($client, (int) $data['points'], $data['description'], Auth::id());
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors());
+        }
+
+        // On annonce le mouvement réellement appliqué, pas celui demandé.
+        $signe = $applique > 0 ? '+' : '';
+
+        return back()->with('success', "{$signe}{$applique} points pour {$client->nom_complet}. Solde : {$client->fresh()->points_fidelite} pts.");
+    }
+
+    /**
+     * Historique d'un client (JSON, pour le panneau latéral).
+     */
+    public function historique(Client $client)
+    {
+        abort_unless($client->institut_id === $this->institutId(), 403);
+
+        $lignes = HistoriquePoints::where('institut_id', $this->institutId())
+            ->where('client_id', $client->id)
+            ->with('user')
+            ->latest()
+            ->limit(60)
+            ->get()
+            ->map(fn (HistoriquePoints $h) => [
+                'date'        => $h->created_at?->format('d/m/Y H:i'),
+                'points'      => (int) $h->points,
+                'type'        => $h->type,
+                'description' => $h->description,
+                'auteur'      => $h->user?->nom_complet,
+            ]);
+
+        return response()->json([
+            'client' => $client->nom_complet,
+            'solde'  => (int) $client->points_fidelite,
+            'lignes' => $lignes,
+        ]);
+    }
+
+    /**
+     * Export CSV du solde de fidélité des clients actifs.
+     */
+    public function export()
+    {
         $institutId = $this->institutId();
-        abort_unless($client->institut_id === $institutId, 403);
+        $programme  = ProgrammeFidelite::where('institut_id', $institutId)->first();
+        $seuil      = (int) ($programme->seuil_recompense ?? 0);
 
-        DB::transaction(function () use ($client, $request, $institutId) {
-            $client->increment('points_fidelite', $request->points);
+        $clients = Client::where('institut_id', $institutId)
+            ->where('actif', true)
+            ->orderByDesc('points_fidelite')
+            ->get();
 
-            // Empêcher les points négatifs
-            if ($client->fresh()->points_fidelite < 0) {
-                $client->update(['points_fidelite' => 0]);
+        return response()->streamDownload(function () use ($clients, $seuil) {
+            $sortie = fopen('php://output', 'w');
+            fputcsv($sortie, ['Client', 'Téléphone', 'Points', 'Récompenses disponibles', 'Prochain palier'], ';');
+
+            foreach ($clients as $client) {
+                $points = (int) $client->points_fidelite;
+
+                fputcsv($sortie, [
+                    $client->nom_complet,
+                    $client->telephone,
+                    $points,
+                    $seuil > 0 ? intdiv($points, $seuil) : 0,
+                    $seuil > 0 ? ($points % $seuil) . ' / ' . $seuil : '',
+                ], ';');
             }
 
-            HistoriquePoints::create([
-                'institut_id' => $institutId,
-                'client_id' => $client->id,
-                'points' => $request->points,
-                'type' => 'ajustement',
-                'description' => $request->description,
-            ]);
-        });
-
-        return back()->with('success', 'Points ajustés pour ' . $client->nom_complet . '.');
+            fclose($sortie);
+        }, 'fidelite-' . now()->format('Y-m-d') . '.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     public function imprimerCode(CodeReduction $codeReduction)
     {
-        $institutId = $this->institutId();
-        abort_unless($codeReduction->institut_id === $institutId, 403);
+        abort_unless($codeReduction->institut_id === $this->institutId(), 403);
 
-        $codeReduction->load('client');
-        $institut = \App\Models\Institut::find($institutId);
-
-        return view('dashboard.fidelite.imprimer-code', compact('codeReduction', 'institut'));
+        // Un seul gabarit de coupon pour tous les codes : celui des remises,
+        // qui porte le QR code et le plafond éventuel.
+        return redirect()->route('dashboard.codes-reduction.print', $codeReduction);
     }
 }

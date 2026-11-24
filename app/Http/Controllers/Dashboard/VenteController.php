@@ -242,27 +242,9 @@ class VenteController extends Controller
                 }
 
                 // ── Attribuer les points de fidélité ──
-                if ($vente->client_id) {
-                    $programme = ProgrammeFidelite::where('institut_id', $this->institutId())
-                        ->where('actif', true)
-                        ->first();
-
-                    if ($programme) {
-                        $points = $programme->calculerPoints($total);
-                        if ($points > 0) {
-                            $vente->client->increment('points_fidelite', $points);
-
-                            HistoriquePoints::create([
-                                'institut_id' => $this->institutId(),
-                                'client_id' => $vente->client_id,
-                                'vente_id' => $vente->id,
-                                'points' => $points,
-                                'type' => 'gain',
-                                'description' => "+{$points} pts (vente #{$vente->numero})",
-                            ]);
-                        }
-                    }
-                }
+                // Le barème vit dans FideliteService, partagé avec la vente à
+                // crédit : sans ça, un achat à crédit ne rapportait aucun point.
+                app(\App\Services\FideliteService::class)->attribuerPointsPourVente($vente, Auth::id());
 
                 return $vente;
             });
@@ -656,27 +638,7 @@ class VenteController extends Controller
             }
 
             // Reversement des points de fidélité gagnés lors de la vente
-            $pointsGagnes = HistoriquePoints::where('vente_id', $vente->id)
-                ->where('type', 'gain')
-                ->sum('points');
-
-            if ($pointsGagnes > 0 && $vente->client_id) {
-                $client = $vente->client()->withoutGlobalScopes()->first();
-                if ($client) {
-                    $pointsARetirer = min($pointsGagnes, (int) $client->points_fidelite);
-                    if ($pointsARetirer > 0) {
-                        $client->decrement('points_fidelite', $pointsARetirer);
-                        HistoriquePoints::create([
-                            'institut_id' => $this->institutId(),
-                            'client_id'   => $client->id,
-                            'vente_id'    => $vente->id,
-                            'points'      => $pointsARetirer,
-                            'type'        => 'perte',
-                            'description' => "Annulation vente #{$vente->numero}",
-                        ]);
-                    }
-                }
-            }
+            app(\App\Services\FideliteService::class)->retirerPointsPourAnnulation($vente, Auth::id());
 
             $vente->update([
                 'statut'           => 'annulee',

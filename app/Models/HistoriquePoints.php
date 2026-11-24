@@ -13,7 +13,8 @@ class HistoriquePoints extends Model
     protected $table = 'historique_points';
 
     protected $fillable = [
-        'institut_id', 'client_id', 'vente_id', 'points', 'type', 'description',
+        'institut_id', 'client_id', 'vente_id', 'user_id', 'code_reduction_id',
+        'points', 'type', 'description',
     ];
 
     protected $casts = [
@@ -28,5 +29,15 @@ class HistoriquePoints extends Model
     public function vente()
     {
         return $this->belongsTo(Vente::class, 'vente_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function codeReduction()
+    {
+        return $this->belongsTo(CodeReduction::class, 'code_reduction_id');
     }
 }

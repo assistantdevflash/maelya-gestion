@@ -8,6 +8,21 @@
     recompenserClient: null,
     recompenserNom: '',
     recompenserPoints: 0,
+    baseHistorique: '{{ url('/dashboard/fidelite') }}',
+    histo: { ouvert: false, chargement: false, nom: '', solde: 0, lignes: [] },
+
+    ouvrirHistorique(id, nom) {
+        this.histo = { ouvert: true, chargement: true, nom: nom, solde: 0, lignes: [] };
+
+        fetch(this.baseHistorique + '/' + id + '/historique', { headers: { 'Accept': 'application/json' } })
+            .then(r => r.json())
+            .then(d => {
+                this.histo.chargement = false;
+                this.histo.solde = d.solde;
+                this.histo.lignes = d.lignes || [];
+            })
+            .catch(() => { this.histo.chargement = false; });
+    },
 }">
 
     {{-- En-tête --}}
@@ -16,10 +31,16 @@
             <h1 class="text-2xl font-display font-bold text-gray-900 dark:text-white tracking-tight">Programme de fidélité</h1>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Récompensez vos meilleurs clients avec des codes de réduction</p>
         </div>
-        <button @click="showConfig = true" class="btn-primary flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            Configurer
-        </button>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('dashboard.fidelite.export') }}" class="btn-outline flex items-center gap-2" title="Exporter le solde de fidélité en CSV">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                <span class="hidden sm:inline">Exporter</span>
+            </a>
+            <button @click="showConfig = true" class="btn-primary flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Configurer
+            </button>
+        </div>
     </div>
 
     {{-- Statut programme --}}
@@ -94,11 +115,42 @@
         {{-- Classement clients --}}
         <div class="lg:col-span-2">
             <div class="card overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
-                    <h2 class="font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                        <span>🏅</span> Classement des clients
-                    </h2>
-                    <span class="text-xs text-gray-400">{{ $clients->total() }} client{{ $clients->total() > 1 ? 's' : '' }}</span>
+                <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-700">
+                    <div class="flex items-center justify-between gap-3 flex-wrap">
+                        <h2 class="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <span>🏅</span> Classement des clients
+                        </h2>
+                        <div class="flex items-center gap-2">
+                            @if($clientsEligibles > 0)
+                            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                                🎁 {{ \App\Helpers\TexteHelper::pluriel($clientsEligibles, 'client à récompenser', 'clients à récompenser') }}
+                            </span>
+                            @endif
+                            <span class="text-xs text-gray-400">{{ \App\Helpers\TexteHelper::pluriel($clients->total(), 'client', 'clients') }}</span>
+                        </div>
+                    </div>
+
+                    {{-- Recherche et filtre --}}
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 mt-3">
+                        <form method="GET" action="{{ route('dashboard.fidelite.index') }}" x-data x-ref="recherche" class="relative flex-1">
+                            @if($filtrePoints === 'tous')<input type="hidden" name="clients" value="tous">@endif
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <input type="text" name="q" value="{{ $search }}" placeholder="Rechercher un client…"
+                                   @input.debounce.400ms="$refs.recherche.submit()"
+                                   class="form-input text-xs pl-9 w-full">
+                        </form>
+
+                        <div class="flex items-center gap-1.5">
+                            <a href="{{ route('dashboard.fidelite.index', array_filter(['q' => $search, 'clients' => null])) }}"
+                               class="px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-colors {{ $filtrePoints === 'avec_points' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 border-gray-200 dark:border-slate-700' }}">
+                                Avec des points
+                            </a>
+                            <a href="{{ route('dashboard.fidelite.index', array_filter(['q' => $search, 'clients' => 'tous'])) }}"
+                               class="px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-colors {{ $filtrePoints === 'tous' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 border-gray-200 dark:border-slate-700' }}">
+                                Tous
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
                 @if($clients->isEmpty())
@@ -123,8 +175,13 @@
                             @php
                                 $rang = $clients->firstItem() + $index;
                                 $medals = ['🥇', '🥈', '🥉'];
-                                $pct = $programme->seuil_recompense > 0 ? min(100, round($client->points_fidelite / $programme->seuil_recompense * 100)) : 0;
-                                $eligible = $client->points_fidelite >= $programme->seuil_recompense;
+
+                                $seuil = max(1, (int) $programme->seuil_recompense);
+                                $points = (int) $client->points_fidelite;
+                                $disponibles = intdiv($points, $seuil);
+                                $reste = $points % $seuil;
+                                $pct = (int) round($reste / $seuil * 100);
+                                $eligible = $disponibles > 0;
                             @endphp
                             <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 {{ $eligible ? 'bg-emerald-50/50 dark:bg-emerald-900/10' : '' }}">
                                 <td class="text-center">
@@ -165,14 +222,26 @@
                                 </td>
                                 <td class="text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <div class="w-20 h-1.5 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                        <div class="w-16 h-1.5 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden" title="{{ $reste }} point(s) sur {{ $seuil }} avant la prochaine récompense">
                                             <div class="h-full rounded-full {{ $eligible ? 'bg-emerald-500' : 'bg-purple-500' }}" style="width: {{ $pct }}%;"></div>
                                         </div>
-                                        <span class="text-xs text-gray-400 w-8">{{ $pct }}%</span>
+                                        <span class="text-xs text-gray-400 whitespace-nowrap">{{ $reste }}/{{ $seuil }}</span>
                                     </div>
+                                    @if($disponibles > 0)
+                                    <span class="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 whitespace-nowrap"
+                                          title="{{ \App\Helpers\TexteHelper::pluriel($disponibles, 'récompense disponible', 'récompenses disponibles') }}">
+                                        🎁 ×{{ $disponibles }}
+                                    </span>
+                                    @endif
                                 </td>
                                 <td class="text-right">
                                     <div class="flex items-center justify-end gap-1">
+                                        <button type="button"
+                                            @click="ouvrirHistorique('{{ $client->id }}', '{{ addslashes($client->nom_complet) }}')"
+                                            class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-primary-600 transition-colors"
+                                            title="Historique des points" aria-label="Historique des points de {{ $client->nom_complet }}">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        </button>
                                         @if($eligible)
                                         <button
                                             @click="recompenserClient = '{{ $client->id }}'; recompenserNom = '{{ addslashes($client->nom_complet) }}'; recompenserPoints = {{ $client->points_fidelite }}; showRecompenser = true"
@@ -223,17 +292,23 @@
                         <div class="flex items-center gap-3">
                             <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0
                                 {{ $mv->points > 0 ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-red-100 dark:bg-red-900/30' }}">
-                                @if($mv->type === 'gain')
-                                    <span class="text-xs">⬆️</span>
-                                @elseif($mv->type === 'recompense')
-                                    <span class="text-xs">🎁</span>
-                                @else
-                                    <span class="text-xs">🔧</span>
-                                @endif
+                                @switch($mv->type)
+                                    @case('gain')<span class="text-xs">⬆️</span>@break
+                                    @case('recompense')<span class="text-xs">🎁</span>@break
+                                    @case('perte')<span class="text-xs">↩️</span>@break
+                                    @default<span class="text-xs">🔧</span>
+                                @endswitch
                             </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-xs font-medium text-gray-900 dark:text-white truncate">{{ $mv->client->nom_complet ?? '—' }}</p>
                                 <p class="text-[10px] text-gray-400 truncate">{{ $mv->description }}</p>
+                                @if($mv->codeReduction)
+                                <a href="{{ route('dashboard.codes-reduction.print', $mv->codeReduction) }}" target="_blank"
+                                   class="text-[10px] font-mono text-amber-600 hover:underline">{{ $mv->codeReduction->code }}</a>
+                                @endif
+                                @if($mv->user)
+                                <p class="text-[10px] text-gray-300 dark:text-gray-600 truncate">par {{ $mv->user->prenom }} {{ $mv->user->nom_famille }}</p>
+                                @endif
                             </div>
                             <span class="text-xs font-bold flex-shrink-0 {{ $mv->points > 0 ? 'text-emerald-600' : 'text-red-500' }}">
                                 {{ $mv->points > 0 ? '+' : '' }}{{ $mv->points }}
@@ -374,6 +449,53 @@
                 </div>
             </form>
         </div>
+    </div>
+
+    {{-- ═══ Panneau historique d'un client ═══ --}}
+    <div x-show="histo.ouvert" x-cloak class="fixed inset-0 z-50 flex justify-end" @click.self="histo.ouvert = false">
+        <div class="absolute inset-0 bg-black/40" @click="histo.ouvert = false"></div>
+        <aside class="relative w-full sm:w-96 h-full bg-white dark:bg-slate-900 shadow-2xl overflow-y-auto"
+               x-transition:enter="transition ease-out duration-200" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0">
+            <div class="sticky top-0 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-5 py-4 flex items-center justify-between">
+                <div class="min-w-0">
+                    <p class="text-xs text-gray-400 uppercase tracking-wide">Historique des points</p>
+                    <p class="font-bold text-gray-900 dark:text-white truncate" x-text="histo.nom"></p>
+                </div>
+                <button type="button" @click="histo.ouvert = false" class="btn-icon" aria-label="Fermer l'historique">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <div class="px-5 py-3 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
+                <span class="text-xs text-gray-500">Solde actuel</span>
+                <span class="text-lg font-bold text-primary-600 dark:text-primary-400"><span x-text="histo.solde"></span> pts</span>
+            </div>
+
+            <div class="p-5 space-y-3">
+                <template x-if="histo.chargement">
+                    <p class="text-sm text-gray-400">Chargement…</p>
+                </template>
+
+                <template x-if="! histo.chargement && histo.lignes.length === 0">
+                    <p class="text-sm text-gray-500 text-center py-10">Aucun mouvement pour ce client.</p>
+                </template>
+
+                <template x-for="(ligne, i) in histo.lignes" :key="i">
+                    <div class="flex items-start justify-between gap-3 pb-3 border-b border-gray-100 dark:border-slate-800 last:border-0">
+                        <div class="min-w-0">
+                            <p class="text-xs text-gray-900 dark:text-white truncate" x-text="ligne.description"></p>
+                            <p class="text-[10px] text-gray-400">
+                                <span x-text="ligne.date"></span>
+                                <template x-if="ligne.auteur"><span> · par <span x-text="ligne.auteur"></span></span></template>
+                            </p>
+                        </div>
+                        <span class="text-sm font-bold whitespace-nowrap"
+                              :class="ligne.points > 0 ? 'text-emerald-600' : 'text-red-500'"
+                              x-text="(ligne.points > 0 ? '+' : '') + ligne.points"></span>
+                    </div>
+                </template>
+            </div>
+        </aside>
     </div>
 
 </div>

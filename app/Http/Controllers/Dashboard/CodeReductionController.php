@@ -276,6 +276,13 @@ class CodeReductionController extends Controller
         $prefixe    = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $data['prefixe'] ?? '') ?: 'PROMO');
         $institutId = $this->institutId();
 
+        // Le préfixe FID- est réservé aux codes générés par le programme de
+        // fidélité : sans ce garde-fou, un code manuel serait compté comme
+        // une récompense dans la fiche client.
+        if (str_starts_with($prefixe, rtrim(\App\Services\FideliteService::PREFIXE_CODE, '-'))) {
+            return back()->withErrors(['prefixe' => 'Le préfixe FID est réservé aux récompenses de fidélité.'])->withInput();
+        }
+
         DB::transaction(function () use ($data, $prefixe, $institutId) {
             for ($i = 0; $i < $data['quantite']; $i++) {
                 CodeReduction::create([
@@ -431,7 +438,12 @@ class CodeReductionController extends Controller
     private function validerRegles(Request $request): array
     {
         $data = $request->validate([
-            'code'              => ['required', 'string', 'max:50', 'regex:/^[A-Z0-9_\-]+$/'],
+            'code'              => ['required', 'string', 'max:50', 'regex:/^[A-Z0-9_\-]+$/', function (string $attribut, $valeur, \Closure $fail) {
+                // FID- est réservé aux codes générés par le programme de fidélité.
+                if (str_starts_with(strtoupper((string) $valeur), \App\Services\FideliteService::PREFIXE_CODE)) {
+                    $fail('Le préfixe FID- est réservé aux récompenses de fidélité.');
+                }
+            }],
             'description'       => ['nullable', 'string', 'max:255'],
             'type'              => ['required', 'in:pourcentage,montant_fixe'],
             'valeur'            => ['required', 'integer', 'min:1'],

@@ -420,6 +420,10 @@ class Caisse extends Component
             ]);
         }
 
+        // Points de fidélité : une vente à crédit compte comme une vente
+        // comptant. Le barème est celui du programme de l'établissement.
+        app(\App\Services\FideliteService::class)->attribuerPointsPourVente($vente, auth()->id());
+
         // Réinitialiser Alpine + message succès
         $this->creditSuccess = 'Vente à crédit enregistrée — reste : ' . number_format($reste, 0, ',', ' ') . ' FCFA';
         $this->dispatch('reset-caisse-credit');

@@ -379,6 +379,10 @@ class CreditController extends Controller
                 ]);
             }
 
+            // Points de fidélité : un achat à crédit rapporte autant qu'un
+            // achat comptant. Sans cet appel, le client repartait sans rien.
+            app(\App\Services\FideliteService::class)->attribuerPointsPourVente($vente, Auth::id());
+
             return $credit;
         });
 

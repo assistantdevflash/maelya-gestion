@@ -418,9 +418,11 @@ Route::middleware(['auth', 'abonnement.actif', 'email.verifie'])->prefix('dashbo
         // Fidélité (feature: fidelite)
         Route::middleware('feature:fidelite')->group(function () {
             Route::get('fidelite', [FideliteController::class, 'index'])->name('fidelite.index');
+            Route::get('fidelite/export', [FideliteController::class, 'export'])->name('fidelite.export');
             Route::post('fidelite/configurer', [FideliteController::class, 'configurer'])->name('fidelite.configurer');
             Route::post('fidelite/{client}/recompenser', [FideliteController::class, 'recompenser'])->name('fidelite.recompenser');
             Route::post('fidelite/{client}/ajuster', [FideliteController::class, 'ajuster'])->name('fidelite.ajuster');
+            Route::get('fidelite/{client}/historique', [FideliteController::class, 'historique'])->name('fidelite.historique');
             Route::get('fidelite/imprimer-code/{codeReduction}', [FideliteController::class, 'imprimerCode'])->name('fidelite.imprimer-code');
         });
     });
