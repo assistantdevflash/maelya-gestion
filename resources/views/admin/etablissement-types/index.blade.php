@@ -3,6 +3,9 @@
 @section('title', 'Types d\'établissements')
 
 @section('content')
+@php
+    $codesSansPage = \App\Models\EtablissementType::CODES_GENERIQUES;
+@endphp
 <div class="space-y-6">
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -49,6 +52,11 @@
                     <div class="flex-1 min-w-0">
                         <p class="font-semibold text-sm text-gray-900 dark:text-white">{{ $type->libelle }}</p>
                         <code class="text-xs bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 px-1.5 py-0.5 rounded">{{ $type->code }}</code>
+                        @if($type->actif && !in_array($type->code, $codesSansPage, true) && !$type->aUnContenuDedie())
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                            Texte générique
+                        </span>
+                        @endif
                     </div>
                     <button type="button" onclick="toggleStatus({{ $type->id }}, this)"
                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors flex-shrink-0 {{ $type->actif ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400' }}">
@@ -97,6 +105,12 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                 {{ $type->libelle }}
+                                @if($type->actif && !in_array($type->code, $codesSansPage, true) && !$type->aUnContenuDedie())
+                                <span title="La page publique de ce type affiche le texte générique"
+                                      class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 align-middle">
+                                    Texte générique
+                                </span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <button type="button" 

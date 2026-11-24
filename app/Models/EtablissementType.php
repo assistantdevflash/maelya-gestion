@@ -54,9 +54,30 @@ class EtablissementType extends Model
      */
     public function contenuEditorial(): array
     {
-        $canonique = config('secteurs._equivalences.' . $this->code, $this->code);
+        return $this->contenuDedie() ?? config('secteurs._defaut') ?? [];
+    }
 
-        return config('secteurs.' . $canonique) ?? config('secteurs._defaut') ?? [];
+    /**
+     * Vrai si un texte a réellement été rédigé pour ce code.
+     *
+     * Un code mal orthographié dans l'administration passe inaperçu : la page
+     * existe, mais affiche le texte générique. Cette méthode permet de le
+     * signaler dans la liste d'administration.
+     */
+    public function aUnContenuDedie(): bool
+    {
+        return $this->contenuDedie() !== null;
+    }
+
+    /**
+     * Contenu rédigé pour ce code, ou null s'il n'en existe pas.
+     */
+    private function contenuDedie(): ?array
+    {
+        $canonique = config('secteurs._equivalences.' . $this->code, $this->code);
+        $contenu = config('secteurs.' . $canonique);
+
+        return is_array($contenu) ? $contenu : null;
     }
 
     /**

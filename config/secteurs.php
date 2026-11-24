@@ -38,6 +38,10 @@ return [
         'telephonie'                => 'informatique_telephonie',
         'optique'                   => 'optiquelunetterie',
         'optique_lunetterie'        => 'optiquelunetterie',
+        // Le code réellement saisi en production comporte un seul « t ».
+        'optiqueluneterie'          => 'optiquelunetterie',
+        'optique_luneterie'         => 'optiquelunetterie',
+        'lunetterie'                => 'optiquelunetterie',
         'boutique_de_mode'          => 'boutique_mode',
         'centre_de_formation'       => 'centre_formation',
         'business_centre'           => 'business_center',

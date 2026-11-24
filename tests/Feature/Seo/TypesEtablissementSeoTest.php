@@ -186,8 +186,7 @@ class TypesEtablissementSeoTest extends TestCase
     }
 
     public function test_une_salle_de_sport_recoit_un_contenu_dedie_quel_que_soit_son_code(): void
-    {
-        // Le code dépend du libellé saisi dans l'administration : un même
+    {        // Le code dépend du libellé saisi dans l'administration : un même
         // métier peut arriver sous plusieurs formes. Toutes doivent aboutir
         // au contenu rédigé, jamais au texte générique.
         foreach (['salle_de_sport_et_fitness', 'salle_de_sport', 'salle_sport_fitness', 'fitness'] as $code) {
@@ -201,6 +200,56 @@ class TypesEtablissementSeoTest extends TestCase
             // « réunit tout ce qu'il faut » n'appartient qu'au contenu générique.
             $reponse->assertDontSee('réunit tout ce qu');
         }
+    }
+
+    public function test_la_table_des_equivalences_ne_pointe_que_vers_des_entrees_existantes(): void
+    {
+        $equivalences = config('secteurs._equivalences');
+
+        $this->assertNotEmpty($equivalences);
+
+        foreach ($equivalences as $code => $canonique) {
+            $this->assertIsArray(
+                config('secteurs.' . $canonique),
+                "L'équivalence « {$code} » renvoie vers « {$canonique} », absente de config/secteurs.php : "
+                    . 'une faute de frappe ferait silencieusement basculer la page sur le texte générique.'
+            );
+        }
+    }
+
+    public function test_le_code_optique_reellement_utilise_en_production_trouve_son_contenu(): void
+    {
+        // « optiqueluneterie » (un seul t) est le code réellement créé en
+        // production ; « optiquelunetterie » est celui du seeder d'origine.
+        foreach (['optiqueluneterie', 'optiquelunetterie'] as $code) {
+            EtablissementType::query()->delete();
+            $this->creerType($code, 'Optique / Lunetterie', 1);
+
+            $this->get(route('secteur', $code))
+                ->assertOk()
+                ->assertSee('ordonnance')
+                ->assertDontSee('réunit tout ce qu');
+        }
+    }
+
+    public function test_un_code_inconnu_est_signale_comme_sans_contenu_dedie(): void
+    {
+        $type = $this->creerType('cordonnerie', 'Cordonnerie', 1);
+
+        $this->assertFalse($type->aUnContenuDedie());
+    }
+
+    public function test_l_administration_signale_les_types_sans_texte_redige(): void
+    {
+        $this->creerType('cordonnerie', 'Cordonnerie', 1);
+        $this->creerType('salon_coiffure', 'Salon de coiffure', 2);
+
+        $superAdmin = User::factory()->create(['role' => 'super_admin', 'actif' => true]);
+
+        $this->actingAs($superAdmin)
+            ->get(route('admin.etablissement-types.index'))
+            ->assertOk()
+            ->assertSee('Texte générique');
     }
 
     public function test_le_contenu_editorial_du_secteur_est_affiche(): void
