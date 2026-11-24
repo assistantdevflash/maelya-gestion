@@ -301,7 +301,7 @@ class CreditService
 
         $defaut = match ($type) {
             'rappel' => "Bonjour {client},\n\nPetit rappel : votre échéance de {montant} FCFA arrive à échéance le {date}.\nReste à payer : {reste} FCFA.\n\nDétail : {lien}\n\n{institut}",
-            'fiche'  => "Bonjour {client},\n\nVoici le détail de votre crédit en cours.\nReste à payer : {reste} FCFA.\nProchaine échéance : {date} ({montant} FCFA).\n\nDétail : {lien}\n\nMerci de votre confiance,\n{institut}",
+            'fiche'  => "Bonjour {client},\n\nVoici le détail de votre crédit{objet} en cours.\nReste à payer : {reste} FCFA.\nProchaine échéance : {date} ({montant} FCFA).\n\nDétail : {lien}\n\nMerci de votre confiance,\n{institut}",
             default  => "Bonjour {client},\n\nSauf erreur de notre part, votre échéance de {montant} FCFA du {date} n'a pas encore été réglée.\nReste à payer : {reste} FCFA.\n\nDétail : {lien}\n\n{institut}",
         };
 
@@ -315,6 +315,9 @@ class CreditService
             '{date}'     => $prochaine?->date_prevue?->format('d/m/Y') ?? '—',
             '{lien}'     => $this->urlSuivi($credit),
             '{institut}' => $institut?->nom ?? config('app.name'),
+            // « votre crédit{objet} » devient « votre crédit « Pack mariage » »
+            // quand un titre a été saisi, et « votre crédit » sinon.
+            '{objet}'    => filled($credit->titre) ? ' « ' . $credit->titre . ' »' : '',
         ]);
     }
 

@@ -56,6 +56,9 @@
             <h1>Fiche de crédit</h1>
             <p class="institut">{{ $institut?->nom ?? 'Maëlya Gestion' }}</p>
             <p style="font-size:11px;color:#9ca3af;">N° crédit : {{ $credit->id }}</p>
+            @if($credit->titre)
+            <p style="font-size:13px;font-weight:700;color:#374151;margin-top:2px;">Objet : {{ $credit->titre }}</p>
+            @endif
         </div>
         <div style="text-align:right;">
             <span class="statut statut-{{ $credit->statut }}">

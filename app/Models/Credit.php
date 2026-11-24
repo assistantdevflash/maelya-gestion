@@ -11,7 +11,7 @@ class Credit extends Model
     use HasUuids, BelongsToInstitut, \App\Traits\EnregistreActivite;
 
     protected $fillable = [
-        'vente_id', 'client_id', 'institut_id',
+        'vente_id', 'client_id', 'institut_id', 'titre',
         'montant_total', 'apport_initial', 'reste_a_payer',
         'nb_echeances', 'frequence', 'statut',
         'date_debut', 'date_fin_prevue', 'notes',

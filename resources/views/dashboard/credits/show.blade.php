@@ -12,6 +12,9 @@
                 </a>
                 <div class="min-w-0">
                     <h1 class="text-lg sm:text-2xl font-display font-bold text-gray-900 truncate">Crédit {{ $credit->client?->nom_complet ?? '—' }}</h1>
+                    @if($credit->titre)
+                    <p class="text-sm font-semibold text-primary-600 truncate">{{ $credit->titre }}</p>
+                    @endif
                     <p class="text-xs sm:text-sm text-gray-500">Vente #{{ $credit->vente?->numero ?? substr($credit->vente_id, 0, 8) }}</p>
                 </div>
             </div>

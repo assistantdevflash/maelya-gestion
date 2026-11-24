@@ -263,6 +263,19 @@
                     </div>
                 </div>
 
+                {{-- Titre --}}
+                <div class="card">
+                    <div class="card-header"><h2 class="text-lg font-semibold">Titre (optionnel)</h2></div>
+                    <div class="card-body">
+                        <input type="text" name="titre" maxlength="200" value="{{ old('titre') }}"
+                               placeholder="Ex : Pack mariage, Réparation moteur…"
+                               class="form-input text-sm">
+                        <p class="text-xs text-gray-400 mt-1.5">
+                            Sert à reconnaître le crédit dans la liste, sur la fiche et dans le message envoyé au client.
+                        </p>
+                    </div>
+                </div>
+
                 {{-- Notes --}}
                 <div class="card">
                     <div class="card-header"><h2 class="text-lg font-semibold">Notes</h2></div>

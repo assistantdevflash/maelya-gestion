@@ -59,6 +59,13 @@
                 Bonjour {{ $credit->client?->nom_complet ?? 'cher client' }},
             </p>
 
+            @if($credit->titre)
+            <p style="font-size:13px;margin-bottom:12px;">
+                <span style="color:#6b7280">Objet :</span>
+                <strong style="color:#1f2937">{{ $credit->titre }}</strong>
+            </p>
+            @endif
+
             <div class="kpi">
                 <div>
                     <div class="lbl">Total</div>

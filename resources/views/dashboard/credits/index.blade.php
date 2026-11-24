@@ -232,6 +232,9 @@
                     <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{{ route('dashboard.credits.show', $credit) }}'">
                         <td class="px-4 py-3">
                             <p class="font-semibold text-gray-900">{{ $credit->client?->nom_complet ?? '—' }}</p>
+                            @if($credit->titre)
+                            <p class="text-xs font-medium text-primary-600 truncate max-w-[16rem]">{{ $credit->titre }}</p>
+                            @endif
                             <p class="text-xs text-gray-400">{{ $credit->client?->telephone ?? '' }}</p>
                         </td>
                         <td class="px-4 py-3 text-xs text-gray-600 hidden sm:table-cell">

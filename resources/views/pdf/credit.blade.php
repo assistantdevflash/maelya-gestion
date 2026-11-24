@@ -82,6 +82,9 @@
         <div class="section">
             <div class="section-title">Vente liee</div>
             <div class="section-body">
+                @if($credit->titre)
+                <p style="font-size:11px;font-weight:bold;">Objet : {{ $credit->titre }}</p>
+                @endif
                 <p style="font-size:10px;">Vente #{{ $credit->vente?->numero ?? substr($credit->vente_id, 0, 8) }}</p>
                 <p style="font-size:10px;">Date : {{ \Carbon\Carbon::parse($credit->date_debut)->format('d/m/Y') }}</p>
                 <p style="font-size:10px;margin-top:3px;">

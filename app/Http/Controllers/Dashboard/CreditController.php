@@ -262,6 +262,7 @@ class CreditController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
+            'titre'           => ['nullable', 'string', 'max:200'],
             'client_id'       => ['required', 'uuid', 'exists:clients,id'],
             'lignes'          => ['required', 'json'],
             'apport_initial'  => ['required', 'integer', 'min:0'],
@@ -269,6 +270,8 @@ class CreditController extends Controller
             'frequence'       => ['required', 'in:hebdomadaire,mensuelle'],
             'notes'           => ['nullable', 'string', 'max:1000'],
         ]);
+
+        $titre = filled($data['titre'] ?? null) ? strip_tags(trim($data['titre'])) : null;
 
         $lignes = json_decode($data['lignes'], true);
         if (! is_array($lignes) || empty($lignes)) {
@@ -313,7 +316,7 @@ class CreditController extends Controller
                 ->withInput();
         }
 
-        $credit = DB::transaction(function () use ($data, $institutId, $total, $apport, $reste, $itemsToSave) {
+        $credit = DB::transaction(function () use ($data, $institutId, $total, $apport, $reste, $itemsToSave, $titre) {
             $vente = \App\Models\Vente::create([
                 'institut_id'   => $institutId,
                 'client_id'     => $data['client_id'],
@@ -334,6 +337,7 @@ class CreditController extends Controller
                 'vente_id'       => $vente->id,
                 'institut_id'    => $institutId,
                 'client_id'      => $data['client_id'],
+                'titre'          => $titre,
                 'montant_total'  => $total,
                 'apport_initial' => $apport,
                 'reste_a_payer'  => $reste,
@@ -441,6 +445,7 @@ class CreditController extends Controller
         abort_if($credit->paiements()->count() > 0, 403, 'Impossible de modifier un crédit ayant déjà reçu des paiements.');
 
         $data = $request->validate([
+            'titre'           => ['nullable', 'string', 'max:200'],
             'client_id'       => ['required', 'uuid', 'exists:clients,id'],
             'lignes'          => ['required', 'json'],
             'apport_initial'  => ['required', 'integer', 'min:0'],
@@ -448,6 +453,8 @@ class CreditController extends Controller
             'frequence'       => ['required', 'in:hebdomadaire,mensuelle'],
             'notes'           => ['nullable', 'string', 'max:1000'],
         ]);
+
+        $titre = filled($data['titre'] ?? null) ? strip_tags(trim($data['titre'])) : null;
 
         $lignes = json_decode($data['lignes'], true);
         if (! is_array($lignes) || empty($lignes)) {
@@ -472,7 +479,7 @@ class CreditController extends Controller
         $apport = $data['apport_initial'];
         $reste  = max(0, $total - $apport);
 
-        DB::transaction(function () use ($credit, $data, $institutId, $total, $apport, $reste, $itemsToSave) {
+        DB::transaction(function () use ($credit, $data, $institutId, $total, $apport, $reste, $itemsToSave, $titre) {
             // Mettre à jour la vente
             $credit->vente->update([
                 'client_id'     => $data['client_id'],
@@ -490,6 +497,7 @@ class CreditController extends Controller
             // Mettre à jour le crédit
             $credit->update([
                 'client_id'      => $data['client_id'],
+                'titre'          => $titre,
                 'montant_total'  => $total,
                 'apport_initial' => $apport,
                 'reste_a_payer'  => $reste,

@@ -62,6 +62,7 @@
                         <code class="px-1 bg-gray-100 dark:bg-slate-700 rounded">{montant}</code>
                         <code class="px-1 bg-gray-100 dark:bg-slate-700 rounded">{reste}</code>
                         <code class="px-1 bg-gray-100 dark:bg-slate-700 rounded">{date}</code>
+                        <code class="px-1 bg-gray-100 dark:bg-slate-700 rounded">{objet}</code>
                         <code class="px-1 bg-gray-100 dark:bg-slate-700 rounded">{lien}</code>
                         <code class="px-1 bg-gray-100 dark:bg-slate-700 rounded">{institut}</code>
                     </p>
