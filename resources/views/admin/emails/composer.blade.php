@@ -384,9 +384,8 @@
                     {{-- Aperçu push --}}
                     <div x-show="besoinPush" x-cloak class="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-900 p-3">
                         <div class="flex items-start gap-2.5">
-                            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg, #9333ea, #ec4899);">
-                                <span class="text-white text-xs font-bold">M</span>
-                            </div>
+                            <img src="{{ asset('images/logo.png') }}" alt="Maëlya Gestion"
+                                 class="w-8 h-8 rounded-lg flex-shrink-0 bg-white p-0.5">
                             <div class="min-w-0 flex-1">
                                 <p class="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">Maëlya · maintenant</p>
                                 <p class="text-xs font-semibold text-white break-words" x-text="pushTitre || sujet || 'Titre de la notification'"></p>

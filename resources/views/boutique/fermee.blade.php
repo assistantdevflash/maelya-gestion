@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $institut->nom }} - Boutique momentanément fermée</title>
+    @include('partials.favicons')
     {{-- Page informative : on évite de la voir apparaître dans les résultats,
          mais le lien reste fonctionnel pour les clients qui l'ont gardé. --}}
     <meta name="robots" content="noindex, follow">

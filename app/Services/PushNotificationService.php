@@ -59,12 +59,17 @@ class PushNotificationService
             return;
         }
 
+        // Les URLs doivent être absolues : le service worker et Android
+        // n'ont pas de contexte de page pour résoudre un chemin relatif.
+        $iconUrl  = str_starts_with($icon, 'http') ? $icon : url($icon);
+        $badgeUrl = url('/icons/badge-72.png?v=5');
+
         $payload = json_encode([
             'title' => $titre,
             'body'  => $corps,
-            'icon'  => $icon,
+            'icon'  => $iconUrl,
             'url'   => $url,
-            'badge' => '/icons/badge-72.png?v=4',
+            'badge' => $badgeUrl,
         ]);
 
         foreach ($subscriptions as $sub) {

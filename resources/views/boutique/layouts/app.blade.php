@@ -41,7 +41,7 @@
     <meta name="theme-color" content="#6366f1">
 
     {{-- Favicon --}}
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    @include('partials.favicons')
 
     {{-- Alpine bundlé LOCALEMENT (plus de dépendance à un CDN externe) --}}
     @vite(['resources/css/app.css', 'resources/js/public.js'])

@@ -1,7 +1,7 @@
 // ⚠️ Incrémenter cette valeur à chaque déploiement qui modifie la liste
 // PRECACHE_ASSETS ou la stratégie de cache : l'activation supprime alors tous
 // les anciens caches et les utilisateurs repartent sur des fichiers frais.
-const CACHE_VERSION  = 'maelya-v8';
+const CACHE_VERSION  = 'maelya-v9';
 const OFFLINE_URL    = '/offline.html';
 
 // Assets statiques à mettre en cache au premier chargement
@@ -152,16 +152,24 @@ async function networkFirst(request) {
 
 // ── Notifications Push ──────────────────────────────────────────────────────
 self.addEventListener('push', event => {
-    let data = { title: 'Maëlya Gestion', body: 'Nouvelle notification', url: '/', icon: '/icons/icon-192.png?v=4' };
+    let data = { title: 'Maëlya Gestion', body: 'Nouvelle notification', url: '/', icon: '/icons/icon-192.png?v=5' };
     try {
         if (event.data) data = { ...data, ...event.data.json() };
     } catch (e) {}
 
+    // Chemins relatifs → URLs absolues : Android n'affiche l'icône que si
+    // l'URL est directement résolvable, sinon il retombe sur une pastille
+    // avec l'initiale du site.
+    const absolu = (chemin, defaut) => {
+        const valeur = chemin || defaut;
+        return /^https?:/i.test(valeur) ? valeur : self.location.origin + (valeur.startsWith('/') ? valeur : '/' + valeur);
+    };
+
     event.waitUntil(
         self.registration.showNotification(data.title, {
             body:    data.body,
-            icon:    data.icon,
-            badge:   data.badge || '/icons/badge-72.svg',
+            icon:    absolu(data.icon, '/icons/icon-192.png?v=5'),
+            badge:   absolu(data.badge, '/icons/badge-72.png?v=5'),
             data:    { url: data.url },
             vibrate: [100, 50, 100],
             tag:     'maelya-' + Date.now(),

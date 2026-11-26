@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Donnez votre avis{{ $institut ? ' — ' . $institut->nom : '' }}</title>
+    @include('partials.favicons')
     @php
         $titrePartage = $institut ? 'Donnez votre avis — ' . $institut->nom : 'Donnez votre avis — Maëlya Gestion';
         $descriptionPartage = $institut

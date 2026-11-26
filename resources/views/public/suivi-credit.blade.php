@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suivi de mon crédit — {{ $institut?->nom ?? config('app.name') }}</title>
+    @include('partials.favicons')
     @php
         $titrePartage = 'Suivi de mon crédit' . ($institut ? ' — ' . $institut->nom : ' — Maëlya Gestion');
         $descriptionPartage = $institut

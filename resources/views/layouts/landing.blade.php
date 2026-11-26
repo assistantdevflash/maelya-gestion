@@ -10,13 +10,12 @@
     <meta name="robots" content="noindex, nofollow">
     @endif
     <link rel="canonical" href="{{ url()->current() }}">
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    @include('partials.favicons')
     <link rel="manifest" href="/manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Maëlya Gestion">
-    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 
     {{-- Open Graph --}}
     <meta property="og:type" content="website">
@@ -89,7 +88,7 @@
         "@@type": "Organization",
         "name": "Maëlya Gestion",
         "url": "{{ url('/') }}",
-        "logo": "{{ asset('favicon.svg') }}",
+        "logo": "{{ asset('favicon-192x192.png') }}",
         "description": "Logiciel de gestion tout-en-un pour etablissements de service en Cote d'Ivoire.",
         "address": {
             "@@type": "PostalAddress",

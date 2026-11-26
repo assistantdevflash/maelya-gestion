@@ -26,9 +26,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Maëlya Gestion">
-    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    @include('partials.favicons')
 
     {{-- Theme anti-flash (critical inline script - minified) --}}
     <script>(function(){try{var t=localStorage.getItem('maelya-theme'),d=matchMedia('(prefers-color-scheme: dark)').matches;(t==='dark'||(t!=='light'&&d))&&document.documentElement.classList.add('dark')}catch(e){}})();</script>
@@ -134,8 +133,8 @@
                     @if($__sidebarUser->institut?->logo)
                     <img src="{{ $__sidebarUser->institut->logo_url }}" alt="{{ $__sidebarUser->institut->nom }}" class="w-9 h-9 rounded-xl object-cover flex-shrink-0">
                     @else
-                    <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white text-base shadow-glow-sm flex-shrink-0"
-                         style="background: linear-gradient(135deg, #9333ea, #ec4899);">M</div>
+                    <img src="{{ asset('images/logo.png') }}" alt="Maëlya Gestion"
+                         class="w-9 h-9 rounded-xl flex-shrink-0 bg-white p-0.5 shadow-glow-sm">
                     @endif
                     <div class="min-w-0 flex-1">
                         <p class="font-display font-bold text-gray-900 dark:text-white text-sm leading-none tracking-tight">Maëlya Gestion</p>

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carte fidélité — {{ $client->prenom }}</title>
+    @include('partials.favicons')
     @php
         $titrePartage = $institut ? 'Carte de fidélité — ' . $institut->nom : 'Carte de fidélité — Maëlya Gestion';
         $descriptionPartage = $institut

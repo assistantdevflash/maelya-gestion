@@ -33,7 +33,7 @@
     <meta name="twitter:image" content="{{ $ogImage }}">
     <meta name="twitter:image:alt" content="{{ $institut->nom }}">
 
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    @include('partials.favicons')
     {{-- Alpine bundlé LOCALEMENT (plus de dépendance à un CDN externe) --}}
     @vite(['resources/css/app.css', 'resources/js/public.js'])
     <style>

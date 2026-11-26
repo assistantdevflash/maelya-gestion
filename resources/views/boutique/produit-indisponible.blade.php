@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $institut->nom }} - Produit indisponible</title>
+    @include('partials.favicons')
     <meta property="og:title" content="{{ $institut->nom }} - Produit indisponible">
     <meta property="og:image" content="{{ \App\Helpers\SeoHelper::imagePourInstitut($institut) }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Maintenance — Maëlya Gestion</title>
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    @include('partials.favicons')
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; background: #030712; color: #f5f5f5; min-height: 100vh; display: flex; flex-direction: column; margin: 0; }
     </style>

@@ -7,6 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $institut->nom }} - Boutique en ligne</title>
+    @include('partials.favicons')
 
     {{-- Open Graph & Social --}}
     <meta property="og:type" content="website">

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Avis déjà envoyé</title>
+    @include('partials.favicons')
     @php
         $titrePartage = $institut ? 'Avis déjà enregistré — ' . $institut->nom : 'Avis déjà enregistré — Maëlya Gestion';
         $descriptionPartage = 'Vous avez déjà répondu à ce sondage. Merci d\'avoir partagé votre avis.';

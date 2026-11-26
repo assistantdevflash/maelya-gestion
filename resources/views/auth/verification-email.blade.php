@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vérification email — Maëlya Gestion</title>
+    @include('partials.favicons')
     <script>
         (function() {
             try {
@@ -22,8 +23,8 @@
     {{-- Logo --}}
     <div class="text-center mb-8">
         <div class="inline-flex items-center gap-2 mb-2">
-            <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-black text-lg shadow-lg"
-                 style="background: linear-gradient(135deg, #9333ea, #ec4899);">M</div>
+            <img src="{{ asset('images/logo.png') }}" alt="Maëlya Gestion"
+                 class="w-10 h-10 rounded-2xl flex-shrink-0 bg-white p-0.5 shadow-lg">
             <span class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Maëlya<span class="font-light text-gray-500"> Gestion</span></span>
         </div>
     </div>
