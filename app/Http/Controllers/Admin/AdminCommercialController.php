@@ -49,7 +49,9 @@ class AdminCommercialController extends Controller
         abort_unless($commercial->role === 'commercial', 404);
 
         $profil = $commercial->commercialProfile()->with([
+            'parrainages.institut',
             'parrainages.proprietaire.institut',
+            'parrainages.attribuePar',
             'commissions.abonnement.plan',
         ])->firstOrFail();
 

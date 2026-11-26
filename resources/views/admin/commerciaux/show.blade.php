@@ -91,7 +91,10 @@
             <div class="flex items-center justify-between px-5 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
                 <div>
                     <p class="font-medium text-gray-900 text-sm">{{ $p->proprietaire?->nom_complet }}</p>
-                    <p class="text-gray-400 text-xs">{{ $p->proprietaire?->institut?->nom ?? '—' }} · {{ $p->proprietaire?->email }}</p>
+                    <p class="text-gray-400 text-xs">{{ $p->institut?->nom ?? $p->proprietaire?->institut?->nom ?? '—' }} · {{ $p->proprietaire?->email }}</p>
+                    @if($p->estManuel())
+                        <p class="text-[11px] text-purple-600" title="Attribué le {{ $p->created_at?->format('d/m/Y') }} par {{ $p->attribuePar?->nom_complet ?? 'un super admin' }}">Attribué manuellement</p>
+                    @endif
                 </div>
                 <div class="text-right">
                     <span class="badge {{ $p->isActif() ? 'badge-success' : 'badge-gray' }} text-[11px]">
@@ -113,7 +116,7 @@
             @forelse($profil->commissions as $c)
             <div class="flex items-center justify-between px-5 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
                 <div>
-                    <p class="text-gray-900 text-sm">{{ $c->parrainage?->proprietaire?->institut?->nom ?? '—' }}</p>
+                    <p class="text-gray-900 text-sm">{{ $c->parrainage?->institut?->nom ?? $c->parrainage?->proprietaire?->institut?->nom ?? '—' }}</p>
                     <p class="text-gray-400 text-xs">{{ $c->abonnement?->plan?->nom ?? '—' }} · {{ $c->created_at->format('d/m/Y') }}</p>
                 </div>
                 <div class="text-right flex items-center gap-3">

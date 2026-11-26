@@ -52,6 +52,7 @@ class CommercialController extends Controller
 
         $derniersParrainages = $profil->parrainages()
             ->with([
+                'institut',
                 'proprietaire.institut',
                 'proprietaire.abonnements' => fn ($q) => $q->orderByDesc('expire_le'),
             ])
@@ -90,7 +91,9 @@ class CommercialController extends Controller
         // choses différentes, il faut pouvoir montrer les deux.
         $parrainages = $profil->parrainages()
             ->with([
+                'institut',
                 'proprietaire.institut',
+                'proprietaire.mesInstituts',
                 'proprietaire.abonnements' => fn ($q) => $q->orderByDesc('expire_le'),
                 'commissions',
             ])

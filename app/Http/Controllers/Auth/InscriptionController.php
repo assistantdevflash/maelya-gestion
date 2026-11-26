@@ -149,7 +149,9 @@ class InscriptionController extends Controller
                 $commercialParrainageCreated = \App\Models\CommercialParrainage::create([
                     'commercial_id'   => $commercialProfile->id,
                     'proprietaire_id' => $user->id,
+                    'institut_id'     => $institut->id,
                     'expire_le'       => now()->addMonths($duree)->toDateString(),
+                    'source'          => 'code',
                 ]);
                 $commercialParrainageCreated->setRelation('commercial', $commercialProfile);
                 $commercialProfile->loadMissing('user');

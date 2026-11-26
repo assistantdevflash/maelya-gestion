@@ -20,7 +20,12 @@ class InstitutsIndexPerformanceTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const MAX_REQUETES = 12;
+    /**
+     * 12 requêtes pour la liste + 2 requêtes constantes pour le parrainage
+     * commercial (liste des commerciaux actifs et parrainages des comptes
+     * affichés). Aucune des deux ne dépend du volume.
+     */
+    private const MAX_REQUETES = 14;
 
     /**
      * Crée N établissements répartis sur plusieurs propriétaires,

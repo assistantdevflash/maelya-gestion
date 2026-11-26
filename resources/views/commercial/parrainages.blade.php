@@ -4,7 +4,7 @@
 @section('content')
 <div class="mb-6">
     <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Mes parrainages</h1>
-    <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Établissements inscrits via votre code <span class="font-mono font-bold text-primary-600">{{ $profil->code }}</span></p>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Établissements rattachés à votre code <span class="font-mono font-bold text-primary-600">{{ $profil->code }}</span></p>
     <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-1.5">
         La date de commission correspond à votre période de rémunération.
         L'échéance d'abonnement, elle, indique quand le client doit renouveler.
@@ -32,8 +32,21 @@
         @foreach($parrainages as $p)
         <tr>
             <td>
-                <p class="font-medium text-gray-900 dark:text-gray-100">{{ $p->proprietaire?->institut?->nom ?? '—' }}</p>
-                <p class="text-xs text-gray-400">{{ $p->proprietaire?->institut?->ville ?? '' }}</p>
+                @php
+                    // L'établissement attribué prime : un compte peut en avoir
+                    // plusieurs, on affiche celui que le super admin a rattaché.
+                    $etablissement = $p->institut ?? $p->proprietaire?->institut;
+                    $autres = max(0, ($p->proprietaire?->mesInstituts?->count() ?? 0) - 1);
+                @endphp
+                <p class="font-medium text-gray-900 dark:text-gray-100">{{ $etablissement?->nom ?? '—' }}</p>
+                <p class="text-xs text-gray-400">
+                    {{ $etablissement?->ville ?? '' }}@if($autres > 0) · {{ \App\Helpers\TexteHelper::pluriel($autres, 'autre établissement', 'autres établissements') }}@endif
+                </p>
+                @if($p->estManuel())
+                    <span class="inline-block mt-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
+                        Attribué par Maëlya
+                    </span>
+                @endif
             </td>
             <td class="hidden md:table-cell text-gray-600 dark:text-gray-300">{{ $p->proprietaire?->nom_complet }}</td>
             <td class="hidden md:table-cell">

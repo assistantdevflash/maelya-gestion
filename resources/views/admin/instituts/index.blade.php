@@ -40,13 +40,21 @@
             <option value="inactif" @selected(request('activite') === 'inactif')>Dormant (&gt; 30 jours)</option>
             <option value="jamais"  @selected(request('activite') === 'jamais')>Jamais utilisé</option>
         </select>
-        @if(request('q') || request('status') || request('plan') || request('type') || request('activite'))
+        <select name="parrainage" class="form-input max-w-[200px]" onchange="document.getElementById('filter-form').submit()">
+            <option value="">Parrainage : tous</option>
+            <option value="avec" @selected(request('parrainage') === 'avec')>Parrainés par un commercial</option>
+            <option value="sans" @selected(request('parrainage') === 'sans')>Sans commercial</option>
+        </select>
+        @if(request('q') || request('status') || request('plan') || request('type') || request('activite') || request('parrainage'))
             <a href="{{ route('admin.instituts.index') }}" class="btn-secondary">Réinitialiser</a>
         @endif
     </form>
 
     @forelse($grouped as $proprietaireId => $instituts)
-    @php $proprio = $instituts->first()->proprietaire; @endphp
+    @php
+        $proprio = $instituts->first()->proprietaire;
+        $parrainage = $proprio ? ($parrainages[$proprio->id] ?? null) : null;
+    @endphp
 
     {{-- En-tête propriétaire --}}
     <div class="flex items-center gap-3 pt-2 min-w-0">
@@ -72,15 +80,36 @@
         {{-- Mobile : cartes --}}
         <div class="sm:hidden divide-y divide-gray-100">
             @foreach($instituts as $inst)
-            <div class="flex items-center gap-3 p-3">
-                <div class="flex-1 min-w-0">
-                    <p class="font-semibold text-sm text-gray-900 truncate">{{ $inst->nom }}</p>
-                    <p class="text-xs text-gray-400">{{ $inst->ville ?? '' }} · {{ \App\Helpers\TexteHelper::pluriel($inst->users_count, 'utilisateur', 'utilisateurs') }}</p>
+            <div class="p-3 space-y-2">
+                <div class="flex items-center gap-3">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-sm text-gray-900 truncate">{{ $inst->nom }}</p>
+                        <p class="text-xs text-gray-400">{{ $inst->ville ?? '' }} · {{ \App\Helpers\TexteHelper::pluriel($inst->users_count, 'utilisateur', 'utilisateurs') }}</p>
+                        @if($parrainage && $parrainage->commercial?->user)
+                            <p class="text-[11px] text-purple-700 font-medium">👤 Parrainé par {{ $parrainage->commercial->user->nom_complet }}</p>
+                        @else
+                            <p class="text-[11px] text-gray-400">Sans commercial</p>
+                        @endif
+                    </div>
+                    <span class="badge {{ $inst->actif ? 'badge-success' : 'bg-red-100 text-red-700' }} text-xs flex-shrink-0">
+                        {{ $inst->actif ? 'Actif' : 'Suspendu' }}
+                    </span>
+                    <a href="{{ route('admin.instituts.show', $inst) }}" class="text-xs text-primary-600 font-medium hover:underline flex-shrink-0">Voir</a>
                 </div>
-                <span class="badge {{ $inst->actif ? 'badge-success' : 'bg-red-100 text-red-700' }} text-xs flex-shrink-0">
-                    {{ $inst->actif ? 'Actif' : 'Suspendu' }}
-                </span>
-                <a href="{{ route('admin.instituts.show', $inst) }}" class="text-xs text-primary-600 font-medium hover:underline flex-shrink-0">Voir</a>
+
+                @if($proprio)
+                <form method="POST" action="{{ route('admin.instituts.commercial', $inst) }}" class="flex items-center gap-1.5">
+                    @csrf
+                    @method('PATCH')
+                    <select name="commercial_id" class="form-input text-xs py-1 flex-1 min-w-0" aria-label="Commercial de {{ $inst->nom }}">
+                        <option value="">— Aucun commercial —</option>
+                        @foreach($commerciaux as $c)
+                            <option value="{{ $c->id }}" @selected($parrainage?->commercial_id === $c->id)>{{ $c->code }} · {{ $c->user?->nom_complet }}</option>
+                        @endforeach
+                    </select>
+                    <button type="submit" class="btn-outline btn-sm text-xs flex-shrink-0">OK</button>
+                </form>
+                @endif
             </div>
             @endforeach
         </div>
@@ -95,6 +124,7 @@
                 <th>Statut</th>
                 <th class="hidden md:table-cell">Inscrit le</th>
                 <th class="hidden lg:table-cell">Dernière activité</th>
+                <th class="hidden sm:table-cell">Commercial</th>
                 <th></th>
             </tr>
             </thead>
@@ -104,6 +134,14 @@
                 <td>
                     <div class="font-medium text-gray-900">{{ $inst->nom }}</div>
                     <div class="text-xs text-gray-400">{{ \App\Helpers\TexteHelper::pluriel($inst->users_count, 'utilisateur', 'utilisateurs') }}</div>
+                    @if($parrainage && $parrainage->commercial?->user)
+                        <div class="text-[11px] text-purple-700 dark:text-purple-300 font-medium mt-0.5"
+                             title="{{ $parrainage->estManuel() ? 'Attribué par un super admin' : 'Inscrit avec le code commercial' }} — échéance {{ $parrainage->expire_le?->format('d/m/Y') }}">
+                            👤 Parrainé par {{ $parrainage->commercial->user->nom_complet }}
+                        </div>
+                    @else
+                        <div class="text-[11px] text-gray-400 mt-0.5">Sans commercial</div>
+                    @endif
                 </td>
                 <td class="text-sm text-gray-600 hidden sm:table-cell">{{ $typeLabels[$inst->type] ?? ($inst->type ?? '—') }}</td>
                 <td class="text-sm text-gray-600 hidden sm:table-cell">{{ $inst->ville ?? '—' }}</td>
@@ -121,6 +159,23 @@
                         </div>
                     @else
                         <span class="text-xs text-gray-400 italic">Jamais</span>
+                    @endif
+                </td>
+                <td class="hidden sm:table-cell">
+                    @if($proprio)
+                    <form method="POST" action="{{ route('admin.instituts.commercial', $inst) }}" class="flex items-center gap-1.5">
+                        @csrf
+                        @method('PATCH')
+                        <select name="commercial_id" class="form-input text-xs py-1 max-w-[180px]" aria-label="Commercial de {{ $inst->nom }}">
+                            <option value="">— Aucun —</option>
+                            @foreach($commerciaux as $c)
+                                <option value="{{ $c->id }}" @selected($parrainage?->commercial_id === $c->id)>{{ $c->code }} · {{ $c->user?->nom_complet }}</option>
+                            @endforeach
+                        </select>
+                        <button type="submit" class="btn-outline btn-sm text-xs flex-shrink-0">OK</button>
+                    </form>
+                    @else
+                        <span class="text-xs text-gray-400 italic">Sans propriétaire</span>
                     @endif
                 </td>
                 <td>

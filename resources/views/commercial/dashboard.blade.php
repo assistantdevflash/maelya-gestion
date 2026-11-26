@@ -210,7 +210,7 @@
         <div class="flex items-center justify-between px-5 py-3">
             <div>
                 <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $p->proprietaire?->nom_complet }}</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $p->proprietaire?->institut?->nom ?? '—' }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $p->institut?->nom ?? $p->proprietaire?->institut?->nom ?? '—' }}</p>
             </div>
             <div class="text-right">
                 @if($p->isActif())
