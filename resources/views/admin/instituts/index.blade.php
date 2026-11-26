@@ -82,6 +82,16 @@
             @foreach($instituts as $inst)
             <div class="p-3 space-y-2">
                 <div class="flex items-center gap-3">
+                    @if($inst->aUnLogo())
+                        <img src="{{ $inst->logo_url }}" alt="Logo de {{ $inst->nom }}"
+                             loading="lazy"
+                             class="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-gray-100">
+                    @else
+                        <span class="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 text-[11px] font-bold flex-shrink-0 border border-dashed border-gray-200 dark:border-slate-700"
+                              title="Aucun logo">
+                            {{ mb_strtoupper(mb_substr($inst->nom, 0, 2)) }}
+                        </span>
+                    @endif
                     <div class="flex-1 min-w-0">
                         <p class="font-semibold text-sm text-gray-900 truncate">{{ $inst->nom }}</p>
                         <p class="text-xs text-gray-400">{{ $inst->ville ?? '' }} · {{ \App\Helpers\TexteHelper::pluriel($inst->users_count, 'utilisateur', 'utilisateurs') }}</p>
@@ -132,16 +142,30 @@
             @foreach($instituts as $inst)
             <tr class="hover:bg-gray-50">
                 <td>
-                    <div class="font-medium text-gray-900">{{ $inst->nom }}</div>
-                    <div class="text-xs text-gray-400">{{ \App\Helpers\TexteHelper::pluriel($inst->users_count, 'utilisateur', 'utilisateurs') }}</div>
-                    @if($parrainage && $parrainage->commercial?->user)
-                        <div class="text-[11px] text-purple-700 dark:text-purple-300 font-medium mt-0.5"
-                             title="{{ $parrainage->estManuel() ? 'Attribué par un super admin' : 'Inscrit avec le code commercial' }} — échéance {{ $parrainage->expire_le?->format('d/m/Y') }}">
-                            👤 Parrainé par {{ $parrainage->commercial->user->nom_complet }}
+                    <div class="flex items-center gap-3">
+                        @if($inst->aUnLogo())
+                            <img src="{{ $inst->logo_url }}" alt="Logo de {{ $inst->nom }}"
+                                 loading="lazy"
+                                 class="w-9 h-9 rounded-lg object-cover flex-shrink-0 border border-gray-100 dark:border-slate-700">
+                        @else
+                            <span class="w-9 h-9 rounded-lg flex items-center justify-center text-gray-400 text-[10px] font-bold flex-shrink-0 border border-dashed border-gray-200 dark:border-slate-700"
+                                  title="Aucun logo">
+                                {{ mb_strtoupper(mb_substr($inst->nom, 0, 2)) }}
+                            </span>
+                        @endif
+                        <div class="min-w-0">
+                            <div class="font-medium text-gray-900 whitespace-nowrap">{{ $inst->nom }}</div>
+                            <div class="text-xs text-gray-400 whitespace-nowrap">{{ \App\Helpers\TexteHelper::pluriel($inst->users_count, 'utilisateur', 'utilisateurs') }}</div>
+                            @if($parrainage && $parrainage->commercial?->user)
+                                <div class="text-[11px] text-purple-700 dark:text-purple-300 font-medium mt-0.5"
+                                     title="{{ $parrainage->estManuel() ? 'Attribué par un super admin' : 'Inscrit avec le code commercial' }} — échéance {{ $parrainage->expire_le?->format('d/m/Y') }}">
+                                    👤 Parrainé par {{ $parrainage->commercial->user->nom_complet }}
+                                </div>
+                            @else
+                                <div class="text-[11px] text-gray-400 mt-0.5">Sans commercial</div>
+                            @endif
                         </div>
-                    @else
-                        <div class="text-[11px] text-gray-400 mt-0.5">Sans commercial</div>
-                    @endif
+                    </div>
                 </td>
                 <td class="text-sm text-gray-600 hidden sm:table-cell">{{ $typeLabels[$inst->type] ?? ($inst->type ?? '—') }}</td>
                 <td class="text-sm text-gray-600 hidden sm:table-cell">{{ $inst->ville ?? '—' }}</td>

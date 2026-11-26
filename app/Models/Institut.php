@@ -250,10 +250,22 @@ class Institut extends Model
      */
     public function getLogoUrlAttribute(): string
     {
-        if (filled($this->logo) && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->logo)) {
+        if ($this->aUnLogo()) {
             return \Illuminate\Support\Facades\Storage::disk('public')->url($this->logo);
         }
 
         return asset('images/logo.png');
+    }
+
+    /**
+     * Vrai si l'établissement a un logo réellement présent sur le disque.
+     *
+     * `logo_url` retombe sur le logo de la plateforme : impossible de s'en
+     * servir pour savoir s'il faut afficher la miniature d'un établissement.
+     */
+    public function aUnLogo(): bool
+    {
+        return filled($this->logo)
+            && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->logo);
     }
 }

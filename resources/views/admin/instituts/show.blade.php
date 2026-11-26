@@ -13,12 +13,23 @@
         {{-- Fiche institut --}}
         <div class="lg:col-span-2 space-y-5 min-w-0">
             <div class="card p-6 space-y-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h1 class="page-title mb-0.5">{{ $institut->nom }}</h1>
-                    <p class="text-sm text-gray-500">{{ \App\Models\EtablissementType::libellePour($institut->type) }} — {{ $institut->ville ?? '' }}</p>
+                <div class="flex items-start justify-between gap-4">
+                    <div class="flex items-center gap-4 min-w-0">
+                        @if($institut->aUnLogo())
+                            <img src="{{ $institut->logo_url }}" alt="Logo de {{ $institut->nom }}"
+                                 class="w-16 h-16 rounded-xl object-cover flex-shrink-0 border border-gray-100 dark:border-slate-700">
+                        @else
+                            <span class="w-16 h-16 rounded-xl flex items-center justify-center text-gray-400 text-sm font-bold flex-shrink-0 border border-dashed border-gray-200 dark:border-slate-700"
+                                  title="Cet établissement n'a pas encore de logo">
+                                {{ mb_strtoupper(mb_substr($institut->nom, 0, 2)) }}
+                            </span>
+                        @endif
+                        <div class="min-w-0">
+                            <h1 class="page-title mb-0.5">{{ $institut->nom }}</h1>
+                            <p class="text-sm text-gray-500">{{ \App\Models\EtablissementType::libellePour($institut->type) }} — {{ $institut->ville ?? '' }}</p>
+                        </div>
                     </div>
-                    <span class="badge {{ $institut->actif ? 'badge-success' : 'bg-red-100 text-red-700' }}">
+                    <span class="badge {{ $institut->actif ? 'badge-success' : 'bg-red-100 text-red-700' }} flex-shrink-0">
                         {{ $institut->actif ? 'Actif' : 'Suspendu' }}
                     </span>
                 </div>
