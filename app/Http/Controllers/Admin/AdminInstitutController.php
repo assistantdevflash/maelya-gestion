@@ -10,6 +10,7 @@ use App\Models\EtablissementType;
 use App\Models\Institut;
 use App\Models\PlanAbonnement;
 use App\Models\User;
+use App\Services\CommercialAttributionService;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -239,76 +240,43 @@ class AdminInstitutController extends Controller
             'commercial_id' => ['nullable', 'uuid', 'exists:commercial_profiles,id'],
         ]);
 
-        $proprietaire = $institut->proprietaire;
-
-        if (!$proprietaire) {
-            return back()->with('error', "Cet établissement n'a pas de propriétaire : impossible de le rattacher à un commercial.");
-        }
-
-        $existant = CommercialParrainage::where('proprietaire_id', $proprietaire->id)->first();
+        $service = app(CommercialAttributionService::class);
 
         // ── Retrait ───────────────────────────────────────────────────────────
         if (blank($donnees['commercial_id'] ?? null)) {
-            if (!$existant) {
-                return back()->with('error', 'Ce compte n\'était parrainé par aucun commercial.');
-            }
+            $resultat = $service->retirer($institut);
 
-            $nomCommercial = $existant->commercial?->user?->nom_complet ?? 'le commercial';
-            $existant->delete();
-
-            return back()->with('success', "« {$institut->nom} » n'est plus rattaché à {$nomCommercial}.");
+            return match ($resultat['statut']) {
+                CommercialAttributionService::STATUT_SANS_PROPRIETAIRE
+                    => back()->with('error', "Cet établissement n'a pas de propriétaire : aucune attribution possible."),
+                CommercialAttributionService::STATUT_AUCUN_PARRAINAGE
+                    => back()->with('error', 'Ce compte n\'était parrainé par aucun commercial.'),
+                default => back()->with('success', sprintf(
+                    '« %s » n\'est plus rattaché à %s.',
+                    $institut->nom,
+                    $resultat['ancien']?->commercial?->user?->nom_complet ?? 'son commercial'
+                )),
+            };
         }
 
         // ── Attribution ───────────────────────────────────────────────────────
         $profil = CommercialProfile::with('user')->findOrFail($donnees['commercial_id']);
+        $resultat = $service->attribuer($institut, $profil, Auth::user());
 
-        if (!$profil->user || !$profil->user->actif) {
-            return back()->with('error', 'Ce commercial est désactivé : réactivez-le avant de lui attribuer un établissement.');
-        }
+        return match ($resultat['statut']) {
+            CommercialAttributionService::STATUT_SANS_PROPRIETAIRE
+                => back()->with('error', "Cet établissement n'a pas de propriétaire : impossible de le rattacher à un commercial."),
 
-        $config = DB::table('commercial_config')->first();
-        $dureeMois = (int) ($config?->duree_mois ?? 6);
+            CommercialAttributionService::STATUT_COMMERCIAL_INACTIF
+                => back()->with('error', 'Ce commercial est désactivé : réactivez-le avant de lui attribuer un établissement.'),
 
-        // Réattribuer le même commercial ne doit pas repousser la fin de la
-        // période de commission : on garde l'échéance en cours.
-        $memeCommercial = $existant && $existant->commercial_id === $profil->id && $existant->isActif();
+            CommercialAttributionService::STATUT_DEJA
+                => back()->with('error', "« {$institut->nom} » est déjà rattaché à {$profil->user->nom_complet}."),
 
-        $expireLe = $memeCommercial
-            ? $existant->expire_le->toDateString()
-            : now()->addMonths($dureeMois)->toDateString();
-
-        $parrainage = CommercialParrainage::updateOrCreate(
-            ['proprietaire_id' => $proprietaire->id],
-            [
-                'commercial_id' => $profil->id,
-                'institut_id'   => $institut->id,
-                'expire_le'     => $expireLe,
-                'source'        => 'manuel',
-                'attribue_par'  => Auth::id(),
-            ]
-        );
-
-        if (!$memeCommercial && $parrainage->commercial?->user) {
-            try {
-                NotificationService::notifyUser(
-                    $profil->user,
-                    'commercial_attribution',
-                    '🏷️ Nouvel établissement attribué',
-                    "« {$institut->nom} » vous a été rattaché. Les commissions s'appliquent jusqu'au "
-                        . $parrainage->expire_le->format('d/m/Y') . '.',
-                    '/commercial/parrainages'
-                );
-            } catch (\Throwable $e) {
-                \Log::warning('[Notification attribution commercial] ' . $e->getMessage());
-            }
-        }
-
-        $message = $memeCommercial
-            ? "« {$institut->nom} » est déjà rattaché à {$profil->user->nom_complet}."
-            : "« {$institut->nom} » est désormais rattaché à {$profil->user->nom_complet} jusqu'au "
-                . $parrainage->expire_le->format('d/m/Y') . '.';
-
-        return back()->with($memeCommercial ? 'error' : 'success', $message);
+            default => back()->with('success', "« {$institut->nom} » est désormais rattaché à "
+                . "{$profil->user->nom_complet} jusqu'au "
+                . $resultat['parrainage']->expire_le->format('d/m/Y') . '.'),
+        };
     }
 
     public function offrirAbonnement(Request $request, Institut $institut)

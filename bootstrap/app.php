@@ -25,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role'             => \App\Http\Middleware\CheckRole::class,
             'feature'          => \App\Http\Middleware\RequireFeature::class,
             'email.verifie'    => \App\Http\Middleware\EnsureEmailVerifie::class,
+            'compte.actif'     => \App\Http\Middleware\CompteActif::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

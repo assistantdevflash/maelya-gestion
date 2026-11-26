@@ -14,7 +14,7 @@ class CommercialCommission extends Model
     protected $fillable = [
         'commercial_id', 'parrainage_id', 'abonnement_id',
         'montant_base', 'taux', 'montant',
-        'statut', 'payee_le', 'notes_paiement',
+        'statut', 'payee_le', 'paye_par', 'notes_paiement',
     ];
 
     protected $casts = ['payee_le' => 'datetime', 'montant' => 'integer', 'montant_base' => 'integer'];
@@ -22,6 +22,12 @@ class CommercialCommission extends Model
     public function commercial()
     {
         return $this->belongsTo(CommercialProfile::class, 'commercial_id');
+    }
+
+    /** Super admin qui a marqué la commission payée. */
+    public function payePar()
+    {
+        return $this->belongsTo(User::class, 'paye_par');
     }
 
     public function parrainage()
@@ -37,5 +43,10 @@ class CommercialCommission extends Model
     public function getMontantFormatteAttribute(): string
     {
         return number_format($this->montant, 0, ',', ' ') . ' FCFA';
+    }
+
+    public function estPayee(): bool
+    {
+        return $this->statut === 'payee';
     }
 }

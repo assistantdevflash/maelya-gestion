@@ -65,6 +65,16 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        // Un commercial désactivé ne doit pas pouvoir se connecter : sans ce
+        // contrôle, le bouton « Désactiver » de la console restait sans effet.
+        if (Auth::user()?->role === 'commercial' && !Auth::user()->actif) {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'login' => 'Ce compte a été désactivé. Contactez le support Maëlya Gestion.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

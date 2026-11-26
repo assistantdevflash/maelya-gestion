@@ -196,10 +196,18 @@ class AdminAbonnementController extends Controller
         if ($abonnement->montant > 0) {
             $commercialParrainage = \App\Models\CommercialParrainage::where('proprietaire_id', $abonnement->user_id)
                 ->where('expire_le', '>=', now()->toDateString())
+                // Un commercial désactivé ne perçoit plus de commission : ses
+                // parrainages existants restent, mais plus rien n'est versé.
+                ->whereHas('commercial.user', fn ($q) => $q->where('actif', true))
                 ->first();
             if ($commercialParrainage) {
                 $config = \DB::table('commercial_config')->first();
                 $taux = $config?->taux ?? 20;
+
+                // Durée de la période de commission, telle que configurée dans
+                // la console. Elle pilotait déjà `expire_le` : la calculer ici
+                // avec un 6 codé en dur rendait les deux incohérents.
+                $dureeCommission = max(1, (int) ($config?->duree_mois ?? 6));
 
                 // Durée en mois selon la période choisie par le filleul
                 $dureeMois = match ($abonnement->periode) {
@@ -208,12 +216,13 @@ class AdminAbonnementController extends Controller
                     default    => 1,
                 };
 
-                // Option C — commission proratisée sur les mois éligibles (max 6)
-                $moisEligibles = min($dureeMois, 6);
+                // Commission proratisée sur les mois couverts par la période
+                // de commission (jamais plus que la durée payée).
+                $moisEligibles = min($dureeMois, $dureeCommission);
                 $commissionProratisee = (int) round($abonnement->montant * $moisEligibles / $dureeMois * $taux / 100);
 
-                // Budget global max pour ce parrainage = prix mensuel × taux × 6 mois
-                $budgetMax = (int) round($plan->prix * $taux / 100 * 6);
+                // Budget global max pour ce parrainage = prix mensuel × taux × durée
+                $budgetMax = (int) round($plan->prix * $taux / 100 * $dureeCommission);
 
                 // Commissions déjà générées pour ce parrainage (mensualités précédentes)
                 $dejaVerse = (int) \App\Models\CommercialCommission::where('parrainage_id', $commercialParrainage->id)->sum('montant');

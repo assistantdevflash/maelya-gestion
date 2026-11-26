@@ -563,13 +563,14 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::get('commerciaux', [AdminCommercialController::class, 'index'])->name('commerciaux.index');
     Route::post('commerciaux', [AdminCommercialController::class, 'store'])->name('commerciaux.store');
     Route::get('commerciaux/{commercial}', [AdminCommercialController::class, 'show'])->name('commerciaux.show');
+    Route::post('commerciaux/{commercial}/attribuer', [AdminCommercialController::class, 'attribuerEtablissement'])->name('commerciaux.attribuer');
     Route::patch('commerciaux/{commercial}', [AdminCommercialController::class, 'update'])->name('commerciaux.update');
     Route::patch('commerciaux/{commercial}/toggle', [AdminCommercialController::class, 'toggle'])->name('commerciaux.toggle');
     Route::delete('commerciaux/{commercial}', [AdminCommercialController::class, 'destroy'])->name('commerciaux.destroy');
 });
 
 // ─── Espace Commercial ────────────────────────────────────────────────────────
-Route::middleware(['auth', 'role:commercial'])->prefix('commercial')->name('commercial.')->group(function () {
+Route::middleware(['auth', 'compte.actif', 'role:commercial'])->prefix('commercial')->name('commercial.')->group(function () {
     Route::get('/', [CommercialController::class, 'dashboard'])->name('dashboard');
 
     // ── Prospection ──

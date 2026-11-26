@@ -87,7 +87,7 @@ class ProspectionService
             ->with(['user.institut', 'plan'])
             ->orderByDesc('expire_le')
             ->get()
-            // Un seul abonnement par établissement : le plus récent.
+            // Un seul abonnement par compte : le plus lointain.
             ->unique('user_id');
 
         return $abonnements

@@ -44,7 +44,7 @@
                     <tr>
                         <td style="font-size:13px;color:#6b7280;padding:4px 0;">Montant de l'abonnement</td>
                         <td style="font-size:13px;color:#111827;font-weight:600;text-align:right;">
-                            {{ number_format($commission->montant_base, 2, ',', ' ') }} €
+                            {{ number_format($commission->montant_base, 0, ',', ' ') }} FCFA
                         </td>
                     </tr>
                     <tr>
@@ -54,7 +54,7 @@
                     <tr>
                         <td style="font-size:13px;color:#6b7280;padding:6px 0 0;">Votre commission</td>
                         <td style="padding:6px 0 0;text-align:right;">
-                            <span style="font-size:20px;font-weight:800;color:#9333ea;">{{ number_format($commission->montant, 2, ',', ' ') }} €</span>
+                            <span style="font-size:20px;font-weight:800;color:#9333ea;">{{ number_format($commission->montant, 0, ',', ' ') }} FCFA</span>
                         </td>
                     </tr>
                 </table>

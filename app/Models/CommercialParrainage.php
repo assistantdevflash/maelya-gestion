@@ -50,6 +50,12 @@ class CommercialParrainage extends Model
         return $this->expire_le?->isFuture() ?? false;
     }
 
+    /** Parrainages encore dans leur période de commission. */
+    public function scopeActifs($query)
+    {
+        return $query->whereDate('expire_le', '>=', now()->toDateString());
+    }
+
     /** Vrai si le rattachement a été fait par un super admin (et non par code). */
     public function estManuel(): bool
     {

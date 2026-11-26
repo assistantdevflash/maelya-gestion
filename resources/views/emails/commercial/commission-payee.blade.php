@@ -50,7 +50,7 @@
                     <tr>
                         <td style="font-size:13px;color:#6b7280;padding:6px 0 0;">Montant versé</td>
                         <td style="padding:6px 0 0;text-align:right;">
-                            <span style="font-size:22px;font-weight:800;color:#16a34a;">{{ number_format($commission->montant, 2, ',', ' ') }} €</span>
+                            <span style="font-size:22px;font-weight:800;color:#16a34a;">{{ number_format($commission->montant, 0, ',', ' ') }} FCFA</span>
                         </td>
                     </tr>
                 </table>

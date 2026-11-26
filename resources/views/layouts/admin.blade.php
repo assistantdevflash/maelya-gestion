@@ -200,6 +200,21 @@
         </div>
         @endif
 
+        {{-- Les erreurs métier (action refusée) n'étaient affichées nulle part :
+             l'admin croyait que l'action avait réussi. --}}
+        @if(session('error'))
+        <div x-data="{ show: true }" x-show="show"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 -translate-y-2"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             class="mx-4 lg:mx-8 mt-4 alert-danger flex items-start justify-between">
+            <span>{{ session('error') }}</span>
+            <button @click="show = false" class="text-red-700 hover:text-red-900 ml-3 flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        @endif
+
         <main class="flex-1 px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-20 lg:pb-6">
             @yield('content')
         </main>
