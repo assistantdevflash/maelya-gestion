@@ -1084,3 +1084,81 @@ form.is-submitting button.btn-submit {
 .scrollbar-hide   { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Bannière « nouvelle version disponible » (PWA)
+   Injectée en JS par partials/pwa-update.blade.php.
+   Sur mobile, elle doit se placer AU-DESSUS de la barre de navigation
+   inférieure, sinon elle la recouvre et devient gênante.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.pwa-update {
+    position: fixed;
+    left: 1rem;
+    right: 1rem;
+    bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .65rem .75rem .65rem 1rem;
+    background: #111827;
+    color: #fff;
+    border-radius: .75rem;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, .28);
+    font-size: .8125rem;
+    animation: pwa-update-in .25s ease-out;
+}
+
+@media (min-width: 640px) {
+    .pwa-update {
+        right: auto;
+        bottom: 1.25rem;
+        max-width: 24rem;
+    }
+}
+
+.pwa-update__texte {
+    font-weight: 600;
+    flex: 1;
+    min-width: 0;
+}
+
+.pwa-update__bouton {
+    flex-shrink: 0;
+    border: none;
+    border-radius: .5rem;
+    padding: .45rem .9rem;
+    font: inherit;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    white-space: nowrap;
+    background: linear-gradient(135deg, #9333ea, #ec4899);
+    transition: opacity .15s ease, transform .15s ease;
+}
+
+.pwa-update__bouton:hover:not(:disabled) { opacity: .92; }
+.pwa-update__bouton:active:not(:disabled) { transform: scale(.97); }
+
+.pwa-update__bouton:disabled {
+    opacity: .7;
+    cursor: progress;
+}
+
+@keyframes pwa-update-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Écrans étroits : on empile le texte et le bouton plutôt que d'écraser
+   le message dans une colonne de 3 mots. */
+@media (max-width: 419px) {
+    .pwa-update {
+        flex-direction: column;
+        align-items: stretch;
+        gap: .6rem;
+    }
+    .pwa-update__bouton {
+        width: 100%;
+    }
+}

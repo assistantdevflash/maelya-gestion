@@ -1,7 +1,7 @@
 // ⚠️ Incrémenter cette valeur à chaque déploiement qui modifie la liste
 // PRECACHE_ASSETS ou la stratégie de cache : l'activation supprime alors tous
 // les anciens caches et les utilisateurs repartent sur des fichiers frais.
-const CACHE_VERSION  = 'maelya-v9';
+const CACHE_VERSION  = 'maelya-v10';
 const OFFLINE_URL    = '/offline.html';
 
 // Assets statiques à mettre en cache au premier chargement
@@ -34,6 +34,16 @@ self.addEventListener('activate', event => {
             )
         ).then(() => self.clients.claim())
     );
+});
+
+// ── Activation immédiate demandée par la page ───────────────────────────────
+// Le bouton « Télécharger » de la bannière envoie ce message. Sans lui, un
+// worker resté en attente n'était jamais activé : recharger la page
+// ressuscitait la bannière indéfiniment.
+self.addEventListener('message', event => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
 });
 
 // ── Stratégie de fetch ──────────────────────────────────────────────────────

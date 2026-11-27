@@ -39,13 +39,19 @@
         return;
     }
 
-    // ── Rechargement protégé contre les boucles ──
-    function reloadPage() {
-        try {
-            var last = parseInt(sessionStorage.getItem(RELOAD_KEY) || '0', 10);
-            if (Date.now() - last < 15000) return; // déjà rechargé à l'instant
-            sessionStorage.setItem(RELOAD_KEY, String(Date.now()));
-        } catch (e) { /* mode privé : on recharge quand même */ }
+    // ── Rechargement ──
+    // `force` = clic explicite de l'utilisateur : on ne l'ignore jamais.
+    // Sans ça, un rechargement automatique survenu moins de 15 s plus tôt
+    // faisait que le bouton ne produisait STRICTEMENT rien (ni rechargement,
+    // ni retour visuel) et la bannière restait affichée.
+    function reloadPage(force) {
+        if (!force) {
+            try {
+                var last = parseInt(sessionStorage.getItem(RELOAD_KEY) || '0', 10);
+                if (Date.now() - last < 15000) return; // déjà rechargé à l'instant
+            } catch (e) { /* mode privé : on recharge quand même */ }
+        }
+        try { sessionStorage.setItem(RELOAD_KEY, String(Date.now())); } catch (e) {}
         window.location.reload();
     }
 
@@ -55,22 +61,50 @@
 
         var box = document.createElement('div');
         box.id = 'pwa-update-banner';
+        box.className = 'pwa-update';
         box.setAttribute('role', 'status');
-        box.style.cssText =
-            'position:fixed;left:1rem;bottom:1rem;z-index:10000;' +
-            'display:flex;align-items:center;gap:.75rem;padding:.65rem .75rem .65rem 1rem;' +
-            'background:#111827;color:#fff;border-radius:.75rem;' +
-            'box-shadow:0 8px 28px rgba(0,0,0,.28);font-family:inherit;font-size:.8125rem;' +
-            'max-width:calc(100vw - 2rem);';
         box.innerHTML =
-            '<span style="font-weight:600;">Une nouvelle version est disponible</span>' +
-            '<button type="button" id="pwa-update-reload" ' +
-                'style="background:linear-gradient(135deg,#9333ea,#ec4899);color:#fff;' +
-                'border:none;border-radius:.5rem;padding:.4rem .8rem;font:inherit;' +
-                'font-weight:600;cursor:pointer;white-space:nowrap;">Recharger</button>';
+            '<span class="pwa-update__texte">Une nouvelle version est disponible</span>' +
+            '<button type="button" id="pwa-update-download" class="pwa-update__bouton">Télécharger</button>';
 
         document.body.appendChild(box);
-        document.getElementById('pwa-update-reload').addEventListener('click', reloadPage);
+        document.getElementById('pwa-update-download')
+            .addEventListener('click', telechargerNouvelleVersion);
+    }
+
+    // ── Clic sur « Télécharger » ──
+    // On réveille le Service Worker en attente, on lui laisse prendre la main,
+    // puis on recharge. Un filet de sécurité recharge quand même si le worker
+    // ne répond pas : le bouton ne doit jamais rester sans effet.
+    function telechargerNouvelleVersion() {
+        var bouton = document.getElementById('pwa-update-download');
+        if (bouton) {
+            bouton.disabled = true;
+            bouton.textContent = 'Téléchargement…';
+        }
+
+        var dejaRelance = false;
+        function relancer() {
+            if (dejaRelance) return;
+            dejaRelance = true;
+            reloadPage(true);
+        }
+
+        navigator.serviceWorker.addEventListener('controllerchange', relancer, { once: true });
+
+        navigator.serviceWorker.getRegistration().then(function (reg) {
+            if (!reg) return;
+            [reg.waiting, reg.installing].forEach(function (worker) {
+                if (worker) {
+                    try { worker.postMessage({ type: 'SKIP_WAITING' }); } catch (e) {}
+                }
+            });
+            // Le worker est déjà actif : plus rien à activer, on recharge.
+            if (!reg.waiting && !reg.installing) relancer();
+        }).catch(function () {});
+
+        // Filet de sécurité : ne jamais laisser l'utilisateur sans effet.
+        setTimeout(relancer, 1500);
     }
 
     // ── Une nouvelle version est prête ──
